@@ -1,0 +1,859 @@
+
+#include "VtkData.h"
+#include "Array.h"
+
+#include <vtkDoubleArray.h>
+#include "vtkCellData.h"
+#include <vtkGenericCell.h>
+#include <vtkIntArray.h>
+#include <vtkPointData.h>
+#include <vtkPolyData.h>
+#include <vtkSmartPointer.h>
+#include <vtkUnsignedCharArray.h>
+#include <vtkUnstructuredGrid.h>
+#include <vtkXMLPolyDataReader.h>
+#include <vtkXMLUnstructuredGridReader.h>
+#include <vtkXMLUnstructuredGridWriter.h>
+
+#include <string>
+#include <map>
+
+/////////////////////////////////////////////////////////////////
+//        I n t e r n a l   I m p l e m e n t a t i o n        //
+/////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////
+//                    V t k V t p D a t a                      //
+/////////////////////////////////////////////////////////////////
+
+//----------------
+// VtkVtpDataImpl
+//----------------
+//
+class VtkVtpData::VtkVtpDataImpl {
+  public:
+    void read_file(const std::string& file_name);
+    vtkSmartPointer<vtkPolyData> vtk_polydata;
+    int num_elems;
+    int np_elem;
+    int num_points;
+};
+
+//-----------
+// read_file
+//-----------
+//
+void VtkVtpData::VtkVtpDataImpl::read_file(const std::string& file_name)
+{
+  auto reader = vtkSmartPointer<vtkXMLPolyDataReader>::New();
+  reader->SetFileName(file_name.c_str());
+  reader->Update();
+  vtk_polydata= reader->GetOutput();
+  num_elems = vtk_polydata->GetNumberOfCells();
+  num_points = vtk_polydata->GetPoints()->GetNumberOfPoints();
+  if (num_points == 0) {
+    throw std::runtime_error("Error reading the VTK VTP file '" + file_name + "'.");
+  }
+
+  // Get the cell type.
+  auto cell = vtkGenericCell::New();
+  vtk_polydata->GetCell(0, cell);
+  np_elem = cell->GetNumberOfPoints();
+}
+
+/////////////////////////////////////////////////////////////////
+//                    V t k V t u D a t a                      //
+/////////////////////////////////////////////////////////////////
+
+//----------------
+// VtkVtuDataImpl
+//----------------
+//
+class VtkVtuData::VtkVtuDataImpl {
+  public:
+    void create_grid();
+    void read_file(const std::string& file_name);
+    void set_connectivity(const int nsd, const Array<int>& conn, const int pid);
+    void set_element_data(const std::string& data_name, const Array<double>& data);
+    void set_element_data(const std::string& data_name, const Array<int>& data);
+    void set_point_data(const std::string& data_name, const Array<double>& data);
+    void set_points(const Array<double>& points);
+    void write(const std::string& file_name);
+
+    template<typename T1, typename T2>
+    void set_element_data(const std::string& data_name, const T1& data, T2& data_array)
+    {
+      int num_vals = data.ncols();
+      int num_comp = data.nrows();
+      data_array->SetNumberOfComponents(num_comp);
+      data_array->Allocate(num_vals,1000);
+      data_array->SetNumberOfTuples(num_vals);
+      data_array->SetName(data_name.c_str());
+      for (int i = 0; i < num_vals; i++) {
+        for (int j = 0; j < num_comp; j++) {
+          data_array->SetComponent(i, j, data(j,i));
+        }
+      }
+      vtk_ugrid->GetCellData()->AddArray(data_array);
+    };
+
+    vtkSmartPointer<vtkUnstructuredGrid> vtk_ugrid;
+    int num_elems;
+    int np_elem;
+    int num_points;
+};
+
+//-------------
+// create_grid
+//-------------
+//
+void VtkVtuData::VtkVtuDataImpl::create_grid()
+{
+  vtk_ugrid = vtkSmartPointer<vtkUnstructuredGrid>::New();
+}
+
+//-----------
+// read_file
+//-----------
+//
+void VtkVtuData::VtkVtuDataImpl::read_file(const std::string& file_name)
+{
+  auto reader = vtkSmartPointer<vtkXMLUnstructuredGridReader>::New();
+  reader->SetFileName(file_name.c_str());
+  reader->Update();
+  vtk_ugrid = reader->GetOutput();
+  num_elems = vtk_ugrid->GetNumberOfCells();
+  num_points = vtk_ugrid->GetPoints()->GetNumberOfPoints();
+  if (num_points == 0) {
+    throw std::runtime_error("Error reading the VTK VTU file '" + file_name + "'.");
+  }
+
+  // Get the cell type.
+  auto cell = vtkGenericCell::New();
+  vtk_ugrid->GetCell(0, cell);
+  np_elem = cell->GetNumberOfPoints();
+}
+
+//------------------
+// set_connectivity
+//------------------
+//
+void VtkVtuData::VtkVtuDataImpl::set_connectivity(const int nsd, const Array<int>& conn, const int pid)
+{
+  int num_elems = conn.ncols();
+  int np_elem = conn.nrows();
+  unsigned char vtk_cell_type;
+
+  if (nsd == 2) {
+    if (np_elem == 4) {
+      vtk_cell_type = VTK_QUAD;
+    }
+
+  } else if (nsd == 3) {
+    if (np_elem == 4) {
+      vtk_cell_type = VTK_TETRA;
+    }
+    else if (np_elem == 8) {
+      vtk_cell_type = VTK_HEXAHEDRON;
+    }
+    else if (np_elem == 10) {
+      vtk_cell_type = VTK_HEXAHEDRON;
+    }
+  }
+  
+  if (np_elem == 2) {
+    vtk_cell_type = VTK_LINE;
+  }
+
+  auto elem_nodes = vtkSmartPointer<vtkIdList>::New();
+  elem_nodes->Allocate(10,10);
+  elem_nodes->Initialize();
+  elem_nodes->SetNumberOfIds(np_elem);
+
+  auto elem_ids = vtkSmartPointer<vtkIntArray>::New();
+  elem_ids->SetNumberOfComponents(1);
+  elem_ids->Allocate(num_elems,1000);
+  elem_ids->SetNumberOfTuples(num_elems);
+  elem_ids->SetName("GlobalElementID");
+
+  for (int i = 0; i < num_elems; i++) {
+    for (int j = 0; j < np_elem; j++) {
+      elem_nodes->SetId(j, conn(j,i));
+    }
+    vtk_ugrid->InsertNextCell(vtk_cell_type, elem_nodes);
+    elem_ids->SetTuple1(i,i+1);
+  }
+
+  vtk_ugrid->GetCellData()->AddArray(elem_ids);
+}
+
+//------------------
+// set_element_data
+//------------------
+//
+/*
+void VtkVtuData::VtkVtuDataImpl::set_element_data(const std::string& data_name, const Array<double>& data)
+{
+  int num_vals = data.num_cols();
+  int num_comp = data.num_rows();
+
+  auto data_array = vtkSmartPointer<vtkDoubleArray>::New();
+  data_array->SetNumberOfComponents(num_comp);
+  data_array->Allocate(num_vals,1000);
+  data_array->SetNumberOfTuples(num_vals);
+  data_array->SetName(data_name.c_str());
+
+  for (int i = 0; i < num_vals; i++) {
+    for (int j = 0; j < num_comp; j++) {
+      data_array->SetComponent(i, j, data(j,i));
+    }
+  }
+
+  vtk_ugrid->GetCellData()->AddArray(data_array);
+}
+
+//------------------
+// set_element_data
+//------------------
+//
+void VtkVtuData::VtkVtuDataImpl::set_element_data(const std::string& data_name, const Array<int>& data)
+{
+  int num_vals = data.num_cols();
+  int num_comp = data.num_rows();
+
+  auto data_array = vtkSmartPointer<vtkIntArray>::New();
+  data_array->SetNumberOfComponents(num_comp);
+  data_array->Allocate(num_vals,1000);
+  data_array->SetNumberOfTuples(num_vals);
+  data_array->SetName(data_name.c_str());
+
+  for (int i = 0; i < num_vals; i++) {
+    for (int j = 0; j < num_comp; j++) {
+      data_array->SetComponent(i, j, data(j,i));
+    }
+  }
+
+  vtk_ugrid->GetCellData()->AddArray(data_array);
+}
+*/
+
+//----------------
+// set_point_data
+//----------------
+//
+void VtkVtuData::VtkVtuDataImpl::set_point_data(const std::string& data_name, const Array<double>& data)
+{
+  int num_vals = data.ncols();
+  int num_comp = data.nrows();
+
+  auto data_array = vtkSmartPointer<vtkDoubleArray>::New();
+  data_array->SetNumberOfComponents(num_comp);
+  data_array->Allocate(num_vals,1000);
+  data_array->SetNumberOfTuples(num_vals);
+  data_array->SetName(data_name.c_str());
+
+  for (int i = 0; i < num_vals; i++) {
+    for (int j = 0; j < num_comp; j++) {
+      data_array->SetComponent(i, j, data(j,i));
+    }
+  }
+
+  vtk_ugrid->GetPointData()->AddArray(data_array);
+}
+
+//------------
+// set_points
+//------------
+// Set the 3D point (coordinate) data for the unstructure grid.
+//
+void VtkVtuData::VtkVtuDataImpl::set_points(const Array<double>& points)
+{
+  int num_coords = points.ncols();
+  auto node_coords = vtkSmartPointer<vtkPoints>::New();
+  node_coords->Allocate(num_coords ,1000);
+  node_coords->SetNumberOfPoints(num_coords);
+
+  auto node_ids = vtkSmartPointer<vtkIntArray>::New();
+  node_ids->SetNumberOfComponents(1);
+  node_ids->Allocate(num_coords,1000);
+  node_ids->SetNumberOfTuples(num_coords);
+  node_ids->SetName("GlobalNodeID");
+
+  for (int i = 0; i < num_coords; i++ ) {
+    node_coords->SetPoint(i, points(0,i), points(1,i), points(2,i)); 
+    node_ids->SetTuple1(i,i+1);
+  }
+
+  vtk_ugrid->SetPoints(node_coords);
+  vtk_ugrid->GetPointData()->AddArray(node_ids);
+}
+
+//--------
+// write
+//--------
+//
+void VtkVtuData::VtkVtuDataImpl::write(const std::string& file_name)
+{
+  auto writer = vtkSmartPointer<vtkXMLUnstructuredGridWriter>::New();
+  writer->SetInputDataObject(vtk_ugrid);
+  writer->SetFileName(file_name.c_str());
+  writer->Write();
+}
+
+/////////////////////////////////////////////////////////////////
+//          V t k D a t a     I m p l e m e n t a t i o n      //
+/////////////////////////////////////////////////////////////////
+
+//---------
+// VtkData
+//---------
+//
+VtkData::VtkData()
+{
+}
+
+VtkData::~VtkData()
+{
+}
+
+//---------------
+// create_reader
+//---------------
+//
+VtkData* VtkData::create_reader(const std::string& file_name)
+{
+  auto file_ext = file_name.substr(file_name.find_last_of(".") + 1);
+  if (file_ext == "vtp") {
+    return new VtkVtpData(file_name);
+  } else if (file_ext == "vtu") {
+    return new VtkVtuData(file_name);
+  }
+}
+
+//---------------
+// create_writer
+//---------------
+//
+VtkData* VtkData::create_writer(const std::string& file_name)
+{
+  auto file_ext = file_name.substr(file_name.find_last_of(".") + 1);
+  bool reader = false;
+  if (file_ext == "vtp") {
+    return new VtkVtpData(file_name, reader);
+  } else if (file_ext == "vtu") {
+    return new VtkVtuData(file_name, reader);
+  }
+}
+
+//void VtkData::write(const std::string& file_name)
+//{
+//}
+
+/////////////////////////////////////////////////////////////////
+//      V t k V t p D a t a     I m p l e m e n t a t i o n    //
+/////////////////////////////////////////////////////////////////
+
+//------------
+// VtkVtpData
+//------------
+//
+VtkVtpData::VtkVtpData()
+{
+  impl = new VtkVtpDataImpl;
+}
+
+VtkVtpData::VtkVtpData(const std::string& file_name, bool reader)
+{
+  impl = new VtkVtpDataImpl;
+  if (reader) {
+    read_file(file_name); 
+   }
+}
+
+VtkVtpData::~VtkVtpData()
+{
+  delete impl;
+}
+
+//------------------
+// get_connectivity
+//------------------
+//
+Array<int> VtkVtpData::get_connectivity()
+{
+  int num_elems = impl->num_elems; 
+  int np_elem = impl->np_elem; 
+  Array<int> conn(np_elem, num_elems);
+
+  auto cell = vtkGenericCell::New();
+  for (int i = 0; i < num_elems; i++) {
+    impl->vtk_polydata->GetCell(i, cell);
+    auto num_cell_pts = cell->GetNumberOfPoints();
+    for (int j = 0; j < num_cell_pts; j++) {
+      auto id = cell->PointIds->GetId(j);
+      conn(j,i) = id;
+    }
+  }
+
+  return  conn;
+}
+
+//---------------------
+// get_copy_point_data
+//---------------------
+// Copy an array of point data from an polydata mesh into the given Array.
+//
+void VtkVtpData::copy_point_data(const std::string& data_name, Array<double>& mesh_data)
+{
+  auto vtk_data = vtkDoubleArray::SafeDownCast(impl->vtk_polydata->GetPointData()->GetArray(data_name.c_str()));
+  if (vtk_data == nullptr) { 
+    return;
+  }
+
+  int num_data = vtk_data->GetNumberOfTuples();
+  if (num_data == 0) { 
+    return; 
+  }
+
+  int num_comp = vtk_data->GetNumberOfComponents();
+
+  // Set the data.
+  for (int i = 0; i < num_data; i++) {
+    auto tuple = vtk_data->GetTuple(i);
+    for (int j = 0; j < num_comp; j++) {
+      mesh_data(j, i) = tuple[j];
+    }
+  }
+}
+
+void VtkVtpData::copy_point_data(const std::string& data_name, Vector<double>& mesh_data)
+{
+  auto vtk_data = vtkDoubleArray::SafeDownCast(impl->vtk_polydata->GetPointData()->GetArray(data_name.c_str()));
+  if (vtk_data == nullptr) { 
+    return;
+  }
+
+  int num_data = vtk_data->GetNumberOfTuples();
+  if (num_data == 0) { 
+    return; 
+  }
+
+  int num_comp = vtk_data->GetNumberOfComponents();
+
+  // Set the data.
+  for (int i = 0; i < num_data; i++) {
+    mesh_data(i) = vtk_data->GetValue(i);
+  }
+}
+
+//-------------
+// copy_points 
+//-------------
+// Copy points into the given array.
+//
+void VtkVtpData::copy_points(Array<double>& points)
+{
+  auto vtk_points = impl->vtk_polydata->GetPoints();
+  auto num_points = vtk_points->GetNumberOfPoints();
+  Array<double> points_array(3, num_points);
+
+  double point[3];
+  for (int i = 0; i < num_points; i++) {
+    vtk_points->GetPoint(i, point);
+    points(0,i) = point[0];
+    points(1,i) = point[1];
+    points(2,i) = point[2];
+  }
+
+  return;
+}
+
+//----------------
+// get_point_data
+//----------------
+// Get an array of point data from an unstructured grid.
+//
+Array<double> VtkVtpData::get_point_data(const std::string& data_name)
+{
+  auto vtk_data = vtkDoubleArray::SafeDownCast(impl->vtk_polydata->GetPointData()->GetArray(data_name.c_str()));
+  if (vtk_data == nullptr) { 
+    return Array<double>();
+  }
+
+  int num_data = vtk_data->GetNumberOfTuples();
+  if (num_data == 0) { 
+    return Array<double>();
+  }
+
+  int num_comp = vtk_data->GetNumberOfComponents();
+
+  // Set the data.
+  Array<double> data(num_data, num_comp);
+  for (int i = 0; i < num_data; i++) {
+    auto tuple = vtk_data->GetTuple(i);
+    for (int j = 0; j < num_comp; j++) {
+      data(i, j) = tuple[j];
+    }
+  }
+
+  return data;
+}
+
+//----------------
+// get_point_data
+//----------------
+// Get an array of point data from an unstructured grid.
+//
+Array<double> VtkVtpData::get_points()
+{
+  auto vtk_points = impl->vtk_polydata->GetPoints();
+  auto num_points = vtk_points->GetNumberOfPoints();
+  Array<double> points_array(3, num_points);
+
+  double point[3];
+  for (int i = 0; i < num_points; i++) {
+    vtk_points->GetPoint(i, point);
+    points_array(0,i) = point[0];
+    points_array(1,i) = point[1];
+    points_array(2,i) = point[2];
+  }
+
+  return points_array;
+}
+
+//----------------
+// has_point_data
+//----------------
+//
+bool VtkVtpData::has_point_data(const std::string& data_name)
+{
+  int num_arrays = impl->vtk_polydata->GetPointData()->GetNumberOfArrays();
+
+  for (int i = 0; i < num_arrays; i++) {
+    if (!strcmp(impl->vtk_polydata->GetPointData()->GetArrayName(i), data_name.c_str())) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+//-----------
+// num_elems
+//-----------
+//
+int VtkVtpData::num_elems() 
+{ 
+  return impl->num_elems; 
+}
+
+int VtkVtpData::np_elem() 
+{ 
+  return impl->np_elem; 
+}
+
+int VtkVtpData::num_points() 
+{ 
+  return impl->num_points; 
+}
+
+//-----------
+// read_file
+//-----------
+//
+void VtkVtpData::read_file(const std::string& file_name) 
+{ 
+  impl->read_file(file_name); 
+}
+
+//------------------
+// set_connectivity
+//------------------
+//
+void VtkVtpData::set_connectivity(const int nsd, const Array<int>& conn, const int pid)
+{
+  throw std::runtime_error("[VtkVtpData] set_connectivity not implemented.");
+}
+
+//------------------
+// set_element_data
+//------------------
+//
+void VtkVtpData::set_element_data(const std::string& data_name, const Array<double>& data)
+{
+  throw std::runtime_error("[VtkVtpData] set_element_data not implemented.");
+}
+
+void VtkVtpData::set_element_data(const std::string& data_name, const Array<int>& data) 
+{
+  throw std::runtime_error("[VtkVtpData] set_element_data not implemented.");
+}
+
+//----------------
+// set_point_data
+//-----------------
+//
+void VtkVtpData::set_point_data(const std::string& data_name, const Array<double>& data)
+{
+  throw std::runtime_error("[VtkVtpData] set_point_data not implemented.");
+}
+
+//-------------
+// set_points
+//-------------
+//
+void VtkVtpData::set_points(const Array<double>& points)
+{
+  throw std::runtime_error("[VtkVtpData] set_points not implemented.");
+}
+
+void VtkVtpData::write()
+//void VtkVtpData::write(const std::string& file_name)
+{
+  throw std::runtime_error("[VtkVtpData] write() not implemented.");
+}
+
+/////////////////////////////////////////////////////////////////
+//      V t k V t u D a t a     I m p l e m e n t a t i o n    //
+/////////////////////////////////////////////////////////////////
+
+//------------
+// VtkVtuData
+//------------
+//
+VtkVtuData::VtkVtuData()
+{
+  impl = new VtkVtuDataImpl;
+}
+
+VtkVtuData::VtkVtuData(const std::string& file_name, bool reader)
+{
+  this->file_name = file_name;
+  impl = new VtkVtuDataImpl;
+  if (reader) {
+    read_file(file_name); 
+  } else {
+    impl->create_grid();
+  }
+}
+
+VtkVtuData::~VtkVtuData()
+{
+  delete impl;
+}
+
+Array<int> VtkVtuData::get_connectivity()
+{
+  int num_elems = impl->num_elems; 
+  int np_elem = impl->np_elem; 
+
+  Array<int> conn(np_elem, num_elems);
+
+  auto cell = vtkGenericCell::New();
+  for (int i = 0; i < num_elems; i++) {
+    impl->vtk_ugrid->GetCell(i, cell);
+    auto num_cell_pts = cell->GetNumberOfPoints();
+    for (int j = 0; j < num_cell_pts; j++) {
+      auto id = cell->PointIds->GetId(j);
+      conn(j,i) = id;
+    }
+  }
+  return conn;
+}
+
+//---------------------
+// get_copy_point_data
+//---------------------
+// Copy an array of point data from an unstructured grid into the given Array.
+//
+void VtkVtuData::copy_point_data(const std::string& data_name, Array<double>& mesh_data)
+{
+
+  auto vtk_data = vtkDoubleArray::SafeDownCast(impl->vtk_ugrid->GetPointData()->GetArray(data_name.c_str()));
+  if (vtk_data == nullptr) { 
+    return;
+  }
+
+  int num_data = vtk_data->GetNumberOfTuples();
+  if (num_data == 0) { 
+    return; 
+  }
+
+  int num_comp = vtk_data->GetNumberOfComponents();
+
+  // Set the data.
+  for (int i = 0; i < num_data; i++) {
+    auto tuple = vtk_data->GetTuple(i);
+    for (int j = 0; j < num_comp; j++) {
+      mesh_data(j, i) = tuple[j];
+    }
+  }
+}
+
+void VtkVtuData::copy_point_data(const std::string& data_name, Vector<double>& mesh_data)
+{
+  auto vtk_data = vtkDoubleArray::SafeDownCast(impl->vtk_ugrid->GetPointData()->GetArray(data_name.c_str()));
+  if (vtk_data == nullptr) {
+    return;
+  }
+
+  int num_data = vtk_data->GetNumberOfTuples();
+  if (num_data == 0) {
+    return;
+  }
+
+  int num_comp = vtk_data->GetNumberOfComponents();
+
+  // Set the data.
+  for (int i = 0; i < num_data; i++) {
+    mesh_data[i] = vtk_data->GetValue(i);
+  }
+}
+
+//----------------
+// has_point_data
+//----------------
+//
+bool VtkVtuData::has_point_data(const std::string& data_name)
+{
+  int num_arrays = impl->vtk_ugrid->GetPointData()->GetNumberOfArrays();
+
+  for (int i = 0; i < num_arrays; i++) {
+    if (!strcmp(impl->vtk_ugrid->GetPointData()->GetArrayName(i), data_name.c_str())) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+//----------------
+// get_point_data
+//----------------
+// Get an array of point data from an unstructured grid.
+//
+Array<double> VtkVtuData::get_point_data(const std::string& data_name)
+{
+  auto vtk_data = vtkDoubleArray::SafeDownCast(impl->vtk_ugrid->GetPointData()->GetArray(data_name.c_str()));
+  if (vtk_data == nullptr) { 
+    return Array<double>();
+  }
+
+  int num_data = vtk_data->GetNumberOfTuples();
+  if (num_data == 0) { 
+    return Array<double>();
+  }
+
+  int num_comp = vtk_data->GetNumberOfComponents();
+
+  // Set the data.
+  Array<double> data(num_data, num_comp);
+  for (int i = 0; i < num_data; i++) {
+    auto tuple = vtk_data->GetTuple(i);
+    for (int j = 0; j < num_comp; j++) {
+      data(i, j) = tuple[j];
+    }
+  }
+
+  return data;
+}
+
+//------------
+// get_points
+//------------
+//
+Array<double> VtkVtuData::get_points()
+{
+  auto vtk_points = impl->vtk_ugrid->GetPoints();
+  auto num_points = vtk_points->GetNumberOfPoints();
+  Array<double> points_array(3, num_points);
+
+  double point[3];
+  for (int i = 0; i < num_points; i++) {
+    vtk_points->GetPoint(i, point);
+    points_array(0,i) = point[0];
+    points_array(1,i) = point[1];
+    points_array(2,i) = point[2];
+  }
+
+  return points_array;
+}
+
+//-----------
+// num_elems
+//-----------
+//
+int VtkVtuData::num_elems() 
+{ 
+  return impl->num_elems; 
+}
+
+int VtkVtuData::np_elem() 
+{ 
+  return impl->np_elem; 
+}
+
+int VtkVtuData::num_points() 
+{ 
+  return impl->num_points; 
+}
+
+//-----------
+// read_file
+//-----------
+//
+void VtkVtuData::read_file(const std::string& file_name) 
+{ 
+  impl->read_file(file_name); 
+}
+
+//------------------
+// set_connectivity
+//------------------
+//
+void VtkVtuData::set_connectivity(const int nsd, const Array<int>& conn, const int pid)
+{
+  impl->set_connectivity(nsd, conn, pid);
+}
+
+//------------------
+// set_element_data
+//------------------
+//
+void VtkVtuData::set_element_data(const std::string& data_name, const Array<double>& data)
+{
+  auto data_array = vtkSmartPointer<vtkDoubleArray>::New();
+  impl->set_element_data(data_name, data, data_array); 
+  //impl->set_element_data(data_name, data);
+}
+
+void VtkVtuData::set_element_data(const std::string& data_name, const Array<int>& data)
+{
+  auto data_array = vtkSmartPointer<vtkIntArray>::New();
+  impl->set_element_data(data_name, data, data_array); 
+  //impl->set_element_data(data_name, data);
+}
+
+//----------------
+// set_point_data
+//----------------
+//
+void VtkVtuData::set_point_data(const std::string& data_name, const Array<double>& data)
+{
+  impl->set_point_data(data_name, data);
+}
+
+//------------
+// set_points
+//------------
+//
+void VtkVtuData::set_points(const Array<double>& points)
+{
+  impl->set_points(points);
+}
+
+void VtkVtuData::write()
+//void VtkVtuData::write(const std::string& file_name)
+{
+  impl->write(file_name);
+}
