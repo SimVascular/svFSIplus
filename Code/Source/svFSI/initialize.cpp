@@ -303,6 +303,7 @@ void initialize(Simulation* simulation, Vector<double>& timeP)
   int nsd = com_mod.nsd;
   #include "set_equation_dof.h"
 
+  #define debug_initialize
   #ifdef debug_initialize
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
@@ -313,27 +314,41 @@ void initialize(Simulation* simulation, Vector<double>& timeP)
     std::system(mkdir_arg.c_str());
   }
 
+  #ifdef debug_initialize
+  dmsg << "Set time " << std::endl;
+  #endif
+  dmsg << "com_mod.timeP[0]: " << com_mod.timeP[0] << std::endl;
   com_mod.timeP[0] = timeP[0];
   com_mod.timeP[1] = timeP[1];
   com_mod.timeP[2] = timeP[2];
 
   // These are global variables that are set later in this function.
+  #ifdef debug_initialize
+  dmsg << "Get globals " << std::endl;
+  #endif
   auto& tDof = com_mod.tDof;
   auto& dFlag = com_mod.dFlag;
   auto& nFacesLS = com_mod.nFacesLS;
   auto& recLn = com_mod.recLn;
+  dmsg << "tDof: " << tDof << std::endl;
 
   tDof = 0;
   dFlag = false;
 
   // Set faces for linear solver
   //
+  #ifdef debug_initialize
+  dmsg << "Set faces for linear solver " << std::endl;
+  #endif
   nFacesLS = 0;
   for (auto& eq : com_mod.eq) {
     nFacesLS += eq.nBc;
   }
 
   // Remove LS pointer for faces with weakly applied Dir. BC
+  #ifdef debug_initialize
+  dmsg << "Remove LS pointer for faces" << std::endl;
+  #endif
   for (int iEq = 0; iEq < com_mod.nEq; iEq++) {
     auto& eq = com_mod.eq[iEq];
     for (int i = 0; i < eq.nBc; i++) {
