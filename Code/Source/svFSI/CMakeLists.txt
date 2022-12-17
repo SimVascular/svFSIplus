@@ -4,6 +4,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 include_directories(${SV_SOURCE_DIR}/ThirdParty/parmetis_svfsi/simvascular_parmetis_svfsi/ParMETISLib)
 include_directories(${SV_SOURCE_DIR}/ThirdParty/tetgen/simvascular_tetgen)
+include_directories(${SV_SOURCE_DIR}/ThirdParty/tinyxml/simvascular_tinyxml)
 include_directories(${MPI_C_INCLUDE_PATH})
 
 # Find Trilinos package if requested
@@ -140,8 +141,6 @@ set(CSRCS
   Timer.h
 
   SPLIT.c
-
-  tinyxml2.h tinyxml2.cpp
 )
 
 if(WITH_TRILINOS)
@@ -161,6 +160,9 @@ simvascular_add_executable(${SV_SVFSI_EXE}
   INSTALL_COMP CoreExecutables
   INSTALL_DESTINATION ${SV_INSTALL_RUNTIME_DIR})
 
+message("##### TINY  ${TINYXML_LIBRARY_NAME}")
+message("##### TET ${TETGEN_LIBRARY_NAME}")
+
 target_link_libraries(${SV_SVFSI_EXE}
   ${GLOBAL_LIBRARIES}
   ${INTELRUNTIME_LIBRARIES}
@@ -170,6 +172,7 @@ target_link_libraries(${SV_SVFSI_EXE}
   ${METIS_SVFSI_LIBRARY_NAME}
   ${PARMETIS_SVFSI_LIBRARY_NAME}
   ${TETGEN_LIBRARY_NAME}
+  ${TINYXML_LIBRARY_NAME}
   ${SV_LIB_SVFSILS_NAME}${SV_MPI_NAME_EXT}
   )
 
