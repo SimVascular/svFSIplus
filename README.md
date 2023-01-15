@@ -54,10 +54,23 @@ svFSIplus is essentailly a direct line-by-line translation of the [svFSI](https:
 
 <h2 id="translate_modules"> Fortran Modules </h2>
 
-`Modules` were introduced in Fortran to modualize a large code by splitting it into separate files containing procedures and data specific to a certain application. A `module` is like a C++ class because it can encapsulate both data and procedures. The svFSI Fortran code uses `modules` primarily to store  and access global variables. The Fortan `USE` command provides access to all variables defined in a module.
+`Modules` were introduced in Fortran to modualize a large code by splitting it into separate files containing procedures and data specific to a certain application. A `module` is like a C++ class because it can encapsulate both data and procedures. The svFSI Fortran code uses `modules` primarily to store  and access global variables. The Fortan `USE` command provides access to all variables defined in a module. **There are no global variables in svFSIplus!**
 
-C++ classes are used to implement Fortran modules. Fortran variable names are retained to prevent (or maintain) confusion. There are **no global variables!**
+C++ classes are used to implement Fortran modules. Fortran variable names are retained to prevent (or maintain) confusion. The C++ module name uses the sane Fortan name in camel case. For example
 
+```
+   ================================================================================================
+                Fortran Module Name (file)        |                C++ Class Name (file)
+   ================================================================================================
+                CEPMOD (CEPMOD.f)                 |               CepMod (CepMod.h,cpp)
+   ------------------------------------------------------------------------------------------------
+                CHNLMOD (CHNL.f)                  |               ChnlMod (ChnlMod.h,cpp)
+   ------------------------------------------------------------------------------------------------
+                COMMOD (MOD.f)                    |               ComMod (ComMod.h,cpp)
+   ------------------------------------------------------------------------------------------------
+ 
+  ```         
+             
 
 
 
