@@ -54,9 +54,9 @@ svFSIplus is essentailly a direct line-by-line translation of the [svFSI](https:
 
 <h2 id="translate_modules"> Fortran Modules </h2>
 
-`Modules` were introduced in Fortran to modualize a large code by splitting it into separate files containing procedures and data specific to a certain application. A `module` is like a C++ class because it can encapsulate both data and procedures. The svFSI Fortran code uses `modules` primarily to store  and access global variables. The Fortan `USE` command provides access to all variables defined in a module. **There are no global variables in svFSIplus!**
+`Modules` were introduced in Fortran to modualize a large code by splitting it into separate files containing procedures and data specific to a certain application. A `module` is like a C++ class because it can encapsulate both data and procedures. The svFSI Fortran code uses `modules` primarily to store  and access global variables. 
 
-C++ classes are used to implement Fortran modules. Fortran variable names are retained to prevent (or maintain) confusion. The C++ module name uses the sane Fortan name in camel case. For example
+C++ classes are used to implement Fortran modules. Fortran variable names are retained to prevent (or maintain) confusion. The C++ module name uses the sane Fortan name in camel case. For example, several of the Fortan module names and the files that implements them are given below with the coressponding C++ class name and implementation files.
 
 ```
    ================================================================================================
@@ -71,8 +71,22 @@ C++ classes are used to implement Fortran modules. Fortran variable names are re
  
   ```         
              
+The Fortan `USE` command provides access to all the variables defined in a module. Almost all of the svFSI Fortran procedures have a `USE COMMOD` command that provides access to all of the global varaibles (about 90) defined in the `COMMOD` module. 
 
+**There are no global variables in svFSIplus!** 
 
+A C++ module object is passed to each procedure that needs access its varaibles. For example, in Fortran
+```
+      SUBROUTINE CONSTRUCT_uSOLID(lM, Ag, Yg, Dg)
+
+      USE COMMOD
+      USE ALLFUN
+```
+In C++ the `ComMod` object `com_mod` is explicity passed to the `construct_usolid` procedure.
+```
+void construct_usolid(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Array<double>& Ag,
+    const Array<double>& Yg, const Array<double>& Dg)
+```
 
 
 
