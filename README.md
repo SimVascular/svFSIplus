@@ -21,7 +21,7 @@ The following sections describe how the C++ implementation is organized and how 
 
 <h1 id="organization"> Code Organization </h1>
 
-svFSIplus is essentailly a direct line-by-line translation of the [svFSI](https://github.com/SimVascular/svFSI) Fortran code. The C++ implementation attempts to replicate the data structures and flow of control of the Fortran implementation and maintains its organization.
+The C++ implementation attempts to replicate the data structures and flow of control of the Fortran implementation and to maintains its organization.
 
 Most of the Fortran code is replicated in C++ using the same file and subroutine names converted to lower case with underscores added to improve readability. For example
 ```
@@ -38,23 +38,32 @@ Most of the Fortran code is replicated in C++ using the same file and subroutine
    ------------------------------------------------------------------------------------------------
 ```
 
-All Fortan subroutines located in a particular file will typically have a C++ implementation in a similarly named file. 
+All Fortan subroutines located in a particular file will typically have a C++ implementation in a similarly named file. This was done to maintain a simple mapping between the locations of the C++ and Fortran code.
 
 C++ functions are defined within a `namespace` defined for each Fortran file. For example, the functioins in  `load_msh.cpp` are defined within the `load_msh` `namespace`. Some `namespaces` are named with a `_ns` suffix to prevent conflicts with function names (e.g. `read_files_ns`).
 
 
 <h1 id="translate"> Translating Fortran into C++ </h1>
 
-This section provides some details about how the svFSI Fortran code was translated C++ code. This will be helpful to understand how to convert any Fortran code developed in the Fortan svFSI code to the svFSIplus framework. 
-
-Although the svFSI Fortran version was implemented using Fortran90 it was written using old-style coding practices
-- Lines start in column 7 
-- Upper case names for Fortran constructs (DO, IF, THEN, etc.)
-- Small varaible names 
-- Global variables all over the place
-
+This section provides some details about how the svFSI Fortran code was translated into C++ code. This will be helpful to understand how to convert any Fortran code developed in the Fortan svFSI code to the svFSIplus framework. 
 
 <h2 id="translate_vars"> Variable Names </h2>
+
+svFSIplus is essentailly a direct line-by-line translation of the [svFSI](https://github.com/SimVascular/svFSI) Fortran code. The original Fortran variable names are typically small, contain no underscores for readability and are often ambiguous. However, the **same varaible names** are used in both the C++ and Fortran versions in order to maintain a clear correspondence between the variables used in the two codes. 
+
+
+<h2 id="translate_modules"> Fortran Modules </h2>
+
+`Modules` were introduced in Fortran to modualize a large code by splitting it into separate files containing procedures and data specific to a certain application. A `module` is like a C++ class because it can encapsulate both data and procedures. The svFSI Fortran code uses `modules` primarily to store  and access global variables. The Fortan `USE` command provides access to all variables defined in a module.
+
+C++ classes are used to implement Fortran modules. Fortran variable names are retained to prevent (or maintain) confusion. There are **no global variables!**
+
+
+
+
+
+
+
 
 
 
