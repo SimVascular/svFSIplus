@@ -54,7 +54,7 @@ svFSIplus is essentailly a direct line-by-line translation of the [svFSI](https:
 
 <h2 id="translate_modules"> Fortran Modules </h2>
 
-`Modules` were introduced in Fortran to modualize a large code by splitting it into separate files containing procedures and data specific to a certain application. A `module` is like a C++ class because it can encapsulate both data and procedures. The svFSI Fortran code uses `modules` primarily to store  and access global variables. 
+Modules were introduced in Fortran to modualize a large code by splitting it into separate files containing procedures and data specific to a certain application. A module is like a C++ class because it can encapsulate both data and procedures. The svFSI Fortran code uses modules primarily to store and access global variables. 
 
 C++ classes are used to implement Fortran modules. Fortran variable names are retained to prevent (or maintain) confusion. The C++ module name uses the sane Fortan name in camel case. For example, several of the Fortan module names and the files that implements them are given below with the coressponding C++ class name and implementation files.
 
