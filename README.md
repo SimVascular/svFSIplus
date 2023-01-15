@@ -71,18 +71,15 @@ C++ classes are used to implement Fortran modules. Fortran variable names are re
  
   ```         
              
-The Fortan `USE` command provides access to all the variables defined in a module. Almost all of the svFSI Fortran procedures have a `USE COMMOD` command that provides access to all of the global varaibles (about 90) defined in the `COMMOD` module. 
-
-**There are no global variables in svFSIplus!** 
-
-A C++ module object is passed to each procedure that needs access its varaibles. For example, in Fortran
+The Fortan `USE` command provides access to all the variables defined in a module. Almost all of the svFSI Fortran procedures have a `USE COMMOD` command that provides access to all of the global varaibles (about 90) defined in the `COMMOD` module. For example
 ```
       SUBROUTINE CONSTRUCT_uSOLID(lM, Ag, Yg, Dg)
 
       USE COMMOD
       USE ALLFUN
 ```
-In C++ the `ComMod` object `com_mod` is explicity passed to the `construct_usolid` procedure.
+
+**svFSIplus does not use any global variables.**  A C++ module object is passed to each procedure that needs access its varaibles. For example, in C++ the `ComMod` object `com_mod` is explicity passed to the `construct_usolid` procedure.
 ```
 void construct_usolid(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Array<double>& Ag,
     const Array<double>& Yg, const Array<double>& Dg)
