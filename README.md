@@ -198,7 +198,7 @@ Note that the `:` array operator used to copy a column of an array is part of th
 
 <h1 id="simulation_class"> Simulation Class </h1>
 
-The C++ `Simulation` class 
+The C++ [Simulation](https://github.com/ktbolt/svFSIplus/blob/main/Code/Source/svFSI/Simulation.h) class 
 
 
 
