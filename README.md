@@ -45,7 +45,7 @@ C++ functions are defined within a `namespace` defined for each Fortran file. Fo
 
 <h1 id="translate"> Translating Fortran into C++ </h1>
 
-This section provides some details about how the svFSI Fortran code was translated into C++ code. This will be helpful to understand how to convert any Fortran code developed in the Fortan svFSI code to the svFSIplus framework. 
+This section provides some details about how the svFSI Fortran code was translated into C++ code. This will help to convert any new Fortran code developed in the Fortan svFSI code not included in svFSIplus. 
 
 <h2 id="translate_vars"> Variable Names </h2>
 
