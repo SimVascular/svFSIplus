@@ -27,7 +27,7 @@ The following sections describe how the C++ implementation is organized and how 
 
 The C++ implementation attempts to replicate the data structures and flow of control of the Fortran implementation and to maintains its organization. 
 
-Most of the Fortran code is replicated in C++ using the same file and subroutine names converted to lower case with underscores added to improve readability. For example
+Most of the Fortran code is replicated in C++ using the same file and procedure names converted to lower case with underscores added to improve readability. For example
 ```
    ================================================================================================
                 Fortran                       |                      C++ 
@@ -42,20 +42,24 @@ Most of the Fortran code is replicated in C++ using the same file and subroutine
    ------------------------------------------------------------------------------------------------
 ```
 
-All Fortan subroutines located in a particular file will typically have a C++ implementation in a similarly named file. This was done to maintain a simple mapping between the locations of the C++ and Fortran code.
+All Fortan procedures located in a particular file will typically have a C++ implementation in a similarly named file. This was done to maintain a simple mapping between the locations of the C++ and Fortran code. Note that procedures are spread throughout the Fortan svFSI code with little or no use of the object orientation features providing by Fortran90. This organization is reproduced in the C++ implementation so there are essentailly no class methods used in the core simulation code.
 
-C++ functions are defined within a `namespace` defined for each Fortran file. For example, the functioins in  `load_msh.cpp` are defined within the `load_msh` `namespace`. Some `namespaces` are named with a `_ns` suffix to prevent conflicts with function names (e.g. `read_files_ns`).
+C++ functions are defined within a `namespace` defined for each Fortran file. For example, the functions in `load_msh.cpp` are defined within the `load_msh` `namespace`. Some `namespaces` are named with a `_ns` suffix to prevent conflicts with function names (e.g. `read_files_ns`). 
 
-All data is stored in the [Simulation](#simulation_class) class.
+All simulation data is stored in the [Simulation](#simulation_class) class.
 
 
 <h1 id="translate"> Translating Fortran into C++ </h1>
 
 This section provides some details about how the svFSI Fortran code was translated into C++ code. This will help to convert any new Fortran code developed in the Fortan svFSI code not included in svFSIplus. 
 
+
 <h2 id="translate_vars"> Variable Names </h2>
 
 svFSIplus is essentailly a direct line-by-line translation of the [svFSI](https://github.com/SimVascular/svFSI) Fortran code. The original Fortran variable names are typically small, contain no underscores for readability and are often ambiguous. However, the **same varaible names** are used in both the C++ and Fortran versions in order to maintain a clear correspondence between the variables used in the two codes. 
+
+
+
 
 
 <h2 id="translate_modules"> Fortran Modules </h2>
