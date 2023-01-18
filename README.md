@@ -3,9 +3,10 @@
 [Introduction](#introduction)<br>
 [Code Organization](#organization)<br>
 [Translating Fortran into C++](#translate)<br>
-[C++ Simulation Class](#simulation_class)<br>
-[C++ Vector Class](#vector_class)<br>
-
+[Simulation Class](#simulation_class)<br>
+[Vector Class](#vector_class)<br>
+[Array Class](#array_class)<br>
+[Array3 Class](#array3_class)<br>
 [C++ Programming](#cpp_programming)<br>
 
 <h1 id="introduction"> Introduction </h1>
@@ -24,7 +25,7 @@ The following sections describe how the C++ implementation is organized and how 
 
 <h1 id="organization"> Code Organization </h1>
 
-The C++ implementation attempts to replicate the data structures and flow of control of the Fortran implementation and to maintains its organization.
+The C++ implementation attempts to replicate the data structures and flow of control of the Fortran implementation and to maintains its organization. 
 
 Most of the Fortran code is replicated in C++ using the same file and subroutine names converted to lower case with underscores added to improve readability. For example
 ```
@@ -44,6 +45,8 @@ Most of the Fortran code is replicated in C++ using the same file and subroutine
 All Fortan subroutines located in a particular file will typically have a C++ implementation in a similarly named file. This was done to maintain a simple mapping between the locations of the C++ and Fortran code.
 
 C++ functions are defined within a `namespace` defined for each Fortran file. For example, the functioins in  `load_msh.cpp` are defined within the `load_msh` `namespace`. Some `namespaces` are named with a `_ns` suffix to prevent conflicts with function names (e.g. `read_files_ns`).
+
+All data is stored in the [Simulation](#simulation_class) class.
 
 
 <h1 id="translate"> Translating Fortran into C++ </h1>
@@ -97,10 +100,14 @@ Fortran dynamic arrays have been reproduced using custom [Vector](#vector_class)
 
 Note that the custom `Vector`, `Array` and `Array3` classes will most likey be replacesd by a more sophisticated implementation such as `Eigen`.
 
-<h1 id="simulation_class"> C++ Simulation Class </h1>
+<h1 id="simulation_class"> Simulation Class </h1>
 
 
-<h1 id="vector_class"> C++ Vector Class </h1>
+<h1 id="vector_class"> Vector Class </h1>
+
+<h1 id="array_class"> Array Class </h1>
+
+<h1 id="array3_class"> Array3 Class </h1>
 
 
 <h1 id="cpp_programming"> C++ Programming </h1>
