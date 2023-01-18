@@ -4,9 +4,7 @@
 [Code Organization](#organization)<br>
 [Translating Fortran into C++](#translate)<br>
 [Simulation Class](#simulation_class)<br>
-[Vector Class](#vector_class)<br>
-[Array Class](#array_class)<br>
-[Array3 Class](#array3_class)<br>
+[Array and Vector Classes](#array_vector_class)<br>
 [C++ Programming](#cpp_programming)<br>
 
 <h1 id="introduction"> Introduction </h1>
@@ -104,7 +102,7 @@ is replaced by the following section of C++ code
 
   ```
 
-In this example the Fortran `DO` loops are replaced by C++ `for` loops with the 0-based indexing used in C++. Array indexing is discussed in the [Fortran Dynamic Arrays](#translate_arrays) section below.
+In this example the Fortran `DO` loops are replaced by C++ `for` loops using C++ 0-based indexing. Array indexing is discussed in the [Fortran Dynamic Arrays](#translate_arrays) section below.
 
 
 <h2 id="translate_modules"> Fortran Modules </h2>
@@ -140,26 +138,31 @@ void construct_usolid(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const
     const Array<double>& Yg, const Array<double>& Dg)
 ```
 
+
 <h2 id="translate_arrays"> Fortran Dynamic Arrays </h2>
 
-Fortran dynamic arrays have been reproduced using custom [Vector](#vector_class), [Array[(array_class) and [Array](array3_class) C++ classes. 
+Fortran dynamic arrays have been reproduced using custom [Vector](#array_vector_class), [Array](array_vector_class) and [Array3](array_vector_class) C++ template classes. Note that these custom classes will most likey be replaced by a more sophisticated matrix package such as `Eigen`.
+
+Fortran dynamic arrays are declared using the `ALLOCATABLE` attribute. For example the `REAL, ALLOCATABLE :: A(:,:)` declares the two dimentional array of type `REAL named  `A`. The Fortran `ALLOCATE A(3,10)` statement then dynamically creates storage for `A` as a 3x10 array. The `DEALLOCATE A` statement is used to return the memory used by `A`. Allocatable arrays are automatically deallocated when going out of scope.
+
+C++ dynamic arrays are declated using the `Array<T>` template, where T is the array data type: double or int. The two dimentional array of type double named  `A` is declared and memory allocated using `Array<double> A(3,10);`. Memory is released when `A` goes out of scope or using `A.clear()`.
+   
+C++ multidimensional arrays are referenced using 0-based indedxing and are traversed in column-major order just like for Fortran. Array indexes use paranthesis `A(i,j)` not brackets `A[i][j]` to access array elements.
 
 
 
 
-Note that the custom `Vector`, `Array` and `Array3` classes will most likey be replacesd by a more sophisticated matrix package such as `Eigen`.
+
+
 
 
 <h1 id="simulation_class"> Simulation Class </h1>
 
 
-<h1 id="vector_class"> Vector Class </h1>
+
+<h1 id="array_vector_class"> Array and Vector Classes </h1>
 
 
-<h1 id="array_class"> Array Class </h1>
-
-
-<h1 id="array3_class"> Array3 Class </h1>
 
 
 <h1 id="cpp_programming"> C++ Programming </h1>
