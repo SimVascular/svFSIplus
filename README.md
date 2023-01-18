@@ -13,10 +13,11 @@ svFSIplus is a C++ implementation of the Fortran [svFSI](https://github.com/SimV
 
 The *Second Stage* of the solver development will be an entirely new implementation encapsilating portions of the *First Stage* code into C++ classes forming a clean and simple abstaction that can be enhanced by any developer.
 
-The C++ implementation differs from the Fortran implementation in three fundamental ways
+The C++ implementation differs from the Fortran implementation in four fundamental ways
 1) Custom C++ Array and Vector classes to reproduce Fortran dynamic arrays 
 2) XML format file replaces the plain-text input file to specify simulation parameters
-3) Direct calls to the VTK API replaces the custom code used to read/write VTK format files  
+3) Direct calls to the VTK API replaces the custom code used to read/write VTK format files
+4) Uses 0-based indexing into arrays
 
 The following sections describe how the C++ implementation is organized and how it replicates the data structures and flow of control of the Fortran implementation. Some important details of the C++ implementation will also be discussed.
 
@@ -196,6 +197,8 @@ Note that the `:` array operator used to copy a column of an array is part of th
 
 
 <h1 id="simulation_class"> Simulation Class </h1>
+
+The C++ `Simulation` class 
 
 
 
