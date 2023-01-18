@@ -58,15 +58,60 @@ This section provides some details about how the svFSI Fortran code was translat
 
 svFSIplus is essentailly a direct line-by-line translation of the [svFSI](https://github.com/SimVascular/svFSI) Fortran code. The original Fortran variable names are typically small, contain no underscores for readability and are often ambiguous. However, the **same varaible names** are used in both the C++ and Fortran versions in order to maintain a clear correspondence between the variables used in the two codes. 
 
+For example the following section of Fortran code
+```
+      p = 0._RKIND
+      DO a=1, eNoNq
+         p = p + Nq(a)*yl(4,a)
+      END DO
 
+      uh = 0._RKIND
+      IF (mvMsh) THEN
+         DO a=1, eNoNw
+            uh(1) = uh(1) + Nw(a)*yl(5,a)
+            uh(2) = uh(2) + Nw(a)*yl(6,a)
+            uh(3) = uh(3) + Nw(a)*yl(7,a)
+         END DO
+      END IF
+      un = (u(1)-uh(1))*nV(1) + (u(2)-uh(2))*nV(2) + (u(3)-uh(3))*nV(3)
+      un = (ABS(un) - un) * 0.5_RKIND
 
+      u(:) = u(:) - ub(:)
+      ubn  = u(1)*nV(1) + u(2)*nV(2) + u(3)*nV(3)
+```
+is replaced by the following section of C++ code
+```
+  double p = 0.0;
+  for (int a = 0; a < eNoNq; a++) {
+    p = p + Nq(a)*yl(3,a);
+  }
+
+  Vector<double> uh(3);
+
+  if (com_mod.mvMsh) {
+    for (int a = 0; a < eNoNw; a++) {
+      uh(0) = uh(0) + Nw(a)*yl(4,a);
+      uh(1) = uh(1) + Nw(a)*yl(5,a);
+      uh(2) = uh(2) + Nw(a)*yl(6,a);
+    }
+  }
+
+  double un = (u(0)-uh(0))*nV(0) + (u(1)-uh(1))*nV(1) + (u(2)-uh(2))*nV(2);
+  un = (fabs(un) - un) * 0.50;
+
+  u = u - ub;
+  double ubn  = u(0)*nV(0) + u(1)*nV(1) + u(2)*nV(2);
+
+  ```
+
+In this example the Fortran `DO` loops are replaced by C++ `for` loops with the 0-based indexing used in C++. Array indexing is discussed in the [Fortran Dynamic Arrays](#translate_arrays) section below.
 
 
 <h2 id="translate_modules"> Fortran Modules </h2>
 
 Modules were introduced in Fortran to modualize a large code by splitting it into separate files containing procedures and data specific to a certain application. A module is like a C++ class because it can encapsulate both data and procedures. The svFSI Fortran code uses modules primarily to store and access global variables. 
 
-C++ classes are used to implement Fortran modules. Fortran variable names are retained to prevent (or maintain) confusion. The C++ module name uses the same Fortan name in camel case. For example, several of the Fortan module names and the files that implements them are given below with the coressponding C++ class name and implementation files.
+C++ classes are used to implement Fortran modules. Fortran variable names are retained to prevent (or maintain) confusion. The C++ module name uses the same Fortan name converted to camel case. For example, several of the Fortan module names and the files that implements them are given below with the coressponding C++ class name and implementation files.
 
 ```
    ================================================================================================
@@ -89,7 +134,7 @@ The Fortan `USE` command provides access to all the variables defined in a modul
       USE ALLFUN
 ```
 
-**svFSIplus does not use any global variables.**  A C++ module object is passed to each procedure that needs to access its varaibles. For example, in C++ the `ComMod` object `com_mod` is explicity passed to the `construct_usolid` procedure. All C++ modules are stored in the [Simulation](#simulation_class) class.
+**svFSIplus does not use any global variables.**  A C++ module object is passed to each procedure that needs to access its varaibles. For example, in C++ the `ComMod` object `com_mod` is explicitly passed to the `construct_usolid` function. All C++ modules are stored in the [Simulation](#simulation_class) class.
 ```
 void construct_usolid(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Array<double>& Ag,
     const Array<double>& Yg, const Array<double>& Dg)
@@ -97,19 +142,22 @@ void construct_usolid(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const
 
 <h2 id="translate_arrays"> Fortran Dynamic Arrays </h2>
 
-Fortran dynamic arrays have been reproduced using custom [Vector](#vector_class), `Array` and `Array3` C++ classes. 
+Fortran dynamic arrays have been reproduced using custom [Vector](#vector_class), [Array[(array_class) and [Array](array3_class) C++ classes. 
 
 
 
 
-Note that the custom `Vector`, `Array` and `Array3` classes will most likey be replacesd by a more sophisticated implementation such as `Eigen`.
+Note that the custom `Vector`, `Array` and `Array3` classes will most likey be replacesd by a more sophisticated matrix package such as `Eigen`.
+
 
 <h1 id="simulation_class"> Simulation Class </h1>
 
 
 <h1 id="vector_class"> Vector Class </h1>
 
+
 <h1 id="array_class"> Array Class </h1>
+
 
 <h1 id="array3_class"> Array3 Class </h1>
 
