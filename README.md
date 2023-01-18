@@ -1,4 +1,4 @@
-# svFSIplus 
+# svFSIplus Implementation and Usage
 ## Table of Contents
 [Introduction](#introduction)<br>
 [Code Organization](#organization)<br>
@@ -149,6 +149,50 @@ C++ dynamic arrays are declared using the `Array<T>` template, where T is the ar
    
 C++ multidimensional arrays are referenced using 0-based indexing and are traversed in column-major order like Fortran. Array indexes use paranthesis `A(i,j)` not brackets `A[i][j]` to access array elements.
 
+For example the following sections of Fortran code
+```
+      INTEGER(KIND=IKIND), ALLOCATABLE :: ptr(:)
+
+      REAL(KIND=RKIND), ALLOCATABLE :: xl(:,:), al(:,:), yl(:,:),
+     2   bfl(:,:), lR(:,:), lK(:,:,:)
+
+      ALLOCATE(ptr(eNoN), xl(nsd,eNoN), al(tDof,eNoN), yl(tDof,eNoN),
+     2   bfl(nsd,eNoN), lR(dof,eNoN), lK(dof*dof,eNoN,eNoN))
+
+      ! Create local copies
+      DO a=1, eNoN
+         Ac = lM%IEN(a,e)
+         ptr(a)   = Ac
+         xl(:,a)  = x(:,Ac)
+         al(:,a)  = Ag(:,Ac)
+         yl(:,a)  = Yg(:,Ac)
+         bfl(:,a) = Bf(:,Ac)
+      END DO
+```
+is replaced by the following section of C++ code
+```
+  Vector<int> ptr(eNoN);
+  Array<double> xl(nsd,eNoN), al(tDof,eNoN), yl(tDof,eNoN), bfl(nsd,eNoN), lR(dof,eNoN);
+  Array3<double> lK(dof*dof,eNoN,eNoN);
+  
+  // Create local copies
+  for (int a = 0; a < eNoN; a++) {
+    int Ac = lM.IEN(a,e);
+    ptr(a) = Ac;
+
+    for (int i = 0; i < nsd; i++) {
+      xl(i,a) = x(i,Ac);               
+      bfl(i,a) = Bf(i,Ac);
+    }
+      
+    for (int i = 0; i < tDof; i++) {
+      al(i,a) = Ag(i,Ac);
+      yl(i,a) = Yg(i,Ac);
+    }
+  }
+```
+
+Note that the `:` array operator used to copy a column of an array is part of the Fortran language. It was not always possible to efficiently (i.e. memory-to-memory copy) and cleanly replace Fortran array operators by C++ Array template methods. In the above aexample the Fortran `:` operator was replaced in C++ by an explicit `for` loop. 
 
 
 <h1 id="simulation_class"> Simulation Class </h1>
@@ -157,7 +201,7 @@ C++ multidimensional arrays are referenced using 0-based indexing and are traver
 
 <h1 id="array_vector_class"> Array and Vector Classes </h1>
 
-
+The `:` operator could also be replaced by `xl.set_col(a, x.rcol(Ac))` 
 
 
 <h1 id="cpp_programming"> C++ Programming </h1>
