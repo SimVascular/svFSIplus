@@ -3,7 +3,10 @@
 [Introduction](#introduction)<br>
 [Code Organization](#organization)<br>
 [Translating Fortran into C++](#translate)<br>
-[Implementation Details](#details)<br>
+[C++ Simulation Class](#simulation_class)<br>
+[C++ Vector Class](#vector_class)<br>
+
+[C++ Programming](#cpp_programming)<br>
 
 <h1 id="introduction"> Introduction </h1>
 
@@ -56,7 +59,7 @@ svFSIplus is essentailly a direct line-by-line translation of the [svFSI](https:
 
 Modules were introduced in Fortran to modualize a large code by splitting it into separate files containing procedures and data specific to a certain application. A module is like a C++ class because it can encapsulate both data and procedures. The svFSI Fortran code uses modules primarily to store and access global variables. 
 
-C++ classes are used to implement Fortran modules. Fortran variable names are retained to prevent (or maintain) confusion. The C++ module name uses the sane Fortan name in camel case. For example, several of the Fortan module names and the files that implements them are given below with the coressponding C++ class name and implementation files.
+C++ classes are used to implement Fortran modules. Fortran variable names are retained to prevent (or maintain) confusion. The C++ module name uses the same Fortan name in camel case. For example, several of the Fortan module names and the files that implements them are given below with the coressponding C++ class name and implementation files.
 
 ```
    ================================================================================================
@@ -79,20 +82,28 @@ The Fortan `USE` command provides access to all the variables defined in a modul
       USE ALLFUN
 ```
 
-**svFSIplus does not use any global variables.**  A C++ module object is passed to each procedure that needs access its varaibles. For example, in C++ the `ComMod` object `com_mod` is explicity passed to the `construct_usolid` procedure.
+**svFSIplus does not use any global variables.**  A C++ module object is passed to each procedure that needs to access its varaibles. For example, in C++ the `ComMod` object `com_mod` is explicity passed to the `construct_usolid` procedure. All C++ modules are stored in the [Simulation](#simulation_class) class.
 ```
 void construct_usolid(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Array<double>& Ag,
     const Array<double>& Yg, const Array<double>& Dg)
 ```
 
+<h2 id="translate_arrays"> Fortran Dynamic Arrays </h2>
+
+Fortran dynamic arrays have been reproduced using custom [Vector](#vector_class), `Array` and `Array3` C++ classes. 
 
 
 
 
+Note that the custom `Vector`, `Array` and `Array3` classes will most likey be replacesd by a more sophisticated implementation such as `Eigen`.
+
+<h1 id="simulation_class"> C++ Simulation Class </h1>
 
 
+<h1 id="vector_class"> C++ Vector Class </h1>
 
-<h1 id="details"> Implementation Details </h1>
+
+<h1 id="cpp_programming"> C++ Programming </h1>
 
 
 
