@@ -143,16 +143,11 @@ void construct_usolid(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const
 
 Fortran dynamic arrays have been reproduced using custom [Vector](#array_vector_class), [Array](array_vector_class) and [Array3](array_vector_class) C++ template classes. Note that these custom classes will most likey be replaced by a more sophisticated matrix package such as `Eigen`.
 
-Fortran dynamic arrays are declared using the `ALLOCATABLE` attribute. For example the `REAL, ALLOCATABLE :: A(:,:)` declares the two dimentional array of type `REAL named  `A`. The Fortran `ALLOCATE A(3,10)` statement then dynamically creates storage for `A` as a 3x10 array. The `DEALLOCATE A` statement is used to return the memory used by `A`. Allocatable arrays are automatically deallocated when going out of scope.
+Fortran dynamic arrays are declared using the `ALLOCATABLE` attribute. For example the `REAL, ALLOCATABLE :: A(:,:)` statement declares the two dimentional array of type `REAL` named  `A`. The Fortran `ALLOCATE A(3,10)` statement then dynamically creates storage for `A` as a 3x10 array. The `DEALLOCATE A` statement is used to return the memory used by `A`. Allocatable arrays are automatically deallocated when going out of scope.
 
-C++ dynamic arrays are declated using the `Array<T>` template, where T is the array data type: double or int. The two dimentional array of type double named  `A` is declared and memory allocated using `Array<double> A(3,10);`. Memory is released when `A` goes out of scope or using `A.clear()`.
+C++ dynamic arrays are declared using the `Array<T>` template, where T is the array data type: double or int. The two dimentional array of type double named  `A` is declared and memory allocated using `Array<double> A(3,10);`. Memory is released when `A` goes out of scope or using `A.clear()`.
    
-C++ multidimensional arrays are referenced using 0-based indedxing and are traversed in column-major order just like for Fortran. Array indexes use paranthesis `A(i,j)` not brackets `A[i][j]` to access array elements.
-
-
-
-
-
+C++ multidimensional arrays are referenced using 0-based indexing and are traversed in column-major order like Fortran. Array indexes use paranthesis `A(i,j)` not brackets `A[i][j]` to access array elements.
 
 
 
