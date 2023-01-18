@@ -41,7 +41,9 @@ Most of the Fortran code is replicated in C++ using the same file and procedure 
    ------------------------------------------------------------------------------------------------
 ```
 
-All Fortan procedures located in a particular file will typically have a C++ implementation in a similarly named file. This was done to maintain a simple mapping between the locations of the C++ and Fortran code. Note that procedures are spread throughout the Fortan svFSI code with little or no use of the object orientation features providing by Fortran90. This organization is reproduced in the C++ implementation so there are essentailly no class methods used in the core simulation code.
+All Fortan procedures located in a particular file will typically have a C++ implementation in a similarly named file. This was done to maintain a simple mapping between the locations of the C++ and Fortran code. 
+
+The Fortan svFSI code is implemented using a procedural programming paradigm where data is passed to procedures to carry out a series of computational steps. It makes little or no use of the object orientation features providing by Fortran90. This organization is reproduced in the C++ implementation so there are essentailly no class methods used in the core simulation code.
 
 C++ functions are defined within a `namespace` defined for each Fortran file. For example, the functions in `load_msh.cpp` are defined within the `load_msh` `namespace`. Some `namespaces` are named with a `_ns` suffix to prevent conflicts with function names (e.g. `read_files_ns`). 
 
@@ -198,7 +200,9 @@ Note that the `:` array operator used to copy a column of an array is part of th
 
 <h1 id="simulation_class"> Simulation Class </h1>
 
-The C++ [Simulation](https://github.com/ktbolt/svFSIplus/blob/main/Code/Source/svFSI/Simulation.h) class 
+The C++ [Simulation](https://github.com/ktbolt/svFSIplus/blob/main/Code/Source/svFSI/Simulation.h) class encapsilates all of the objects (Fortran modules) used to store simulation data. It also contains a `Parameters` object used to store simulation parameters read in from an XML file.
+
+The `Simulation` class does not contain any methods used in the core simulation code. Like the Fortan svFSI code it is used to pass data to procedures to carry out a series of computational steps.
 
 
 
