@@ -245,17 +245,19 @@ A.resize(2,2);
 
 Object memory is initialized to 0.
 
-An object's memory is freed using its `clear()` method.
+An object's memory is freed using its `clear()` method
 ```
 Array<double> A(2,2)
 
 A.clear();
 ```
+or when it goes out of scope.
+
 
 <!--- ==================== Indexing =============================== --->
 <h2 id="array_vector_class"> Indexing and Memory Layout </h2>
 
-C++ multidimensional arrays are referenced using 0-based indexing and are traversed in column-major order like Fortran. Array indexes use paranthesis `A(i,j)` not brackets `A[i][j]` to access array elements. Exmaples
+C++ multidimensional arrays are referenced using 0-based indexing and are traversed in column-major order like Fortran. Array indexes use paranthesis `A(i,j)` not brackets `A[i][j]` to access array elements.
 ```
   Vector<double> u(2);
   Array<double> ux(2,2);
@@ -283,13 +285,34 @@ C++ multidimensional arrays are referenced using 0-based indexing and are traver
   }
 ```
 
-Indexes can be checked by defining the `_check_enabled` directive within each templates include file. This will substantially slow down a simulation.
+Indexes can be checked by defining the `_check_enabled` directive within each template include file. An index out of bounds will throw an `std::runtime_error` exception. Note that index checking will substantially slow down a simulation.
 
 
 <!--- ==================== Operators =============================== --->
 <h2 id="array_vector_class"> Operators </h2>
 
+Class templates support most mathematical operators: =,+,-,*,/,+=
 
+Vector: abs, cross, dot
+
+Example
+```
+  Array<double> Wr(dof,nNo), Wc(dof,nNo);
+  
+  Wr = 1.0;
+  
+  Wr = Wr - 0.5;
+  Wr = Wr / abs(Wr);
+  Wr = (Wr + abs(Wr)) * 0.5;
+  
+  Wc = 1.0 / sqrt(Wc);
+
+  W1 = W1 * Wr;
+  W2 = W2 * Wc;
+
+```
+
+It is more effienct to use the `+=` operator `A += B` than `A = A + B` which performs a copy.
 
 
 
