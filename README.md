@@ -21,6 +21,7 @@ The C++ implementation differs from the Fortran implementation in four fundament
 
 The following sections describe how the C++ implementation is organized and how it replicates the data structures and flow of control of the Fortran implementation. Some important details of the C++ implementation will also be discussed.
 
+<!--- ===================================================== Code Organization ================================================ --->
 
 <h1 id="organization"> Code Organization </h1>
 
@@ -49,6 +50,8 @@ C++ functions are defined within a `namespace` defined for each Fortran file. Fo
 
 All simulation data is stored in the [Simulation](#simulation_class) class.
 
+
+<!--- ===================================================== Translating Fortran into C++ ================================================ --->
 
 <h1 id="translate"> Translating Fortran into C++ </h1>
 
@@ -144,7 +147,7 @@ void construct_usolid(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const
 
 <h2 id="translate_arrays"> Fortran Dynamic Arrays </h2>
 
-Fortran dynamic arrays have been reproduced using custom [Vector](#array_vector_class), [Array](array_vector_class) and [Array3](array_vector_class) C++ template classes. Note that these custom classes will most likey be replaced by a more sophisticated matrix package such as `Eigen`.
+Fortran dynamic arrays have been reproduced using custom [Vector](#array_vector_class), [Array](array_vector_class) and [Array3](array_vector_class) C++  class templates. Note that these custom classes will most likey be replaced by a more sophisticated matrix package such as `Eigen`.
 
 Fortran dynamic arrays are declared using the `ALLOCATABLE` attribute. For example the `REAL, ALLOCATABLE :: A(:,:)` statement declares the two dimentional array of type `REAL` named  `A`. The Fortran `ALLOCATE A(3,10)` statement then dynamically creates storage for `A` as a 3x10 array. The `DEALLOCATE A` statement is used to return the memory used by `A`. Allocatable arrays are automatically deallocated when going out of scope.
 
@@ -198,6 +201,9 @@ is replaced by the following section of C++ code
 Note that the `:` array operator used to copy a column of an array is part of the Fortran language. It was not always possible to efficiently (i.e. memory-to-memory copy) and cleanly replace Fortran array operators by C++ Array template methods. In the above aexample the Fortran `:` operator was replaced in C++ by an explicit `for` loop. 
 
 
+<!--- ===================================================== Simulation Class ================================================ --->
+
+
 <h1 id="simulation_class"> Simulation Class </h1>
 
 The C++ [Simulation](https://github.com/ktbolt/svFSIplus/blob/main/Code/Source/svFSI/Simulation.h) class encapsilates all of the objects (Fortran modules) used to store simulation data. It also contains a `Parameters` object used to store simulation parameters read in from an XML file.
@@ -205,11 +211,29 @@ The C++ [Simulation](https://github.com/ktbolt/svFSIplus/blob/main/Code/Source/s
 The `Simulation` class does not contain any methods used in the core simulation code. Like the Fortan svFSI code it is used to pass data to procedures to carry out a series of computational steps.
 
 
+<!--- ===================================================== Array and Vector Class Templates ================================================ --->
 
-<h1 id="array_vector_class"> Array and Vector Classes </h1>
+<h1 id="array_vector_class"> Array and Vector Class Templates </h1>
+
+Fortran dynamic arrays have been reproduced using custom `Vector`, `Array` and `Array3` C++ class templates. Note that these custom class templates will most likey be replaced by a more sophisticated matrix package such as `Eigen`.
+
+The class templates are able to reproduce much of the functionality of Fortran arrays and array intrinsic functions (e.g. sum). The challenge is to  create class methods that are as efficient as the Fortan array operators. Because the operators are part of Fortran language the compiler can
+optimize array operators as a memory-to-memory copy.
+```
+A(:,n) = B(:,n)
+A = B
+```
+
+
+C++ multidimensional arrays are referenced using 0-based indexing and are traversed in column-major order like Fortran. Array indexes use paranthesis `A(i,j)` not brackets `A[i][j]` to access array elements.
+
+
+<h2 id="vector_class">  Vector Template Class </h1>
 
 The `:` operator could also be replaced by `xl.set_col(a, x.rcol(Ac))` 
 
+
+<!--- ===================================================== C++ Programming ================================================ --->
 
 <h1 id="cpp_programming"> C++ Programming </h1>
 
