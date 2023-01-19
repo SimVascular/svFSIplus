@@ -481,7 +481,7 @@ class MeshParameters : public ParameterLists
     Parameter<bool> set_mesh_as_fibers;
     Parameter<bool> set_mesh_as_shell;
 };
-```˜
+```
 
 The `Parameter` template class stores a parameter's name, value and other attributes (e.g. if it has been set). These values are set in each section objects constructor.
 ```
