@@ -8,6 +8,10 @@
 [Solver Parameter Input XML File ](#xml_file)<br>
 [Implementation Details](#cpp_programming)<br>
 
+<!--- ====================================================================================================================== --->
+<!--- ===================================================== Introduction  ================================================== --->
+<!--- ====================================================================================================================== --->
+
 <h1 id="introduction"> Introduction </h1>
 
 svFSIplus is a C++ implementation of the Fortran [svFSI](https://github.com/SimVascular/svFSI) multi-physics finite element solver designed for computational modeling of the cardiovascular system. It represents the <i>First Stage</i> in the development of a C++ multi-physics finite element solver and is essentailly a direct line-by-line translation of the [svFSI](https://github.com/SimVascular/svFSI) Fortran code. This was done to maintain a simple mapping between the code of the two versions and to faciliate debugging by comparing intermediate data (i.e. element stiffness matrices) and simulation results.
@@ -22,7 +26,9 @@ The C++ implementation differs from the Fortran implementation in four fundament
 
 The following sections describe how the C++ implementation is organized and how it replicates the data structures and flow of control of the Fortran implementation. Some important details of the C++ implementation will also be discussed.
 
-<!--- ===================================================== Code Organization ================================================ --->
+<!--- ====================================================================================================================== --->
+<!--- ===================================================== Code Organization  ============================================= --->
+<!--- ====================================================================================================================== --->
 
 <h1 id="organization"> Code Organization </h1>
 
@@ -51,14 +57,18 @@ C++ functions are defined within a `namespace` defined for each Fortran file. Fo
 
 All simulation data is stored in the [Simulation](#simulation_class) class.
 
-
-<!--- ===================================================== Translating Fortran into C++ ================================================ --->
+<!--- ====================================================================================================================== --->
+<!--- =============================================== Translating Fortran into C++ ========================================= --->
+<!--- ====================================================================================================================== --->
 
 <h1 id="translate"> Translating Fortran into C++ </h1>
 
 This section provides some details about how the svFSI Fortran code was translated into C++ code. This will help to convert any new Fortran code developed in the Fortan svFSI code not included in svFSIplus. 
 
-
+<!-------------------------------------!> 
+<!----------  Variable Names ----------!>  
+<!-------------------------------------!>  
+    
 <h2 id="translate_vars"> Variable Names </h2>
 
 svFSIplus is essentailly a direct line-by-line translation of the [svFSI](https://github.com/SimVascular/svFSI) Fortran code. The original Fortran variable names are typically small, contain no underscores for readability and are often ambiguous. However, the **same varaible names** are used in both the C++ and Fortran versions in order to maintain a clear correspondence between the variables used in the two versions. 
@@ -202,8 +212,9 @@ is replaced by the following section of C++ code
 Note that the `:` array operator used to copy a column of an array is part of the Fortran language. It was not always possible to efficiently (i.e. memory-to-memory copy) and cleanly replace Fortran array operators by C++ Array template methods. In the above aexample the Fortran `:` operator was replaced in C++ by an explicit `for` loop. 
 
 
-<!--- ===================================================== Simulation Class ================================================ --->
-
+<!--- ====================================================================================================================== --->
+<!--- =============================================== Simulation Class  ==================================================== --->
+<!--- ====================================================================================================================== --->
 
 <h1 id="simulation_class"> Simulation Class </h1>
 
@@ -211,8 +222,9 @@ The C++ [Simulation](https://github.com/SimVascular/svFSIplus/blob/main/Code/Sou
 
 The `Simulation` class does not contain any methods used in the core simulation code. Like the Fortan svFSI code it is used to pass data to procedures to carry out a series of computational steps.
 
-
-<!--- ===================================================== Array and Vector Class Templates ================================================ --->
+<!--- ====================================================================================================================== --->
+<!--- ========================================== Array and Vector Class Templates  ========================================= --->
+<!--- ====================================================================================================================== --->
 
 <h1 id="array_vector_class"> Array and Vector Class Templates </h1>
 
@@ -346,7 +358,11 @@ fluid_3d_m(com_mod, vmsStab, fs[0].eNoN, fs[1].eNoN, w, ksix, N0, N1, Nwx, Nqx, 
 
 Use the `rcol` method if the column data is going to be modified, it might also help to speed up a procedure that is called a lot (e.g. in material models).
 
+
+<!--- ============================================================================ --->
 <!--- ==================== Getting an Array3 Slice =============================== --->
+<!--- ============================================================================ --->
+
 <h2 id="array_vector_class"> Getting an Array3 Slice </h2>
 
 A lot of Fortran code in svFSI operates on a slice of a 3D array. For example
@@ -363,13 +379,20 @@ Array<T> rslice(const int slice) const - Return an Array with data pointing into
 
 Use the `rslice` method if the column data is going to be modified.
 
-
+<!--- ====================================================================================================================== --->
 <!--- ============================================== Solver Parameter Input XML File  ====================================== --->
+<!--- ====================================================================================================================== --->
 
 <h1 id="xml_file"> Solver Parameter Input XML File  </h1>
 
+The XML file organization and parameter names replicate the old input text file except that parameter names have spaces replaced by underscores.
 
-<!--- ===================================================== Implementation Details ================================================ --->
+The Parameters class is used to read and store solver parameters from an XML file. 
+
+
+<!--- ====================================================================================================================== --->
+<!--- ============================================= Implementation Details  ================================================ --->
+<!--- ====================================================================================================================== --->
 
 <h1 id="cpp_programming"> Implementation Details </h1>
 
