@@ -312,13 +312,55 @@ Example
 
 ```
 
+The Array `*` operator performs an element-by-element multiplicaton, not a matrix multiplicaton. This was done to replicate Fortran.
+
 It is more effienct to use the `+=` operator `A += B` than `A = A + B` which performs a copy.
 
 
+<!--- ==================== Getting an Array Column =============================== --->
+<h2 id="array_vector_class"> Getting an Array Column </h2>
+
+A lot of Fortran code in svFSI operates on a column of a 2D array. For example
+```
+CALL FLUID3D_M(vmsStab, fs(1)%eNoN, fs(2)%eNoN, w, ksix,
+     2            fs(1)%N(:,g), fs(2)%N(:,g), Nwx, Nqx, Nwxx, al, yl,
+     3            bfl, lR, lK)
+```
+which gets a column `g` of the `fs(2)%N` array.
 
 
-The `:` operator could also be replaced by `xl.set_col(a, x.rcol(Ac))` 
+The operation of getting a column of data from an Array object is supported using two different methods
+```
+Vector<T> col(const int col, const std::array<int,2>& range={-1,-1}) const - Returns a new Vector<T> object containing a copy of the column data.
 
+Vector<T> rcol(const int col) const - Returns a new Vector<T> object containing an address pointing to the column data. Modifying the Vector<T> object's data modifies the orginal Array data.
+```
+
+Use the `col` method if the column data is not going to be modified
+```
+auto N0 = fs[0].N.col(g);
+auto N1 = fs[1].N.col(g);
+fluid_3d_m(com_mod, vmsStab, fs[0].eNoN, fs[1].eNoN, w, ksix, N0, N1, Nwx, Nqx, Nwxx, al, yl, bfl, lR, lK);
+```
+
+Use the `rcol` method if the column data is going to be modified, it might also help to speed up a procedure that is called a lot (e.g. in material models).
+
+<!--- ==================== Getting an Array3 Slice =============================== --->
+<h2 id="array_vector_class"> Getting an Array3 Slice </h2>
+
+A lot of Fortran code in svFSI operates on a slice of a 3D array. For example
+```
+CALL GNN(fs(1)%eNoN, nsd, fs(1)%Nx(:,:,g), xwl, Nwx, Jac, ksix)
+```
+which gets a slice (2D sub-array) `g` of the `ss(1)%Nx` array.
+
+The operation of getting a slice of data from an Array3 object is supported using two different methods
+```
+Array<T> slice(const int slice) const - Returns a new Array<T> object containing a copy of the slice data.
+Array<T> rslice(const int slice) const - Return an Array with data pointing into the Array3 internal data.
+```
+
+Use the `rslice` method if the column data is going to be modified.
 
 
 <!--- ===================================================== C++ Programming ================================================ --->
