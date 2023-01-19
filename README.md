@@ -65,9 +65,9 @@ All simulation data is stored in the [Simulation](#simulation_class) class.
 
 This section provides some details about how the svFSI Fortran code was translated into C++ code. This will help to convert any new Fortran code developed in the Fortan svFSI code not included in svFSIplus. 
 
-<!-------------------------------------!> 
-<!----------  Variable Names ----------!>  
-<!-------------------------------------!>  
+<!--- ------------------------------- ---> 
+<!--- -------  Variable Names ------- --->  
+<!--- ------------------------------- --->  
     
 <h2 id="translate_vars"> Variable Names </h2>
 
@@ -121,6 +121,9 @@ is replaced by the following section of C++ code
 
 In this example the Fortran `DO` loops are replaced by C++ `for` loops using C++ 0-based indexing. Array indexing is discussed in the [Fortran Dynamic Arrays](#translate_arrays) section below.
 
+<!--- -------------------------------- ---> 
+<!--- -------  Fortran Modules ------- --->  
+<!--- -------------------------------- --->  
 
 <h2 id="translate_modules"> Fortran Modules </h2>
 
@@ -155,6 +158,9 @@ void construct_usolid(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const
     const Array<double>& Yg, const Array<double>& Dg)
 ```
 
+<!--- -------------------------------- ---> 
+<!---      Fortran Dynamic Arrays      --->  
+<!--- -------------------------------- --->  
 
 <h2 id="translate_arrays"> Fortran Dynamic Arrays </h2>
 
@@ -242,7 +248,10 @@ The objects created from class templates are not part of the C++ language like a
 The class templates are defined in the [Vector.h](https://github.com/SimVascular/svFSIplus/blob/main/Code/Source/svFSI/Vector.h), [Array.h](https://github.com/SimVascular/svFSIplus/blob/main/Code/Source/svFSI/Array.h) and [Array3.h](https://github.com/SimVascular/svFSIplus/blob/main/Code/Source/svFSI/Array3.h) files.
 
 
-<!--- ==================== Allocating and Freeing Memory =============================== --->
+<!--- -------------------------------- ---> 
+<!---  Allocating and Freeing Memoory  --->  
+<!--- -------------------------------- --->  
+
 <h2 id="array_vector_class"> Allocating and Freeing Memory </h2>
 
 Objects can be created using a size
@@ -266,8 +275,10 @@ A.clear();
 ```
 or when it goes out of scope.
 
+<!--- -------------------------------- ---> 
+<!---               Indexing           --->  
+<!--- -------------------------------- --->  
 
-<!--- ==================== Indexing =============================== --->
 <h2 id="array_vector_class"> Indexing and Memory Layout </h2>
 
 C++ multidimensional arrays are referenced using 0-based indexing and are traversed in column-major order like Fortran. Array indexes use paranthesis `A(i,j)` not brackets `A[i][j]` to access array elements.
@@ -301,7 +312,10 @@ C++ multidimensional arrays are referenced using 0-based indexing and are traver
 Indexes can be checked by defining the `_check_enabled` directive within each template include file. An index out of bounds will throw an `std::runtime_error` exception. Note that index checking will substantially slow down a simulation.
 
 
-<!--- ==================== Operators =============================== --->
+<!--- -------------------------------- ---> 
+<!---             Operators            --->  
+<!--- -------------------------------- --->  
+
 <h2 id="array_vector_class"> Operators </h2>
 
 Class templates support most mathematical operators: =,+,-,*,/,+=
@@ -329,8 +343,10 @@ The Array `*` operator performs an element-by-element multiplicaton, not a matri
 
 It is more effienct to use the `+=` operator `A += B` than `A = A + B` which performs a copy.
 
+<!--- -------------------------------- ---> 
+<!---     Getting an Array Column      --->  
+<!--- -------------------------------- --->  
 
-<!--- ==================== Getting an Array Column =============================== --->
 <h2 id="array_vector_class"> Getting an Array Column </h2>
 
 A lot of Fortran code in svFSI operates on a column of a 2D array. For example
@@ -358,10 +374,9 @@ fluid_3d_m(com_mod, vmsStab, fs[0].eNoN, fs[1].eNoN, w, ksix, N0, N1, Nwx, Nqx, 
 
 Use the `rcol` method if the column data is going to be modified, it might also help to speed up a procedure that is called a lot (e.g. in material models).
 
-
-<!--- ============================================================================ --->
-<!--- ==================== Getting an Array3 Slice =============================== --->
-<!--- ============================================================================ --->
+<!--- -------------------------------- ---> 
+<!---    Getting an Array3 Slice       --->  
+<!--- -------------------------------- --->  
 
 <h2 id="array_vector_class"> Getting an Array3 Slice </h2>
 
@@ -378,6 +393,7 @@ Array<T> rslice(const int slice) const - Return an Array with data pointing into
 ```
 
 Use the `rslice` method if the column data is going to be modified.
+
 
 <!--- ====================================================================================================================== --->
 <!--- ============================================== Solver Parameter Input XML File  ====================================== --->
