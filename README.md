@@ -217,12 +217,15 @@ The `Simulation` class does not contain any methods used in the core simulation 
 
 Fortran dynamic arrays have been reproduced using custom `Vector`, `Array` and `Array3` C++ class templates. Note that these custom class templates will most likey be replaced by a more sophisticated matrix package such as `Eigen`.
 
-The class templates are able to reproduce much of the functionality of Fortran arrays and array intrinsic functions (e.g. sum). The challenge is to  create class methods that are as efficient as the Fortan array operators. Because the operators are part of Fortran language the compiler can
-optimize array operators as a memory-to-memory copy.
+The class templates are able to reproduce much of the functionality of Fortran arrays and array intrinsic functions (e.g. sum). The challenge is to  create class methods that are as efficient as the Fortan array operators. Because the operators are part of the Fortran language the compiler can
+optimize them as a effient memory-to-memory copies. For example
 ```
 A(:,n) = B(:,n)
 A = B
 ```
+
+The objects created from class templates are not part of the C++ language like arrays (i.e. double A[100]). They have the overhead associated with all C++ objects (construct/destroy). Object copy and assignment operator must also be handled efficiently so that intermediate objects are not created and extra data copys are avoided.
+
 
 
 C++ multidimensional arrays are referenced using 0-based indexing and are traversed in column-major order like Fortran. Array indexes use paranthesis `A(i,j)` not brackets `A[i][j]` to access array elements.
