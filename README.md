@@ -400,15 +400,16 @@ Use the `rslice` method if the column data is going to be modified.
 
 <h1 id="xml_file"> Solver Parameter Input XML File  </h1>
 
-The svFSUplus solver parameters read in for simulation are stored in an XML-format file. The XML file organization and parameter names replicate the old input text file except that parameter names have spaces replaced by underscores. 
+The svFSIplus solver parameters read in for a simulation are stored in an XML-format file. The XML file organization and parameter names replicate the old input text file except that parameter names have spaces replaced by underscores. 
+
+Parameters using an additional value after the `:` have an XML atttibute added to identify the value: `Add equation: FSI` is converted to `<Add_equation type="FSI" >`.
 
 Example: Old input text file
 ```
 Add equation: FSI {
    Coupled: 1
    Min iterations: 1
-   Max iterations: 1
-   #Max iterations: 10
+   Max iterations: 10
    Tolerance: 1e-6
 
    Domain: 0 {
@@ -439,9 +440,89 @@ new XML format
 </Add_equation>
 ```
 
+<!--- -------------------------------- ---> 
+<!---          Parameter Class         --->  
+<!--- -------------------------------- --->  
 
-The Parameters class is used to read and store solver parameters from an XML file. 
+<h2 id="xml_file"> Parameters class </h2>
 
+The [Parameters](https://github.com/SimVascular/svFSIplus/blob/main/Code/Source/svFSI/Parameters.h) class is used to read and store solver parameters from an XML file. It contains objects for each of the sections in the paramaters file
+```
+    GeneralSimulationParameters general_simulation_parameters;
+    std::vector<MeshParameters*> mesh_parameters;
+    std::vector<EquationParameters*> equation_parameters;
+    std::vector<ProjectionParameters*> projection_parameters;
+```
+
+Each section is represented as a class containing objects for each parameter defined for that section. Objects representing parameters are named the same as the name in used in the XML file except with a lower case first character.
+```
+class MeshParameters : public ParameterLists
+{
+
+    std::vector<FaceParameters*> face_parameters;                      // <Add_face> 
+
+    Parameter<std::string> name;                                       // <Add_mesh name=NAME >
+
+    Parameter<int> domain_id;
+    Parameter<std::string> domain_file_path;
+
+    VectorParameter<std::string> fiber_direction_file_paths;
+    std::vector<VectorParameter<double>> fiber_directions;
+  
+    Parameter<std::string> initial_displacements_file_path;
+    Parameter<std::string> initial_pressures_file_path;
+    Parameter<bool> initialize_rcr_from_flow;
+    Parameter<std::string> initial_velocities_file_path;
+
+    Parameter<std::string> mesh_file_path;                                // <Mesh_file_path> FILE_NAME </Mesh_file_path>
+    Parameter<double> mesh_scale_factor;
+    Parameter<std::string> prestress_file_path;
+
+    Parameter<bool> set_mesh_as_fibers;
+    Parameter<bool> set_mesh_as_shell;
+};
+```˜
+
+The `Parameter` template class stores a parameter's name, value and other attributes (e.g. if it has been set). These values are set in each section objects constructor.
+```
+MeshParameters::MeshParameters()
+{
+  bool required = true;
+
+  set_parameter("Domain", 0,  !required, domain_id);
+  set_parameter("Domain_file_path", "", !required, domain_file_path);
+
+  set_parameter("Fiber_direction_file_path", {}, !required, fiber_direction_file_paths);
+
+  set_parameter("Mesh_file_path", "", required, mesh_file_path);
+  set_parameter("Mesh_scale_factor", 1.0, !required, mesh_scale_factor);
+  set_parameter("Prestress_file_path", "", !required, prestress_file_path);
+
+  set_parameter("Initial_displacements_file_path", "", !required, initial_displacements_file_path);
+  set_parameter("Initial_pressures_file_path", "", !required, initial_pressures_file_path);
+  set_parameter("Initial_velocities_file_path", "", !required, initial_velocities_file_path);
+
+  set_parameter("Set_mesh_as_fibers", false, !required, set_mesh_as_fibers);
+  set_parameter("Set_mesh_as_shell", false, !required, set_mesh_as_shell);
+}
+```
+
+The `Parameter` template class `()` operator is used to access the parameters's value.
+
+
+<!--- -------------------------------- ---> 
+<!---      Accessing Parameters        --->  
+<!--- -------------------------------- --->  
+
+<h2 id="xml_file"> Accessing Parameters </h2>
+
+Parameter values are accessed from the core simulation code from the `Simulation` object's `Parameters` object
+
+```
+int nsd = simulation.parameters.general_simulation_parameters.number_of_spatial_dimensions();
+
+auto file_path = simulation.parameters.mesh_parameters[0].mesh_file_path();
+```
 
 <!--- ====================================================================================================================== --->
 <!--- ============================================= Implementation Details  ================================================ --->
