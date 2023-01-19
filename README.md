@@ -507,7 +507,6 @@ MeshParameters::MeshParameters()
 }
 ```
 
-The `Parameter` template class `()` operator is used to access the parameters's value.
 
 
 <!--- -------------------------------- ---> 
@@ -516,7 +515,7 @@ The `Parameter` template class `()` operator is used to access the parameters's 
 
 <h2 id="xml_file"> Accessing Parameters </h2>
 
-Parameter values are accessed from the core simulation code from the `Simulation` object's `Parameters` object
+Parameter values are accessed from the core simulation code from the `Simulation` object's `Parameters` object. The `Parameter` template class `()` operator is used to access the parameters's value.
 
 ```
 int nsd = simulation.parameters.general_simulation_parameters.number_of_spatial_dimensions();
