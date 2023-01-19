@@ -454,7 +454,7 @@ The [Parameters](https://github.com/SimVascular/svFSIplus/blob/main/Code/Source/
     std::vector<ProjectionParameters*> projection_parameters;
 ```
 
-Each section is represented as a class containing objects for each parameter defined for that section. Objects representing parameters are named the same as the name in used in the XML file except with a lower case first character.
+Each section is represented as a class containing objects for each parameter defined for that section. Objects representing parameters are named the same as the name used in the XML file except with a lower case first character.
 ```
 class MeshParameters : public ParameterLists
 {
