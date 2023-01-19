@@ -206,7 +206,7 @@ Note that the `:` array operator used to copy a column of an array is part of th
 
 <h1 id="simulation_class"> Simulation Class </h1>
 
-The C++ [Simulation](https://github.com/ktbolt/svFSIplus/blob/main/Code/Source/svFSI/Simulation.h) class encapsilates all of the objects (Fortran modules) used to store simulation data. It also contains a `Parameters` object used to store simulation parameters read in from an XML file.
+The C++ [Simulation](https://github.com/SimVascular/svFSIplus/blob/main/Code/Source/svFSI/Simulation.h) class encapsilates all of the objects (Fortran modules) used to store simulation data. It also contains a `Parameters` object used to store simulation parameters read in from an XML file.
 
 The `Simulation` class does not contain any methods used in the core simulation code. Like the Fortan svFSI code it is used to pass data to procedures to carry out a series of computational steps.
 
@@ -224,16 +224,78 @@ A(:,n) = B(:,n)
 A = B
 ```
 
-The objects created from class templates are not part of the C++ language like arrays (i.e. double A[100]). They have the overhead associated with all C++ objects (construct/destroy). Object copy and assignment operator must also be handled efficiently so that intermediate objects are not created and extra data copys are avoided.
+The objects created from class templates are not part of the C++ language like arrays (i.e. double A[100]). They have the overhead associated with all C++ objects (construct/destroy). Object copy and assignment operators must also be handled efficiently so that intermediate objects are not created and extra data copys are avoided.
+
+The class templates are defined in the [Vector.h](https://github.com/SimVascular/svFSIplus/blob/main/Code/Source/svFSI/Vector.h), [Array.h](https://github.com/SimVascular/svFSIplus/blob/main/Code/Source/svFSI/Array.h) and [Array3.h](https://github.com/SimVascular/svFSIplus/blob/main/Code/Source/svFSI/Array3.h) files.
+
+
+<!--- ==================== Allocating and Freeing Memory =============================== --->
+<h2 id="array_vector_class"> Allocating and Freeing Memory </h2>
+
+Objects can be created using a size
+```
+Array<double> A(2,2);
+```
+or defined and later resized
+```
+Array<double> A;
+
+A.resize(2,2);
+```
+
+Object memory is initialized to 0.
+
+An object's memory is freed using its `clear()` method.
+```
+Array<double> A(2,2)
+
+A.clear();
+```
+
+<!--- ==================== Indexing =============================== --->
+<h2 id="array_vector_class"> Indexing and Memory Layout </h2>
+
+C++ multidimensional arrays are referenced using 0-based indexing and are traversed in column-major order like Fortran. Array indexes use paranthesis `A(i,j)` not brackets `A[i][j]` to access array elements. Exmaples
+```
+  Vector<double> u(2);
+  Array<double> ux(2,2);
+  Array3<double> uxx(2,2,2);
+
+  for (int a = 0; a < eNoNw; a++) {
+    ud(0) = ud(0) + Nw(a)*(al(0,a)-bfl(0,a));
+    ud(1) = ud(1) + Nw(a)*(al(1,a)-bfl(1,a));
+
+    u(0) = u(0) + Nw(a)*yl(0,a);
+    u(1) = u(1) + Nw(a)*yl(1,a);
+
+    ux(0,0) = ux(0,0) + Nwx(0,a)*yl(0,a);
+    ux(1,0) = ux(1,0) + Nwx(1,a)*yl(0,a);
+    ux(0,1) = ux(0,1) + Nwx(0,a)*yl(1,a);
+    ux(1,1) = ux(1,1) + Nwx(1,a)*yl(1,a);
+
+    uxx(0,0,0) = uxx(0,0,0) + Nwxx(0,a)*yl(0,a);
+    uxx(1,0,1) = uxx(1,0,1) + Nwxx(1,a)*yl(0,a);
+    uxx(1,0,0) = uxx(1,0,0) + Nwxx(2,a)*yl(0,a);
+
+    uxx(0,1,0) = uxx(0,1,0) + Nwxx(0,a)*yl(1,a);
+    uxx(1,1,1) = uxx(1,1,1) + Nwxx(1,a)*yl(1,a);
+    uxx(1,1,0) = uxx(1,1,0) + Nwxx(2,a)*yl(1,a);
+  }
+```
+
+Indexes can be checked by defining the `_check_enabled` directive within each templates include file. This will substantially slow down a simulation.
+
+
+<!--- ==================== Operators =============================== --->
+<h2 id="array_vector_class"> Operators </h2>
 
 
 
-C++ multidimensional arrays are referenced using 0-based indexing and are traversed in column-major order like Fortran. Array indexes use paranthesis `A(i,j)` not brackets `A[i][j]` to access array elements.
 
 
-<h2 id="vector_class">  Vector Template Class </h1>
 
 The `:` operator could also be replaced by `xl.set_col(a, x.rcol(Ac))` 
+
 
 
 <!--- ===================================================== C++ Programming ================================================ --->
