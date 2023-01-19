@@ -6,7 +6,7 @@
 [Simulation Class](#simulation_class)<br>
 [Array and Vector Classes](#array_vector_class)<br>
 [Solver Parameter Input XML File ](#xml_file)<br>
-[C++ Programming](#cpp_programming)<br>
+[Implementation Details](#cpp_programming)<br>
 
 <h1 id="introduction"> Introduction </h1>
 
@@ -363,11 +363,15 @@ Array<T> rslice(const int slice) const - Return an Array with data pointing into
 
 Use the `rslice` method if the column data is going to be modified.
 
+
+<!--- ============================================== Solver Parameter Input XML File  ====================================== --->
+
 <h1 id="xml_file"> Solver Parameter Input XML File  </h1>
 
-<!--- ===================================================== C++ Programming ================================================ --->
 
-<h1 id="cpp_programming"> C++ Programming </h1>
+<!--- ===================================================== Implementation Details ================================================ --->
+
+<h1 id="cpp_programming"> Implementation Details </h1>
 
 
 
