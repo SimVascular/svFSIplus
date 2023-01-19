@@ -320,7 +320,7 @@ Indexes can be checked by defining the `_check_enabled` directive within each te
 
 Class templates support most mathematical operators: =,+,-,*,/,+=
 
-Vector: abs, cross, dot
+Some Fortran array intrinsics (e.g. abs, sqrt) are also supported. 
 
 Example
 ```
@@ -355,14 +355,14 @@ CALL FLUID3D_M(vmsStab, fs(1)%eNoN, fs(2)%eNoN, w, ksix,
      2            fs(1)%N(:,g), fs(2)%N(:,g), Nwx, Nqx, Nwxx, al, yl,
      3            bfl, lR, lK)
 ```
-which gets a column `g` of the `fs(2)%N` array.
+where `fs(1)%N(:,g)` gets the column `g` of the `fs(2)%N` array.
 
 
 The operation of getting a column of data from an Array object is supported using two different methods
 ```
 Vector<T> col(const int col, const std::array<int,2>& range={-1,-1}) const - Returns a new Vector<T> object containing a copy of the column data.
 
-Vector<T> rcol(const int col) const - Returns a new Vector<T> object containing an address pointing to the column data. Modifying the Vector<T> object's data modifies the orginal Array data.
+Vector<T> rcol(const int col) const - Returns a new Vector<T> object containing an address pointing into the Array internal data. Modifying the Vector<T> object's data modifies the orginal Array data.
 ```
 
 Use the `col` method if the column data is not going to be modified
@@ -372,7 +372,7 @@ auto N1 = fs[1].N.col(g);
 fluid_3d_m(com_mod, vmsStab, fs[0].eNoN, fs[1].eNoN, w, ksix, N0, N1, Nwx, Nqx, Nwxx, al, yl, bfl, lR, lK);
 ```
 
-Use the `rcol` method if the column data is going to be modified, it might also help to speed up a procedure that is called a lot (e.g. in material models).
+Use the `rcol` method if the column data is going to be modified; it might also help to speed up a procedure that is called a lot (e.g. in material models).
 
 <!--- -------------------------------- ---> 
 <!---    Getting an Array3 Slice       --->  
@@ -380,20 +380,19 @@ Use the `rcol` method if the column data is going to be modified, it might also 
 
 <h2 id="array_vector_class"> Getting an Array3 Slice </h2>
 
-A lot of Fortran code in svFSI operates on a slice of a 3D array. For example
+A lot of Fortran code in svFSI operates on a slice (a 2D sub-array) of a 3D array. For example
 ```
 CALL GNN(fs(1)%eNoN, nsd, fs(1)%Nx(:,:,g), xwl, Nwx, Jac, ksix)
 ```
-which gets a slice (2D sub-array) `g` of the `ss(1)%Nx` array.
+where `fs(1)%Nx(:,:,g)` gets a slice (2D sub-array) `g` of the `fs(1)%Nx` array.
 
 The operation of getting a slice of data from an Array3 object is supported using two different methods
 ```
 Array<T> slice(const int slice) const - Returns a new Array<T> object containing a copy of the slice data.
-Array<T> rslice(const int slice) const - Return an Array with data pointing into the Array3 internal data.
+Array<T> rslice(const int slice) const - Return an Array<T> object with data pointing into the Array3 internal data.
 ```
 
 Use the `rslice` method if the column data is going to be modified.
-
 
 <!--- ====================================================================================================================== --->
 <!--- ============================================== Solver Parameter Input XML File  ====================================== --->
@@ -401,7 +400,45 @@ Use the `rslice` method if the column data is going to be modified.
 
 <h1 id="xml_file"> Solver Parameter Input XML File  </h1>
 
-The XML file organization and parameter names replicate the old input text file except that parameter names have spaces replaced by underscores.
+The svFSUplus solver parameters read in for simulation are stored in an XML-format file. The XML file organization and parameter names replicate the old input text file except that parameter names have spaces replaced by underscores. 
+
+Example: Old input text file
+```
+Add equation: FSI {
+   Coupled: 1
+   Min iterations: 1
+   Max iterations: 1
+   #Max iterations: 10
+   Tolerance: 1e-6
+
+   Domain: 0 {
+      Equation: fluid
+      Density: 1.0
+      Viscosity: Constant {Value: 0.04}
+      Backflow stabilization coefficient: 0.2
+   }
+}
+   
+```
+new XML format
+```
+<Add_equation type="FSI" >
+   <Coupled> true </Coupled>
+   <Min_iterations> 1 </Min_iterations>
+   <Max_iterations> 10 </Max_iterations>
+   <Tolerance> 1e-6 </Tolerance>
+
+   <Domain id="0" >
+      <Equation> fluid </Equation>
+      <Density> 1.0 </Density>
+      <Viscosity model="Constant" >
+         <Value> 0.04 </Value>
+      </Viscosity>
+      <Backflow_stabilization_coefficient> 0.2 </Backflow_stabilization_coefficient>
+   </Domain>
+</Add_equation>
+```
+
 
 The Parameters class is used to read and store solver parameters from an XML file. 
 
