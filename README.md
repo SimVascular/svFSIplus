@@ -529,6 +529,7 @@ auto file_path = simulation.parameters.mesh_parameters[0].mesh_file_path();
 
 <h1 id="cpp_programming"> Implementation Details </h1>
 
+This section covers some of the C++ implementation details that may be useful to developers adding new capabilities to svFSIplus.
 
 
 
