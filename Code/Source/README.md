@@ -1,6 +1,7 @@
-# svFSIplus Implementation Details
+# svFSIplus Implementation 
 
-# svFSIplus 
+This document descibes some of the implementation details of svFSIplus C++ code.
+
 
 ## Table of Contents
 [Introduction](#introduction)<br>
