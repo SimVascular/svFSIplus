@@ -24,7 +24,7 @@ The following sections describe how to build and use svFSIplus. Implementaton de
 
 <h1 id="xml_file"> Solver Parameter Input XML File  </h1>
 
-The svFSI solver uses a [text format](https://github.com/SimVascular/svFSI/blob/master/svFSI_master.inp) set simulation parameters using keyword/value pairs separated by a colon **:**. Keywords consist of alphanumeric characters optionally separated by spaces.
+The svFSI solver uses a [custom text format](https://github.com/SimVascular/svFSI/blob/master/svFSI_master.inp) to set simulation parameters using keyword/value pairs separated by a colon. A keywords consists of series of alphanumeric characters optionally separated by spaces.
 
 Keyword/value example
 ```
@@ -44,9 +44,10 @@ Domain: 0 {
 }
 ```
 
-svFSIplus solver simulation parameters are stored in an XML-format file. The XML file organization and parameter names replicate the original input text file using the following conversion rules 
-- Names have spaces replaced by underscores
-- An additional value after the `:` have an XML atttibute added to identify the value: `Add equation: FSI` is converted to `<Add_equation type="FSI" >`.
+svFSIplus solver simulation parameters are stored in an XML-format file. The XML file organization and keyword names replicate the original text format using the following conversion rules 
+- Spaces in keywords names are replaced by underscores
+- An additional value after a colon is replaced by an XML atttibute used to identify the value. For example: `Add equation: FSI` is replaced by `<Add_equation type="FSI" >`.
+- Parameters with sub-elements are replaced by XML sub-elements. For exmaple `Add equation: FSI { sub-elements }` is replaced by `<Add_equation type="FSI" > sub-elements </Add_equation>
 
 Example: The original text 
 ```
@@ -65,7 +66,7 @@ Add equation: FSI {
 }
    
 ```
-is replaces by new XML format with
+is replaced by new XML format with
 ```
 <Add_equation type="FSI" >
    <Coupled> true </Coupled>
