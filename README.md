@@ -3,7 +3,7 @@
 ## Table of Contents
 [Introduction](#introduction)<br>
 [Solver Parameter Input XML File ](#xml_file)<br>
-[Implementation Details](#cpp_programming)<br>
+[Building svFSIplus](#building)<br>
 
 <!--- ====================================================================================================================== --->
 <!--- ===================================================== Introduction  ================================================== --->
@@ -33,8 +33,8 @@ Min iterations: 1
 Tolerance: 1e-6
 ```
 
-Braces **{}** are used to define simulation parameters with sub-elements. For example the `Domain` parameter is associated with
-several other parameters
+Braces **{}** are used to define simulation parameters with sub-elements. For example the `Domain` keyword is associated with
+several other sub-elements of keyword/values pairs.
 ```
 Domain: 0 {
   Equation: fluid
@@ -86,15 +86,45 @@ is replaced by new XML format with
 ```
 
 
-
-
 <!--- ====================================================================================================================== --->
-<!--- ============================================= Implementation Details  ================================================ --->
+<!--- ============================================= Building svFSIplus  ==================================================== --->
 <!--- ====================================================================================================================== --->
 
-<h1 id="cpp_programming"> Implementation Details </h1>
+<h1 id="building"> Building svFSIplus </h1>
 
-This section covers some of the C++ implementation details that may be useful to developers adding new capabilities to svFSIplus.
+svFSIplus can be downloaed and built on computers running MacOS and various Linux operating systems. The Windows operating system is currently
+not supported.
+
+The following software packages are required to build svFSIplus
+
+- CMake
+- C++17compiler 
+- VTK
+- Open MPI
+
+<h2 id="building"> CMake </h2>
+
+svFSIplus is built using [CMake](https://cmake.org). CMake is used to control the software compilation process using the `CMakeLists.txt` files withn the svFSIplus source. CMake first attempts to discover the software dependencies (e.g. C++ compiler) required to build svFSIplus. It will then generate the native [makefiles](https://en.wikipedia.org/wiki/Make_(software)) used to compile it.
+
+
+<h2 id="building"> VTK </h2>
+
+[VTK](https://vtk.org/)
+
+<h2 id="building"> Open MPI </h2>
+
+[Open MPI](https://www.open-mpi.org/)
+
+
+
+
+svFSIplus is built using CMake. It requires the following software 
+
+The following packages are required to build and use svFSI.
+
+
+
+
 
 
 
