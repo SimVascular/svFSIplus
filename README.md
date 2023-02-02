@@ -105,7 +105,10 @@ platform in order to use the svFSIplus binary.
 
 <h1 id="building"> Building svFSIplus from Source </h1>
 
-The svFSIplus source code can be downloaed and built on computers running MacOS and various Linux operating systems. The Windows operating system is currently not supported.
+The svFSIplus source code can be downloaed and built on computers running MacOS and other Linux operating systems. Builds are most 
+commenly done for MacOS and Ubuntu. 
+
+**The Windows operating system is currently not supported.**
 
 
 <h2 id="building_build"> Build Process </h2>
