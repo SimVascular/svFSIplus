@@ -24,7 +24,7 @@ The following sections describe how to build and use svFSIplus. Implementaton de
 
 <h1 id="xml_file"> Solver Parameter Input XML File  </h1>
 
-The svFSIplus solver parameters read in for a simulation are stored in an XML-format file. The XML file organization and parameter names replicate the old input text file except that parameter names have spaces replaced by underscores. 
+svFSIplus solver simulation parameters are stored in an XML-format file. The XML file organization and parameter names replicate the old input text file except that parameter names have spaces replaced by underscores. 
 
 Parameters using an additional value after the `:` have an XML atttibute added to identify the value: `Add equation: FSI` is converted to `<Add_equation type="FSI" >`.
 
