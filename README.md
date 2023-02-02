@@ -47,7 +47,7 @@ Domain: 0 {
 svFSIplus solver simulation parameters are stored in an XML-format file. The XML file organization and keyword names replicate the original text format using the following conversion rules 
 - Spaces in keywords names are replaced by underscores
 - An additional value after a colon is replaced by an XML atttibute used to identify the value. For example: `Add equation: FSI` is replaced by `<Add_equation type="FSI" >`.
-- Parameters with sub-elements are replaced by XML sub-elements. For exmaple `Add equation: FSI { sub-elements }` is replaced by `<Add_equation type="FSI" > sub-elements </Add_equation>
+- Parameters with sub-elements are replaced by an XML element with sub-elements. For exmaple `Add equation: FSI { sub-elements }` is replaced by `<Add_equation type="FSI" > xml-sub-elements </Add_equation>`.
 
 Example: The original text 
 ```
