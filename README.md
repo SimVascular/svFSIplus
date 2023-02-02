@@ -147,12 +147,12 @@ Software packages can be installed using package management tools like [homebrew
 
 <h3 id="building_cmake"> CMake </h3>
 
-svFSIplus is built using [CMake](https://cmake.org). CMake is used to control the software compilation process using the `CMakeLists.txt` files withn the svFSIplus source. CMake first attempts to discover the software dependencies (e.g. C++ compiler) required to build svFSIplus. It will then generate the native [makefiles](https://en.wikipedia.org/wiki/Make_(software)) used to compile it.
+svFSIplus is built using [CMake](https://cmake.org). CMake is used to control the software compilation process using the `CMakeLists.txt` files located withn the svFSIplus source. CMake first attempts to discover the software dependencies (e.g. C++ compiler) required to build svFSIplus. It will then generate the native [makefiles](https://en.wikipedia.org/wiki/Make_(software)) used to compile it.
 
 
 <h3 id="building_vtk"> Visualization Toolkit </h3>
 
-[The Visualization Toolkit (VTK)](https://vtk.org/)
+svFSIplus uses the [The Visualization Toolkit (VTK)](https://vtk.org/) to read finite element mesh data stored in VTP and VTU [formats](https://kitware.github.io/vtk-examples/site/VTKFileFormats/). The [VTP](https://vtk.org/doc/nightly/html/classvtkPolyData.html#details) format is used to store 2D finite element mesh data for inlet and outlet surfaces. The [VTU](https://vtk.org/doc/nightly/html/classvtkUnstructuredGrid.html#details) format is used to store finite element volume meshes.
 
 
 <h3 id="building_mpi"> Open MPI </h3>
