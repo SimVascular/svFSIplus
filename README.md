@@ -33,7 +33,7 @@ Min iterations: 1
 Tolerance: 1e-6
 ```
 
-Braces (**{**, **}**) are used to define simulation parameters with sub-elements. For example the `Domain` parameter is associated with
+Braces **{**, **}** are used to define simulation parameters with sub-elements. For example the `Domain` parameter is associated with
 several other parameters
 ```
 Domain: 0 {
@@ -45,13 +45,10 @@ Domain: 0 {
 ```
 
 svFSIplus solver simulation parameters are stored in an XML-format file. The XML file organization and parameter names replicate the original input text file using the following conversion rules 
-- Parameter names have spaces replaced by underscores
+- Names have spaces replaced by underscores
+- An additional value after the `:` have an XML atttibute added to identify the value: `Add equation: FSI` is converted to `<Add_equation type="FSI" >`.
 
-
-
-Parameters in the old text format (using an additional value after the `:` have an XML atttibute added to identify the value: `Add equation: FSI` is converted to `<Add_equation type="FSI" >`.
-
-Example: Old input text file
+Example: The original text 
 ```
 Add equation: FSI {
    Coupled: 1
@@ -68,7 +65,7 @@ Add equation: FSI {
 }
    
 ```
-new XML format
+is replaces by new XML format with
 ```
 <Add_equation type="FSI" >
    <Coupled> true </Coupled>
