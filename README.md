@@ -106,7 +106,7 @@ platform in order to use the svFSIplus binary.
 <h1 id="building"> Building svFSIplus from Source </h1>
 
 The svFSIplus source code can be downloaed and built on computers running MacOS and other Linux operating systems. Builds are most 
-commenly done for MacOS and Ubuntu. 
+commonly done on MacOS and Ubuntu platforms.
 
 **The Windows operating system is currently not supported.**
 
@@ -124,7 +124,13 @@ svFSIplus is built on a MacOS or Linux computer from a terminal using the follow
 - cmake ../svFSIplus/
 - make -j4
 
-This creates the `svFSIplus*` binary located in `svFSIplus-package/build/svFSI-build/bin`.
+This creates the svFSIplus binary `svFSIplus-package/build/svFSI-build/bin/svFSIplus*`.
+
+The binary can be installed in /usr/local using the following commands
+- cd svFSI-build
+- sudo make install
+
+The `svFSIplus*` binary is now located /usr/local/SV/bin.
 
 
 <h2 id="building_packages"> Required Software Packages </h2>
