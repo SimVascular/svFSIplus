@@ -15,7 +15,7 @@ svFSIplus is a C++ implementation of the Fortran [svFSI](https://github.com/SimV
 
 The *Second Stage* of the solver development will be an entirely new implementation encapsilating portions of the *First Stage* code into C++ classes forming a clean and simple abstaction that can be enhanced by any developer.
 
-The following sections describe how to build and use svFSIplus.
+The following sections describe how to build and use svFSIplus. Implementaton details can be found [here](https://github.com/ktbolt/svFSIplus/blob/update-README/Code/Source/README.md).
 
 
 <!--- ====================================================================================================================== --->
