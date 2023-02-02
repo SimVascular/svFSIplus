@@ -33,7 +33,7 @@ Min iterations: 1
 Tolerance: 1e-6
 ```
 
-Braces **{**, **}** are used to define simulation parameters with sub-elements. For example the `Domain` parameter is associated with
+Braces **{}** are used to define simulation parameters with sub-elements. For example the `Domain` parameter is associated with
 several other parameters
 ```
 Domain: 0 {
