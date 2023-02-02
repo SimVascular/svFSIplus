@@ -4,7 +4,7 @@
 [Introduction](#introduction)<br>
 [Solver Parameter Input XML File ](#xml_file)<br>
 [Pre-built svFSIplus Binaries](#executables)<br>
-[Building svFSIplus](#building)<br>
+[Building svFSIplus from Source](#building)<br>
 
 <!--- ====================================================================================================================== --->
 <!--- ===================================================== Introduction  ================================================== --->
@@ -103,10 +103,20 @@ platform in order to use the svFSIplus binary.
 <!--- ============================================= Building svFSIplus  ==================================================== --->
 <!--- ====================================================================================================================== --->
 
-<h1 id="building"> Building svFSIplus </h1>
+<h1 id="building"> Building svFSIplus from Source </h1>
 
-svFSIplus can be downloaed and built on computers running MacOS and various Linux operating systems. The Windows operating system is currently
-not supported.
+The svFSIplus source code can be downloaed and built on computers running MacOS and various Linux operating systems. The Windows operating system is currently not supported.
+
+
+<h2 id="building_build"> Build Process </h2>
+
+Several [software packages](building_packages) must be installed in order to build and use svFSI.
+
+svFSIplus is built using [CMake](#building_cmake) using the following steps
+
+
+
+<h2 id="building_packages"> Required Software Packages </h2>
 
 The following software packages are required to build svFSIplus
 
@@ -118,26 +128,23 @@ The following software packages are required to build svFSIplus
 Software packages can be installed using package management tools like [homebrew](https://brew.sh) and [apt](https://en.wikipedia.org/wiki/APT_(software)).
 
 
-<h2 id="building_cmake"> CMake </h2>
+<h3 id="building_cmake"> CMake </h3>
 
 svFSIplus is built using [CMake](https://cmake.org). CMake is used to control the software compilation process using the `CMakeLists.txt` files withn the svFSIplus source. CMake first attempts to discover the software dependencies (e.g. C++ compiler) required to build svFSIplus. It will then generate the native [makefiles](https://en.wikipedia.org/wiki/Make_(software)) used to compile it.
 
 
-<h2 id="building_vtk"> Visualization Toolkit </h2>
+<h3 id="building_vtk"> Visualization Toolkit </h3>
 
 [The Visualization Toolkit (VTK)](https://vtk.org/)
 
 
-<h2 id="building_mpi"> Open MPI </h2>
+<h3 id="building_mpi"> Open MPI </h3>
 
 [Open MPI](https://www.open-mpi.org/)
 
 
 
 
-svFSIplus is built using CMake. It requires the following software 
-
-The following packages are required to build and use svFSI.
 
 
 
