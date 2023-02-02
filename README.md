@@ -111,9 +111,12 @@ not supported.
 The following software packages are required to build svFSIplus
 
 - CMake
-- C++17compiler 
+- C++17 compiler 
 - Visualization Toolkit
 - Open MPI
+
+Software packages can be installed using package management tools like [homebrew](https://brew.sh) and [apt](https://en.wikipedia.org/wiki/APT_(software)).
+
 
 <h2 id="building_cmake"> CMake </h2>
 
