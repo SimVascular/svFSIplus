@@ -93,7 +93,10 @@ is replaced by new XML format with
 <h1 id="executables"> Pre-built svFSIplus Binaries </h1>
 
 Pre-built svFSIplus binaries can be downloaded from the [SimVascular SimTK downloads page](https://simtk.org/frs/?group_id=188).
-Installers are provided for MacOS and Ubuntu operating systems.
+Installers are provided for MacOS and Ubuntu operating systems. 
+
+The compilers and other software used to build the binaries (listed on the downloads page) must be installed on the target 
+platform in order to use the svFSIplus binary.
 
 
 <!--- ====================================================================================================================== --->
@@ -109,19 +112,20 @@ The following software packages are required to build svFSIplus
 
 - CMake
 - C++17compiler 
-- VTK
+- Visualization Toolkit
 - Open MPI
 
-<h2 id="building"> CMake </h2>
+<h2 id="building_cmake"> CMake </h2>
 
 svFSIplus is built using [CMake](https://cmake.org). CMake is used to control the software compilation process using the `CMakeLists.txt` files withn the svFSIplus source. CMake first attempts to discover the software dependencies (e.g. C++ compiler) required to build svFSIplus. It will then generate the native [makefiles](https://en.wikipedia.org/wiki/Make_(software)) used to compile it.
 
 
-<h2 id="building"> VTK </h2>
+<h2 id="building_vtk"> Visualization Toolkit </h2>
 
-[VTK](https://vtk.org/)
+[The Visualization Toolkit (VTK)](https://vtk.org/)
 
-<h2 id="building"> Open MPI </h2>
+
+<h2 id="building_mpi"> Open MPI </h2>
 
 [Open MPI](https://www.open-mpi.org/)
 
