@@ -24,7 +24,7 @@ The following sections describe how to build and use svFSIplus. Implementaton de
 
 <h1 id="xml_file"> Solver Parameter Input XML File  </h1>
 
-The svFSI solver uses a [custom text format](https://github.com/SimVascular/svFSI/blob/master/svFSI_master.inp) to set simulation parameters using keyword/value pairs separated by a colon. A keywords consists of series of alphanumeric characters optionally separated by spaces.
+The svFSI solver reads simulation parametes from a [custom text format](https://github.com/SimVascular/svFSI/blob/master/svFSI_master.inp) file.   Simulation parameters are set using keyword/value pairs separated by a colon. A keyword consists of series of alphanumeric characters separated by spaces.
 
 Keyword/value example
 ```
