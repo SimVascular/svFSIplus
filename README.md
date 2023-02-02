@@ -110,9 +110,9 @@ The svFSIplus source code can be downloaed and built on computers running MacOS 
 
 <h2 id="building_build"> Build Process </h2>
 
-Several [software packages](#building_packages) must be installed in order to build and use svFSI.
+Several [software packages](#building_packages) must be installed in order to build and use svFSIplus.
 
-svFSIplus is built on a MacOS or Linux computer  using the following commands run in a in a command terminal
+svFSIplus is built on a MacOS or Linux computer from a terminal using the following commands
 - mkdir svFSIplus-package
 - cd svFSIplus-package
 - git clone https://github.com/SimVascular/svFSIplus
@@ -121,8 +121,7 @@ svFSIplus is built on a MacOS or Linux computer  using the following commands ru
 - cmake ../svFSIplus/
 - make -j4
 
-
-
+This creates the `svFSIplus*` binary located in `svFSIplus-package/build/svFSI-build/bin`.
 
 
 <h2 id="building_packages"> Required Software Packages </h2>
