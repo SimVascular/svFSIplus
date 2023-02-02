@@ -24,7 +24,7 @@ The following sections describe how to build and use svFSIplus. Implementaton de
 
 <h1 id="xml_file"> Solver Parameter Input XML File  </h1>
 
-The [original text format](https://github.com/SimVascular/svFSI/blob/master/svFSI_master.inp) set simulations parameters using keyword/value pairs separated by a colon `:`. Keywords consist of alphanumeric characters optionally separated by spaces.
+The svFSI solver uses a [text format](https://github.com/SimVascular/svFSI/blob/master/svFSI_master.inp) set simulation parameters using keyword/value pairs separated by a colon **:**. Keywords consist of alphanumeric characters optionally separated by spaces.
 
 Keyword/value example
 ```
@@ -33,9 +33,20 @@ Min iterations: 1
 Tolerance: 1e-6
 ```
 
-svFSIplus solver simulation parameters are stored in an XML-format file. The XML file organization and parameter names replicate the original input text file except that parameter names have spaces replaced by underscores. 
+Braces (**{**, **}**) are used to define simulation parameters with sub-elements. For example the `Domain` parameter is associated with
+several other parameters
+```
+Domain: 0 {
+  Equation: fluid
+  Density: 1.0
+  Viscosity: Constant {Value: 0.04}
+  Backflow stabilization coefficient: 0.2
+}
+```
 
-to use braces ("{", "}") to mark the scope of that entity. E.g.:
+svFSIplus solver simulation parameters are stored in an XML-format file. The XML file organization and parameter names replicate the original input text file using the following conversion rules 
+- Parameter names have spaces replaced by underscores
+
 
 
 Parameters in the old text format (using an additional value after the `:` have an XML atttibute added to identify the value: `Add equation: FSI` is converted to `<Add_equation type="FSI" >`.
