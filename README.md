@@ -3,6 +3,7 @@
 ## Table of Contents
 [Introduction](#introduction)<br>
 [Solver Parameter Input XML File ](#xml_file)<br>
+[Pre-built svFSIplus Binaries](#executables)<br>
 [Building svFSIplus](#building)<br>
 
 <!--- ====================================================================================================================== --->
@@ -84,6 +85,15 @@ is replaced by new XML format with
    </Domain>
 </Add_equation>
 ```
+
+<!--- ====================================================================================================================== --->
+<!--- =============================================  svFSIplus Binaries  =================================================== --->
+<!--- ====================================================================================================================== --->
+
+<h1 id="executables"> Pre-built svFSIplus Binaries </h1>
+
+Pre-built svFSIplus binaries can be downloaded from the [SimVascular SimTK downloads page](https://simtk.org/frs/?group_id=188).
+Installers are provided for MacOS and Ubuntu operating systems.
 
 
 <!--- ====================================================================================================================== --->
