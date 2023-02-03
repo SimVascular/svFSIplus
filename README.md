@@ -152,7 +152,7 @@ svFSIplus is built using [CMake](https://cmake.org). CMake is used to control th
 
 <h3 id="building_vtk"> Visualization Toolkit </h3>
 
-svFSIplus uses the [The Visualization Toolkit (VTK)](https://vtk.org/) to read finite element mesh data stored in VTP and VTU [formats](https://kitware.github.io/vtk-examples/site/VTKFileFormats/). The [VTP](https://vtk.org/doc/nightly/html/classvtkPolyData.html#details) format is used to store 2D finite element meshes for inlet and outlet surfaces. The [VTU](https://vtk.org/doc/nightly/html/classvtkUnstructuredGrid.html#details) format is used to store finite element volume meshes.
+svFSIplus uses the [The Visualization Toolkit (VTK)](https://vtk.org/) to read finite element mesh data stored in VTP and VTU [formats](https://kitware.github.io/vtk-examples/site/VTKFileFormats/). The [VTP](https://vtk.org/doc/nightly/html/classvtkPolyData.html#details) format is used to store 2D finite element meshes for inlet and outlet surfaces. The [VTU](https://vtk.org/doc/nightly/html/classvtkUnstructuredGrid.html#details) format is used to store finite element volume meshes. svFSIplus can also write simulation results to VTK format files. 
 
 
 <h3 id="building_mpi"> Open MPI </h3>
@@ -165,6 +165,32 @@ svFSIplus uses the [Open MPI](https://www.open-mpi.org/) Message Passing Interfa
 By defualt svFSIplus uses its custom  linear algebra solvers (e.g. GMRES). It also supports several simple preconditioners. 
 
 svFSIplus can also use the linear algebra solvers and preconditioners provided by the [Trilinos](https://trilinos.github.io/) scientific software package. Using Trilinos can often reduce the execution time of a simulation.
+
+
+<h3 id="building_Trilinos"> Building Trilinos </h3>
+
+The Trilinos libraries need to be built from the Trilinos downloaded from [here](https://github.com/trilinos/Trilinos). See the [Quick configure, build and install hints for Trilinos](https://github.com/trilinos/Trilinos/blob/master/INSTALL.rst) to how to build Trilinos.
+
+The Trilinos third-party libraries (TPLs) needed by svFSIplus are
+ - Boost
+ - BLAS
+ - HDF5
+ - HYPRE
+ - LAPACK
+ - MUMPS
+ 
+The Trilinos packages needed by svFSIplus are 
+- Amesos
+- AztecOO
+- Epetra
+- EpetraEXT
+- Ifpack
+- ML
+- MueLU
+- ROL
+- Sacado
+- Teuchos
+- Zoltan
 
 
 
