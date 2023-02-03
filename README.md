@@ -160,7 +160,7 @@ svFSIplus uses the [The Visualization Toolkit (VTK)](https://vtk.org/) to read f
 svFSIplus uses the [Open MPI](https://www.open-mpi.org/) Message Passing Interface (MPI) libraries for parallel computing. 
 
 
-<h2 id="building_build"> Building with Trilinos </h2>
+<h2 id="building_build"> Using Trilinos with svFSIplus</h2>
 
 By defualt svFSIplus uses its custom  linear algebra solvers (e.g. GMRES). It also supports several simple preconditioners. 
 
@@ -169,9 +169,9 @@ svFSIplus can also use the linear algebra solvers and preconditioners provided b
 
 <h3 id="building_Trilinos"> Building Trilinos </h3>
 
-The Trilinos libraries need to be built from the Trilinos downloaded from [here](https://github.com/trilinos/Trilinos). See the [Quick configure, build and install hints for Trilinos](https://github.com/trilinos/Trilinos/blob/master/INSTALL.rst) to how to build Trilinos.
+The Trilinos libraries need to be built from the source downloaded from [here](https://github.com/trilinos/Trilinos). See the [Quick configure, build and install hints for Trilinos](https://github.com/trilinos/Trilinos/blob/master/INSTALL.rst) for the instructions about how to build Trilinos.
 
-The Trilinos third-party libraries (TPLs) needed by svFSIplus are
+Build with the third-party libraries (TPLs) 
  - Boost
  - BLAS
  - HDF5
@@ -179,7 +179,7 @@ The Trilinos third-party libraries (TPLs) needed by svFSIplus are
  - LAPACK
  - MUMPS
  
-The Trilinos packages needed by svFSIplus are 
+and with The Trilinos packages  
 - Amesos
 - AztecOO
 - Epetra
@@ -192,6 +192,12 @@ The Trilinos packages needed by svFSIplus are
 - Teuchos
 - Zoltan
 
+
+<h3 id="building_compile_with_Trilinos"> Compiling with Trilinos Libraries  </h3>
+
+svFSIplus is compiled with the Trilinos libraries using the CMake `SV_USE_TRILINOS` option
+
+`make ../svFSIplus/ -DSV_USE_TRILINOS:BOOL=ON`
 
 
 
