@@ -116,13 +116,15 @@ commonly done on MacOS and Ubuntu platforms.
 Several [software packages](#building_packages) must be installed in order to build and use svFSIplus.
 
 svFSIplus is built on a MacOS or Linux computer from a terminal using the following commands
-- mkdir svFSIplus-package
-- cd svFSIplus-package
-- git clone https://github.com/SimVascular/svFSIplus
-- mkdir build
-- cd build/
-- cmake ../svFSIplus/
-- make -j4
+```
+    mkdir svFSIplus-package
+    cd svFSIplus-package
+    git clone https://github.com/SimVascular/svFSIplus
+    mkdir build
+    cd build/
+    cmake ../svFSIplus/
+    make -j4
+```
 
 This creates the svFSIplus binary `svFSIplus-package/build/svFSI-build/bin/svFSIplus*`.
 
