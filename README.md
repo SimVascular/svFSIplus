@@ -5,6 +5,8 @@
 [Solver Parameter Input XML File ](#xml_file)<br>
 [Pre-built svFSIplus Binaries](#executables)<br>
 [Building svFSIplus from Source](#building)<br>
+[Running a Simulation](#simulation_run)
+
 
 <!--- ====================================================================================================================== --->
 <!--- ===================================================== Introduction  ================================================== --->
@@ -132,7 +134,10 @@ The binary can be installed in /usr/local using the following commands
 - cd svFSI-build
 - sudo make install
 
-The `svFSIplus*` binary is now located /usr/local/SV/bin.
+The `svFSIplus*` binary is now located in /usr/local/SV/bin.
+
+It is convienient to update the PATH environment variable with the location of the `svFSIplus*` binary. Another option is to create
+an alias for `svFSIplus`. For example: `alias svFsiPlus=/usr/local/SV/bin/svFSIplus`
 
 
 <h2 id="building_packages"> Required Software Packages </h2>
@@ -195,18 +200,32 @@ and with The Trilinos packages
 - Zoltan
 
 
-
 <h3 id="building_compile_with_Trilinos"> Compiling with Trilinos Libraries  </h3>
 
 svFSIplus is compiled with the Trilinos libraries using the CMake `SV_USE_TRILINOS` option
 ```
 cmake ../svFSIplus/ -DSV_USE_TRILINOS:BOOL=ON 
 ```
-CMake will be able to find the Trilinos libraries once they are built and installed.
+CMake will be able to find the Trilinos libraries once they have been built and installed.
 
 
+<!--- ====================================================================================================================== --->
+<!--- ============================================= Running a Simulation  ================================================== --->
+<!--- ====================================================================================================================== --->
 
+<h1 id="simulation_run"> Running a Simulation </h1>
 
+The svFSIplus binary is run from the command with an input solver parameter XML file as an argument
+
+```
+svFSIplus solver_params.xml
+```
+
+A simulation can be run in parallel on four processors using 
+
+```
+mpiexe -np 4 svFSIplus solver_params.xml
+```
 
 
 
