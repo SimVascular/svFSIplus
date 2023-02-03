@@ -160,6 +160,13 @@ svFSIplus uses the [The Visualization Toolkit (VTK)](https://vtk.org/) to read f
 svFSIplus uses the [Open MPI](https://www.open-mpi.org/) Message Passing Interface (MPI) libraries for parallel computing. 
 
 
+<h2 id="building_build"> Building with Trilinos </h2>
+
+By defualt svFSIplus uses its custom  linear algebra solvers (e.g. GMRES). It also supports several simple preconditioners. 
+
+svFSIplus can also use the linear algebra solvers and preconditioners provided by the [Trilinos](https://trilinos.github.io/) scientific software package. Using Trilinos can often reduce the execution time of a simulation.
+
+
 
 
 
