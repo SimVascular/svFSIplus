@@ -117,13 +117,13 @@ Several [software packages](#building_packages) must be installed in order to bu
 
 svFSIplus is built on a MacOS or Linux computer from a terminal using the following commands
 ```
-    mkdir svFSIplus-package
-    cd svFSIplus-package
-    git clone https://github.com/SimVascular/svFSIplus
-    mkdir build
-    cd build/
-    cmake ../svFSIplus/
-    make -j4
+mkdir svFSIplus-package
+cd svFSIplus-package
+git clone https://github.com/SimVascular/svFSIplus
+mkdir build
+cd build/
+cmake ../svFSIplus/
+make -j4
 ```
 
 This creates the svFSIplus binary `svFSIplus-package/build/svFSI-build/bin/svFSIplus*`.
@@ -199,7 +199,7 @@ and with The Trilinos packages
 
 svFSIplus is compiled with the Trilinos libraries using the CMake `SV_USE_TRILINOS` option
 ```
-    cmake ../svFSIplus/ -DSV_USE_TRILINOS:BOOL=ON 
+cmake ../svFSIplus/ -DSV_USE_TRILINOS:BOOL=ON 
 ```
 
 
