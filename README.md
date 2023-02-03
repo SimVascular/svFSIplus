@@ -215,7 +215,7 @@ CMake will be able to find the Trilinos libraries once they have been built and 
 
 <h1 id="simulation_run"> Running a Simulation </h1>
 
-The svFSIplus binary is run from the command with an input solver parameter XML file as an argument
+The svFSIplus binary is run from the command line with an input solver parameters XML file as an argument
 
 ```
 svFSIplus solver_params.xml
@@ -224,7 +224,7 @@ svFSIplus solver_params.xml
 A simulation can be run in parallel on four processors using 
 
 ```
-mpiexe -np 4 svFSIplus solver_params.xml
+mpiexec -np 4 svFSIplus solver_params.xml
 ```
 
 
