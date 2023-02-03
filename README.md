@@ -195,12 +195,14 @@ and with The Trilinos packages
 - Zoltan
 
 
+
 <h3 id="building_compile_with_Trilinos"> Compiling with Trilinos Libraries  </h3>
 
 svFSIplus is compiled with the Trilinos libraries using the CMake `SV_USE_TRILINOS` option
 ```
 cmake ../svFSIplus/ -DSV_USE_TRILINOS:BOOL=ON 
 ```
+CMake will be able to find the Trilinos libraries once they are built and installed.
 
 
 
