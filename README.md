@@ -152,12 +152,12 @@ svFSIplus is built using [CMake](https://cmake.org). CMake is used to control th
 
 <h3 id="building_vtk"> Visualization Toolkit </h3>
 
-svFSIplus uses the [The Visualization Toolkit (VTK)](https://vtk.org/) to read finite element mesh data stored in VTP and VTU [formats](https://kitware.github.io/vtk-examples/site/VTKFileFormats/). The [VTP](https://vtk.org/doc/nightly/html/classvtkPolyData.html#details) format is used to store 2D finite element mesh data for inlet and outlet surfaces. The [VTU](https://vtk.org/doc/nightly/html/classvtkUnstructuredGrid.html#details) format is used to store finite element volume meshes.
+svFSIplus uses the [The Visualization Toolkit (VTK)](https://vtk.org/) to read finite element mesh data stored in VTP and VTU [formats](https://kitware.github.io/vtk-examples/site/VTKFileFormats/). The [VTP](https://vtk.org/doc/nightly/html/classvtkPolyData.html#details) format is used to store 2D finite element meshes for inlet and outlet surfaces. The [VTU](https://vtk.org/doc/nightly/html/classvtkUnstructuredGrid.html#details) format is used to store finite element volume meshes.
 
 
 <h3 id="building_mpi"> Open MPI </h3>
 
-[Open MPI](https://www.open-mpi.org/)
+svFSIplus uses the [Open MPI](https://www.open-mpi.org/) Message Passing Interface (MPI) libraries for parallel computing. 
 
 
 
