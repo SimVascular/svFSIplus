@@ -171,7 +171,7 @@ svFSIplus uses the [Open MPI](https://www.open-mpi.org/) Message Passing Interfa
 
 By defualt svFSIplus uses its custom  linear algebra solvers (e.g. GMRES). It also supports several simple preconditioners. 
 
-svFSIplus can also use the linear algebra solvers and preconditioners provided by the [Trilinos](https://trilinos.github.io/) scientific software package. Using Trilinos can often reduce the execution time of a simulation.
+svFSIplus can be built with the linear algebra solvers and preconditioners provided by the [Trilinos](https://trilinos.github.io/) scientific software package. Using Trilinos can often reduce the execution time of a simulation.
 
 
 <h3 id="building_Trilinos"> Building Trilinos </h3>
