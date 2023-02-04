@@ -68,7 +68,8 @@ All simulation data is stored in the [Simulation](#simulation_class) class.
 
 <h1 id="translate"> Translating Fortran into C++ </h1>
 
-This section provides some details about how the svFSI Fortran code was translated into C++ code. This will help to convert any new Fortran code developed in the Fortan svFSI code not included in svFSIplus. 
+This section provides some details about how the svFSI Fortran code was translated into C++ code. This will help to convert any new 
+Fortran code developed in the Fortan svFSI code not included in svFSIplus. 
 
 <!--- ------------------------------- ---> 
 <!--- -------  Variable Names ------- --->  
@@ -76,9 +77,10 @@ This section provides some details about how the svFSI Fortran code was translat
     
 <h2 id="translate_vars"> Variable Names </h2>
 
-svFSIplus is essentailly a direct line-by-line translation of the [svFSI](https://github.com/SimVascular/svFSI) Fortran code. The original Fortran variable names are typically small, contain no underscores for readability and are often ambiguous. However, the **same varaible names** are used in both the C++ and Fortran versions in order to maintain a clear correspondence between the variables used in the two versions. 
+svFSIplus is essentailly a direct line-by-line translation of the [svFSI](https://github.com/SimVascular/svFSI) Fortran code. The original Fortran variable names are typically small, contain no underscores for readability and are often ambiguous. However, the **same varaible names** are used 
+in both the C++ and Fortran codes in order to maintain a clear relationship between them.
 
-For example the following section of Fortran code
+For example, the following section of Fortran code
 ```
       p = 0._RKIND
       DO a=1, eNoNq
@@ -124,7 +126,8 @@ is replaced by the following section of C++ code
 
   ```
 
-In this example the Fortran `DO` loops are replaced by C++ `for` loops using C++ 0-based indexing. Array indexing is discussed in the [Fortran Dynamic Arrays](#translate_arrays) section below.
+In this example the Fortran `DO` loops are replaced by C++ `for` loops using C++ 0-based indexing. 
+Array indexing is discussed in the [Fortran Dynamic Arrays](#translate_arrays) section below.
 
 <!--- -------------------------------- ---> 
 <!--- -------  Fortran Modules ------- --->  
@@ -132,9 +135,13 @@ In this example the Fortran `DO` loops are replaced by C++ `for` loops using C++
 
 <h2 id="translate_modules"> Fortran Modules </h2>
 
-Modules were introduced in Fortran to modualize a large code by splitting it into separate files containing procedures and data specific to a certain application. A module is like a C++ class because it can encapsulate both data and procedures. The svFSI Fortran code uses modules primarily to store and access global variables. 
+Modules were introduced in Fortran to modualize a large code by splitting it into separate files containing procedures and 
+data specific to a certain application. A module is like a C++ class because it can encapsilate both data and procedures. 
+The svFSI Fortran code uses modules primarily to store and access global variables. 
 
-C++ classes are used to implement Fortran modules. Fortran variable names are retained to prevent (or maintain) confusion. The C++ module name uses the same Fortan name converted to camel case. For example, several of the Fortan module names and the files that implements them are given below with the coressponding C++ class name and implementation files.
+C++ classes are used to implement Fortran modules. Fortran variable names are retained to prevent (or maintain) confusion. 
+A C++ module name uses the same Fortan name converted to camel case. For example, several of the Fortan module names and the 
+files that implements them are given below with the coressponding C++ class name and implementation files.
 
 ```
    ================================================================================================
@@ -149,7 +156,8 @@ C++ classes are used to implement Fortran modules. Fortran variable names are re
  
   ```         
              
-The Fortan `USE` command provides access to all the variables defined in a module. Almost all of the svFSI Fortran procedures have a `USE COMMOD` command that provides access to all of the global varaibles (about 90) defined in the `COMMOD` module. For example
+The Fortan `USE` command provides access to all the variables defined in a module. Almost all of the svFSI Fortran procedures have 
+a `USE COMMOD` command that provides access to all of the global varaibles (about 90) defined in the `COMMOD` module. For example
 ```
       SUBROUTINE CONSTRUCT_uSOLID(lM, Ag, Yg, Dg)
 
@@ -157,11 +165,15 @@ The Fortan `USE` command provides access to all the variables defined in a modul
       USE ALLFUN
 ```
 
-**svFSIplus does not use any global variables.**  A C++ module object is passed to each procedure that needs to access its varaibles. For example, in C++ the `ComMod` object `com_mod` is explicitly passed to the `construct_usolid` function. All C++ modules are stored in the [Simulation](#simulation_class) class.
+**svFSIplus does not use any global variables.**  A C++ module object is passed to each procedure that needs to access its varaibles. 
+For example, in C++ the `ComMod` object `com_mod` is explicitly passed to the `construct_usolid` function. All C++ modules are stored in the [Simulation](#simulation_class) class.
 ```
 void construct_usolid(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Array<double>& Ag,
     const Array<double>& Yg, const Array<double>& Dg)
 ```
+
+All C++ modules are stored as member data in the [Simulation Class](#simulation_class).
+
 
 <!--- -------------------------------- ---> 
 <!---      Fortran Dynamic Arrays      --->  
@@ -169,15 +181,23 @@ void construct_usolid(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const
 
 <h2 id="translate_arrays"> Fortran Dynamic Arrays </h2>
 
-Fortran dynamic arrays have been reproduced using custom [Vector](#array_vector_class), [Array](array_vector_class) and [Array3](array_vector_class) C++  class templates. Note that these custom classes will most likey be replaced by a more sophisticated matrix package such as `Eigen`.
+Fortran dynamic arrays have been reproduced using custom [Vector](#array_vector_class), [Array](array_vector_class) and
+[Array3](array_vector_class) C++ class templates. Note that these user-defined classes will most likey be replaced by a 
+more sophisticated matrix package such as `Eigen`.
 
-Fortran dynamic arrays are declared using the `ALLOCATABLE` attribute. For example the `REAL, ALLOCATABLE :: A(:,:)` statement declares the two dimentional array of type `REAL` named  `A`. The Fortran `ALLOCATE A(3,10)` statement then dynamically creates storage for `A` as a 3x10 array. The `DEALLOCATE A` statement is used to return the memory used by `A`. Allocatable arrays are automatically deallocated when going out of scope.
+Fortran dynamic arrays are declared using the `ALLOCATABLE` attribute. For example the `REAL, ALLOCATABLE :: A(:,:)` statement 
+declares the two dimentional array of type `REAL` named  `A`. The Fortran `ALLOCATE A(3,10)` statement then dynamically creates 
+storage for `A` as a 3x10 array. The `DEALLOCATE A` statement is used to return the memory used by `A`. Allocatable arrays are 
+automatically deallocated when going out of scope.
 
-C++ dynamic arrays are declared using the `Array<T>` template, where T is the array data type: double or int. The two dimentional array of type double named  `A` is declared and memory allocated using `Array<double> A(3,10);`. Memory is released when `A` goes out of scope or using `A.clear()`.
+C++ dynamic arrays are declared using the `Array<T>` template, where T is the array data type: double or int. The two dimentional 
+array of type double named  `A` is declared and memory allocated using `Array<double> A(3,10);`. Memory is released when `A` goes 
+out of scope or is explicitly freed using the `clear()` method.
    
-C++ multidimensional arrays are referenced using 0-based indexing and are traversed in column-major order like Fortran. Array indexes use paranthesis `A(i,j)` not brackets `A[i][j]` to access array elements.
+C++ multidimensional arrays are referenced using 0-based indexing and are traversed in column-major order like Fortran. Array 
+indexes use paranthesis `A(i,j)` not brackets `A[i][j]` to access array elements. 
 
-For example the following sections of Fortran code
+For example, the following sections of Fortran code that declare and use dynamocs arrays
 ```
       INTEGER(KIND=IKIND), ALLOCATABLE :: ptr(:)
 
@@ -197,7 +217,7 @@ For example the following sections of Fortran code
          bfl(:,a) = Bf(:,Ac)
       END DO
 ```
-is replaced by the following section of C++ code
+are replaced by the following section of C++ code
 ```
   Vector<int> ptr(eNoN);
   Array<double> xl(nsd,eNoN), al(tDof,eNoN), yl(tDof,eNoN), bfl(nsd,eNoN), lR(dof,eNoN);
@@ -220,7 +240,9 @@ is replaced by the following section of C++ code
   }
 ```
 
-Note that the `:` array operator used to copy a column of an array is part of the Fortran language. It was not always possible to efficiently (i.e. memory-to-memory copy) and cleanly replace Fortran array operators by C++ Array template methods. In the above aexample the Fortran `:` operator was replaced in C++ by an explicit `for` loop. 
+Note that the `:` array operator used to copy a column of an array is part of the Fortran language. It was not 
+always possible to efficiently (i.e. memory-to-memory copy) and cleanly replace Fortran array operators by C++ Array 
+template methods. In the above example the Fortran `:` operator was replaced in C++ by an explicit `for` loop. 
 
 
 <!--- ====================================================================================================================== --->
@@ -229,9 +251,12 @@ Note that the `:` array operator used to copy a column of an array is part of th
 
 <h1 id="simulation_class"> Simulation Class </h1>
 
-The C++ [Simulation](https://github.com/SimVascular/svFSIplus/blob/main/Code/Source/svFSI/Simulation.h) class encapsilates all of the objects (Fortran modules) used to store simulation data. It also contains a `Parameters` object used to store simulation parameters read in from an XML file.
+The C++ [Simulation](https://github.com/SimVascular/svFSIplus/blob/main/Code/Source/svFSI/Simulation.h) class encapsilates 
+all of the objects (Fortran modules) used to store simulation data. It also contains a `Parameters` object used to store 
+simulation parameters read in from an XML file.
 
 The `Simulation` class does not contain any methods used in the core simulation code. Like the Fortan svFSI code it is used to pass data to procedures to carry out a series of computational steps.
+
 
 <!--- ====================================================================================================================== --->
 <!--- ========================================== Array and Vector Class Templates  ========================================= --->
