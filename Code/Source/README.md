@@ -18,9 +18,8 @@ This document descibes some of the implementation details of svFSIplus C++ code.
 
 <h1 id="introduction"> Introduction </h1>
 
-svFSIplus is a C++ implementation of the Fortran [svFSI](https://github.com/SimVascular/svFSI) multi-physics finite element solver designed for computational modeling of the cardiovascular system. It represents the <i>First Stage</i> in the development of a C++ multi-physics finite element solver and is essentailly a direct line-by-line translation of the [svFSI](https://github.com/SimVascular/svFSI) Fortran code. This was done to maintain a simple mapping between the code of the two versions and to faciliate debugging by comparing intermediate data (i.e. element stiffness matrices) and simulation results.
-
-The *Second Stage* of the solver development will be an entirely new implementation encapsilating portions of the *First Stage* code into C++ classes forming a clean and simple abstaction that can be enhanced by any developer.
+svFSIplus is essentailly a direct line-by-line translation of the [svFSI](https://github.com/SimVascular/svFSI) Fortran code into C++. 
+This provides a simple mapping between the code of the original Fortan and C++ versions and aided in debugging the C++ code. 
 
 The C++ implementation differs from the Fortran implementation in four fundamental ways
 1) Custom C++ Array and Vector classes to reproduce Fortran dynamic arrays 
@@ -38,7 +37,8 @@ The following sections describe how the C++ implementation is organized and how 
 
 The C++ implementation attempts to replicate the data structures and flow of control of the Fortran implementation and to maintains its organization. 
 
-Most of the Fortran code is replicated in C++ using the same file and procedure names converted to lower case with underscores added to improve readability. For example
+Most of the Fortran code is replicated in C++ using the same file and procedure names converted to lower case with underscores to improve readability. 
+For example
 ```
    ================================================================================================
                 Fortran                       |                      C++ 
@@ -53,11 +53,12 @@ Most of the Fortran code is replicated in C++ using the same file and procedure 
    ------------------------------------------------------------------------------------------------
 ```
 
-All Fortan procedures located in a particular file will typically have a C++ implementation in a similarly named file. This was done to maintain a simple mapping between the locations of the C++ and Fortran code. 
+All Fortan procedures located in a particular file will typically have a C++ implementation in a similarly named file. This was done to maintain 
+a simple mapping between the locations of the C++ and Fortran code. 
 
 The Fortan svFSI code is implemented using a procedural programming paradigm where data is passed to procedures to carry out a series of computational steps. It makes little or no use of the object orientation features providing by Fortran90. This organization is reproduced in the C++ implementation so there are essentailly no class methods used in the core simulation code.
 
-C++ functions are defined within a `namespace` defined for each Fortran file. For example, the functions in `load_msh.cpp` are defined within the `load_msh` `namespace`. Some `namespaces` are named with a `_ns` suffix to prevent conflicts with function names (e.g. `read_files_ns`). 
+C++ functions are defined within a `namespace` defined for each Fortran file. For example, the functions in `load_msh.cpp` are defined within the `load_msh` `namespace`. Some `namespaces` contain a `_ns` suffix to prevent conflicts with function names (e.g. `read_files_ns`). 
 
 All simulation data is stored in the [Simulation](#simulation_class) class.
 
