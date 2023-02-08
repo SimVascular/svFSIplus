@@ -1,0 +1,19 @@
+name: Buildtest
+on: [push, pull_request]
+jobs:
+  build-ubuntu:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-22.04]
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install ubuntu dependencies
+        run: sudo apt update && sudo apt install build-essential cmake
+      - name: Build svFSIplus
+        run: |
+          mkdir build
+          cd build
+          cmake -DCMAKE_BUILD_TYPE=Release ..
+          cmake --build .
