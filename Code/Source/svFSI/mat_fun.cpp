@@ -114,7 +114,7 @@ mat_id(const int nd)
 // This function computes inverse of a square matrix
 //
 Array<double> 
-mat_inv(const Array<double>& A, const int nd)
+mat_inv(const Array<double>& A, const int nd, bool debug)
 {
   int iok = 0;
   Array<double> Ainv(nd,nd);
@@ -152,10 +152,11 @@ mat_inv(const Array<double>& A, const int nd)
 
   } else if ((nd > 3) && (nd < 10)) {
     double d = mat_det(A, nd);
+    std::cout << "[mat_inv] d: " << d << std::endl;
     if (utils::is_zero(fabs(d))) {
       iok = -1;
     }
-    Ainv = mat_inv_ge(A, nd);
+    Ainv = mat_inv_ge(A, nd, debug);
 
   } else {
     Ainv = mat_inv_lp(A, nd);
@@ -174,7 +175,7 @@ mat_inv(const Array<double>& A, const int nd)
 // This function computes inverse of a square matrix using Gauss Elimination method
 //
 Array<double> 
-mat_inv_ge(const Array<double>& A, const int nd)
+mat_inv_ge(const Array<double>& A, const int nd, bool debug)
 {
   Array<double> B(nd,2*nd);
   Array<double> Ainv(nd,nd);
@@ -189,6 +190,7 @@ mat_inv_ge(const Array<double>& A, const int nd)
 
   // Pivoting
   for (int i = nd-1; i > 0; i--) { 
+    //std::cout << "[mat_inv_ge] i: " << i << std::endl;
     if (B(i,0) > B(i-1,0)) {
       for (int j = 0; j < 2*nd; j++) { 
         double d = B(i,j);
@@ -198,17 +200,74 @@ mat_inv_ge(const Array<double>& A, const int nd)
     }
   }
 
+  /*
+  if (debug) {
+    std::cout << "[mat_inv_ge] " << std::endl;
+    std::cout << "[mat_inv_ge] 1 B matrix " << std::endl;
+    for (int i = 0; i < nd; i++) {
+      for (int j = 0; j < 2*nd; j++) {
+        std::cout << "[mat_inv_ge] B(i,j): " << i+1 << " " << j+1 << " " << B(i,j) << std::endl;
+      }
+    }
+    std::cout << "[mat_inv_ge] " << std::endl;
+  }
+  */
+
+  //std::cout << "[mat_inv_ge] " << std::endl;
+  //std::cout << "[mat_inv_ge] 1 B: " << B << std::endl;
+
   // Do row-column operations and reduce to diagonal
+  if (debug) {
+    std::cout << "[mat_inv_ge]  " << std::endl;
+  }
+  double d;
+
   for (int i = 0; i < nd; i++) { 
+    if (debug) {
+      std::cout << "[mat_inv_ge] ========== i  " << i+1 << " ==========" << std::endl;
+    }
     for (int j = 0; j < nd; j++) { 
+      if (debug) {
+        std::cout << "[mat_inv_ge] ----- j  " << j+1 << " -----" << std::endl;
+      }
       if (j != i) {
-        double d = B(j,i) / B(i,i);
+        d = B(j,i) / B(i,i);
+        if (debug) {
+          std::cout << "[mat_inv_ge] i j d: " << i+1 << " " << j+1 << " " << d << std::endl;
+        }
         for (int k = 0; k < 2*nd; k++) { 
+          if (debug) {
+            //std::cout << "[mat_inv_ge] i j d: " << i+1 << " " << j+1 << " " << d << std::endl;
+            std::cout << "[mat_inv_ge] ---------------------------------" << std::endl;
+            std::cout << "[mat_inv_ge] j,k: " << j+1 << " " << k+1 << std::endl;
+            std::cout << "[mat_inv_ge] B(j,k): " << B(j,k) << std::endl;
+            std::cout << "[mat_inv_ge] d*B(i,k): " << d*B(i,k) << std::endl;
+            std::cout << "[mat_inv_ge] B(j,k) - d*B(i,k): " << B(j,k) - d*B(i,k) << std::endl;
+          }
+
           B(j,k) = B(j,k) - d*B(i,k);
+
+          if (debug) {
+            std::cout << "[mat_inv_ge] new B(j,k): " << B(j,k) << std::endl;
+            std::cout << "[mat_inv_ge] " << std::endl;
+          }
         }
       }
     }
   }
+
+  if (debug) {
+    std::cout << "[mat_inv_ge] " << std::endl;
+    std::cout << "[mat_inv_ge] B matrix " << std::endl;
+    for (int i = 0; i < nd; i++) { 
+      for (int j = 0; j < 2*nd; j++) { 
+        std::cout << "[mat_inv_ge] B(i,j): " << i+1 << " " << j+1 << " " << B(i,j) << std::endl;
+      }
+    }
+  }
+
+  //std::cout << "[mat_inv_ge] " << std::endl;
+  //std::cout << "[mat_inv_ge] 2 B: " << B << std::endl;
 
   // Unit matrix
   for (int i = 0; i < nd; i++) { 
@@ -217,6 +276,9 @@ mat_inv_ge(const Array<double>& A, const int nd)
       B(i,j) = B(i,j) / d;
     }
   }
+
+  //std::cout << "[mat_inv_ge] " << std::endl;
+  //std::cout << "[mat_inv_ge] 3 B: " << B << std::endl;
 
   // Inverse
   for (int i = 0; i < nd; i++) { 

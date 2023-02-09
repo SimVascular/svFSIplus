@@ -1123,7 +1123,7 @@ class rmshType
     bool isReqd = false;
 
     // Method for remeshing: 1-TetGen, 2-MeshSim
-    int method = 0;
+    consts::MeshGeneratorType method = consts::MeshGeneratorType::RMSH_TETGEN;
 
     // Counter to track number of remesh done
     int cntr = 0;
@@ -1135,10 +1135,10 @@ class rmshType
     int cpVar = 0;
 
     // Time step at which forced remeshing is done
-    int fTS = 0;
+    int fTS = 1000;
 
     // Time step frequency for forced remeshing
-    int freq = 0;
+    int freq = 1000;
 
     // Time where remeshing starts
     double time = 0.0;

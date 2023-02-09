@@ -44,7 +44,7 @@ namespace read_files_ns {
 
   void read_outputs(Simulation* simulation, EquationParameters* eq_params, eqType& lEq, EquationNdop& nDOP,  EquationOutputs& outPuts);
 
-  void read_rmsh(Simulation* simulation);
+  void read_rmsh(Simulation* simulation, EquationParameters* eq_param);
 
   void read_spatial_values(const ComMod& com_mod, const mshType& msh, const faceType& lFa, const std::string& file_name, bcType& lBc);
 

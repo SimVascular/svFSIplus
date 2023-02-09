@@ -120,6 +120,8 @@ set(CSRCS
   post.h post.cpp
   read_files.h read_files.cpp
   read_msh.h read_msh.cpp
+  remesh.h remesh.cpp
+  remeshTet.cpp
   set_bc.h set_bc.cpp
   shells.h shells.cpp
   stokes.h stokes.cpp

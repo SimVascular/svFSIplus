@@ -346,10 +346,12 @@ void read_vtp(const std::string& file_name, faceType& face)
 
     for (int i = 0; i < face.gE.size(); i++) {
       face.gebc(0,i) = face.gE(i);
+      //std::cout << "[read_vtp] i: " << i+1 << "  gebc: " << face.gebc(0,i) << " "; 
       for (int j = 0; j < face.eNoN; j++) {
         face.gebc(j+1,i) = face.IEN(j,i);
-        face.gebc(j+1,i) = face.IEN(j,i);
+        //std::cout << face.gebc(j+1,i) << " "; 
       }
+      //std::cout << std::endl; 
     }
   }
 }

@@ -47,7 +47,7 @@ class Simulation {
     double roInf;
 
     // Simulation requires remeshing
-    bool isReqd;
+    //bool isReqd;
 };
 
 #endif

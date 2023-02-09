@@ -79,6 +79,72 @@ bool btest(int value, int pos)
   return value & (1 << pos); 
 }
 
+//---------
+// dequeue
+//---------
+//
+bool dequeue(queueType& que, int& iVal) 
+{
+  int i;
+  bool flag;
+
+  if (que.n == 0) { 
+    iVal = -1;
+    flag = false; 
+  } else { 
+    iVal = que.v(0);
+    for (i = 1; i < que.n; i++) { 
+      que.v(i-1) = que.v(i);
+    } 
+    que.n = que.n - 1;
+    flag  = true; 
+  }
+
+  return flag;
+}
+
+//---------
+// enqueue 
+//---------
+//
+void enqueue(queueType& que, int iVal) 
+{
+  if (que.maxN == 0) {
+    que.n = 1;
+    que.maxN = 8;
+    que.v.resize(que.maxN);
+    que.v(0) = iVal;
+
+  } else { 
+    if (que.maxN <= que.n) {
+      Vector<int> tmp(que.maxN);
+      tmp = que.v;
+      que.maxN = 4 * que.maxN;
+      que.v.resize(que.maxN);
+
+      for (int i = 0; i < que.n; i++) {
+        que.v(i) = tmp(i);
+      }
+    }
+
+    // Check if the new val to be added is already a member of the queue
+    bool flag = true;
+
+    for (int i = 0; i < que.n; i++) {
+      if (que.v(i) == iVal) {
+        flag = false;
+        break;
+      }
+    }
+
+    if (!flag) {
+      return;
+    }
+    que.v(que.n) = iVal;
+    que.n = que.n + 1;
+  }
+}
+
 //-------
 // ibclr
 //-------

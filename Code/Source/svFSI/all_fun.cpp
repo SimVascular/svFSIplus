@@ -32,15 +32,13 @@ double aspect_ratio(ComMod& com_mod, const int nDim, const int eNoN, const Array
       }
       auto x_diff = x.col(a) - x.col(ap);
       s(a) = sqrt( x_diff * x_diff );
-      //s(a) = SQRT(SUM((x(:,a) - x(:,ap))**2.))
     }
 
   // This is only for tri and tets so for nDim=3 eNoN=4.
+  //
   } else if (nDim == 3) {
-    Array<int> rowM{ {0, 0, 0}, {1, 1, 1}, {2, 2, 2}, {3, 3, 3} }; 
-    Array<int> colM{ {0, 1}, {2, 1}, {2, 0} };
-    //rowM = reshape( (/1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4/), shape(rowM) )
-    //colM = reshape( (/1, 2, 3, 2, 3, 1/), shape(colM) )
+    Array<int> rowM{ {0, 1, 2}, {0, 1, 3}, {0, 2, 3}, {1, 2, 3} }; 
+    Array<int> colM{ {0, 1}, {1, 2}, {2, 0} };
 
     for (int a = 0; a < eNoN; a++) {
       for (int b = 0; b < nDim; b++) {
@@ -56,12 +54,10 @@ double aspect_ratio(ComMod& com_mod, const int nDim, const int eNoN, const Array
         detD(b) = mat_fun::mat_det(Dsub,nDim);
       } 
       s(a) = 0.5 * sqrt(detD * detD);
-      //s(a) = 0.5*SQRT(SUM(detD(:)**2.))
     } 
   }
 
   return s.max() / s.min();
-  //AR = MAXVAL(s)/MINVAL(s)
 }
 
 //-------
@@ -1158,14 +1154,12 @@ double skewness(ComMod& com_mod, const int nDim, const int eNoN, const Array<dou
   Array<double> Dsub(eNoN,nDim+1);
 
   for (int a = 0; a < eNoN; a++) {
-    auto col = com_mod.x.col(a);
+    auto col = x.col(a);
     Dmat(a,0) = col * col;
-    //Dmat(a,1) = SUM(x(:,a)**2.)
 
-    for (int i = 0; i < nDim; a++) {
+    for (int i = 0; i < nDim; i++) {
       Dmat(a, i+1) = x(i,a);
     }
-    //Dmat(a,2:nDim+1) = x(:,a)
   }
 
   Vector<double> detD(nDim+2);
@@ -1187,7 +1181,6 @@ double skewness(ComMod& com_mod, const int nDim, const int eNoN, const Array<dou
     circumRad += detD(i+1)*detD(i+1);
   }
   circumRad = sqrt(circumRad - 4.0*detD(0)*detD(nDim+1)) / (2.0*fabs(detD(0)));
-  //circumRad = SQRT(SUM(detD(2:nDim+1)**2.) - 4.*detD(1)*detD(nDim+2)) /(2.*ABS(detD(1)))
 
   double integ_eq, integ_el;
 

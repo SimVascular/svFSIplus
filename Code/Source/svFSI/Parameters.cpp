@@ -49,10 +49,8 @@ void xml_util_set_parameters( std::function<void(const std::string&, const std::
 
     item = item->NextSiblingElement();
   }
-
 }
 
- 
 //------------
 // Parameters
 //------------
@@ -1566,6 +1564,9 @@ void EquationParameters::set_values(tinyxml2::XMLElement* eq_elem)
       output_params->set_values(item);
       outputs.push_back(output_params);
 
+    } else if (name == RemesherParameters::xml_element_name_) {
+      remesher.set_values(item);
+
     } else if (name == StimulusParameters::xml_element_name_) {
       default_domain->stimulus.set_values(item);
 
@@ -1767,6 +1768,103 @@ void FaceParameters::set_values(tinyxml2::XMLElement* face_elem)
 }
 
 //////////////////////////////////////////////////////////
+//           R e m e s h e r P a r a m e t e r s        //
+//////////////////////////////////////////////////////////
+
+// Define the XML element name for mesh parameters.
+const std::string RemesherParameters::xml_element_name_ = "Remesher";
+
+//--------------------
+// RemesherParameters 
+//--------------------
+//
+RemesherParameters::RemesherParameters()
+{
+  bool required = true;
+
+  type = Parameter<std::string>("type", "", required);
+
+  set_parameter("Min_dihedral_angle", 10.0, !required, min_dihedral_angle);
+  set_parameter("Max_radius_ratio", 1.15, !required, max_radius_ratio);
+  set_parameter("Remesh_frequency", 100, !required, remesh_frequency);
+  set_parameter("Frequency_for_copying_data", 10, !required, frequency_for_copying_data);
+}
+
+void RemesherParameters::print_parameters()
+{
+  std::cout << std::endl;
+  std::cout << "-------------------" << std::endl;
+  std::cout << "Remesher Parameters" << std::endl;
+  std::cout << "-------------------" << std::endl;
+
+  std::cout << type.name() << ": " << type.value() << std::endl;
+}
+
+//------------
+// set_values
+//------------
+//
+void RemesherParameters::set_values(tinyxml2::XMLElement* xml_elem)
+{
+  std::string error_msg = "Unknown " + xml_element_name + " XML element '";
+
+  // Get the 'type' from the <Remesher type=TYPE> element.
+  const char* stype;
+  auto result = xml_elem->QueryStringAttribute("type", &stype);
+  if (stype == nullptr) {
+    throw std::runtime_error("No TYPE given in the XML <Remesher type=TYPE> element.");
+  }
+  type.set(std::string(stype));
+  values_set_ = true;
+
+  // Iterate over sub-elements.
+  //
+  auto item = xml_elem->FirstChildElement();
+
+  while (item != NULL) {
+    auto name = std::string(item->Value());
+
+    if (name == "Max_edge_size") {
+      const char* name;
+      const char* value;
+      auto result = item->QueryStringAttribute("name", &name);
+      if (name == nullptr) {
+        throw std::runtime_error("No NAME given in the XML Remesher <Max_edge_size name=NAME  value=VALUE> element.");
+      }
+
+      result = item->QueryStringAttribute("value", &value);
+      if (value == nullptr) {
+        throw std::runtime_error("No VALUE given in the XML Remesher <Max_edge_size name=NAME  value=VALUE> element.");
+      }
+      auto svalue = std::string(value);
+
+      try {
+        double dvalue = std::stod(svalue);
+        max_edge_sizes_[std::string(name)] = dvalue;
+      } catch (...) {
+        throw std::runtime_error("VALUE=" + svalue + 
+            " is not a valid float in the XML Remesher <Max_edge_size name=NAME  value=VALUE> element.");
+      }
+
+    } else if (item->GetText() != nullptr) {
+      auto value = item->GetText();
+      try {
+        set_parameter_value(name, value);
+      } catch (const std::bad_function_call& exception) {
+        throw std::runtime_error(error_msg + name + "'.");
+      }
+
+    } else {
+      throw std::runtime_error(error_msg + name + "'.");
+    }
+
+    item = item->NextSiblingElement();
+  }
+
+
+}
+
+//////////////////////////////////////////////////////////
 //             M e s h P a r a m e t e r s              //
 //////////////////////////////////////////////////////////
 
@@ -1826,9 +1924,9 @@ void MeshParameters::print_parameters()
   }
 }
 
-//----------------
+//------------
 // set_values
-//----------------
+//------------
 //
 void MeshParameters::set_values(tinyxml2::XMLElement* mesh_elem)
 {

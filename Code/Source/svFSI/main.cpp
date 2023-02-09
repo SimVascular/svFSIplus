@@ -13,6 +13,7 @@
 #include "pic.h"
 #include "read_files.h"
 #include "read_msh.h"
+#include "remesh.h"
 #include "set_bc.h"
 #include "txt.h"
 #include "ustruct.h"
@@ -69,7 +70,7 @@ void iterate_solution(Simulation* simulation)
 
   std::cout << std::scientific << std::setprecision(16);
 
-  #define n_debug_iterate_solution
+  #define debug_iterate_solution
   #ifdef debug_iterate_solution
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
@@ -161,6 +162,8 @@ void iterate_solution(Simulation* simulation)
     dmsg << "cTS: " << cTS;
     dmsg << "dt: " << dt;
     dmsg << "time: " << time;
+    dmsg << "mvMsh: " << com_mod.mvMsh;
+    dmsg << "rmsh.isReqd: " << com_mod.rmsh.isReqd;
     #endif
 
     for (auto& eq : com_mod.eq) {
@@ -450,14 +453,23 @@ void iterate_solution(Simulation* simulation)
 
     txt_ns::txt(simulation, false);
 
+    // If remeshing is required then save current solution.
+    //
     if (com_mod.rmsh.isReqd) {
       l1 = ((cTS % com_mod.rmsh.cpVar) == 0);
       if (l1) {
+        #ifdef debug_iterate_solution
+        dmsg << "Saving last solution for remeshing." << std::endl; 
+        #endif
         com_mod.rmsh.rTS = cTS - 1;
         com_mod.rmsh.time = time - dt;
         for (int i = 0; i < com_mod.rmsh.iNorm.size(); i++) {
           com_mod.rmsh.iNorm(i) = com_mod.eq[i].iNorm;
         }
+
+        com_mod.rmsh.A0 = com_mod.Ao;
+        com_mod.rmsh.Y0 = com_mod.Yo;
+        com_mod.rmsh.D0 = com_mod.Do;
       }
     }
 
@@ -560,9 +572,16 @@ void iterate_solution(Simulation* simulation)
 
   } // End of outer loop
 
+  // HERE 
+  com_mod.resetSim = true;
+
   #ifdef debug_iterate_solution
-  dmsg << "=======  Simulation Finished   ========== " << std::endl;
+  dmsg << "End of outer loop" << std::endl;
   #endif
+
+  //#ifdef debug_iterate_solution
+  //dmsg << "=======  Simulation Finished   ========== " << std::endl;
+  //#endif
 }
 
 //----------------
@@ -603,23 +622,37 @@ int main(int argc, char *argv[])
   //
   auto simulation = new Simulation();
 
-  // Read in the solver commands .xml file.
-  //
   std::string file_name(argv[1]);
 
-  read_files(simulation, file_name);
+  while (true) {
 
-  // Distribute data to processors.
-  distribute(simulation);
+    // Read in the solver commands .xml file.
+    //
+    read_files(simulation, file_name);
 
-  // Initialize simulation data.
-  //
-  Vector<double> init_time(3);
+    // Distribute data to processors.
+    distribute(simulation);
 
-  initialize(simulation, init_time);
+    // Initialize simulation data.
+    //
+    Vector<double> init_time(3);
 
-  // Run the simulation.
-  run_simulation(simulation);
+    initialize(simulation, init_time);
+
+    // Run the simulation.
+    run_simulation(simulation);
+
+    std::cout << "[svFSI] resetSim: " << simulation->com_mod.resetSim << std::endl;
+
+    // Remesh and continue the simulation.
+    //
+    if (simulation->com_mod.resetSim) {
+      remesh::remesh_restart(simulation);
+    } else {
+      break;
+    }
+
+  }
 
   MPI_Finalize();
 }

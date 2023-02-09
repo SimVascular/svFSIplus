@@ -925,6 +925,33 @@ class DomainParameters : public ParameterLists
 };
 
 //--------------------
+// RemesherParameters
+//--------------------
+
+class RemesherParameters : public ParameterLists
+{
+  public:
+    RemesherParameters();
+
+    static const std::string xml_element_name_;
+    bool values_set_ = false;
+
+    Parameter<std::string> type;
+    Parameter<double> min_dihedral_angle;
+    Parameter<double> max_radius_ratio; 
+    Parameter<int> remesh_frequency;
+    Parameter<int> frequency_for_copying_data;
+
+    std::map<std::string, double> max_edge_sizes_;
+
+    bool defined() const { return values_set_; };
+    void print_parameters();
+    double get_edge_size(const std::string& name) const { return max_edge_sizes_.at(name); } 
+    bool has_edge_size(const std::string& name) const { return max_edge_sizes_.count(name) == 1; }
+    void set_values(tinyxml2::XMLElement* mesh_elem);
+};
+
+//--------------------
 // EquationParameters
 //--------------------
 //
@@ -980,6 +1007,8 @@ class EquationParameters : public ParameterLists
     LinearSolverParameters linear_solver;
 
     std::vector<OutputParameters*> outputs;
+
+    RemesherParameters remesher;
 
     VariableWallPropsParameters variable_wall_properties;
 
@@ -1063,6 +1092,7 @@ class FaceParameters : public ParameterLists
     using SetParamMapType = std::map<const std::string, std::function<void(FP, CS)>>;
     SetParamMapType params_map_;
 };
+
 
 //----------------
 // MeshParameters

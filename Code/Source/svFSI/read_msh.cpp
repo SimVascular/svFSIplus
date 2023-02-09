@@ -55,6 +55,13 @@ std::map<consts::ElementType, std::function<void(mshType&)>> check_element_conn 
 //
 void calc_elem_ar(ComMod& com_mod, const CmMod& cm_mod, mshType& lM, bool& rflag)
 {
+  #define debug_calc_elem_ar  
+  #ifdef debug_calc_elem_ar
+  DebugMsg dmsg(__func__, com_mod.cm.idcm());
+  dmsg.banner();
+  dmsg << "lM.nEl: " << lM.nEl;
+  #endif
+
   using namespace consts;
 
   if (lM.eType != ElementType::TET4 && lM.eType != ElementType::TRI3) {
@@ -79,7 +86,7 @@ void calc_elem_ar(ComMod& com_mod, const CmMod& cm_mod, mshType& lM, bool& rflag
       xl.set_col(a, com_mod.x.col(Ac));
       if (com_mod.mvMsh) {
         for (int i = 0; i < nsd; i++) {
-          dol(i,a) = com_mod.Do(i+nsd,Ac);
+          dol(i,a) = com_mod.Do(i+nsd+1,Ac);
         }
       }
     }
@@ -112,6 +119,9 @@ void calc_elem_ar(ComMod& com_mod, const CmMod& cm_mod, mshType& lM, bool& rflag
   double maxAR = AsR.max();
   maxAR = com_mod.cm.reduce(cm_mod, maxAR, MPI_MAX);
   bins = com_mod.cm.reduce(cm_mod, bins);
+  #ifdef debug_calc_elem_ar
+  dmsg << "maxAR: " << maxAR;
+  #endif
 
   std::array<double,5> tmp;
   for (int i = 0; i < 5; i++) {
@@ -140,6 +150,12 @@ void calc_elem_ar(ComMod& com_mod, const CmMod& cm_mod, mshType& lM, bool& rflag
 //
 void calc_elem_jac(ComMod& com_mod, const CmMod& cm_mod, mshType& lM, bool& rflag)
 {
+  #define debug_calc_elem_jac 
+  #ifdef debug_calc_elem_jac 
+  DebugMsg dmsg(__func__, com_mod.cm.idcm());
+  dmsg.banner();
+  dmsg << "lM.nEl: " << lM.nEl;
+  #endif
   using namespace consts;
   const int nsd = com_mod.nsd;
   rflag = false; 
@@ -154,13 +170,15 @@ void calc_elem_jac(ComMod& com_mod, const CmMod& cm_mod, mshType& lM, bool& rfla
   for (int e = 0; e < lM.nEl; e++) {
     int iDmn = all_fun::domain(com_mod, lM, cEq, e);
     auto cPhys = com_mod.eq[cEq].dmn[iDmn].phys;
+    //dmsg << ">>> e: " << e;
 
     for (int a = 0; a < lM.eNoN; a++) {
       int Ac = lM.IEN(a,e);
       xl.set_col(a, com_mod.x.col(Ac));
       if (com_mod.mvMsh) {
         for (int i = 0; i < nsd; i++) {
-          dol(i,a) = com_mod.Do(i+nsd,Ac);
+          dol(i,a) = com_mod.Do(i+nsd+1,Ac);
+          //dol(i,a) = com_mod.Do(i+nsd,Ac);
         }
       }
     }
@@ -169,7 +187,9 @@ void calc_elem_jac(ComMod& com_mod, const CmMod& cm_mod, mshType& lM, bool& rfla
       xl = xl + dol;
     }
 
+    //dmsg << "Comp jac ... " << 1;
     Jac(e) = all_fun::jacobian(com_mod, nsd, lM.eNoN, xl, lM.Nx.slice(0));
+    //dmsg << "Jac(e): " << Jac(e);
 
     if (Jac(e) < 0.0) {
       cnt = cnt + 1;
@@ -181,9 +201,11 @@ void calc_elem_jac(ComMod& com_mod, const CmMod& cm_mod, mshType& lM, bool& rfla
 
   double maxJ = Jac.abs().max();
   maxJ = com_mod.cm.reduce(cm_mod, maxJ, MPI_MAX);
+  dmsg << "maxJ: " << maxJ;
   Jac = Jac / std::abs(maxJ);
 
   double minJ = Jac.min();
+  dmsg << "minJ: " << minJ;
   cnt = com_mod.cm.reduce(cm_mod, cnt);
   double tmp = 100.0 * static_cast<double>(cnt) / static_cast<double>(lM.gnEl);
 
@@ -209,6 +231,7 @@ void calc_elem_jac(ComMod& com_mod, const CmMod& cm_mod, mshType& lM, bool& rfla
       throw std::runtime_error("[calc_elem_jac] Unexpected behavior! Mesh is DISTORTED.");
     }
   }
+  dmsg << "Done " << "";
 }
 
 //----------------
@@ -218,6 +241,13 @@ void calc_elem_jac(ComMod& com_mod, const CmMod& cm_mod, mshType& lM, bool& rfla
 //
 void calc_elem_skew(ComMod& com_mod, const CmMod& cm_mod, mshType& lM, bool& rflag)
 {
+  #define debug_calc_elem_skew
+  #ifdef debug_calc_elem_skew
+  DebugMsg dmsg(__func__, com_mod.cm.idcm());
+  dmsg.banner();
+  dmsg << "rflag: " << rflag;
+  dmsg << "lM.nEl: " << lM.nEl;
+  #endif
   using namespace consts;
   const int nsd = com_mod.nsd;
 
@@ -241,7 +271,7 @@ void calc_elem_skew(ComMod& com_mod, const CmMod& cm_mod, mshType& lM, bool& rfl
       xl.set_col(a, com_mod.x.col(Ac));
       if (com_mod.mvMsh) {
         for (int i = 0; i < nsd; i++) {
-          dol(i,a) = com_mod.Do(i+nsd,Ac);
+          dol(i,a) = com_mod.Do(i+nsd+1,Ac);
         }
       }
     }
@@ -266,6 +296,7 @@ void calc_elem_skew(ComMod& com_mod, const CmMod& cm_mod, mshType& lM, bool& rfl
 
   double maxSk = Skw.max();
   maxSk = com_mod.cm.reduce(cm_mod, maxSk, MPI_MAX);
+  dmsg << "maxSk: " << maxSk;
   bins = com_mod.cm.reduce(cm_mod, bins);
 
   std::array<double,5> tmp;
@@ -286,6 +317,7 @@ void calc_elem_skew(ComMod& com_mod, const CmMod& cm_mod, mshType& lM, bool& rfl
     //std = "    Max Skewness <"//maxSk//">"
   }
 
+  dmsg << "Done" << "";
 }
 
 //-----------------
@@ -294,18 +326,32 @@ void calc_elem_skew(ComMod& com_mod, const CmMod& cm_mod, mshType& lM, bool& rfl
 //
 void calc_mesh_props(ComMod& com_mod, const CmMod& cm_mod, const int nMesh, std::vector<mshType>& mesh)
 {
+  #define debug_calc_mesh_props
+  #ifdef debug_calc_mesh_props
+  DebugMsg dmsg(__func__, com_mod.cm.idcm());
+  dmsg.banner();
+  #endif
+
   using namespace consts;
   auto& rmsh = com_mod.rmsh;
+  #ifdef debug_calc_mesh_props
+  dmsg << "nMesh: " << nMesh; 
+  dmsg << "resetSim: " << com_mod.resetSim; 
+  dmsg << "com_mod.cTS: " << com_mod.cTS;
+  dmsg << "rmsh.fTS: " << rmsh.fTS; 
+  dmsg << "rmsh.freq: " << rmsh.freq; 
+  #endif
 
   for (int iM = 0; iM < nMesh; iM++) {
-    bool flag;
+    dmsg << "----- mesh " + mesh[iM].name << " -----";
+    bool flag = false;
     calc_elem_jac(com_mod, cm_mod, mesh[iM], flag);
-
     calc_elem_skew(com_mod, cm_mod, mesh[iM], flag);
-
     calc_elem_ar(com_mod, cm_mod, mesh[iM], flag);
-
     rmsh.flag[iM] = flag;
+    dmsg << "mesh[iM].flag: " << rmsh.flag[iM];
+    // [DaveP] fake remeshing.
+    rmsh.flag[iM] = true;
   }
 
   if (rmsh.isReqd && std::count(rmsh.flag.begin(), rmsh.flag.end(), true) != rmsh.flag.size()) {
@@ -318,6 +364,7 @@ void calc_mesh_props(ComMod& com_mod, const CmMod& cm_mod, const int nMesh, std:
           auto cPhys = com_mod.eq[com_mod.cEq].dmn[cDmn].phys;
           if (cPhys == Equation_fluid) {
             rmsh.flag[iM] = true; 
+            dmsg << "fluid mesh[iM].flag set to true " << rmsh.flag[iM];
             break;
           }
         }
@@ -328,7 +375,17 @@ void calc_mesh_props(ComMod& com_mod, const CmMod& cm_mod, const int nMesh, std:
 
   Array<bool> gFlag(nMesh, com_mod.cm.np());
 
-  MPI_Allgather(&rmsh.flag, nMesh, cm_mod::mplog, gFlag.data(), nMesh, cm_mod::mplog, com_mod.cm.com());
+  // The bool vector rmsh.flag does not have a data()
+  // method so copy the data into a bool array.
+  //
+  bool* rmsh_flag = new bool[rmsh.flag.size()];
+  for (int i = 0; i < rmsh.flag.size(); i++) {
+    rmsh_flag[i] = rmsh.flag[i];
+  }
+
+  MPI_Allgather(rmsh_flag, nMesh, cm_mod::mpint, gFlag.data(), nMesh, cm_mod::mpint, com_mod.cm.com());
+
+  delete[] rmsh_flag;
 
   for (int iM = 0; iM < nMesh; iM++) {
     rmsh.flag[iM] = false;
@@ -343,6 +400,8 @@ void calc_mesh_props(ComMod& com_mod, const CmMod& cm_mod, const int nMesh, std:
   if (std::count(rmsh.flag.begin(), rmsh.flag.end(), true) != 0) {
     com_mod.resetSim = true;
   }
+
+  dmsg << "resetSim: " << com_mod.resetSim;
 }
 
 //----------
@@ -359,8 +418,16 @@ void calc_mesh_props(ComMod& com_mod, const CmMod& cm_mod, const int nMesh, std:
 //   face.gN - Face global node Ids 
 //   face.nNo - Number of nodes
 //
+// Reproduces 'SUBROUTINE CALCNBC(lM, lFa)'
+//
 void calc_nbc(mshType& mesh, faceType& face)
 {
+  #define n_debug_calc_nbc 
+  #ifdef debug_calc_nbc 
+  DebugMsg dmsg(__func__, 0);
+  dmsg.banner();
+  dmsg << "Face: " << face.name;
+  #endif
   int num_elems = mesh.gnEl;
   int num_nodes = mesh.gnNo;
   auto incNd = Vector<int>(mesh.gnNo);
@@ -371,7 +438,10 @@ void calc_nbc(mshType& mesh, faceType& face)
   std::string msg("[calc_nbc] ");
 
   for (int e = 0; e < face.nEl; e++ ) {
+    //dmsg << "---- e " << std::to_string(e+1) + " -----";
     int Ec = face.gE(e);
+    //dmsg << "Ec: " << Ec;
+
     if (Ec > num_elems) {
       throw std::runtime_error(msg + "element ID " + std::to_string(Ec) + " exceeds the number of elements (" + std::to_string(num_elems) +
           ") in the mesh.");
@@ -381,6 +451,7 @@ void calc_nbc(mshType& mesh, faceType& face)
 
     for (int a = 0; a < face.eNoN; a++) {
       int Ac = face.IEN(a,e);
+      //dmsg << "Ac: " << Ac;
       if (Ac > num_nodes) { 
         throw std::runtime_error(msg + "element " + std::to_string(e) + " has a node " + std::to_string(Ac) + " that exceeds the number of nodes (" + 
             std::to_string(num_nodes) + ") in the mesh.");

@@ -92,7 +92,7 @@ void read_ndnlff(const std::string& file_name, faceType& face)
 //
 void read_sv(Simulation* simulation, mshType& mesh, const MeshParameters* mesh_param)
 {
-  auto mesh_path = mesh_param->get_path();
+  auto mesh_path = mesh_param->mesh_file_path();
   auto mesh_name = mesh_param->get_name();
   #define n_dbg_load_msh
   #ifdef dbg_load_msh
@@ -105,7 +105,7 @@ void read_sv(Simulation* simulation, mshType& mesh, const MeshParameters* mesh_p
   vtk_xml::read_vtu(mesh_path, mesh);
 
   // Set mesh element properites for the input element type.
-  nn::select_ele(simulation, mesh);
+  nn::select_ele(simulation->com_mod, mesh);
 
   // Check the mesh element node ordering.
   //

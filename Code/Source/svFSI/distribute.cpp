@@ -255,7 +255,7 @@ void distribute(Simulation* simulation)
 
     if (com_mod.rmsh.isReqd) {
       auto& rmsh = com_mod.rmsh;
-      cm.bcast(cm_mod, &rmsh.method);
+      cm.bcast_enum(cm_mod, &rmsh.method);
       cm.bcast(cm_mod, &rmsh.freq);
       cm.bcast(cm_mod, &rmsh.cpVar);
 
@@ -1396,7 +1396,7 @@ void part_msh(Simulation* simulation, mshType& lM, Vector<int>& gmtl, int nP, Ve
   int eNoN = lM.eNoN;
 
   if (cm.slv(cm_mod)) {
-    nn::select_ele(simulation, lM);
+    nn::select_ele(com_mod, lM);
     lM.gIEN.clear(); 
     lM.fa.resize(lM.nFa);
   }

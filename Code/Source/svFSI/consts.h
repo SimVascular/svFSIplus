@@ -298,6 +298,19 @@ constexpr auto Equation_ustruct = EquationType::phys_ustruct;
 
 extern const std::map<std::string,EquationType> equation_name_to_type;
 
+//-------------------
+// MeshGeneratorType
+//-------------------
+//
+enum class MeshGeneratorType
+{
+  RMSH_TETGEN = 1,
+  RMSH_MESHSIM = 2
+};
+
+// Map for string to MeshGeneratorType. 
+extern const std::map<std::string,MeshGeneratorType> mesh_generator_name_to_type;
+
 //------------
 // OutputType
 //------------
