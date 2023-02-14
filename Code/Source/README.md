@@ -165,13 +165,12 @@ a `USE COMMOD` command that provides access to all of the global varaibles (abou
       USE ALLFUN
 ```
 
-**svFSIplus does not use any global variables.**  A C++ module object is passed to each procedure that needs to access its varaibles. 
-For example, in C++ the `ComMod` object `com_mod` is explicitly passed to the `construct_usolid` function. All C++ modules are stored in the [Simulation](#simulation_class) class.
+**svFSIplus does not use any global variables.**  A C++ module object is passed to each procedure that needs to access its variables. 
+For example, in C++ the `ComMod` object `com_mod` is explicitly passed to the `construct_usolid` function. 
 ```
 void construct_usolid(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Array<double>& Ag,
     const Array<double>& Yg, const Array<double>& Dg)
 ```
-
 All C++ modules are stored as member data in the [Simulation Class](#simulation_class).
 
 
@@ -255,7 +254,8 @@ The C++ [Simulation](https://github.com/SimVascular/svFSIplus/blob/main/Code/Sou
 all of the objects (Fortran modules) used to store simulation data. It also contains a `Parameters` object used to store 
 simulation parameters read in from an XML file.
 
-The `Simulation` class does not contain any methods used in the core simulation code. Like the Fortan svFSI code it is used to pass data to procedures to carry out a series of computational steps.
+The `Simulation` class does not contain any methods used in the core simulation code. Like the Fortan svFSI code it is only 
+used to pass data to procedures to carry out a series of computational steps.
 
 
 <!--- ====================================================================================================================== --->
