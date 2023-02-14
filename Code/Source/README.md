@@ -473,7 +473,6 @@ are named the same as the name used in the XML file except with a lower case fir
 ```
 class MeshParameters : public ParameterLists
 {
-
     std::vector<FaceParameters*> face_parameters;                      // <Add_face> 
 
     Parameter<std::string> name;                                       // <Add_mesh name=NAME >
@@ -498,7 +497,10 @@ class MeshParameters : public ParameterLists
 };
 ```
 
-Parameters names and default values are set in each section's constructor using member data
+All section classes inherit from the `ParameterLists` class which has methods to set parameter values and store them in
+a map for processing (e.g. checking that all required parameters have been set). 
+
+Parameter names and default values are set in each section's constructor using member data
 ```
 MeshParameters::MeshParameters()
 {
@@ -522,7 +524,52 @@ MeshParameters::MeshParameters()
 }
 ```
 
-Parameter values are parsed and set in each section's `set_values()` method. 
+Parameter values are parsed and set in each section's `set_values()` method. Sections that don't contain sub-sections
+can be automatically parsed like so
+```
+  using std::placeholders::_1;
+  using std::placeholders::_2;
+
+  std::function<void(const std::string&, const std::string&)> ftpr =
+      std::bind( &ProjectionParameters::set_parameter_value, *this, _1, _2);
+
+  xml_util_set_parameters(ftpr, xml_elem, error_msg);
+```
+
+Sections that do contain sub-sections currently require explicit checks for sub-sections
+```
+  while (item != NULL) {
+    auto name = std::string(item->Value());
+
+    // Add_face sub-section.
+    if (name == FaceParameters::xml_element_name_) {
+      auto face_params = new FaceParameters();
+      face_params->set_values(item);
+      face_parameters.push_back(face_params);
+
+    // There may be multiple 'Fiber_direction' elements so store
+    // them as a list of VectorParameter<double>. 
+    //
+    } else if (name == "Fiber_direction") {
+      auto value = item->GetText();
+      VectorParameter<double> dir("Fiber_direction", {}, false, {});
+      dir.set(value);
+      fiber_directions.push_back(dir);
+
+    } else if (item->GetText() != nullptr) {
+      auto value = item->GetText();
+      try {
+        set_parameter_value(name, value);
+      } catch (const std::bad_function_call& exception) {
+        throw std::runtime_error(error_msg + name + "'.");
+      }
+    } else {
+      throw std::runtime_error(error_msg + name + "'.");
+    }
+
+    item = item->NextSiblingElement();
+  }
+```
 
 
 <!--- -------------------------------- ---> 
@@ -531,12 +578,15 @@ Parameter values are parsed and set in each section's `set_values()` method.
 
 <h2 id="xml_file"> Accessing Parameters </h2>
 
-Parameter values are accessed from the core simulation code from the `Simulation` object's `Parameters` object. The `Parameter` template class `()` operator is used to access the parameters's value.
-
+Parameter values are accessed from the core simulation code using the `Simulation` object's `Parameters` object. 
+The `Parameter` template class `()` operator or `value()` method is used to access the parameters's value, the `defined()` 
+method is used to check if a parameter's value has been set.
 ```
-int nsd = simulation.parameters.general_simulation_parameters.number_of_spatial_dimensions();
-
+auto& general_params = simulation->parameters.general_simulation_parameters'
+const int nsd = general_params.number_of_spatial_dimensions();
 auto file_path = simulation.parameters.mesh_parameters[0].mesh_file_path();
+
+if (eq_params->variable_wall_properties.defined()) { }
 ```
 
 <!--- ====================================================================================================================== --->
