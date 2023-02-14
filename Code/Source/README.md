@@ -275,6 +275,16 @@ A = B
 
 The objects created from class templates are not part of the C++ language like arrays (i.e. double A[100]). They have the overhead associated with all C++ objects (construct/destroy). Object copy and assignment operators must also be handled efficiently so that intermediate objects are not created and extra data copys are avoided.
 
+The `Vector`, `Array` and `Array3` class templates have a `data()` method that returns a point to the object's internal memory. This is neeed for
+MPI calls that take raw C pointers as arguments. For example
+```
+MPI_Allreduce(part.data(), tmpI.data(), gnNo, cm_mod::mpint, MPI_MAX, cm.com());
+```
+
+The `Array3` C++ class template contains an `rslice()` method that returns an `Array` object whose internal data is a pointer to the internal data
+of an `Array3` object. This was done to reduce the overhead of copying sub-arrays in some sections of the custom linear algebra code. The `Array` 
+object will not free its data if it is a reference to the data of a `Array3` object.
+
 The class templates are defined in the [Vector.h](https://github.com/SimVascular/svFSIplus/blob/main/Code/Source/svFSI/Vector.h), [Array.h](https://github.com/SimVascular/svFSIplus/blob/main/Code/Source/svFSI/Array.h) and [Array3.h](https://github.com/SimVascular/svFSIplus/blob/main/Code/Source/svFSI/Array3.h) files.
 
 
@@ -284,7 +294,7 @@ The class templates are defined in the [Vector.h](https://github.com/SimVascular
 
 <h2 id="array_vector_class"> Allocating and Freeing Memory </h2>
 
-Objects can be created using a size
+Objects can be created using its constructor
 ```
 Array<double> A(2,2);
 ```
@@ -311,7 +321,7 @@ or when it goes out of scope.
 
 <h2 id="array_vector_class"> Indexing and Memory Layout </h2>
 
-C++ multidimensional arrays are referenced using 0-based indexing and are traversed in column-major order like Fortran. Array indexes use paranthesis `A(i,j)` not brackets `A[i][j]` to access array elements.
+C++ multidimensional arrays are referenced using 0-based indexing and are traversed in column-major order like Fortran. Array indexes use paranthesis `A(i,j)` not brackets `A[i][j]` to access array elements. This was done to make C++ code look more like Fortran and to simplify the conversion process. 
 ```
   Vector<double> u(2);
   Array<double> ux(2,2);
@@ -339,7 +349,7 @@ C++ multidimensional arrays are referenced using 0-based indexing and are traver
   }
 ```
 
-Indexes can be checked by defining the `_check_enabled` directive within each template include file. An index out of bounds will throw an `std::runtime_error` exception. Note that index checking will substantially slow down a simulation.
+Indexes can be checked by defining the `_check_enabled` directive within each template include file. An index out of bounds will throw an `std::runtime_error` exception. Note that index checking will substantially slow down a simulation so it should be disabled when not testing.
 
 
 <!--- -------------------------------- ---> 
