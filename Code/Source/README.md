@@ -281,10 +281,6 @@ MPI calls that take raw C pointers as arguments. For example
 MPI_Allreduce(part.data(), tmpI.data(), gnNo, cm_mod::mpint, MPI_MAX, cm.com());
 ```
 
-The `Array3` C++ class template contains an `rslice()` method that returns an `Array` object whose internal data is a pointer to the internal data
-of an `Array3` object. This was done to reduce the overhead of copying sub-arrays in some sections of the custom linear algebra code. The `Array` 
-object will not free its data if it is a reference to the data of a `Array3` object.
-
 The class templates are defined in the [Vector.h](https://github.com/SimVascular/svFSIplus/blob/main/Code/Source/svFSI/Vector.h), [Array.h](https://github.com/SimVascular/svFSIplus/blob/main/Code/Source/svFSI/Array.h) and [Array3.h](https://github.com/SimVascular/svFSIplus/blob/main/Code/Source/svFSI/Array3.h) files.
 
 
@@ -412,7 +408,8 @@ auto N1 = fs[1].N.col(g);
 fluid_3d_m(com_mod, vmsStab, fs[0].eNoN, fs[1].eNoN, w, ksix, N0, N1, Nwx, Nqx, Nwxx, al, yl, bfl, lR, lK);
 ```
 
-Use the `rcol` method if the column data is going to be modified; it might also help to speed up a procedure that is called a lot (e.g. in material models).
+Use the `rcol` method if the column data is going to be modified; it might also help to speed up a procedure that 
+is called a lot (e.g. in material models).
 
 <!--- -------------------------------- ---> 
 <!---    Getting an Array3 Slice       --->  
@@ -432,7 +429,10 @@ Array<T> slice(const int slice) const - Returns a new Array<T> object containing
 Array<T> rslice(const int slice) const - Return an Array<T> object with data pointing into the Array3 internal data.
 ```
 
-Use the `rslice` method if the column data is going to be modified.
+The `rslice()` method returns an `Array` object whose internal data is a pointer to the internal data of an `Array3` object. 
+This was done to reduce the overhead of copying sub-arrays in some sections of the custom linear algebra code. The `Array` 
+object will not free its data if it is a reference to the data of a `Array3` object. Use the `rslice` method if the slice data
+is going to be modified. It can also speed up code that repeatedly extracts sub-arrarys used in computations but are not modified.
 
 <!--- ====================================================================================================================== --->
 <!--- ============================================== Solver Parameter Input XML File  ====================================== --->
@@ -440,53 +440,25 @@ Use the `rslice` method if the column data is going to be modified.
 
 <h1 id="xml_file"> Solver Parameter Input XML File  </h1>
 
-The svFSIplus solver parameters read in for a simulation are stored in an XML-format file. The XML file organization and parameter names replicate the old input text file except that parameter names have spaces replaced by underscores. 
+The Fortan svFSI solver read in simulation parameters in a custom text format. All parameters were read in at startup and stored as 
+an array of characters (string) using custom code. Parameter values were then retrieved during various stages of the compuation. 
+The string representation was converted when the value of a parameter was needed. An error in a parameter value could therefore not
+be detected until later stages of the compuataion (e.g., when the mesh is being distributed over processors).
 
-Parameters using an additional value after the `:` have an XML atttibute added to identify the value: `Add equation: FSI` is converted to `<Add_equation type="FSI" >`.
+svFSIplus solver simulation parameters are stored in an XML-format file. Parameter types are checked as they are read so errors 
+in parameter values are immediately detected. 
 
-Example: Old input text file
-```
-Add equation: FSI {
-   Coupled: 1
-   Min iterations: 1
-   Max iterations: 10
-   Tolerance: 1e-6
-
-   Domain: 0 {
-      Equation: fluid
-      Density: 1.0
-      Viscosity: Constant {Value: 0.04}
-      Backflow stabilization coefficient: 0.2
-   }
-}
-   
-```
-new XML format
-```
-<Add_equation type="FSI" >
-   <Coupled> true </Coupled>
-   <Min_iterations> 1 </Min_iterations>
-   <Max_iterations> 10 </Max_iterations>
-   <Tolerance> 1e-6 </Tolerance>
-
-   <Domain id="0" >
-      <Equation> fluid </Equation>
-      <Density> 1.0 </Density>
-      <Viscosity model="Constant" >
-         <Value> 0.04 </Value>
-      </Viscosity>
-      <Backflow_stabilization_coefficient> 0.2 </Backflow_stabilization_coefficient>
-   </Domain>
-</Add_equation>
-```
 
 <!--- -------------------------------- ---> 
-<!---          Parameter Class         --->  
+<!---          Parameters Class        --->  
 <!--- -------------------------------- --->  
 
 <h2 id="xml_file"> Parameters class </h2>
 
-The [Parameters](https://github.com/SimVascular/svFSIplus/blob/main/Code/Source/svFSI/Parameters.h) class is used to read and store solver parameters from an XML file. It contains objects for each of the sections in the paramaters file
+The [Parameters](https://github.com/SimVascular/svFSIplus/blob/main/Code/Source/svFSI/Parameters.h) class is used to read and store simulation 
+parameters parsed from an XML file using using [tinyxml2](https://github.com/leethomason/tinyxml2). 
+
+The `Parameters` class contains objects for each of the sections in the paramaters file
 ```
     GeneralSimulationParameters general_simulation_parameters;
     std::vector<MeshParameters*> mesh_parameters;
@@ -494,7 +466,10 @@ The [Parameters](https://github.com/SimVascular/svFSIplus/blob/main/Code/Source/
     std::vector<ProjectionParameters*> projection_parameters;
 ```
 
-Each section is represented as a class containing objects for each parameter defined for that section. Objects representing parameters are named the same as the name used in the XML file except with a lower case first character.
+Each section is represented as a class containing objects for each parameter defined for that section. Objects representing parameters 
+are named the same as the name used in the XML file except with a lower case first character. Each parameter is defined with a type 
+(bool, double, int, etc.) using the `Parameter` template class. For example
+
 ```
 class MeshParameters : public ParameterLists
 {
@@ -523,7 +498,7 @@ class MeshParameters : public ParameterLists
 };
 ```
 
-The `Parameter` template class stores a parameter's name, value and other attributes (e.g. if it has been set). These values are set in each section objects constructor.
+Parameters names and default values are set in each section's constructor using member data
 ```
 MeshParameters::MeshParameters()
 {
@@ -547,6 +522,7 @@ MeshParameters::MeshParameters()
 }
 ```
 
+Parameter values are parsed and set in each section's `set_values()` method. 
 
 
 <!--- -------------------------------- ---> 
