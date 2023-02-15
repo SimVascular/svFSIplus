@@ -18,9 +18,14 @@ class VtkData {
     virtual int np_elem() = 0;
     virtual int num_points() = 0;
     virtual void read_file(const std::string& file_name) = 0;
+
     virtual void set_element_data(const std::string& data_name, const Array<double>& data) = 0;
     virtual void set_element_data(const std::string& data_name, const Array<int>& data) = 0;
+
     virtual void set_point_data(const std::string& data_name, const Array<double>& data) = 0;
+    virtual void set_point_data(const std::string& data_name, const Array<int>& data) = 0;
+    virtual void set_point_data(const std::string& data_name, const Vector<int>& data) = 0;
+
     virtual void set_points(const Array<double>& points) = 0;
     virtual void set_connectivity(const int nsd, const Array<int>& conn, const int pid = 0) = 0;
 
@@ -59,9 +64,14 @@ class VtkVtpData : public VtkData {
     Array<double> get_point_data(const std::string& data_name);
     bool has_point_data(const std::string& data_name);
     virtual void set_connectivity(const int nsd, const Array<int>& conn, const int pid = 0);
+
     virtual void set_element_data(const std::string& data_name, const Array<double>& data);
     virtual void set_element_data(const std::string& data_name, const Array<int>& data);
+
     virtual void set_point_data(const std::string& data_name, const Array<double>& data);
+    virtual void set_point_data(const std::string& data_name, const Array<int>& data);
+    virtual void set_point_data(const std::string& data_name, const Vector<int>& data);
+
     virtual void set_points(const Array<double>& points);
     virtual void write();
     //virtual void write(const std::string& file_name);
@@ -94,9 +104,14 @@ class VtkVtuData : public VtkData {
     virtual Array<double> get_points();
     bool has_point_data(const std::string& data_name);
     virtual void set_connectivity(const int nsd, const Array<int>& conn, const int pid = 0);
+
     virtual void set_element_data(const std::string& data_name, const Array<double>& data);
     virtual void set_element_data(const std::string& data_name, const Array<int>& data);
+
     virtual void set_point_data(const std::string& data_name, const Array<double>& data);
+    virtual void set_point_data(const std::string& data_name, const Array<int>& data);
+    virtual void set_point_data(const std::string& data_name, const Vector<int>& data);
+
     virtual void set_points(const Array<double>& points);
     virtual void write();
     //virtual void write(const std::string& file_name);

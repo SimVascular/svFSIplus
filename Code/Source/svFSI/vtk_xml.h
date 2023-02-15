@@ -20,6 +20,8 @@ void read_vtu_pdata(const std::string& fName, const std::string& kwrd, const int
 
 void read_vtus(Simulation* simulation, Array<double>& lA, Array<double>& lY, Array<double>& lD, const std::string& fName);
 
+void write_vtp(ComMod& com_mod, faceType& lFa, const std::string& fName);
+
 void write_vtus(Simulation* simulation, const Array<double>& lA, const Array<double>& lY, const Array<double>& lD, const bool lAve);
 
 };

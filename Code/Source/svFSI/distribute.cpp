@@ -1558,6 +1558,16 @@ void part_msh(Simulation* simulation, mshType& lM, Vector<int>& gmtl, int nP, Ve
   // gpart is a global version of part in which processor p = gpart(e)
   // is the owner of element "e".
   //
+  /*
+  std::cout << "#######################" << std::endl;
+  std::cout << "part.size: " << part.size() << std::endl;
+  std::cout << "nEl: " << nEl << std::endl;
+  std::cout << "gPart.size: " << gPart.size() << std::endl;
+  std::cout << "sCount.size: " << sCount.size() << std::endl;
+  std::cout << "disp.size: " << disp.size() << std::endl;
+  */
+  //exit(0);
+
   MPI_Gatherv(part.data(), nEl, cm_mod::mpint, gPart.data(), sCount.data(), disp.data(), 
       cm_mod::mpint, cm_mod.master, cm.com());
 

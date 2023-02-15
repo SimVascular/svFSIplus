@@ -1,10 +1,70 @@
 
+//
+// The class methods defined here are used to process svFSIplus simulation parameters 
+// read in from an XML-format file. 
+//
+// XML files are parsed using tinyxml2 (https://github.com/leethomason/tinyxml2).
+//
+//-----------------
+// Section objects 
+//-----------------
+// Groups of related parameters making up the sections of an XML simulation 
+// file are stored in section objects. For example
+//
+//   - GeneralSimulationParameters - General parameter section
+//   - MeshParameters - Mesh parameter section
+//   - EquationParameters - Equation parameter section
+//   - ProjectionParameters  - Projection parameter section
+//
+// These section objects may also contain objects representing the sub-sections 
+// defined for each section. 
+//
+// The name and default value for each parameter is defined in a section object's 
+// constructor using the 'ParameterLists::set_parameter()' method. 
+//
+// Parameter values are set using the 'set_values()' method which contains calls to tinyxml2  
+// to parse parameter values from an XML file. The XML elements within a section are 
+// extracted in a while loop. Sub-sections or data will need checked and processed. 
+// The 'ParameterLists::set_parameter_value()' method is used to set the value of a parameter 
+// from a string. See MeshParameters::set_values() for an example.
+//
+// If a section does not contain any sub-sections then all parameters can be parsed automatically. 
+// See LinearSolverParameters::set_values() for an example. 
+//
 #include "Parameters.h"
 
 #include <iostream>
 #include <regex>
 #include <set>
 #include <sstream>
+
+//-------------------------
+// xml_util_set_parameters 
+//-------------------------
+// Set paramaters using a function pointing to the 'ParameterLists::set_parameter_value' method.
+//
+void xml_util_set_parameters( std::function<void(const std::string&, const std::string&)> fn, tinyxml2::XMLElement* xml_elem,
+    const std::string& error_msg)
+{
+  auto item = xml_elem->FirstChildElement();
+
+  while (item != nullptr) {
+    auto name = std::string(item->Value());
+  
+    if (item->GetText() != nullptr) {
+      auto value = item->GetText();
+      try {
+        fn(name, value);
+      } catch (const std::bad_function_call& exception) {
+        throw std::runtime_error(error_msg + name + "'.");
+      }
+    } else {
+      throw std::runtime_error(error_msg + name + "'.");
+    }
+
+    item = item->NextSiblingElement();
+  }
+}
 
 //////////////////////////////////////////////////////////
 //                   Parameters                         //
@@ -22,34 +82,6 @@ const std::set<std::string> Parameters::equation_names = {
   "fluid",
   "struct",
 };
-
-//---------------
-// set_parameter
-//---------------
-// Set paramaters using a function pointing to the 'ParameterLists::set_parameter_value' method.
-//
-void xml_util_set_parameters( std::function<void(const std::string&, const std::string&)> fn, tinyxml2::XMLElement* xml_elem,
-    const std::string& error_msg)
-{
-  auto item = xml_elem->FirstChildElement();
-
-  while (item != NULL) {
-    auto name = std::string(item->Value());
-  
-    if (item->GetText() != nullptr) {
-      auto value = item->GetText();
-      try {
-        fn(name, value);
-      } catch (const std::bad_function_call& exception) {
-        throw std::runtime_error(error_msg + name + "'.");
-      }
-    } else {
-      throw std::runtime_error(error_msg + name + "'.");
-    }
-
-    item = item->NextSiblingElement();
-  }
-}
 
 //------------
 // Parameters
@@ -178,6 +210,14 @@ void Parameters::set_projection_values(tinyxml2::XMLElement* root_element)
 //                BodyForceParameters                   //
 //////////////////////////////////////////////////////////
 
+// Body force over a mesh using the "Add_BF" command.
+//
+// <Add_BF mesh="msh" >
+//   <Type> volumetric </Type>
+//   <Time_dependence> general </Time_dependence>
+//   <Temporal_and_spatial_values_file_path> bforce.dat </Temporal_and_spatial_values_file_path>
+// </Add_BF>
+
 // Define the XML element name for boundary condition parameters.
 const std::string BodyForceParameters::xml_element_name_ = "Add_BF";
 
@@ -250,6 +290,9 @@ void BodyForceParameters::set_values(tinyxml2::XMLElement* xml_elem)
 //            BoundaryConditionParameters               //
 //////////////////////////////////////////////////////////
 
+// The BoundaryConditionParameters stores paramaters for various
+// type of boundary conditions under the Add_BC XML element.
+
 // Define the XML element name for equation boundary condition parameters.
 const std::string BoundaryConditionParameters::xml_element_name_ = "Add_BC";
 const std::string BoundaryConditionRCRParameters::xml_element_name_ = "RCR_values";
@@ -257,7 +300,14 @@ const std::string BoundaryConditionRCRParameters::xml_element_name_ = "RCR_value
 //--------------------------------
 // BoundaryConditionRCRParameters
 //--------------------------------
+// RCR values for Neumann BC type.
 //
+// <RCR_values>
+//   <Proximal_resistance> 121.0 </Proximal_resistance>
+//   <Capacitance> 1.5e-5 </Capacitance>
+//   <Distal_resistance> 1212.0 </Distal_resistance>
+// </RCR_values>
+
 BoundaryConditionRCRParameters::BoundaryConditionRCRParameters()
 {
   // A parameter that must be defined.
@@ -387,7 +437,7 @@ void BoundaryConditionParameters::set_values(tinyxml2::XMLElement* xml_elem)
 
   auto item = xml_elem->FirstChildElement();
 
-  while (item != NULL) {
+  while (item != nullptr) {
     auto name = std::string(item->Value());
 
     if (name == BoundaryConditionRCRParameters::xml_element_name_) {
@@ -412,6 +462,8 @@ void BoundaryConditionParameters::set_values(tinyxml2::XMLElement* xml_elem)
 //////////////////////////////////////////////////////////
 //            ConstitutiveModelParameters               //
 //////////////////////////////////////////////////////////
+
+// Process parameters for various constitutive models.
 
 // Define the XML element name for constitutive parameters.
 const std::string ConstitutiveModelParameters::xml_element_name_ = "Constitutive_model";
@@ -440,7 +492,7 @@ const std::map<std::string, std::string> ConstitutiveModelParameters::constituti
   {"stVK",                                                ConstitutiveModelParameters::STVENANT_KIRCHHOFF_MODEL},
 }; 
 
-// Define a map to set parameters for each constitutive model.
+// Define a map to set the parameters for each constitutive model.
 //
 using CmpType = ConstitutiveModelParameters*;
 using CmpXmlType = tinyxml2::XMLElement*;
@@ -544,7 +596,6 @@ void HolzapfelParameters::set_values(tinyxml2::XMLElement* xml_elem)
 
 void HolzapfelParameters::print_parameters()
 {
-  std::cout << "Holzapfel: " << std::endl;
   auto params_name_value = get_parameter_list(); 
   for (auto& [ key, value ] : params_name_value) {
     std::cout << key << ": " << value << std::endl;
@@ -583,7 +634,6 @@ void HolzapfelGasserOgdenParameters::set_values(tinyxml2::XMLElement* xml_elem)
 
 void HolzapfelGasserOgdenParameters::print_parameters()
 {
-  std::cout << "HolzapfelGasserOgden: " << std::endl;
   auto params_name_value = get_parameter_list();
   for (auto& [ key, value ] : params_name_value) {
     std::cout << key << ": " << value << std::endl;
@@ -628,6 +678,7 @@ void MooneyRivlinParameters::print_parameters()
 //----------------------
 // NeoHookeanParameters
 //----------------------
+// There are no parameters associated with a Neohookean model.
 //
 NeoHookeanParameters::NeoHookeanParameters()
 {
@@ -640,12 +691,12 @@ void NeoHookeanParameters::set_values(tinyxml2::XMLElement* con_params)
 
 void NeoHookeanParameters::print_parameters()
 {
-  std::cout << "NeoHookean: " << std::endl;
 }
 
 //-----------------------------
 // StVenantKirchhoffParameters
 //-----------------------------
+// There are no parameters associated with a StVenantKirchhoff model.
 //
 StVenantKirchhoffParameters::StVenantKirchhoffParameters()
 {
@@ -659,7 +710,6 @@ void StVenantKirchhoffParameters::set_values(tinyxml2::XMLElement* con_params)
 
 void StVenantKirchhoffParameters::print_parameters()
 {
-  std::cout << "StVenantKirchhoff: " << std::endl;
 }
 
 //-----------------------------
@@ -671,7 +721,7 @@ ConstitutiveModelParameters::ConstitutiveModelParameters()
   // A parameter that must be defined.
   bool required = true;
 
-  // Type from <Constitutive_model type= > XML element.
+  // Type from <Constitutive_model type=TYPE > XML element.
   type = Parameter<std::string>("type", "", required);
 }
 
@@ -727,6 +777,8 @@ void ConstitutiveModelParameters::set_values(tinyxml2::XMLElement* xml_elem)
 //////////////////////////////////////////////////////////
 //                  CoupleCplBCParameters               //
 //////////////////////////////////////////////////////////
+
+// Couple to reduced-order models.
 
 // Define the XML element name for equation Couple_to_genBC parameters.
 const std::string CoupleCplBCParameters::xml_element_name_ = "Couple_to_cplBC";
@@ -791,6 +843,8 @@ void CoupleCplBCParameters::print_parameters()
 //                  CoupleGenBCParameters               //
 //////////////////////////////////////////////////////////
 
+// Coupling to GenBC.
+
 // Define the XML element name for equation Couple_to_genBC parameters.
 const std::string CoupleGenBCParameters::xml_element_name_ = "Couple_to_genBC";
 
@@ -831,6 +885,13 @@ void CoupleGenBCParameters::set_values(tinyxml2::XMLElement* xml_elem)
 //                  OutputParameters                    //
 //////////////////////////////////////////////////////////
 
+// The OutputParameters class stores parameters for the
+// Output XML sub-element under Add_equation element.
+//
+// <Output type="Volume_integral" >
+//   <Temperature> true </Temperature>
+// </Output>
+
 // Define the XML element name for equation output parameters.
 const std::string OutputParameters::xml_element_name_ = "Output";
 
@@ -870,6 +931,9 @@ void OutputParameters::set_values(tinyxml2::XMLElement* xml_elem)
   type.set(std::string(stype));
 
   // Get values from XML file.
+  //
+  // The 'Alias' type needs special processing, storing
+  // alias output names in a map.
   //
   if (type.value() == "Alias") {
     auto item = xml_elem->FirstChildElement();
@@ -930,6 +994,9 @@ bool OutputParameters::get_output_value(const std::string& name)
 //               VariableWallPropsParameters            //
 //////////////////////////////////////////////////////////
 
+// The VariableWallPropsParameters class stores parameters for
+// variable wall properties for the CMM equation.
+
 // Define the XML element name for viscosiity parameters.
 const std::string VariableWallPropsParameters::xml_element_name_ = "Variable_wall_properties";
 
@@ -979,6 +1046,8 @@ void VariableWallPropsParameters::set_values(tinyxml2::XMLElement* xml_elem)
 //////////////////////////////////////////////////////////
 //                  ViscosityParameters                 //
 //////////////////////////////////////////////////////////
+
+// Process parameters for various viscosity models.
 
 // Define the XML element name for viscosiity parameters.
 const std::string ViscosityParameters::xml_element_name_ = "Viscosity";
@@ -1166,6 +1235,18 @@ void ViscosityParameters::set_values(tinyxml2::XMLElement* xml_elem)
 //                  DomainParameters                    //
 //////////////////////////////////////////////////////////
 
+// Process parameters for the XML // 'Domain' element to 
+// specify properties for solving equations.
+//
+// <Domain id="1" >
+//   <Equation> fluid </Equation>
+//   <Density> 1.06 </Density>
+//   <Viscosity model="Constant" >
+//     <Value> 0.04 </Value>
+//   </Viscosity>
+//   <Backflow_stabilization_coefficient> 0.2 </Backflow_stabilization_coefficient>
+// </Domain>
+
 // Define the XML element name for domain parameters.
 const std::string DomainParameters::xml_element_name_ = "Domain";
 
@@ -1261,7 +1342,9 @@ void DomainParameters::set_values(tinyxml2::XMLElement* domain_elem)
 
   auto item = domain_elem->FirstChildElement();
   
-  while (item != NULL) {
+  // Parse XML elements for varius sub-elements (e.g. Viscosity).
+  //
+  while (item != nullptr) {
     auto name = std::string(item->Value());
   
     if (name == ConstitutiveModelParameters::xml_element_name_) {
@@ -1310,6 +1393,14 @@ void DomainParameters::set_values(tinyxml2::XMLElement* domain_elem)
 //////////////////////////////////////////////////////////
 //            FiberReinforcementStressParameters        //
 //////////////////////////////////////////////////////////
+
+// Process parameters for the fiber reinforcement stress 'Fiber_reinforcement_stress` 
+// XML element.
+//
+// <Fiber_reinforcement_stress type="Unsteady" >
+//   <Temporal_values_file_path> fib_stress.dat </Temporal_values_file_path>
+//   <Ramp_function> true </Ramp_function>
+// </Fiber_reinforcement_stress>
 
 // Define the XML element name for fiber reinforcement stress parameters.
 const std::string FiberReinforcementStressParameters::xml_element_name_ = "Fiber_reinforcement_stress";
@@ -1372,6 +1463,17 @@ void FiberReinforcementStressParameters::print_parameters()
 //////////////////////////////////////////////////////////
 //                 StimulusParameters                   //
 //////////////////////////////////////////////////////////
+
+// The StimulusParameters class stores parameters for 
+// 'Stimulus' XML element used to parameters for 
+// pacemaker cells.
+//
+// <Stimulus type="Istim" >
+//   <Amplitude> -52.0 </Amplitude>
+//   <Start_time> 0.0 </Start_time>
+//   <Duration> 1.0 </Duration>
+//   <Cycle_length> 10000.0 </Cycle_length>
+// </Stimulus>
 
 // Define the XML element name for equation output parameters.
 const std::string StimulusParameters::xml_element_name_ = "Stimulus";
@@ -1438,6 +1540,18 @@ void StimulusParameters::print_parameters()
 //////////////////////////////////////////////////////////
 //                  EquationParameters                  //
 //////////////////////////////////////////////////////////
+
+// Process parameters for the 'Add_equation' XML element 
+// used to specify an equation to be solved (e.g. fluid).
+//
+// <Add_equation type="FSI" >
+//   <Coupled> true </Coupled>
+//   <Min_iterations> 1 </Min_iterations>
+//   <Max_iterations> 1 </Max_iterations>
+//   .
+//   .
+//   .
+// </Add_equation>
 
 // Define the XML element name for equation parameters.
 const std::string EquationParameters::xml_element_name_ = "Add_equation";
@@ -1516,9 +1630,9 @@ void EquationParameters::print_parameters()
   }
 }
 
-//----------------
+//------------
 // set_values
-//----------------
+//------------
 //
 void EquationParameters::set_values(tinyxml2::XMLElement* eq_elem)
 {
@@ -1526,7 +1640,11 @@ void EquationParameters::set_values(tinyxml2::XMLElement* eq_elem)
   default_domain = new DomainParameters();
   auto item = eq_elem->FirstChildElement();
 
-  while (item != NULL) {
+  // Parse XML sub-elements.
+  //
+  // [TODO] Replace all of these ifs with a string/lambda map.
+  //
+  while (item != nullptr) {
     auto name = std::string(item->Value());
 
     if (name == BodyForceParameters::xml_element_name_) {
@@ -1609,6 +1727,27 @@ void EquationParameters::set_values(tinyxml2::XMLElement* eq_elem)
 //               GeneralSimulationParameters            //
 //////////////////////////////////////////////////////////
 
+// Process paramaters for the 'GeneralSimulationParameters' XML element.
+//
+// <GeneralSimulationParameters>
+//   <Continue_previous_simulation> 0 </Continue_previous_simulation>
+//   <Number_of_spatial_dimensions> 3 </Number_of_spatial_dimensions>
+//   <Number_of_time_steps> 1 </Number_of_time_steps>
+//   <Time_step_size> 1e-4 </Time_step_size>
+//   <Spectral_radius_of_infinite_time_step> 0.50 </Spectral_radius_of_infinite_time_step>
+//   <Searched_file_name_to_trigger_stop> STOP_SIM </Searched_file_name_to_trigger_stop>
+//   <Save_results_to_VTK_format> true </Save_results_to_VTK_format>
+//   <Name_prefix_of_saved_VTK_files> result </Name_prefix_of_saved_VTK_files>
+//   <Increment_in_saving_VTK_files> 1 </Increment_in_saving_VTK_files>
+//   <Start_saving_after_time_step> 1 </Start_saving_after_time_step>
+//   <Increment_in_saving_restart_files> 1 </Increment_in_saving_restart_files>
+//   <Convert_BIN_to_VTK_format> 0 </Convert_BIN_to_VTK_format>
+//   <Verbose> 1 </Verbose>
+//   <Warning> 0 </Warning>
+//   <Debug> 0 </Debug>
+//   <Simulation_requires_remeshing> true </Simulation_requires_remeshing>
+// </GeneralSimulationParameters>
+
 GeneralSimulationParameters::GeneralSimulationParameters()
 {
   int int_inf = std::numeric_limits<int>::infinity();
@@ -1686,7 +1825,7 @@ void GeneralSimulationParameters::set_values(tinyxml2::XMLElement* xml_element)
   auto general_params = xml_element->FirstChildElement(xml_element_name.c_str());
   auto item = general_params->FirstChildElement();
 
-  while (item != NULL) {
+  while (item != nullptr) {
     std::string name = std::string(item->Value());
     auto value = item->GetText();
     try {
@@ -1704,6 +1843,8 @@ void GeneralSimulationParameters::set_values(tinyxml2::XMLElement* xml_element)
 //////////////////////////////////////////////////////////
 //             F a c e P a r a m e t e r s              //
 //////////////////////////////////////////////////////////
+
+// Process parameters for the 'Add_face' XML element.
 
 // Define the XML element name for face parameters.
 const std::string FaceParameters::xml_element_name_ = "Add_face";
@@ -1749,7 +1890,7 @@ void FaceParameters::set_values(tinyxml2::XMLElement* face_elem)
   name.set(std::string(face_name));
   auto item = face_elem->FirstChildElement();
 
-  while (item != NULL) {
+  while (item != nullptr) {
     auto name = std::string(item->Value());
     auto value = item->GetText();
 
@@ -1770,6 +1911,17 @@ void FaceParameters::set_values(tinyxml2::XMLElement* face_elem)
 //////////////////////////////////////////////////////////
 //           R e m e s h e r P a r a m e t e r s        //
 //////////////////////////////////////////////////////////
+
+// Process parameters for the 'Remesher' XML element used for remeshing.
+//
+// <Remesher type="Tetgen" >
+//   <Max_edge_size name="lumen" value="0.7"> </Max_edge_size>
+//   <Max_edge_size name="wall"  value="0.5"> </Max_edge_size>
+//   <Min_dihedral_angle> 10.0 </Min_dihedral_angle>
+//   <Max_radius_ratio> 1.1 </Max_radius_ratio>
+//   <Remesh_frequency> 1000 </Remesh_frequency>
+//   <Frequency_for_copying_data> 1 </Frequency_for_copying_data>
+// </Remesher>
 
 // Define the XML element name for mesh parameters.
 const std::string RemesherParameters::xml_element_name_ = "Remesher";
@@ -1821,7 +1973,7 @@ void RemesherParameters::set_values(tinyxml2::XMLElement* xml_elem)
   //
   auto item = xml_elem->FirstChildElement();
 
-  while (item != NULL) {
+  while (item != nullptr) {
     auto name = std::string(item->Value());
 
     if (name == "Max_edge_size") {
@@ -1860,8 +2012,6 @@ void RemesherParameters::set_values(tinyxml2::XMLElement* xml_elem)
 
     item = item->NextSiblingElement();
   }
-
-
 }
 
 //////////////////////////////////////////////////////////
@@ -1934,9 +2084,10 @@ void MeshParameters::set_values(tinyxml2::XMLElement* mesh_elem)
   std::string error_msg = "Unknown " + xml_element_name_ + " XML element '"; 
   auto item = mesh_elem->FirstChildElement();
 
-  while (item != NULL) {
+  while (item != nullptr) {
     auto name = std::string(item->Value());
 
+    // Add_face sub-element.
     if (name == FaceParameters::xml_element_name_) {
       auto face_params = new FaceParameters();
       face_params->set_values(item);
@@ -1951,6 +2102,7 @@ void MeshParameters::set_values(tinyxml2::XMLElement* mesh_elem)
       dir.set(value);
       fiber_directions.push_back(dir);
 
+    // Just a simple element. 
     } else if (item->GetText() != nullptr) {
       auto value = item->GetText();
       try {
@@ -1969,6 +2121,13 @@ void MeshParameters::set_values(tinyxml2::XMLElement* mesh_elem)
 //////////////////////////////////////////////////////////
 //        P r o j e c t i o n P a r a m e t e r s       //
 //////////////////////////////////////////////////////////
+
+// The ProjectionParameters class stores parameters for the
+// 'Add_projection' XML element used for fluid-structure interaction simulations.
+//
+// <Add_projection name="wall_inner" >
+//   <Project_from_face> lumen_wall </Project_from_face>
+// </Add_projection>
 
 // Define the XML element name for mesh parameters.
 const std::string ProjectionParameters::xml_element_name_ = "Add_projection";
@@ -2013,6 +2172,9 @@ void ProjectionParameters::set_values(tinyxml2::XMLElement* xml_elem)
 //////////////////////////////////////////////////////////
 //                 LinearSolverParameters               //
 //////////////////////////////////////////////////////////
+
+// The LinearSolverParameters class stores parameters for
+// the 'LS' XML element.
 
 // Define the XML element name for equation output parameters.
 const std::string LinearSolverParameters::xml_element_name_ = "LS";
@@ -2078,9 +2240,11 @@ void LinearSolverParameters::set_values(tinyxml2::XMLElement* xml_elem)
   using std::placeholders::_1;
   using std::placeholders::_2;
 
+  // Create a function pointer 'fptr' to 'LinearSolverParameters::set_parameter_value'.
   std::function<void(const std::string&, const std::string&)> ftpr =
       std::bind( &LinearSolverParameters::set_parameter_value, *this, _1, _2);
 
+  // Parse XML and set parameter values.
   xml_util_set_parameters(ftpr, xml_elem, error_msg);
 }
 

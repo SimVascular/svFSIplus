@@ -15,7 +15,7 @@
 
 // If set then check Array indexes.
 //
-//#define Array_check_enabled
+#define Array_check_enabled
 
 //-------
 // Array 
@@ -787,6 +787,18 @@ class Array
       return *this;
     }
 
+    // Compound subtract assignment. 
+    //
+    Array<T> operator-=(const Array<T>& array) const
+    {
+      for (int j = 0; j < ncols_; j++) {
+        for (int i = 0; i < nrows_; i++) {
+          data_[i + j*nrows_] -= array(i,j);
+        }
+      }
+      return *this;
+    }
+
     // Compound multiply assignment. 
     //
     Array<T> operator*=(const Array<T>& array) const
@@ -871,6 +883,30 @@ class Array
         }
       }
       return result;
+    }
+
+    // Compound add assignment. 
+    //
+    Array<T> operator+=(const T value) const
+    {
+      for (int j = 0; j < ncols_; j++) {
+        for (int i = 0; i < nrows_; i++) {
+          data_[i + j*nrows_] += value;
+        }
+      }
+      return *this;
+    }
+
+    // Compound subtract assignment. 
+    //
+    Array<T> operator-=(const T value) const
+    {
+      for (int j = 0; j < ncols_; j++) {
+        for (int i = 0; i < nrows_; i++) {
+          data_[i + j*nrows_] -= value;
+        }
+      }
+      return *this;
     }
 
     //-------

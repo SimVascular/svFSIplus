@@ -639,6 +639,31 @@ void read_vtus(Simulation* simulation, Array<double>& lA, Array<double>& lY, Arr
   }
 }
 
+//-----------
+// write_vtp
+//-----------
+// Reproduces Fortran 'SUBROUTINE WRITEVTP(lFa, fName)'
+//
+void write_vtp(ComMod& com_mod, faceType& lFa, const std::string& fName)
+{
+  const int nsd = com_mod.nsd;
+
+  auto vtk_writer = VtkData::create_writer(fName);
+  vtk_writer->set_points(lFa.x);
+  vtk_writer->set_connectivity(nsd, lFa.IEN);
+
+  if (lFa.gN.size() != 0) {
+    vtk_writer->set_point_data("GlobalNodeID", lFa.gN);
+  }
+
+  if (lFa.gE.size() != 0) {
+    vtk_writer->set_point_data("GlobalElementID", lFa.gE);
+  }
+
+  vtk_writer->write();
+  delete vtk_writer;
+}
+
 //------------
 // write_vtus
 //------------

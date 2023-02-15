@@ -33,6 +33,8 @@
 class VtkVtpData::VtkVtpDataImpl {
   public:
     void read_file(const std::string& file_name);
+    void set_point_data(const std::string& data_name, const Vector<int>& data);
+
     vtkSmartPointer<vtkPolyData> vtk_polydata;
     int num_elems;
     int np_elem;
@@ -74,9 +76,14 @@ class VtkVtuData::VtkVtuDataImpl {
     void create_grid();
     void read_file(const std::string& file_name);
     void set_connectivity(const int nsd, const Array<int>& conn, const int pid);
+
     void set_element_data(const std::string& data_name, const Array<double>& data);
     void set_element_data(const std::string& data_name, const Array<int>& data);
+
     void set_point_data(const std::string& data_name, const Array<double>& data);
+    void set_point_data(const std::string& data_name, const Array<int>& data);
+    void set_point_data(const std::string& data_name, const Vector<int>& data);
+
     void set_points(const Array<double>& points);
     void write(const std::string& file_name);
 
@@ -259,6 +266,31 @@ void VtkVtuData::VtkVtuDataImpl::set_point_data(const std::string& data_name, co
   }
 
   vtk_ugrid->GetPointData()->AddArray(data_array);
+}
+
+void VtkVtuData::VtkVtuDataImpl::set_point_data(const std::string& data_name, const Array<int>& data)
+{
+  int num_vals = data.ncols();
+  int num_comp = data.nrows();
+
+  auto data_array = vtkSmartPointer<vtkIntArray>::New();
+  data_array->SetNumberOfComponents(num_comp);
+  data_array->Allocate(num_vals,1000);
+  data_array->SetNumberOfTuples(num_vals);
+  data_array->SetName(data_name.c_str());
+
+  for (int i = 0; i < num_vals; i++) {
+    for (int j = 0; j < num_comp; j++) {
+      data_array->SetComponent(i, j, data(j,i));
+    }
+  }
+
+  vtk_ugrid->GetPointData()->AddArray(data_array);
+}
+
+void VtkVtuData::VtkVtuDataImpl::set_point_data(const std::string& data_name, const Vector<int>& data)
+{
+  throw std::runtime_error("[VtkVtuData] set_point_data for Vector<int> not implemented.");
 }
 
 //------------
@@ -598,6 +630,16 @@ void VtkVtpData::set_point_data(const std::string& data_name, const Array<double
   throw std::runtime_error("[VtkVtpData] set_point_data not implemented.");
 }
 
+void VtkVtpData::set_point_data(const std::string& data_name, const Array<int>& data)
+{
+  throw std::runtime_error("[VtkVtpData] set_point_data not implemented.");
+}
+
+void VtkVtpData::set_point_data(const std::string& data_name, const Vector<int>& data)
+{
+  throw std::runtime_error("[VtkVtpData] set_point_data not implemented.");
+}
+
 //-------------
 // set_points
 //-------------
@@ -839,6 +881,16 @@ void VtkVtuData::set_element_data(const std::string& data_name, const Array<int>
 //----------------
 //
 void VtkVtuData::set_point_data(const std::string& data_name, const Array<double>& data)
+{
+  impl->set_point_data(data_name, data);
+}
+
+void VtkVtuData::set_point_data(const std::string& data_name, const Array<int>& data)
+{
+  impl->set_point_data(data_name, data);
+}
+
+void VtkVtuData::set_point_data(const std::string& data_name, const Vector<int>& data)
 {
   impl->set_point_data(data_name, data);
 }
