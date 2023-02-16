@@ -2018,6 +2018,28 @@ void RemesherParameters::set_values(tinyxml2::XMLElement* xml_elem)
 //             M e s h P a r a m e t e r s              //
 //////////////////////////////////////////////////////////
 
+// Process parameters for the 'Add_mesh' XML element used for defining mesh elements.
+//
+// <Add_mesh name="lumen" >
+//   <Mesh_file_path> mesh/lumen/mesh-complete.mesh.vtu  </Mesh_file_path>
+//
+//   <Add_face name="lumen_inlet">
+//       <Face_file_path> mesh/lumen/mesh-surfaces/lumen_inlet.vtp </Face_file_path>
+//   </Add_face>
+//
+//   <Add_face name="lumen_outlet">
+//       <Face_file_path> mesh/lumen/mesh-surfaces/lumen_outlet.vtp </Face_file_path>
+//   </Add_face>
+//
+//   <Add_face name="lumen_wall">
+//       <Face_file_path> mesh/lumen/mesh-surfaces/lumen_wall.vtp </Face_file_path>
+//   </Add_face>
+//
+//   <Domain> 0 </Domain>
+// 
+// </Add_mesh>
+
+
 // Define the XML element name for mesh parameters.
 const std::string MeshParameters::xml_element_name_ = "Add_mesh";
 

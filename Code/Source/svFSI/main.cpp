@@ -1,4 +1,10 @@
 
+// The functions defined here are used to run a simulation from the command line.
+//
+// Usage:
+//
+//   svFSIplus XML_FILE_NAME
+//
 #include "Simulation.h"
 
 #include "all_fun.h"
@@ -26,7 +32,7 @@
 //------------
 // read_files
 //------------
-// Read in XML file and all mesh and BC data.  
+// Read in a solver XML file and all mesh and BC data.  
 //
 void read_files(Simulation* simulation, const std::string& file_name)
 {
@@ -40,8 +46,8 @@ void read_files(Simulation* simulation, const std::string& file_name)
     read_files_ns::read_files(simulation, file_name);
 
   } catch (const std::exception& exception) {
-    std::cout << "[svFSI] ERROR The svFSI program has failed." << std::endl;
-    std::cout << "[svFSI] ERROR " << exception.what() << std::endl;
+    std::cout << "[svFSIplus] ERROR The svFSIplus program has failed." << std::endl;
+    std::cout << "[svFSIplus] ERROR " << exception.what() << std::endl;
     exit(1);
   }
   
@@ -51,6 +57,8 @@ void read_files(Simulation* simulation, const std::string& file_name)
 // iterate_solution
 //------------------
 // Iterate the simultion in time.
+//
+// Reproduces the outer and inner loops in Fortan MAIN.f. 
 //
 void iterate_solution(Simulation* simulation)
 {
@@ -596,11 +604,13 @@ void run_simulation(Simulation* simulation)
 //------
 // main
 //------
+// Run a simulation from the command line using the name of a solver input 
+// XML file as an argument.
 //
 int main(int argc, char *argv[])
 {
   if (argc != 2) {
-    std::cout << "[svFSI:ERROR] The svFSI program requires the solver input file name as an argument." << std::endl;
+    std::cout << "[svFSIplus:ERROR] The svFSIplus program requires the solver input XML file name as an argument." << std::endl;
     exit(1);
   }
 
@@ -624,6 +634,8 @@ int main(int argc, char *argv[])
 
   std::string file_name(argv[1]);
 
+  // Iterate for restarting a simulation after remeshing. 
+  //
   while (true) {
 
     // Read in the solver commands .xml file.
@@ -642,7 +654,7 @@ int main(int argc, char *argv[])
     // Run the simulation.
     run_simulation(simulation);
 
-    std::cout << "[svFSI] resetSim: " << simulation->com_mod.resetSim << std::endl;
+    std::cout << "[svFSIplus] resetSim: " << simulation->com_mod.resetSim << std::endl;
 
     // Remesh and continue the simulation.
     //
