@@ -493,7 +493,7 @@ The [Parameters](https://github.com/SimVascular/svFSIplus/blob/main/Code/Source/
 parameters parsed from an XML file using using [tinyxml2](https://github.com/leethomason/tinyxml2). Parameter types are checked as they are read so errors in parameter values are immediately detected.
 
 
-The `Parameters` class contains objects for each of the sections in the parameters file
+The `Parameters` class contains objects for each of the top-level sections in the parameters file
 ```
     GeneralSimulationParameters general_simulation_parameters;
     std::vector<MeshParameters*> mesh_parameters;
@@ -501,9 +501,10 @@ The `Parameters` class contains objects for each of the sections in the paramete
     std::vector<ProjectionParameters*> projection_parameters;
 ```
 
-Each section is represented as a class containing objects for the parameters defined for that section. Objects representing parameters 
-are named the same as the name used in the XML file except with a lower case first character. Each parameter is defined with a type 
-(bool, double, int, etc.) using the `Parameter` template class. 
+Each section is represented as a class containing objects for the parameters defined for that section and objects 
+representing any sub-sections. Objects representing parameters are named the same as the name used in the XML file except with a 
+lower case first character. Each parameter has a name and a value with as a basic type (bool, double, int, etc.) using the 
+`Parameter` template class. 
 
 Example: MeshParameters class parameter objects
 ```
@@ -597,7 +598,6 @@ void MeshParameters::set_values(tinyxml2::XMLElement* mesh_elem)
 }
 ```
 
-
 Sections that contain simple elements (i.e., no sub-sections or special data processing) can be automatically parsed. 
 
 Example: Automatically parsing XML and setting parameter values in `LinearSolverParameters::set_values(tinyxml2::XMLElement* xml_elem)`
@@ -622,7 +622,6 @@ Example: Automatically parsing XML and setting parameter values in `LinearSolver
   // Parse XML and set parameter values.
   xml_util_set_parameters(ftpr, xml_elem, error_msg);
 ```
-
 
 <!--- -------------------------------- ---> 
 <!---      Accessing Parameters        --->  
