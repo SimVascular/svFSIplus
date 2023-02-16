@@ -456,14 +456,14 @@ XML _tags_ represent data structures and contain metadata. An XML _element_ is a
 Exmaple: 
 ```
  <svFSIFile> |--------------------------------------------- root element
-   <Add_equation type="FSI" >   |-------------------------- start-tag with an attribute named **type**
-   <Coupled> true </Coupled>    |--------------------------- **Coupled** element with data **true**
+   <Add_equation type="FSI" >   |-------------------------- start-tag with an attribute named <b>type</b>
+   <Coupled> true </Coupled>    |--------------------------- <b>Coupled</b> element with data <b>true</b>
    <Min_iterations> 1 </Min_iterations>
    <Max_iterations> 1 </Max_iterations>
   
    <Tolerance> 1e-6 </Tolerance>
 
-   <Domain id="0" >    |----------------------------- **Domain** element with several child elements
+   <Domain id="0" >    |----------------------------- <b>Domain</b> element with several child elements
       <Equation> fluid </Equation>
       <Density> 1.0 </Density>
       <Viscosity model="Constant" >
@@ -524,7 +524,7 @@ All section classes inherit from the `ParameterLists` class which has methods to
 a map for processing (e.g. checking that all required parameters have been set). 
 
 Parameter names and default values are set in each section object constructor using member data. The `ParameterLists::set_parameter()`
-sets a 
+sets the name and default value for a parameter, and if a value for it is required to be given in the XML file.
 
 Example: Setting parameter names and values in the MeshParameters constructor
 ```
@@ -632,6 +632,8 @@ Example: Automatically parsing XML and setting parameter values in `LinearSolver
 Parameter values are accessed from the core simulation code using the `Simulation` object's `Parameters` object. 
 The `Parameter` template class `()` operator or `value()` method is used to access the parameters's value, the `defined()` 
 method is used to check if a parameter's value has been set.
+
+Example: Accessing parameter values
 ```
 auto& general_params = simulation->parameters.general_simulation_parameters'
 const int nsd = general_params.number_of_spatial_dimensions();
