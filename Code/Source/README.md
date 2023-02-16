@@ -445,9 +445,36 @@ an array of characters (string) using custom code. Parameter values were then re
 The string representation was converted when the value of a parameter was needed. An error in a parameter value could therefore not
 be detected until later stages of the compuataion (e.g., when the mesh is being distributed over processors).
 
-svFSIplus solver simulation parameters are stored in an XML-format file. Parameter types are checked as they are read so errors 
-in parameter values are immediately detected. 
+svFSIplus solver simulation parameters are stored in the Extensible Markup Language (XML) file format. XML is a simple text-based format for representing structured data as element tree. The XML tree starts at a root element and branches from the root to sub-elements. All elements can have sub-elements. An XML tag is a markup construct that begins with < and ends with >. There are three types of tag:
+1) start-tag, such as `<section>`
+2) end-tag, such as `</section>`
+3) empty-element tag, such as `<line-break />`
 
+XML _tags_ represent data structures and contain metadata. An XML _element_ is a logical component that either begins with a start-tag and ends with a matching end-tag or consists only of an empty-element tag. The characters between the start-tag and end-tag, if any, are the element's _content_, and may contain markup, including other elements, which are called child elements. An _attribute_ is a markup construct consisting of a name–value pair that exists within a start-tag or empty-element tag.
+
+Exmaple: 
+```
+ <svFSIFile> |--------------------------------------------- root element
+   <Add_equation type="FSI" >   |-------------------------- start-tag with an attribute named **type**
+   <Coupled> true </Coupled>    |--------------------------- **Coupled** element with data **true**
+   <Min_iterations> 1 </Min_iterations>
+   <Max_iterations> 1 </Max_iterations>
+  
+   <Tolerance> 1e-6 </Tolerance>
+
+   <Domain id="0" >    |----------------------------- **Domain** element with several child elements
+      <Equation> fluid </Equation>
+      <Density> 1.0 </Density>
+      <Viscosity model="Constant" >
+         <Value> 0.04 </Value>
+      </Viscosity>
+      <Backflow_stabilization_coefficient> 0.2 </Backflow_stabilization_coefficient>
+   </Domain>
+
+ </svFSIFile>
+```
+
+Parameter types are checked as they are read so errors in parameter values are immediately detected.
 
 <!--- -------------------------------- ---> 
 <!---          Parameters Class        --->  
