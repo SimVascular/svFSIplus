@@ -434,6 +434,7 @@ This was done to reduce the overhead of copying sub-arrays in some sections of t
 object will not free its data if it is a reference to the data of a `Array3` object. Use the `rslice` method if the slice data
 is going to be modified. It can also speed up code that repeatedly extracts sub-arrarys used in computations but are not modified.
 
+
 <!--- ====================================================================================================================== --->
 <!--- ============================================== Solver Parameter Input XML File  ====================================== --->
 <!--- ====================================================================================================================== --->
@@ -474,7 +475,13 @@ Exmaple:
  </svFSIFile>
 ```
 
-Parameter types are checked as they are read so errors in parameter values are immediately detected.
+The elements in the svFSIplus simulation file are represented by _sections_ of related parameters. Sub-elements are refered to as _sub-sections_. The svFSIplus simulation file has four top-level sections
+```
+1) General
+2) Mesh
+3) Equation
+4) Projection
+```
 
 <!--- -------------------------------- ---> 
 <!---          Parameters Class        --->  
@@ -483,9 +490,10 @@ Parameter types are checked as they are read so errors in parameter values are i
 <h2 id="xml_file"> Parameters class </h2>
 
 The [Parameters](https://github.com/SimVascular/svFSIplus/blob/main/Code/Source/svFSI/Parameters.h) class is used to read and store simulation 
-parameters parsed from an XML file using using [tinyxml2](https://github.com/leethomason/tinyxml2). 
+parameters parsed from an XML file using using [tinyxml2](https://github.com/leethomason/tinyxml2). Parameter types are checked as they are read so errors in parameter values are immediately detected.
 
-The `Parameters` class contains objects for each of the sections in the paramaters file
+
+The `Parameters` class contains objects for each of the sections in the parameters file
 ```
     GeneralSimulationParameters general_simulation_parameters;
     std::vector<MeshParameters*> mesh_parameters;
@@ -493,41 +501,31 @@ The `Parameters` class contains objects for each of the sections in the paramate
     std::vector<ProjectionParameters*> projection_parameters;
 ```
 
-Each section is represented as a class containing objects for each parameter defined for that section. Objects representing parameters 
+Each section is represented as a class containing objects for the parameters defined for that section. Objects representing parameters 
 are named the same as the name used in the XML file except with a lower case first character. Each parameter is defined with a type 
-(bool, double, int, etc.) using the `Parameter` template class. For example
+(bool, double, int, etc.) using the `Parameter` template class. 
 
+Example: MeshParameters class parameter objects
 ```
 class MeshParameters : public ParameterLists
 {
-    std::vector<FaceParameters*> face_parameters;                      // <Add_face> 
+    Parameter<std::string> name;                       // <Add_mesh name=NAME >
 
-    Parameter<std::string> name;                                       // <Add_mesh name=NAME >
+    Parameter<bool> initialize_rcr_from_flow;          // <Initialize_RCR_from_flow> BOOL </Initialize_RCR_from_flow>
 
-    Parameter<int> domain_id;
-    Parameter<std::string> domain_file_path;
-
-    VectorParameter<std::string> fiber_direction_file_paths;
-    std::vector<VectorParameter<double>> fiber_directions;
-  
-    Parameter<std::string> initial_displacements_file_path;
-    Parameter<std::string> initial_pressures_file_path;
-    Parameter<bool> initialize_rcr_from_flow;
-    Parameter<std::string> initial_velocities_file_path;
-
-    Parameter<std::string> mesh_file_path;                                // <Mesh_file_path> FILE_NAME </Mesh_file_path>
-    Parameter<double> mesh_scale_factor;
-    Parameter<std::string> prestress_file_path;
-
-    Parameter<bool> set_mesh_as_fibers;
-    Parameter<bool> set_mesh_as_shell;
+    Parameter<std::string> mesh_file_path;             // <Mesh_file_path> FILE_NAME </Mesh_file_path>
+    
+    Parameter<double> mesh_scale_factor;               // <Mesh_scale_factor> SCALE </Mesh_scale_factor>
 };
 ```
 
 All section classes inherit from the `ParameterLists` class which has methods to set parameter values and store them in
 a map for processing (e.g. checking that all required parameters have been set). 
 
-Parameter names and default values are set in each section's constructor using member data
+Parameter names and default values are set in each section object constructor using member data. The `ParameterLists::set_parameter()`
+sets a 
+
+Example: Setting parameter names and values in the MeshParameters constructor
 ```
 MeshParameters::MeshParameters()
 {
@@ -551,25 +549,24 @@ MeshParameters::MeshParameters()
 }
 ```
 
-Parameter values are parsed and set in each section's `set_values()` method. Sections that don't contain sub-sections
-can be automatically parsed like so
-```
-  using std::placeholders::_1;
-  using std::placeholders::_2;
+Parameter values are set using the 'set_values()' method which contains calls to tinyxml2 to parse parameter 
+values from an XML file. The XML elements within a section are extracted in a while loop. Sub-sections or data 
+will need to be checked and processed. The 'ParameterLists::set_parameter_value()' method is used to set the value of a 
+parameter from a string. 
 
-  std::function<void(const std::string&, const std::string&)> ftpr =
-      std::bind( &ProjectionParameters::set_parameter_value, *this, _1, _2);
-
-  xml_util_set_parameters(ftpr, xml_elem, error_msg);
+Example: Parsing XML and setting parameter values in MeshParameters::set_values()
 ```
+void MeshParameters::set_values(tinyxml2::XMLElement* mesh_elem)
+{
+  using namespace tinyxml2;
+  std::string error_msg = "Unknown " + xml_element_name_ + " XML element '";
+  auto item = mesh_elem->FirstChildElement();
 
-Sections that do contain sub-sections currently require explicit checks for sub-sections
-```
-  while (item != NULL) {
+  while (item != nullptr) {
     auto name = std::string(item->Value());
 
     // Add_face sub-section.
-    if (name == FaceParameters::xml_element_name_) {
+    if (name == FaceParameters::xml_element_name_) {         // <Add_face name=NAME>
       auto face_params = new FaceParameters();
       face_params->set_values(item);
       face_parameters.push_back(face_params);
@@ -577,13 +574,14 @@ Sections that do contain sub-sections currently require explicit checks for sub-
     // There may be multiple 'Fiber_direction' elements so store
     // them as a list of VectorParameter<double>. 
     //
-    } else if (name == "Fiber_direction") {
+    } else if (name == "Fiber_direction") {                   // <Fiber_direction> (x, y, z)  </Fiber_direction>
       auto value = item->GetText();
       VectorParameter<double> dir("Fiber_direction", {}, false, {});
       dir.set(value);
       fiber_directions.push_back(dir);
 
-    } else if (item->GetText() != nullptr) {
+    // Just a simple element. 
+    } else if (item->GetText() != nullptr) {                  // <Mesh_file_path>, <Mesh_scale_factor>, <Domain>, etc.
       auto value = item->GetText();
       try {
         set_parameter_value(name, value);
@@ -596,6 +594,33 @@ Sections that do contain sub-sections currently require explicit checks for sub-
 
     item = item->NextSiblingElement();
   }
+}
+```
+
+
+Sections that contain simple elements (i.e., no sub-sections or special data processing) can be automatically parsed. 
+
+Example: Automatically parsing XML and setting parameter values in `LinearSolverParameters::set_values(tinyxml2::XMLElement* xml_elem)`
+```
+    std::string error_msg = "Unknown " + xml_element_name + " XML element '";
+
+  // Get the 'type' from the <LS type=TYPE> element.
+  const char* stype;
+  auto result = xml_elem->QueryStringAttribute("type", &stype);
+  if (stype == nullptr) {
+    throw std::runtime_error("No TYPE given in the XML <LStype=TYPE> element.");
+  }
+  type.set(std::string(stype));
+
+  using std::placeholders::_1;
+  using std::placeholders::_2;
+
+  // Create a function pointer 'fptr' to 'LinearSolverParameters::set_parameter_value'.
+  std::function<void(const std::string&, const std::string&)> ftpr =
+      std::bind( &LinearSolverParameters::set_parameter_value, *this, _1, _2);
+
+  // Parse XML and set parameter values.
+  xml_util_set_parameters(ftpr, xml_elem, error_msg);
 ```
 
 
