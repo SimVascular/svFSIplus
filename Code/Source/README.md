@@ -700,4 +700,77 @@ auto& cm = com_mod.cm;
 ```
 
 
+<h2 id="cpp_programming_1"> Constants </h2>
+
+In  svFSI constants are defined in the `CONSTS.f` file using the Fortan `PARAMETER` statement
+```
+!     Types of equations that are included in this solver
+!     Fluid equation (Navier-Stokes), nonlinear structure (pure d), heat
+!     equation, linear elasticity, heat in fluid (advection-diffusion),
+!     fluid-structure-interaction, mesh motion, Shell mechanics,
+!     Coupled-Momentum-Method, Cardiac Electro-Physiology,
+!     Nonlinear structure (v-p), Stokes equations
+      INTEGER(KIND=IKIND), PARAMETER :: phys_NA = 200, phys_fluid = 201,
+     2   phys_struct = 202, phys_heatS = 203, phys_lElas = 204,
+     3   phys_heatF = 205, phys_FSI = 206, phys_mesh = 207,
+     4   phys_shell = 208, phys_CMM = 209, phys_CEP = 210,
+     5   phys_ustruct = 211, phys_stokes = 212
+ 
+```
+
+svFSIplus uses `enum class` types defined in `consts.h`
+```
+enum class EquationType
+{ 
+  phys_NA = 200, 
+  phys_fluid = 201,
+  phys_struct = 202,  // nonlinear structure (pure d)
+  phys_heatS = 203,
+  phys_lElas = 204,
+  phys_heatF = 205,
+  phys_FSI = 206,     
+  phys_mesh = 207,    // solves a modified lElas for mesh motion; should be used with FSI
+  phys_shell = 208,   // solves nonlinear thin shell mechanics (Kirchhoff-Love theory)
+  phys_CMM = 209,
+  phys_CEP = 210,
+  phys_ustruct = 211,  // Nonlinear elastodynamics using mixed VMS-stabilized formulation 
+  phys_stokes = 212
+};
+```
+
+Constants are accessed using
+```
+  using namespace consts;
+  
+  if ((dmn.phys == EquationType::phys_fluid) ||
+      (dmn.phys == EquationType::phys_stokes) ||
+      (dmn.phys == EquationType::phys_CMM && !com_mod.cmmInit)) {
+    dist_visc_model(com_mod, cm_mod, cm, dmn.visc);
+  }
+```
+
+Some constants have another representation that makes them easier to access
+```
+constexpr auto Equation_CMM = EquationType::phys_CMM;
+constexpr auto Equation_CEP = EquationType::phys_CEP;
+constexpr auto Equation_fluid = EquationType::phys_fluid;
+constexpr auto Equation_FSI = EquationType::phys_FSI;
+constexpr auto Equation_heatF = EquationType::phys_heatF;
+constexpr auto Equation_heatS = EquationType::phys_heatS;
+constexpr auto Equation_lElas = EquationType::phys_lElas;
+constexpr auto Equation_mesh = EquationType::phys_mesh;
+constexpr auto Equation_shell = EquationType::phys_shell;
+constexpr auto Equation_stokes = EquationType::phys_stokes;
+constexpr auto Equation_struct = EquationType::phys_struct;
+constexpr auto Equation_ustruct = EquationType::phys_ustruct;
+```
+
+which are used like this
+```
+if ((eq.phys == Equation_CMM) && com_mod.cmmInit) { 
+```
+
+
+
+
 
