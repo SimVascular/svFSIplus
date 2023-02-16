@@ -456,14 +456,14 @@ XML _tags_ represent data structures and contain metadata. An XML _element_ is a
 Exmaple: 
 ```
  <svFSIFile> |--------------------------------------------- root element
-   <Add_equation type="FSI" >   |-------------------------- start-tag with an attribute named <b>type</b>
-   <Coupled> true </Coupled>    |--------------------------- <b>Coupled</b> element with data <b>true</b>
+   <Add_equation type="FSI" >   |-------------------------- start-tag with an attribute named type
+   <Coupled> true </Coupled>    |--------------------------- Coupled element with data true
    <Min_iterations> 1 </Min_iterations>
    <Max_iterations> 1 </Max_iterations>
   
    <Tolerance> 1e-6 </Tolerance>
 
-   <Domain id="0" >    |----------------------------- <b>Domain</b> element with several child elements
+   <Domain id="0" >    |----------------------------- Domain element with several child elements
       <Equation> fluid </Equation>
       <Density> 1.0 </Density>
       <Viscosity model="Constant" >
@@ -475,7 +475,8 @@ Exmaple:
  </svFSIFile>
 ```
 
-The elements in the svFSIplus simulation file are represented by _sections_ of related parameters. Sub-elements are refered to as _sub-sections_. The svFSIplus simulation file has four top-level sections
+The elements in the svFSIplus simulation file are represented by _sections_ of related parameters. Sub-elements are refered to as _sub-sections_. 
+The svFSIplus simulation file has four top-level sections
 ```
 1) General
 2) Mesh
