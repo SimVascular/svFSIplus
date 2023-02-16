@@ -749,7 +749,7 @@ Constants are accessed using
   }
 ```
 
-Some constants have another representation that makes them easier to access
+Some constants have a short-hand representation that makes them easier to access
 ```
 constexpr auto Equation_CMM = EquationType::phys_CMM;
 constexpr auto Equation_CEP = EquationType::phys_CEP;
