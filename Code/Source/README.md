@@ -10,6 +10,8 @@ This document descibes some of the implementation details of svFSIplus C++ code.
 [Simulation Class](#simulation_class)<br>
 [Array and Vector Classes](#array_vector_class)<br>
 [Solver Parameter Input XML File ](#xml_file)<br>
+[Performance and Accuracy](#performance)<br>
+[Potential Problems](#problems)<br>
 [Implementation Details](#cpp_programming)<br>
 
 <!--- ====================================================================================================================== --->
@@ -27,6 +29,11 @@ The C++ implementation differs from the Fortran implementation in four fundament
 3) Direct calls to the VTK API replaces the custom code used to read/write VTK format files
 4) Uses 0-based indexing into arrays
 
+What was not converted
+1) Shells
+2) NURBS
+3) Immersed Boundary
+
 The following sections describe how the C++ implementation is organized and how it replicates the data structures and flow of control of the Fortran implementation. Some important details of the C++ implementation will also be discussed.
 
 <!--- ====================================================================================================================== --->
@@ -36,6 +43,7 @@ The following sections describe how the C++ implementation is organized and how 
 <h1 id="organization"> Code Organization </h1>
 
 The C++ implementation attempts to replicate the data structures and flow of control of the Fortran implementation and to maintains its organization. 
+The svFSI Fortran is about 58K lines of code spead over about 100 files.
 
 Most of the Fortran code is replicated in C++ using the same file and procedure names converted to lower case with underscores to improve readability. 
 For example
@@ -644,6 +652,30 @@ if (eq_params->variable_wall_properties.defined()) { }
 ```
 
 <!--- ====================================================================================================================== --->
+<!--- ==================================================== Performance ===================================================== --->
+<!--- ====================================================================================================================== --->
+
+<h1 id="performance"> Performance and Accuracy </h1>
+
+Performance
+
+
+
+<!--- ====================================================================================================================== --->
+<!--- ================================================= Potential Problems ================================================= --->
+<!--- ====================================================================================================================== --->
+
+<h1 id="problems"> Potential Problems </h1>
+
+
+<h2 id="problems_1"> Indexing Mistakes </h2>
+
+
+<h2 id="problems_2"> Fortran 0-size Arrays </h2>
+
+
+
+<!--- ====================================================================================================================== --->
 <!--- ============================================= Implementation Details  ================================================ --->
 <!--- ====================================================================================================================== --->
 
@@ -652,6 +684,20 @@ if (eq_params->variable_wall_properties.defined()) { }
 This section covers some of the C++ implementation details that may be useful to developers adding new capabilities to svFSIplus.
 
 
+<h2 id="cpp_programming_1"> References vs. Pointers </h2>
+
+svFSIPlus does not dynamically allocated objects except in `Array` and `Vector` classes and C++ containers. All objects defined in module classes 
+are allocated statically and are referenced using a dot. This provided a much cleaner translation from Fortran to C++ by replacing
+`%` with `.`.
+```
+msh%fa(iFa)  ->  msh.fa[iFa]
+```
+
+Access objects as references to avoid copying 
+```
+const auto& meshes = com_mod.msh;
+auto& cm = com_mod.cm;
+```
 
 
 
