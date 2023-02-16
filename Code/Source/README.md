@@ -442,6 +442,17 @@ This was done to reduce the overhead of copying sub-arrays in some sections of t
 object will not free its data if it is a reference to the data of a `Array3` object. Use the `rslice` method if the slice data
 is going to be modified. It can also speed up code that repeatedly extracts sub-arrarys used in computations but are not modified.
 
+<!--- -------------------------------- ---> 
+<!---    Fortran 0-size Arrays         --->  
+<!--- -------------------------------- ---> 
+
+<h2 id="array_vector_class"> Fortran 0-size Arrays </h2>
+
+The Fortran code made use of 0-size arrays in several places; using `ALLOCATE` with a zero size. For some reason Fortran is OK
+with using these 0-size arrays. 
+
+The C++ code reproduces this by allowing `Array` objects to be allocated with 0 size rows and columns. 
+
 
 <!--- ====================================================================================================================== --->
 <!--- ============================================== Solver Parameter Input XML File  ====================================== --->
@@ -670,9 +681,16 @@ Performance
 
 <h2 id="problems_1"> Indexing Mistakes </h2>
 
+There may still be indexing mistakes
+- Numeric index is off by one
+- Offsets into arrays may not be correct
+
+There are a lot places in the code that uses indexes to offset into arrays.
 
 <h2 id="problems_2"> Fortran 0-size Arrays </h2>
 
+The Fortran code made use of 0-size arrays in several places. The C++ code reproduced this kind of functionality using tests
+of array size and such but this might could fail under certain circumstances.
 
 
 <!--- ====================================================================================================================== --->
@@ -749,7 +767,7 @@ Constants are accessed using
   }
 ```
 
-Some constants have a short-hand representation that makes them easier to access
+Some constants have a short-hand representation 
 ```
 constexpr auto Equation_CMM = EquationType::phys_CMM;
 constexpr auto Equation_CEP = EquationType::phys_CEP;
