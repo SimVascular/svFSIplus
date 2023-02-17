@@ -20,8 +20,8 @@ This document descibes some of the implementation details of svFSIplus C++ code.
 
 <h1 id="introduction"> Introduction </h1>
 
-svFSIplus is essentailly a direct line-by-line translation of the [svFSI](https://github.com/SimVascular/svFSI) Fortran code into C++. 
-This provides a simple mapping between the code of the original Fortan and C++ versions and aided in debugging the C++ code. 
+svFSIplus is essentially a direct line-by-line translation of the [svFSI](https://github.com/SimVascular/svFSI) Fortran code into C++. 
+This provides a simple mapping between the code of the original Fortran and C++ versions and aided in debugging the C++ code. 
 
 The C++ implementation differs from the Fortran implementation in four fundamental ways
 1) Custom C++ Array and Vector classes to reproduce Fortran dynamic arrays 
@@ -448,10 +448,11 @@ is going to be modified. It can also speed up code that repeatedly extracts sub-
 
 <h2 id="array_vector_class"> Fortran 0-size Arrays </h2>
 
-The Fortran code made use of 0-size arrays in several places; using `ALLOCATE` with a zero size. For some reason Fortran is OK
+The Fortran code made use of 0-size arrays in several places, using `ALLOCATE` with a zero size. For some reason Fortran is OK
 with using these 0-size arrays. 
 
-The C++ code reproduces this by allowing `Array` objects to be allocated with 0 size rows and columns. 
+The C++ code reproduces this by allowing `Array` objects to be allocated with 0 size rows and columns. This is a total hack but
+it allowed to get the C++ code working without having to rewrite a lot of code.
 
 
 <!--- ====================================================================================================================== --->
@@ -678,6 +679,7 @@ Performance
 
 <h1 id="problems"> Potential Problems </h1>
 
+The following sections briefly outline some problems that might cause simulation failures or incorrect results.
 
 <h2 id="problems_1"> Indexing Mistakes </h2>
 
@@ -689,8 +691,8 @@ There are a lot places in the code that uses indexes to offset into arrays.
 
 <h2 id="problems_2"> Fortran 0-size Arrays </h2>
 
-The Fortran code made use of 0-size arrays in several places. The C++ code reproduced this kind of functionality using tests
-of array size and such but this might could fail under certain circumstances.
+The Fortran code uses of 0-size arrays in several places. The C++ code reproduced this kind of functionality using tests
+of array size and adding the allocation of 0-sized `Array` objects. This hack might could fail under certain circumstances.
 
 
 <!--- ====================================================================================================================== --->
