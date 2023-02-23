@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Install Ubuntu dependencies
-        run: sudo apt update && sudo apt install -y build-essential cmake libvtk9-dev qtbase5-dev libblas-dev liblapack-dev libopenblas-dev libglu1-mesa-dev
+        run: sudo apt update && sudo apt install -y build-essential cmake libvtk9-dev qtbase5-dev libblas-dev liblapack-dev libopenblas-dev mesa-common-dev libgl1-mesa-dev libglu1-mesa-dev
       - name: Build svFSIplus
         run: |
           mkdir build
