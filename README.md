@@ -14,11 +14,11 @@
 
 <h1 id="introduction"> Introduction </h1>
 
-svFSIplus is a C++ implementation of the Fortran [svFSI](https://github.com/SimVascular/svFSI) multi-physics finite element solver designed for computational modeling of the cardiovascular system. It represents the <i>First Stage</i> in the development of a C++ multi-physics finite element solver and is essentailly a direct line-by-line translation of the [svFSI](https://github.com/SimVascular/svFSI) Fortran code. This was done to maintain a simple mapping between the code of the two versions and to faciliate debugging by comparing intermediate data (i.e. element stiffness matrices) and simulation results.
+svFSIplus is a C++ implementation of the Fortran [svFSI](https://github.com/SimVascular/svFSI) multi-physics finite element solver designed for computational modeling of the cardiovascular system. It represents the <i>First Stage</i> in the development of a C++ multi-physics finite element solver and is essentially a direct line-by-line translation of the [svFSI](https://github.com/SimVascular/svFSI) Fortran code. This was done to maintain a simple mapping between the code of the two versions and to facilitate debugging by comparing intermediate data (i.e. element stiffness matrices) and simulation results.
 
-The *Second Stage* of the solver development will be an entirely new implementation encapsilating portions of the *First Stage* code into C++ classes forming a clean and simple abstaction that can be enhanced by any developer.
+The *Second Stage* of the solver development will be an entirely new implementation encapsulating portions of the *First Stage* code into C++ classes forming a clean and simple abstraction that can be enhanced by any developer.
 
-The following sections describe how to build and use svFSIplus. Implementaton details can be found [here](https://github.com/ktbolt/svFSIplus/blob/update-README/Code/Source/README.md).
+The following sections describe how to build and use svFSIplus. Implementation details can be found [here](https://github.com/ktbolt/svFSIplus/blob/update-README/Code/Source/README.md).
 
 
 <!--- ====================================================================================================================== --->
@@ -27,7 +27,7 @@ The following sections describe how to build and use svFSIplus. Implementaton de
 
 <h1 id="xml_file"> Solver Parameter Input XML File  </h1>
 
-The svFSI solver reads simulation parametes from a [custom text format](https://github.com/SimVascular/svFSI/blob/master/svFSI_master.inp) file.   Simulation parameters are set using keyword/value pairs separated by a colon. A keyword consists of series of alphanumeric characters separated by spaces.
+The svFSI solver reads simulation parameters from a [custom text format](https://github.com/SimVascular/svFSI/blob/master/svFSI_master.inp) file.   Simulation parameters are set using keyword/value pairs separated by a colon. A keyword consists of series of alphanumeric characters separated by spaces.
 
 Keyword/value example
 ```
@@ -49,8 +49,8 @@ Domain: 0 {
 
 svFSIplus solver simulation parameters are stored in an XML-format file. The XML file organization and keyword names replicate the original text format using the following conversion rules 
 - Spaces in keywords names are replaced by underscores
-- An additional value after a colon is replaced by an XML atttibute used to identify the value. For example: `Add equation: FSI` is replaced by `<Add_equation type="FSI" >`.
-- Parameters with sub-elements are replaced by an XML element with sub-elements. For exmaple `Add equation: FSI { sub-elements }` is replaced by `<Add_equation type="FSI" > xml-sub-elements </Add_equation>`.
+- An additional value after a colon is replaced by an XML attribute used to identify the value. For example: `Add equation: FSI` is replaced by `<Add_equation type="FSI" >`.
+- Parameters with sub-elements are replaced by an XML element with sub-elements. For example `Add equation: FSI { sub-elements }` is replaced by `<Add_equation type="FSI" > xml-sub-elements </Add_equation>`.
 
 Example: The original text 
 ```
@@ -107,7 +107,7 @@ platform in order to use the svFSIplus binary.
 
 <h1 id="building"> Building svFSIplus from Source </h1>
 
-The svFSIplus source code can be downloaed and built on computers running MacOS and other Linux operating systems. Builds are most 
+The svFSIplus source code can be downloaded and built on computers running MacOS and other Linux operating systems. Builds are most 
 commonly done on MacOS and Ubuntu platforms.
 
 **The Windows operating system is currently not supported.**
@@ -136,7 +136,7 @@ The binary can be installed in /usr/local using the following commands
 
 The `svFSIplus*` binary is now located in /usr/local/SV/bin.
 
-It is convienient to update the PATH environment variable with the location of the `svFSIplus*` binary. Another option is to create
+It is convenient to update the PATH environment variable with the location of the `svFSIplus*` binary. Another option is to create
 an alias for `svFSIplus`. For example: `alias svFsiPlus=/usr/local/SV/bin/svFSIplus`
 
 
@@ -154,7 +154,7 @@ Software packages can be installed using package management tools like [homebrew
 
 <h3 id="building_cmake"> CMake </h3>
 
-svFSIplus is built using [CMake](https://cmake.org). CMake is used to control the software compilation process using the `CMakeLists.txt` files located withn the svFSIplus source. CMake first attempts to discover the software dependencies (e.g. C++ compiler) required to build svFSIplus. It will then generate the native [makefiles](https://en.wikipedia.org/wiki/Make_(software)) used to compile it.
+svFSIplus is built using [CMake](https://cmake.org). CMake is used to control the software compilation process using the `CMakeLists.txt` files located within the svFSIplus source. CMake first attempts to discover the software dependencies (e.g. C++ compiler) required to build svFSIplus. It will then generate the native [makefiles](https://en.wikipedia.org/wiki/Make_(software)) used to compile it.
 
 
 <h3 id="building_vtk"> Visualization Toolkit </h3>
@@ -169,7 +169,7 @@ svFSIplus uses the [Open MPI](https://www.open-mpi.org/) Message Passing Interfa
 
 <h2 id="building_build"> Using Trilinos with svFSIplus</h2>
 
-By defualt svFSIplus uses custom linear algebra solvers (e.g. GMRES) in a simulation. It also supports several simple preconditioners. 
+By default svFSIplus uses custom linear algebra solvers (e.g. GMRES) in a simulation. It also supports several simple preconditioners. 
 
 svFSIplus can also be built with the linear algebra solvers and preconditioners provided by the [Trilinos](https://trilinos.github.io/) scientific software package. Using Trilinos can often reduce the execution time of a simulation.
 
