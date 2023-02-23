@@ -13,7 +13,9 @@ jobs:
         run: sudo apt update && sudo apt install -y build-essential cmake libvtk9-dev qtbase5-dev libblas-dev liblapack-dev libopenblas-dev mesa-common-dev libgl1-mesa-dev libglu1-mesa-dev
       - name: Build svFSIplus
         run: |
+          export CC=/usr/bin/gcc-8
+          export CXX=/usr/bin/g++-8
           mkdir build
           cd build
           cmake -DCMAKE_BUILD_TYPE=Release ..
-          cmake --build .
+          make -j3
