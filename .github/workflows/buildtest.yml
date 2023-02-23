@@ -17,3 +17,17 @@ jobs:
           cd build
           cmake -DCMAKE_BUILD_TYPE=Release ..
           make -j3
+  build-macos:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ macos-13 ]
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build svFSIplus
+        run: |
+          mkdir build
+          cd build
+          cmake -DCMAKE_BUILD_TYPE=Release ..
+          make -j3
