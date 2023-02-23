@@ -1,6 +1,6 @@
 # svFSIplus Implementation 
 
-This document descibes some of the implementation details of svFSIplus C++ code.
+This document describes some of the implementation details of svFSIplus C++ code.
 
 
 ## Table of Contents
@@ -43,7 +43,7 @@ The following sections describe how the C++ implementation is organized and how 
 <h1 id="organization"> Code Organization </h1>
 
 The C++ implementation attempts to replicate the data structures and flow of control of the Fortran implementation and to maintains its organization. 
-The svFSI Fortran is about 58K lines of code spead over about 100 files.
+The svFSI Fortran is about 58K lines of code spread over about 100 files.
 
 Most of the Fortran code is replicated in C++ using the same file and procedure names converted to lower case with underscores to improve readability. 
 For example
@@ -64,7 +64,7 @@ For example
 All Fortan procedures located in a particular file will typically have a C++ implementation in a similarly named file. This was done to maintain 
 a simple mapping between the locations of the C++ and Fortran code. 
 
-The Fortan svFSI code is implemented using a procedural programming paradigm where data is passed to procedures to carry out a series of computational steps. It makes little or no use of the object orientation features providing by Fortran90. This organization is reproduced in the C++ implementation so there are essentailly no class methods used in the core simulation code.
+The Fortan svFSI code is implemented using a procedural programming paradigm where data is passed to procedures to carry out a series of computational steps. It makes little or no use of the object orientation features providing by Fortran90. This organization is reproduced in the C++ implementation so there are essentially no class methods used in the core simulation code.
 
 C++ functions are defined within a `namespace` defined for each Fortran file. For example, the functions in `load_msh.cpp` are defined within the `load_msh` `namespace`. Some `namespaces` contain a `_ns` suffix to prevent conflicts with function names (e.g. `read_files_ns`). 
 
@@ -85,7 +85,7 @@ Fortran code developed in the Fortan svFSI code not included in svFSIplus.
     
 <h2 id="translate_vars"> Variable Names </h2>
 
-svFSIplus is essentailly a direct line-by-line translation of the [svFSI](https://github.com/SimVascular/svFSI) Fortran code. The original Fortran variable names are typically small, contain no underscores for readability and are often ambiguous. However, the **same varaible names** are used 
+svFSIplus is essentially a direct line-by-line translation of the [svFSI](https://github.com/SimVascular/svFSI) Fortran code. The original Fortran variable names are typically small, contain no underscores for readability and are often ambiguous. However, the **same variable names** are used 
 in both the C++ and Fortran codes in order to maintain a clear relationship between them.
 
 For example, the following section of Fortran code
@@ -143,13 +143,13 @@ Array indexing is discussed in the [Fortran Dynamic Arrays](#translate_arrays) s
 
 <h2 id="translate_modules"> Fortran Modules </h2>
 
-Modules were introduced in Fortran to modualize a large code by splitting it into separate files containing procedures and 
-data specific to a certain application. A module is like a C++ class because it can encapsilate both data and procedures. 
+Modules were introduced in Fortran to moralize a large code by splitting it into separate files containing procedures and 
+data specific to a certain application. A module is like a C++ class because it can encapsulate both data and procedures. 
 The svFSI Fortran code uses modules primarily to store and access global variables. 
 
 C++ classes are used to implement Fortran modules. Fortran variable names are retained to prevent (or maintain) confusion. 
 A C++ module name uses the same Fortan name converted to camel case. For example, several of the Fortan module names and the 
-files that implements them are given below with the coressponding C++ class name and implementation files.
+files that implements them are given below with the corresponding C++ class name and implementation files.
 
 ```
    ================================================================================================
@@ -165,7 +165,7 @@ files that implements them are given below with the coressponding C++ class name
   ```         
              
 The Fortan `USE` command provides access to all the variables defined in a module. Almost all of the svFSI Fortran procedures have 
-a `USE COMMOD` command that provides access to all of the global varaibles (about 90) defined in the `COMMOD` module. For example
+a `USE COMMOD` command that provides access to all of the global variables (about 90) defined in the `COMMOD` module. For example
 ```
       SUBROUTINE CONSTRUCT_uSOLID(lM, Ag, Yg, Dg)
 
@@ -189,22 +189,22 @@ All C++ modules are stored as member data in the [Simulation Class](#simulation_
 <h2 id="translate_arrays"> Fortran Dynamic Arrays </h2>
 
 Fortran dynamic arrays have been reproduced using custom [Vector](#array_vector_class), [Array](array_vector_class) and
-[Array3](array_vector_class) C++ class templates. Note that these user-defined classes will most likey be replaced by a 
+[Array3](array_vector_class) C++ class templates. Note that these user-defined classes will most likely be replaced by a 
 more sophisticated matrix package such as `Eigen`.
 
 Fortran dynamic arrays are declared using the `ALLOCATABLE` attribute. For example the `REAL, ALLOCATABLE :: A(:,:)` statement 
-declares the two dimentional array of type `REAL` named  `A`. The Fortran `ALLOCATE A(3,10)` statement then dynamically creates 
-storage for `A` as a 3x10 array. The `DEALLOCATE A` statement is used to return the memory used by `A`. Allocatable arrays are 
-automatically deallocated when going out of scope.
+declares the two dimensional array of type `REAL` named  `A`. The Fortran `ALLOCATE A(3,10)` statement then dynamically creates 
+storage for `A` as a 3x10 array. The `DEALLOCATE A` statement is used to return the memory used by `A`. Relocatable arrays are 
+automatically reallocated when going out of scope.
 
-C++ dynamic arrays are declared using the `Array<T>` template, where T is the array data type: double or int. The two dimentional 
+C++ dynamic arrays are declared using the `Array<T>` template, where T is the array data type: double or int. The two dimensional 
 array of type double named  `A` is declared and memory allocated using `Array<double> A(3,10);`. Memory is released when `A` goes 
 out of scope or is explicitly freed using the `clear()` method.
    
 C++ multidimensional arrays are referenced using 0-based indexing and are traversed in column-major order like Fortran. Array 
-indexes use paranthesis `A(i,j)` not brackets `A[i][j]` to access array elements. 
+indexes use parenthesis `A(i,j)` not brackets `A[i][j]` to access array elements. 
 
-For example, the following sections of Fortran code that declare and use dynamocs arrays
+For example, the following sections of Fortran code that declare and use dynamics arrays
 ```
       INTEGER(KIND=IKIND), ALLOCATABLE :: ptr(:)
 
@@ -258,7 +258,7 @@ template methods. In the above example the Fortran `:` operator was replaced in 
 
 <h1 id="simulation_class"> Simulation Class </h1>
 
-The C++ [Simulation](https://github.com/SimVascular/svFSIplus/blob/main/Code/Source/svFSI/Simulation.h) class encapsilates 
+The C++ [Simulation](https://github.com/SimVascular/svFSIplus/blob/main/Code/Source/svFSI/Simulation.h) class encapsulates 
 all of the objects (Fortran modules) used to store simulation data. It also contains a `Parameters` object used to store 
 simulation parameters read in from an XML file.
 
@@ -272,10 +272,10 @@ used to pass data to procedures to carry out a series of computational steps.
 
 <h1 id="array_vector_class"> Array and Vector Class Templates </h1>
 
-Fortran dynamic arrays have been reproduced using custom `Vector`, `Array` and `Array3` C++ class templates. Note that these custom class templates will most likey be replaced by a more sophisticated matrix package such as `Eigen`.
+Fortran dynamic arrays have been reproduced using custom `Vector`, `Array` and `Array3` C++ class templates. Note that these custom class templates will most likely be replaced by a more sophisticated matrix package such as `Eigen`.
 
 The class templates are able to reproduce much of the functionality of Fortran arrays and array intrinsic functions (e.g. sum). The challenge is to  create class methods that are as efficient as the Fortan array operators. Because the operators are part of the Fortran language the compiler can
-optimize them as a effient memory-to-memory copies. For example
+optimize them as a efficient memory-to-memory copies. For example
 ```
 A(:,n) = B(:,n)
 A = B
@@ -283,7 +283,7 @@ A = B
 
 The objects created from class templates are not part of the C++ language like arrays (i.e. double A[100]). They have the overhead associated with all C++ objects (construct/destroy). Object copy and assignment operators must also be handled efficiently so that intermediate objects are not created and extra data copys are avoided.
 
-The `Vector`, `Array` and `Array3` class templates have a `data()` method that returns a point to the object's internal memory. This is neeed for
+The `Vector`, `Array` and `Array3` class templates have a `data()` method that returns a point to the object's internal memory. This is need for
 MPI calls that take raw C pointers as arguments. For example
 ```
 MPI_Allreduce(part.data(), tmpI.data(), gnNo, cm_mod::mpint, MPI_MAX, cm.com());
@@ -325,7 +325,7 @@ or when it goes out of scope.
 
 <h2 id="array_vector_class"> Indexing and Memory Layout </h2>
 
-C++ multidimensional arrays are referenced using 0-based indexing and are traversed in column-major order like Fortran. Array indexes use paranthesis `A(i,j)` not brackets `A[i][j]` to access array elements. This was done to make C++ code look more like Fortran and to simplify the conversion process. 
+C++ multidimensional arrays are referenced using 0-based indexing and are traversed in column-major order like Fortran. Array indexes use parenthesis `A(i,j)` not brackets `A[i][j]` to access array elements. This was done to make C++ code look more like Fortran and to simplify the conversion process. 
 ```
   Vector<double> u(2);
   Array<double> ux(2,2);
@@ -364,7 +364,7 @@ Indexes can be checked by defining the `_check_enabled` directive within each te
 
 Class templates support most mathematical operators: =,+,-,*,/,+=
 
-Some Fortran array intrinsics (e.g. abs, sqrt) are also supported. 
+Some Fortran array intrinsic (e.g. abs, sqrt) are also supported. 
 
 Example
 ```
@@ -383,9 +383,9 @@ Example
 
 ```
 
-The Array `*` operator performs an element-by-element multiplicaton, not a matrix multiplicaton. This was done to replicate Fortran.
+The Array `*` operator performs an element-by-element multiplication, not a matrix multiplication. This was done to replicate Fortran.
 
-It is more effienct to use the `+=` operator `A += B` than `A = A + B` which performs a copy.
+It is more efficient to use the `+=` operator `A += B` than `A = A + B` which performs a copy.
 
 <!--- -------------------------------- ---> 
 <!---     Getting an Array Column      --->  
@@ -440,7 +440,7 @@ Array<T> rslice(const int slice) const - Return an Array<T> object with data poi
 The `rslice()` method returns an `Array` object whose internal data is a pointer to the internal data of an `Array3` object. 
 This was done to reduce the overhead of copying sub-arrays in some sections of the custom linear algebra code. The `Array` 
 object will not free its data if it is a reference to the data of a `Array3` object. Use the `rslice` method if the slice data
-is going to be modified. It can also speed up code that repeatedly extracts sub-arrarys used in computations but are not modified.
+is going to be modified. It can also speed up code that repeatedly extracts sub-arrays used in computations but are not modified.
 
 <!--- -------------------------------- ---> 
 <!---    Fortran 0-size Arrays         --->  
@@ -462,9 +462,9 @@ it allowed to get the C++ code working without having to rewrite a lot of code.
 <h1 id="xml_file"> Solver Parameter Input XML File  </h1>
 
 The Fortan svFSI solver read in simulation parameters in a custom text format. All parameters were read in at startup and stored as 
-an array of characters (string) using custom code. Parameter values were then retrieved during various stages of the compuation. 
+an array of characters (string) using custom code. Parameter values were then retrieved during various stages of the computation. 
 The string representation was converted when the value of a parameter was needed. An error in a parameter value could therefore not
-be detected until later stages of the compuataion (e.g., when the mesh is being distributed over processors).
+be detected until later stages of the computation (e.g., when the mesh is being distributed over processors).
 
 svFSIplus solver simulation parameters are stored in the Extensible Markup Language (XML) file format. XML is a simple text-based format for representing structured data as element tree. The XML tree starts at a root element and branches from the root to sub-elements. All elements can have sub-elements. An XML tag is a markup construct that begins with < and ends with >. There are three types of tag:
 1) start-tag, such as `<section>`
@@ -473,7 +473,7 @@ svFSIplus solver simulation parameters are stored in the Extensible Markup Langu
 
 XML _tags_ represent data structures and contain metadata. An XML _element_ is a logical component that either begins with a start-tag and ends with a matching end-tag or consists only of an empty-element tag. The characters between the start-tag and end-tag, if any, are the element's _content_, and may contain markup, including other elements, which are called child elements. An _attribute_ is a markup construct consisting of a name–value pair that exists within a start-tag or empty-element tag.
 
-Exmaple: 
+Example: 
 ```
  <svFSIFile> |--------------------------------------------- root element
    <Add_equation type="FSI" >   |-------------------------- start-tag with an attribute named type
@@ -495,7 +495,7 @@ Exmaple:
  </svFSIFile>
 ```
 
-The elements in the svFSIplus simulation file are represented by _sections_ of related parameters. Sub-elements are refered to as _sub-sections_. 
+The elements in the svFSIplus simulation file are represented by _sections_ of related parameters. Sub-elements are referred to as _sub-sections_. 
 The svFSIplus simulation file has four top-level sections
 ```
 1) General
@@ -651,7 +651,7 @@ Example: Automatically parsing XML and setting parameter values in `LinearSolver
 <h2 id="xml_file"> Accessing Parameters </h2>
 
 Parameter values are accessed from the core simulation code using the `Simulation` object's `Parameters` object. 
-The `Parameter` template class `()` operator or `value()` method is used to access the parameters's value, the `defined()` 
+The `Parameter` template class `()` operator or `value()` method is used to access the parameter's value, the `defined()` 
 method is used to check if a parameter's value has been set.
 
 Example: Accessing parameter values
