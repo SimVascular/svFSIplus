@@ -21,7 +21,6 @@ if(WIN32)
   if(CYGWIN)
     set(GLOBAL_DEFINES "${GLOBAL_DEFINES} -DCYGWIN")
   endif()
-  set(GLOBAL_DEFINES "${GLOBAL_DEFINES} -DSV_WRAP_FORTRAN_IN_CAPS_NO_UNDERSCORE")
   set(GLOBAL_DEFINES "${GLOBAL_DEFINES} -D__VC__")
   check_library_exists("${CMAKE_CXX_STANDARD_LIBRARIES}" gethostname "" HAVE_STDGETHOSTNAME)
   if(NOT HAVE_STDGETHOSTNAME)
@@ -40,11 +39,9 @@ endif()
 # LINUX
 if(UNIX)
   set(GLOBAL_DEFINES "${GLOBAL_DEFINES} -DUNIX")
-  set(GLOBAL_DEFINES "${GLOBAL_DEFINES} -DSV_WRAP_FORTRAN_IN_LOWERCASE_WITH_UNDERSCORE")
 endif()
 if(LINUX)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
-  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -pthread -static")
 endif()
 
 #-----------------------------------------------------------------------------
@@ -70,7 +67,6 @@ if(CMAKE_COMPILER_IS_GNUCXX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive")
   set(GLOBAL_DEFINES "${GLOBAL_DEFINES} -DGCC")
 endif()
-set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -pthread")
 
 #-----------------------------------------------------------------------------
 # Set a default build type (if none was specified)
