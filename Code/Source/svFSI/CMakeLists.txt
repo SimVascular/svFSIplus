@@ -72,7 +72,7 @@ find_package(LAPACK REQUIRED)
 #   -iframe is valid for C/C++/ObjC/ObjC++ but not for Fortran
 #
 find_package(VTK REQUIRED)
-#include(${VTK_USE_FILE})
+include(${VTK_USE_FILE})
 
 set(lib ${SV_LIB_SVFSI_NAME})
 
