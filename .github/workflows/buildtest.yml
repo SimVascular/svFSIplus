@@ -1,6 +1,22 @@
 name: Buildtest
 on: [push, pull_request]
 jobs:
+  build-macos:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ macos-12 ]
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: brew install cmake vtk openblas lapack mesa open-mpi && brew link --force qt5
+      - name: Build svFSIplus
+        run: |
+          mkdir build
+          cd build
+          cmake ..
+          make -j3
   build-linux:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -17,22 +33,6 @@ jobs:
       - name: Install VTK9
         if: ${{ matrix.os == 'ubuntu-22.04' }}
         run: sudo apt install -y libvtk9-dev
-      - name: Build svFSIplus
-        run: |
-          mkdir build
-          cd build
-          cmake ..
-          make -j3
-  build-macos:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ macos-12 ]
-      fail-fast: false
-    steps:
-      - uses: actions/checkout@v2
-      - name: Install dependencies
-        run: brew install cmake qt5 vtk openblas lapack mesa open-mpi
       - name: Build svFSIplus
         run: |
           mkdir build
