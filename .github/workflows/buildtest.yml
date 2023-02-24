@@ -32,7 +32,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Install dependencies
-        run: brew install cmake vtk qt5 openblas lapack mesa open-mpi
+        run: brew install cmake qt5 vtk openblas lapack mesa open-mpi
       - name: Build svFSIplus
         run: |
           mkdir build
