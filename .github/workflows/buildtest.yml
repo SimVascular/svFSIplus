@@ -5,28 +5,18 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-22.04]
+        os: [ubuntu-20.04, ubuntu-22.04]
       fail-fast: false
     steps:
       - uses: actions/checkout@v2
-      - name: Install Ubuntu dependencies
-        run: sudo apt update && sudo apt install -y build-essential cmake libvtk9-dev qtbase5-dev libblas-dev liblapack-dev libopenblas-dev mesa-common-dev libgl1-mesa-dev libglu1-mesa-dev
-      - name: Build svFSIplus
-        run: |
-          mkdir build
-          cd build
-          cmake ..
-          make -j3
-  build-ubuntu-20:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-20.04]
-      fail-fast: false
-    steps:
-      - uses: actions/checkout@v2
-      - name: Install Ubuntu dependencies
-        run: sudo apt update && sudo apt install -y build-essential cmake libvtk7-dev qtbase5-dev libblas-dev liblapack-dev libopenblas-dev mesa-common-dev libgl1-mesa-dev libglu1-mesa-dev
+      - name: Install dependencies
+        run: sudo apt update && sudo apt install -y build-essential cmake qtbase5-dev libblas-dev liblapack-dev libopenblas-dev mesa-common-dev libgl1-mesa-dev libglu1-mesa-dev
+      - name: Install VTK
+        if: ${{ matrix.os == 'ubuntu-20.04' }}
+        run: sudo apt install -y libvtk7-dev
+      - name: Install VTK
+        if: ${{ matrix.os == 'ubuntu-22.04' }}
+        run: sudo apt install -y libvtk9-dev
       - name: Build svFSIplus
         run: |
           mkdir build
@@ -41,6 +31,8 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: brew install vtk
       - name: Build svFSIplus
         run: |
           mkdir build
