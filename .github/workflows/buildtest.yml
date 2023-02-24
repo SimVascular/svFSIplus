@@ -1,7 +1,7 @@
 name: Buildtest
 on: [push, pull_request]
 jobs:
-  build-ubuntu-22:
+  build-linux:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -32,7 +32,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Install dependencies
-        run: brew install vtk qt5 openblas lapack mesa
+        run: brew install cmake vtk qt5 openblas lapack mesa open-mpi
       - name: Build svFSIplus
         run: |
           mkdir build
