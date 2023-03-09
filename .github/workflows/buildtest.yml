@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Install dependencies
-        run: brew install cmake vtk openblas lapack mesa open-mpi && brew link --force qt5 && sudo ln -s /usr/local/Cellar/qt5/5.4.0/mkspecs /usr/local/mkspecs && sudo ln -s /usr/local/Cellar/qt5/5.4.0/plugins /usr/local/plugins
+        run: brew install cmake vtk openblas lapack mesa open-mpi && brew link --force qt5 && export PATH="/usr/local/opt/qt@5/bin:$PATH" && sudo ln -s /usr/local/Cellar/qt5/5.15.8_2/mkspecs /usr/local/mkspecs && sudo ln -s /usr/local/Cellar/qt5/5.15.8_2/plugins /usr/local/plugins
       - name: Build svFSIplus
         run: |
           mkdir build
