@@ -12,7 +12,7 @@ jobs:
       - name: Install dependencies
         run: brew install cmake vtk openblas lapack mesa open-mpi qt5
       - name: Fix Qt5 cmake detection
-        run: brew link --force qt5 && sudo ln -s /usr/local/Cellar/qt@5/5.15.8_2/mkspecs /usr/local/mkspecs
+        run: brew link --force qt5 && sudo ln -s /usr/local/Cellar/qt@5/5.15.8_2/mkspecs /usr/local/mkspecs && sudo ln -s /usr/local/Cellar/qt@5/5.15.8_2/plugins /usr/local/plugins
       - name: Build svFSIplus
         run: |
           mkdir build
