@@ -1,0 +1,43 @@
+name: Buildtest
+on: [push, pull_request]
+jobs:
+  build-macos:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ macos-12 ]
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: brew install cmake vtk openblas lapack mesa open-mpi qt5
+      - name: Fix Qt5 cmake detection
+        run: brew link --force qt5 && sudo ln -s /usr/local/Cellar/qt@5/5.15.8_2/mkspecs /usr/local/mkspecs && sudo ln -s /usr/local/Cellar/qt@5/5.15.8_2/plugins /usr/local/plugins
+      - name: Build svFSIplus
+        run: |
+          mkdir build
+          cd build
+          cmake ..
+          make -j3
+  build-linux:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, ubuntu-22.04]
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: sudo apt update && sudo apt install -y build-essential cmake qtbase5-dev libblas-dev liblapack-dev libopenblas-dev mesa-common-dev libgl1-mesa-dev libglu1-mesa-dev
+      - name: Install VTK7
+        if: ${{ matrix.os == 'ubuntu-20.04' }}
+        run: sudo apt install -y libvtk7-dev
+      - name: Install VTK9
+        if: ${{ matrix.os == 'ubuntu-22.04' }}
+        run: sudo apt install -y libvtk9-dev
+      - name: Build svFSIplus
+        run: |
+          mkdir build
+          cd build
+          cmake ..
+          make -j2
