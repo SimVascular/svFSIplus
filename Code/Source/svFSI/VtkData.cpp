@@ -147,6 +147,8 @@ void VtkVtuData::VtkVtuDataImpl::set_connectivity(const int nsd, const Array<int
   if (nsd == 2) {
     if (np_elem == 4) {
       vtk_cell_type = VTK_QUAD;
+    } else if (np_elem == 3) {
+      vtk_cell_type = VTK_TRIANGLE;
     }
 
   } else if (nsd == 3) {
