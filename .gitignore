@@ -3,3 +3,8 @@ build
 # System files osx 
 **/.DS_Store
 
+# Python files
+__pycache__
+
+# pytest
+.pytest_cache
