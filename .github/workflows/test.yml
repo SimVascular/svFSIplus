@@ -18,9 +18,9 @@ jobs:
       - name: Install Ubuntu VTK7
         if: matrix.os == 'ubuntu-20.04'
         run: sudo apt install -y libvtk7-dev
-      - name: Install Ubuntu VTK9
+      - name: Install Ubuntu VTK8
         if: matrix.os == 'ubuntu-22.04'
-        run: sudo apt install -y libvtk9-dev
+        run: sudo apt install -y libvtk8-dev
       - name: Install MacOS dependencies
         if: startsWith(matrix.os, 'macos')
         run: | 
