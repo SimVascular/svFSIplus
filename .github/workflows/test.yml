@@ -5,7 +5,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, macos-12]
+        os: [ubuntu-20.04, ubuntu-22.04]
       fail-fast: false
     steps:
       - uses: actions/checkout@v3
@@ -20,7 +20,7 @@ jobs:
         run: sudo apt install -y libvtk7-dev
       - name: Install Ubuntu VTK8
         if: matrix.os == 'ubuntu-22.04'
-        run: sudo apt install -y libvtk8-dev
+        run: sudo apt install -y libvtk7-dev
       - name: Install MacOS dependencies
         if: startsWith(matrix.os, 'macos')
         run: | 
