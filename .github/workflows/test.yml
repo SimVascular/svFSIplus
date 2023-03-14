@@ -1,0 +1,44 @@
+name: Buildtest
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, ubuntu-22.04, macos-12]
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Ubuntu dependencies
+        if: ${{ matrix.os == 'ubuntu-*' }}
+        run: |
+          sudo apt update
+          sudo apt install -y build-essential cmake qtbase5-dev libblas-dev liblapack-dev 
+          sudo apt install -y libopenblas-dev mesa-common-dev libgl1-mesa-dev libglu1-mesa-dev
+      - name: Install Ubuntu VTK7
+        if: ${{ matrix.os == 'ubuntu-20.04' }}
+        run: sudo apt install -y libvtk7-dev
+      - name: Install Ubuntu VTK9
+        if: ${{ matrix.os == 'ubuntu-22.04' }}
+        run: sudo apt install -y libvtk9-dev
+      - name: Install MacOS dependencies
+        if: ${{ matrix.os == 'macos-*' }}
+        run: | 
+          brew install cmake vtk openblas lapack mesa open-mpi qt5
+          brew link --force qt5
+          sudo ln -s /usr/local/Cellar/qt@5/5.15.8_2/mkspecs /usr/local/mkspecs
+          sudo ln -s /usr/local/Cellar/qt@5/5.15.8_2/plugins /usr/local/plugins
+      - name: Build svFSIplus
+        run: |
+          mkdir build
+          cd build
+          cmake ..
+          make -j2
+      - name: Install test dependencies
+        run: |
+          conda create -n svfsiplus python=3.9
+          conda run -n svfsiplus pip install pytest pytest-cov pytest-mock
+          conda run -n svfsiplus pip install -e .
+      - name: Test the build
+        run: |
+          conda run -n svfsiplus pytest tests/test_integration.py
