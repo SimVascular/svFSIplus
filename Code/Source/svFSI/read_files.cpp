@@ -1323,9 +1323,11 @@ void read_fiber_temporal_values_file(FiberReinforcementStressParameters& fiber_p
   std::string line;
 
   while (std::getline(temporal_values_file, line)) { 
+    line.erase(std::remove(line.begin(), line.end(), '\r' ), line.end());
     if (line == "") {
       continue;
     }
+
     std::istringstream line_input(line);
     std::vector<double> values;
     while (line_input >> value) {
@@ -1573,9 +1575,11 @@ void read_fourier_coeff_values_file(const std::string& file_name, bcType& lBc)
   int n = 0;
 
   while (std::getline(temporal_values_file, line)) { 
+    line.erase(std::remove(line.begin(), line.end(), '\r' ), line.end());
     if (line == "") {
       continue;
     }
+
     std::istringstream line_input(line);
     std::vector<double> values;
     while (line_input >> value) {
@@ -1640,9 +1644,11 @@ void read_fourier_coeff_values_file(const std::string& file_name, bfType& lBf)
   int n = 0;
 
   while (std::getline(temporal_values_file, line)) { 
+    line.erase(std::remove(line.begin(), line.end(), '\r' ), line.end());
     if (line == "") {
       continue;
     }
+
     std::istringstream line_input(line);
     std::vector<double> values;
     while (line_input >> value) {
@@ -2053,6 +2059,13 @@ void read_spatial_values(const ComMod& com_mod, const mshType& msh, const faceTy
 void read_temp_spat_values(const ComMod& com_mod, const mshType& msh, const faceType& lFa, 
     const std::string& file_name, bcType& lBc)
 {
+  #define n_debug_read_ts_values_bf
+  #ifdef debug_read_ts_values_bf 
+  DebugMsg dmsg(__func__, com_mod.cm.idcm());
+  dmsg.banner();
+  dmsg << "file_name: " << file_name;
+  #endif
+
   std::ifstream file_stream;
   file_stream.open(file_name);
   if (!file_stream.is_open()) {
@@ -2292,9 +2305,11 @@ void read_temporal_values(const std::string& file_name, bcType& lBc)
   std::string line;
 
   while (std::getline(temporal_values_file, line)) { 
+    line.erase(std::remove(line.begin(), line.end(), '\r' ), line.end());
     if (line == "") {
       continue;
     }
+
     std::istringstream line_input(line);
     std::vector<double> values;
 
