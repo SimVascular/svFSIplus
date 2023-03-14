@@ -1,0 +1,36 @@
+# numVar
+2
+
+# numFiles
+6
+
+# variableNameList
+Velocity      2
+Pressure      1
+
+# exactSolutionFileList
+../N004/exact_soln.vtu
+../N008/exact_soln.vtu
+../N016/exact_soln.vtu
+../N032/exact_soln.vtu
+../N064/exact_soln.vtu
+../N128/exact_soln.vtu
+
+# numericalSolutionFileList
+../N004/result_050.vtu
+../N008/result_050.vtu
+../N016/result_050.vtu
+../N032/result_050.vtu
+../N064/result_050.vtu
+../N128/result_050.vtu
+
+# gridSpacingList
+0.25000000
+0.12500000
+0.06250000
+0.03125000
+0.01562500
+0.00781250
+
+
+
