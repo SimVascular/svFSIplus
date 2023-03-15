@@ -1,0 +1,85 @@
+#----------------------------------------------------------------
+# General simulation parameters
+
+Continue previous simulation: 0
+Number of spatial dimensions: 2
+Number of time steps: 50
+Time step size: 0.01
+Spectral radius of infinite time step: 0.50
+Searched file name to trigger stop: STOP_SIM
+
+Save results to VTK format: 1
+Name prefix of saved VTK files: result
+Increment in saving VTK files: 50
+Start saving after time step: 1
+
+Increment in saving restart files: 50
+Convert BIN to VTK format: 0
+
+Verbose: 1
+Warning: 0
+Debug: 0
+
+#----------------------------------------------------------------
+# Mesh data
+Add mesh: msh {
+   Mesh file path:    ../mesh/N064/mesh-complete.mesh.vtu
+   Add face: bottom {
+      Face file path: ../mesh/N064/mesh-surfaces/bottom.vtp
+   }
+   Add face: top {
+      Face file path: ../mesh/N064/mesh-surfaces/top.vtp
+   }
+   Add face: left {
+      Face file path: ../mesh/N064/mesh-surfaces/left.vtp
+   }
+   Add face: right {
+      Face file path: ../mesh/N064/mesh-surfaces/right.vtp
+   }
+}
+
+#----------------------------------------------------------------
+# Equations
+Add equation: stokes {
+   Coupled: 1
+   Min iterations: 4
+   Max iterations: 4
+   Tolerance: 1e-9
+   Use Taylor-Hood type basis: t
+
+   Viscosity: Constant {Value: 1.0}
+   Momentum stabilization coefficient: 0.0
+
+   LS type: GMRES
+   {
+      Preconditioner:  RCS
+      Tolerance:       1D-9
+      Max iterations:  100
+      Krylov space dimension: 50
+   }
+
+   Add BF: msh {
+      Type: vol
+      Time dependence: general
+      Temporal and spatial values file path: ../bforce/N064/bforce.dat
+   }
+
+   Add BC: left {
+      Type: Dir
+      Time dependence: General
+      Temporal and spatial values file path: ../bforce/N064/left_vbc.dat
+   }
+
+   Add BC: right {
+      Type: Dir
+      Time dependence: General
+      Temporal and spatial values file path: ../bforce/N064/right_vbc.dat
+   }
+
+   Add BC: top {
+      Type: Dir
+      Time dependence: General
+      Temporal and spatial values file path: ../bforce/N064/top_vbc.dat
+   }
+}
+

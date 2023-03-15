@@ -3,3 +3,11 @@ build
 # System files osx 
 **/.DS_Store
 
+# svFSIplus output
+*-procs
+
+# Python files
+__pycache__
+
+# pytest
+.pytest_cache
