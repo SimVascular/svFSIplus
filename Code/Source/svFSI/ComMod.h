@@ -781,6 +781,7 @@ class mshType
 {
   public:
     mshType();
+    std::string dname = "";
 
 /*
     mshType(const mshType &other) 
@@ -797,7 +798,7 @@ class mshType
 
     ~mshType() 
     { 
-      std::cout << "- - - - -  mshType dtor - - - - - " << std::endl;
+      std::cout << "- - - - -  mshType dtor - - - - -   dname: " << dname << std::endl;
     };
 
     // Whether the shape function is linear
@@ -947,6 +948,11 @@ class mshType
 
     // IB: tracers
     traceType trc;
+
+  private:
+    //mshType(const mshType&);
+    //mshType& operator=(const mshType&);
+
 };
 
 //--------

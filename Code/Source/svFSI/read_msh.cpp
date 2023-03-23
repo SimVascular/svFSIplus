@@ -8,6 +8,7 @@
 #include "all_fun.h"
 #include "consts.h"
 #include "load_msh.h"
+#include "nn.h"
 #include "read_msh.h"
 #include "utils.h"
 #include "vtk_xml.h"
@@ -351,7 +352,7 @@ void calc_mesh_props(ComMod& com_mod, const CmMod& cm_mod, const int nMesh, std:
     rmsh.flag[iM] = flag;
     dmsg << "mesh[iM].flag: " << rmsh.flag[iM];
     // [DaveP] fake remeshing.
-    rmsh.flag[iM] = true;
+    //rmsh.flag[iM] = true;
   }
 
   if (rmsh.isReqd && std::count(rmsh.flag.begin(), rmsh.flag.end(), true) != rmsh.flag.size()) {
@@ -1035,11 +1036,12 @@ void read_msh(Simulation* simulation)
 {
   auto& com_mod = simulation->get_com_mod();
 
-  #define n_debug_read_msh 
+  #define debug_read_msh 
   #ifdef debug_read_msh 
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
-  dmsg <<  "resetSim: " << com_mod.resetSim;
+  dmsg << "resetSim: " << com_mod.resetSim;
+  dmsg << "gtnNo: " << com_mod.gtnNo;
   #endif
 
   // Allocate global 'msh' vector of mshType objects.
@@ -1047,7 +1049,6 @@ void read_msh(Simulation* simulation)
   // READMSH - ALLOCATE (msh(nMsh), gX(0,0))
   //
   com_mod.nMsh = simulation->parameters.mesh_parameters.size();
-  com_mod.msh.resize(com_mod.nMsh);
   #ifdef debug_read_msh 
   dmsg << "Number of meshes: " << com_mod.nMsh;
   #endif
@@ -1057,136 +1058,145 @@ void read_msh(Simulation* simulation)
   std::array<double,3> min_x{min_dval, min_dval, min_dval};
   std::array<double,3> max_x{max_dval, max_dval, max_dval};
 
-  // [NOTE] We are not processing 'resetSim' here, not sure what that does..
-  //
-  // I guess we should put all of the follow code in a function.
-  /*
-  IF (.NOT.resetSim) THEN
-  */
+  Array<double> gX;
 
-  // Global total number of nodes.
-  com_mod.gtnNo = 0;
-
-  // Set mesh parameters and read mesh data.
-  //
-  // READMSH - lPtr => lPM%get(msh(iM)%lShl,"Set mesh as shell") 
-  //
-  // READMSH - CALL READSV(lPM, msh(iM)) 
-  //
-  for (int iM = 0; iM < com_mod.nMsh; iM++) {
-    auto param = simulation->parameters.mesh_parameters[iM];
-    auto& mesh = com_mod.msh[iM];
-
-    mesh.name = param->name();
-    mesh.lShl = param->set_mesh_as_shell();
-    mesh.lFib = param->set_mesh_as_fibers();
-    mesh.scF = param->mesh_scale_factor();
-    #ifdef debug_read_msh 
-    dmsg << "Mesh name: " << mesh.name;
-    dmsg << "  mesh.lShl: " << mesh.lShl;
-    dmsg << "  mesh.lFib: " << mesh.lFib;
-    dmsg << "  scale factor: " << mesh.scF;
-    #endif
-
-    // Read mesh nodal coordinates and element connectivity.
-    load_msh::read_sv(simulation, mesh, param);
-
-    // [NOTE] What is this all about?
-    if (mesh.eType == consts::ElementType::NA) {
-      load_msh::read_ccne(simulation, mesh, param);
-    }
-
-    // Allocate mesh local to global nodes map (gN).
-    #ifdef debug_read_msh 
-    dmsg << "mesh.gnNo: " << mesh.gnNo;
-    #endif
-    mesh.gN = Vector<int>(mesh.gnNo);
-    mesh.gN = -1;
-
-    // Check for unique face names.
-    //
-    #ifdef debug_read_msh 
-    dmsg << "Check for unique face names ....";
-    #endif
-    for (int iFa = 0; iFa < mesh.nFa; iFa++) {
-      mesh.fa[iFa].iM = iM;
-      auto ctmp = mesh.fa[iFa].name;
-      for (int i = 0; i < iM; i++) {
-        for (int j = 0; j < com_mod.msh[i].nFa; j++) {
-          if ((ctmp == com_mod.msh[i].fa[j].name) && ((i != iM || j != iFa))) { 
-            throw std::runtime_error("The face name '" + ctmp + "' is duplicated."); 
-          }
-        }
-      } 
-    } 
+  if (!com_mod.resetSim) {
+    com_mod.msh.resize(com_mod.nMsh);
 
     // Global total number of nodes.
-    com_mod.gtnNo += mesh.gnNo;
-    #ifdef debug_read_msh 
-    dmsg << "Global total number of nodes (gtnNo): " << com_mod.gtnNo;
-    #endif
-  }
+    com_mod.gtnNo = 0;
 
-  // Create global nodal coordinate array. 
-  //
-  // Scale the nodal coordinates. 
-  //
-  auto gX = Array<double>(com_mod.nsd, com_mod.gtnNo);
-  int n = 0;
+    // Set mesh parameters and read mesh data.
+    //
+    // READMSH - lPtr => lPM%get(msh(iM)%lShl,"Set mesh as shell") 
+    //
+    // READMSH - CALL READSV(lPM, msh(iM)) 
+    //
+    for (int iM = 0; iM < com_mod.nMsh; iM++) {
+      auto param = simulation->parameters.mesh_parameters[iM];
+      auto& mesh = com_mod.msh[iM];
+      mesh.dname = "read_msh: " + std::to_string(iM+1);
 
-  for (auto& mesh : com_mod.msh) {
-    for (int i = 0; i < mesh.gnNo; i++) {
-      for (int j = 0; j < com_mod.nsd; j++) {
-        gX(j,n) = mesh.scF * mesh.x(j,i); 
+      mesh.name = param->name();
+      mesh.lShl = param->set_mesh_as_shell();
+      mesh.lFib = param->set_mesh_as_fibers();
+      mesh.scF = param->mesh_scale_factor();
+      #ifdef debug_read_msh 
+      dmsg << "Mesh name: " << mesh.name;
+      dmsg << "  mesh.lShl: " << mesh.lShl;
+      dmsg << "  mesh.lFib: " << mesh.lFib;
+      dmsg << "  scale factor: " << mesh.scF;
+      #endif
+
+      // Read mesh nodal coordinates and element connectivity.
+      load_msh::read_sv(simulation, mesh, param);
+
+      // [NOTE] What is this all about?
+      if (mesh.eType == consts::ElementType::NA) {
+        load_msh::read_ccne(simulation, mesh, param);
       }
-    n += 1;
+
+      // Allocate mesh local to global nodes map (gN).
+      #ifdef debug_read_msh 
+      dmsg << "mesh.gnNo: " << mesh.gnNo;
+      #endif
+      mesh.gN = Vector<int>(mesh.gnNo);
+      mesh.gN = -1;
+
+      // Check for unique face names.
+      //
+      #ifdef debug_read_msh 
+      dmsg << "Check for unique face names ....";
+      #endif
+      for (int iFa = 0; iFa < mesh.nFa; iFa++) {
+        mesh.fa[iFa].iM = iM;
+        auto ctmp = mesh.fa[iFa].name;
+        for (int i = 0; i < iM; i++) {
+          for (int j = 0; j < com_mod.msh[i].nFa; j++) {
+            if ((ctmp == com_mod.msh[i].fa[j].name) && ((i != iM || j != iFa))) { 
+              throw std::runtime_error("The face name '" + ctmp + "' is duplicated."); 
+            }
+          }
+        } 
+      } 
+
+      // Global total number of nodes.
+      com_mod.gtnNo += mesh.gnNo;
+      #ifdef debug_read_msh 
+      dmsg << "Global total number of nodes (gtnNo): " << com_mod.gtnNo;
+      #endif
     }
-    mesh.x.clear();
-  }
 
-  com_mod.x = gX;
-
-  // Check for shell elements.
-  //
-  for (int iM = 0; iM < com_mod.nMsh; iM++) {
-    auto& mesh = com_mod.msh[iM];
-    if (mesh.lShl) {
-      if (mesh.eType != consts::ElementType::NRB && mesh.eType != consts::ElementType::TRI3) {
-        throw std::runtime_error("Shell elements must be triangles or C1-NURBS.");
+    // Create global nodal coordinate array. 
+    //
+    // Scale the nodal coordinates. 
+    //
+    gX.resize(com_mod.nsd, com_mod.gtnNo);
+    int n = 0;
+  
+    for (auto& mesh : com_mod.msh) {
+      for (int i = 0; i < mesh.gnNo; i++) {
+        for (int j = 0; j < com_mod.nsd; j++) {
+          gX(j,n) = mesh.scF * mesh.x(j,i); 
+        }
+      n += 1;
       }
-      if (mesh.eType == consts::ElementType::NRB) {
-        for (int i = 0; i < com_mod.nsd-1; i++) {
-          if (mesh.bs[i].p <= 1) {
-            throw std::runtime_error("NURBS for shell elements must have be p > 1.");
+      mesh.x.clear();
+    }
+
+    com_mod.x = gX;
+
+    // Check for shell elements.
+    //
+    for (int iM = 0; iM < com_mod.nMsh; iM++) {
+      auto& mesh = com_mod.msh[iM];
+      if (mesh.lShl) {
+        if (mesh.eType != consts::ElementType::NRB && mesh.eType != consts::ElementType::TRI3) {
+          throw std::runtime_error("Shell elements must be triangles or C1-NURBS.");
+        }
+        if (mesh.eType == consts::ElementType::NRB) {
+          for (int i = 0; i < com_mod.nsd-1; i++) {
+            if (mesh.bs[i].p <= 1) {
+              throw std::runtime_error("NURBS for shell elements must have be p > 1.");
+            } 
           } 
         } 
       } 
     } 
-  } 
 
-  // Check for fiber mesh.
-  //
-  for (int iM = 0; iM < com_mod.nMsh; iM++) {
-    auto& mesh = com_mod.msh[iM];
-    if (mesh.lFib) {
-      if (mesh.eType != consts::ElementType::LIN1 && mesh.eType != consts::ElementType::LIN2) { 
-        throw std::runtime_error("Fiber elements must be either linear quadratic.");
+    // Check for fiber mesh.
+    //
+    for (int iM = 0; iM < com_mod.nMsh; iM++) {
+      auto& mesh = com_mod.msh[iM];
+      if (mesh.lFib) {
+        if (mesh.eType != consts::ElementType::LIN1 && mesh.eType != consts::ElementType::LIN2) { 
+          throw std::runtime_error("Fiber elements must be either linear quadratic.");
+        }
       }
     }
-  }
-  
-  // [NOTE] We are not processing resetSim here.
-  /*
-  ELSE
-    ALLOCATE(gX(nsd,gtnNo))
-    gX = x
-    DO iM=1, nMsh
-      CALL SELECTELE(msh(iM))
-      ALLOCATE(msh(iM)%gN(msh(iM)%gnNo))
-      msh(iM)%gN = 0
-    END DO
-  END IF ! resetSim
-*/
+
+ // Allocate new mesh nodes or something.
+ //
+ } else {
+    dmsg << "Allocate new mesh nodes or something ..." << "";
+    dmsg << "com_mod.gtnNo: " << com_mod.gtnNo;
+    gX.resize(com_mod.nsd,com_mod.gtnNo);
+    gX = com_mod.x;
+
+    for (int iM = 0; iM < com_mod.nMsh; iM++) {
+      auto& msh = com_mod.msh[iM];
+      dmsg << "msh.dname: " << msh.dname;
+      dmsg << "msh.gnNo: " << msh.gnNo;
+      dmsg << "msh.eNoN: " << msh.eNoN;
+      dmsg << "msh.gnEl: " << msh.gnEl;
+
+      nn::select_ele(com_mod, msh);
+      //CALL SELECTELE(msh(iM))
+      msh.gN.resize(msh.gnNo);
+      dmsg << "msh.gN.size(): " << msh.gN.size();
+      msh.gN = -1;
+    }
+  } 
 
   // Examining the existance of projection faces and setting %gN.
   // Reseting gtnNo and recounting nodes that are not duplicated
@@ -1214,26 +1224,29 @@ void read_msh(Simulation* simulation)
     }
   }
 
+  #ifdef debug_read_msh 
+  dmsg << "Allocate com_mod.x ... " << "";
+  dmsg << "com_mod.gtnNo: " << com_mod.gtnNo;
+  #endif
   com_mod.x = Array<double>(com_mod.nsd, com_mod.gtnNo);
 
   if (avNds.n != 0) {
     throw std::runtime_error("There are " + std::to_string(avNds.n) + " nodes not associated other faces.");
   }
 
-  #ifdef debug_read_msh 
-  dmsg << "com_mod.gtnNo: " << com_mod.gtnNo;
-  #endif
 
   // Temporarily allocate msh%lN array. This is necessary for BCs and
   // will later be deallocated in DISTRIBUTE
   //
   #ifdef debug_read_msh 
-  dmsg << "Temporarily allocate msh%lN array ... " ;
+  dmsg << " " << "" ;
+  dmsg << "Temporarily allocate msh%lN array ... "  << "";
   #endif
 
   for (int iM = 0; iM < com_mod.nMsh; iM++) {
     com_mod.msh[iM].lN = Vector<int>(com_mod.gtnNo);
     com_mod.msh[iM].lN = -1;
+
     for (int a = 0; a < com_mod.msh[iM].gnNo; a++ ) {
       int Ac = com_mod.msh[iM].gN[a];
       com_mod.msh[iM].lN[Ac] = a;
@@ -1244,9 +1257,8 @@ void read_msh(Simulation* simulation)
   // First rearrange 2D/3D mesh and then, 1D fiber mesh
   //
   #ifdef debug_read_msh 
-  dmsg << "Re-arranging x ..." ;
+  dmsg << "Re-arranging x " << "...";
   #endif
-
   std::vector<bool> ichk(com_mod.gtnNo);
   std::fill(ichk.begin(), ichk.end(), false);
   int b = 0;
@@ -1334,49 +1346,54 @@ void read_msh(Simulation* simulation)
     }  
   }  
 
-  // [NOTE] Not implemented. 
-/*
-  if (resetSim) {
-    int lDof = size(rmsh%Y0,1)
-    int lnNo = size(rmsh%Y0,2)
+  if (com_mod.resetSim) {
+    auto& rmsh = com_mod.rmsh;
+    int gtnNo = com_mod.gtnNo;
+    int lDof = rmsh.Y0.nrows();
+    int lnNo = rmsh.Y0.ncols();
+
     if (lnNo != gtnNo) {
-      ALLOCATE(tmpA(lDof,lnNo))
-      ALLOCATE(tmpY(lDof,lnNo))
-      ALLOCATE(tmpD(lDof,lnNo))
-      tmpA = rmsh%A0
-      tmpY = rmsh%Y0
-      tmpD = rmsh%D0
-      DEALLOCATE(rmsh%A0,rmsh%Y0,rmsh%D0)
-      ALLOCATE(rmsh%A0(lDof,gtnNo))
-      ALLOCATE(rmsh%Y0(lDof,gtnNo))
-      ALLOCATE(rmsh%D0(lDof,gtnNo))
-      int b = 0
-      DO iM=1, nMsh
-        DO a=1, msh(iM)%gnNo
-          b = b + 1
-          Ac = msh(iM)%gpN(a)
-          DO i=1, lDof
-            rmsh%A0(i,Ac) = tmpA(i,b)
-            rmsh%Y0(i,Ac) = tmpY(i,b)
-            rmsh%D0(i,Ac) = tmpD(i,b)
-          END DO
-        END DO
-      END DO
-    END IF ! lnNo < gtnNo
-  END IF ! resetSim
-*/
+      Array<double> tmpA(lDof,lnNo);
+      Array<double> tmpY(lDof,lnNo);
+      Array<double> tmpD(lDof,lnNo);
+      tmpA = rmsh.A0;
+      tmpY = rmsh.Y0;
+      tmpD = rmsh.D0;
+
+      rmsh.A0.resize(lDof,gtnNo);
+      rmsh.Y0.resize(lDof,gtnNo);
+      rmsh.D0.resize(lDof,gtnNo);
+      int b = 0;
+
+      for (int iM = 0; iM < com_mod.nMsh; iM++) {
+        auto& msh = com_mod.msh[iM];
+
+        for (int a = 0; a < msh.gnNo; a++) {
+          int Ac = msh.gpN(a);
+
+          for (int i = 0; i < lDof; i++) {
+            rmsh.A0(i,Ac) = tmpA(i,b);
+            rmsh.Y0(i,Ac) = tmpY(i,b);
+            rmsh.D0(i,Ac) = tmpD(i,b);
+          } 
+
+          b = b + 1;
+        }
+      }
+    } 
+  } 
 
   // Setting dmnId parameter here, if there is at least one mesh that
   // has defined eId.
   //
   #ifdef debug_read_msh 
-  dmsg << "Setting dmnId parameter ... " << std::endl;
+  dmsg << "Setting dmnId parameter " << "...";
   #endif
   bool flag = false;
 
   for (int iM = 0; iM < com_mod.nMsh; iM++) {
     #ifdef debug_read_msh 
-    dmsg << " ----- iM " << iM << " -----";
+    dmsg << "---------- iM " << iM;
     #endif
     auto mesh_param = simulation->parameters.mesh_parameters[iM];
 
@@ -1411,6 +1428,10 @@ void read_msh(Simulation* simulation)
       flag = true;
     }
   }
+
+  #ifdef debug_read_msh 
+  dmsg << "flag: " << flag;
+  #endif
 
   if (flag) {
     auto& dmnId = com_mod.dmnId;

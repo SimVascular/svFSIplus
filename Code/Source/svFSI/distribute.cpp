@@ -35,7 +35,7 @@ void distribute(Simulation* simulation)
   auto& com_mod = simulation->com_mod;
   auto& cm = com_mod.cm;
 
-  #define n_debug_distribute
+  #define debug_distribute
   #ifdef debug_distribute
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
@@ -95,10 +95,12 @@ void distribute(Simulation* simulation)
   for (int i = 0; i < com_mod.msh.size(); i++) {
     wrk[i] = static_cast<double>(com_mod.msh[i].gnNo) / com_mod.gtnNo;
     #ifdef debug_distribute
-    dmsg << "----- i " << i << " -----";
-    dmsg << "com_mod.msh[i].gnNo: " << com_mod.msh[i].gnNo;
-    dmsg << "com_mod.msh[i].name: " << com_mod.msh[i].name;
-    dmsg << "wrk[" << i << "]: " << wrk[i];
+    dmsg << "---------- i " << i;
+    dmsg << "msh[i].name: " << com_mod.msh[i].name;
+    dmsg << "msh[i].gnNo: " << com_mod.msh[i].gnNo;
+    //dmsg << "msh[i].nNo: " << com_mod.msh[i].nNo;
+    //dmsg << "msh[i].msh.nEl: " << com_mod.msh[i].nEl;
+    dmsg << "wrk[i]: "  << wrk[i];
     #endif
   }
 
@@ -125,10 +127,10 @@ void distribute(Simulation* simulation)
   Vector<float> iWgt(num_proc); 
 
   #ifdef debug_distribute
-  dmsg << "wgt: ";
+  dmsg << "wgt: " << "";
   for (int iM = 0; iM < nMsh; iM++) {
     for (int i = 0; i < num_proc; i++) {
-      dmsg << "d wgt[" << iM << "," << i << "]:"  << wgt(iM,i);
+      dmsg << "wgt[" + std::to_string(iM) + "," + std::to_string(i) + "]:"  << wgt(iM,i);
     }
   }
   #endif
@@ -144,9 +146,24 @@ void distribute(Simulation* simulation)
   // Setting gtl pointer in case that it is needed and mapping IEN.
   //
   int tnNo = com_mod.tnNo;
+  #ifdef debug_distribute
+  dmsg << "com_mod.tnNo: " << com_mod.tnNo;
+  #endif
+
   for (int iM = 0; iM < nMsh; iM++) {
     auto& msh = com_mod.msh[iM];
     msh.lN.resize(tnNo);
+    #ifdef debug_distribute
+    dmsg << "---------- iM " << iM;
+    dmsg << "msh.gnNo: " << msh.gnNo;
+    dmsg << "msh.nNo: " << msh.nNo;
+    dmsg << "msh.nEl: " << msh.nEl;
+    //dmsg << "msh.gN: " << msh.gN;
+    dmsg << "msh.gN.size(): " << msh.gN.size();
+    dmsg << "msh.lN.size(): " << msh.lN.size();
+    dmsg << "msh.IEN.nrows(): " << msh.IEN.nrows();
+    dmsg << "msh.IEN.ncols(): " << msh.IEN.ncols();
+    #endif
 
     for (int a = 0; a < msh.nNo; a++) {
       int Ac = msh.gN[a];

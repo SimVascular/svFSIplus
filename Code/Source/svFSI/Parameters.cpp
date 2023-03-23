@@ -1646,6 +1646,7 @@ void EquationParameters::set_values(tinyxml2::XMLElement* eq_elem)
   //
   while (item != nullptr) {
     auto name = std::string(item->Value());
+    //std::cout << "[EquationParameters::set_values] name: " << name << std::endl;
 
     if (name == BodyForceParameters::xml_element_name_) {
       auto bf_params = new BodyForceParameters();

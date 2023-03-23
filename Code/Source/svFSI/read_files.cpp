@@ -1360,10 +1360,13 @@ void read_files(Simulation* simulation, const std::string& file_name)
 {
   using namespace consts;
 
-  // Read the solver XML file.
-  simulation->read_parameters(std::string(file_name));
-
   auto& com_mod = simulation->get_com_mod();
+
+  // Read the solver XML file.
+  if (!com_mod.resetSim) {
+    simulation->read_parameters(std::string(file_name));
+  }
+
   auto& chnl_mod = simulation->get_chnl_mod();
   auto& gen_params = simulation->parameters.general_simulation_parameters;
 

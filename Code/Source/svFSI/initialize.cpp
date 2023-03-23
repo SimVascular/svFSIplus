@@ -506,12 +506,18 @@ void initialize(Simulation* simulation, Vector<double>& timeP)
 
   // Initialize FSILS structures
   //
+  fsi_linear_solver::FSILS_commuType communicator;
+
   if (com_mod.resetSim) {
-    //if (communicator%foC) CALL FSILS_COMMU_FREE(communicator)
-    //if (lhs%foC) CALL FSILS_LHS_FREE(lhs)
+    if (communicator.foC) {
+      fsils_commu_free(communicator);
+    }
+
+    if (com_mod.lhs.foC) {
+      fsils_lhs_free(com_mod.lhs);
+    }
   }
 
-  fsi_linear_solver::FSILS_commuType communicator;
   fsi_linear_solver::fsils_commu_create(communicator, cm.com());
 
   fsi_linear_solver::fsils_lhs_create(com_mod.lhs, communicator, com_mod.gtnNo, com_mod.tnNo, nnz, 
@@ -620,18 +626,19 @@ void initialize(Simulation* simulation, Vector<double>& timeP)
           zero_init(simulation);
         }
 
-        // [TODO] What's this about?
-        /*
         if (rmsh.isReqd) {
-          rmsh.fTS = (cTS/rmsh.fTS + 1)*rmsh.freq
-          rmsh.rTS = cTS
-          rmsh.time = time
-          rmsh.iNorm(:) = eq(:).iNorm
-          rmsh.A0(:,:) = Ao(:,:)
-          rmsh.Y0(:,:) = Yo(:,:)
-          rmsh.D0(:,:) = Do(:,:)
+          auto& cTS = com_mod.cTS;
+          rmsh.fTS = (cTS/rmsh.fTS + 1)*rmsh.freq;
+          rmsh.rTS = cTS;
+          rmsh.time = com_mod.time;
+          for (int i = 0; i < rmsh.iNorm.size(); i++) {
+            rmsh.iNorm(i) = com_mod.eq[i].iNorm;
+          }
+          rmsh.A0 = com_mod.Ao;
+          rmsh.Y0 = com_mod.Yo;
+          rmsh.D0 = com_mod.Do;
         }
-        */
+
       } else {
         zero_init(simulation);
       } 

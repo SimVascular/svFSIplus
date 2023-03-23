@@ -12,9 +12,9 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkXMLPolyDataReader.h>
+#include <vtkXMLPolyDataWriter.h>
 #include <vtkXMLUnstructuredGridReader.h>
 #include <vtkXMLUnstructuredGridWriter.h>
-
 #include <string>
 #include <map>
 
@@ -32,14 +32,23 @@
 //
 class VtkVtpData::VtkVtpDataImpl {
   public:
+    VtkVtpDataImpl(); 
     void read_file(const std::string& file_name);
+    void set_connectivity(const int nsd, const Array<int>& conn, const int pid);
     void set_point_data(const std::string& data_name, const Vector<int>& data);
+    void set_points(const Array<double>& points);
+    void write(const std::string& file_name);
 
     vtkSmartPointer<vtkPolyData> vtk_polydata;
     int num_elems;
     int np_elem;
     int num_points;
 };
+
+VtkVtpData::VtkVtpDataImpl::VtkVtpDataImpl()
+{
+  vtk_polydata = vtkSmartPointer<vtkPolyData>::New();
+}
 
 //-----------
 // read_file
@@ -61,6 +70,137 @@ void VtkVtpData::VtkVtpDataImpl::read_file(const std::string& file_name)
   auto cell = vtkGenericCell::New();
   vtk_polydata->GetCell(0, cell);
   np_elem = cell->GetNumberOfPoints();
+}
+
+//------------------
+// set_connectivity
+//------------------
+//
+void VtkVtpData::VtkVtpDataImpl::set_connectivity(const int nsd, const Array<int>& conn, const int pid)
+{
+  //std::cout << "[VtkVtpData.set_connectivity] " << std::endl;
+  //std::cout << "[VtkVtpData.set_connectivity] vtk_polydata: " << vtk_polydata << std::endl;
+  //std::cout << "[VtkVtpData.set_connectivity] nsd: " << nsd << std::endl;
+  int num_elems = conn.ncols();
+  int np_elem = conn.nrows();
+  unsigned char vtk_cell_type;
+  //std::cout << "[VtkVtpData.set_connectivity] num_elems: " << num_elems << std::endl;
+  //std::cout << "[VtkVtpData.set_connectivity] np_elem: " << np_elem << std::endl;
+
+  if (nsd == 2) {
+    if (np_elem == 4) {
+      vtk_cell_type = VTK_QUAD;
+    }
+    else if (np_elem == 3) {
+      vtk_cell_type = VTK_TRIANGLE;
+    }
+
+  } else if (nsd == 3) {
+    if (np_elem == 4) {
+      vtk_cell_type = VTK_QUAD;
+    }
+    else if (np_elem == 3) {
+      vtk_cell_type = VTK_TRIANGLE;
+      //std::cout << "[VtkVtpData.set_connectivity] vtk_cell_type = VTK_TRIANGLE " << std::endl;
+    }
+  }
+  
+  if (np_elem == 2) {
+    vtk_cell_type = VTK_LINE;
+  }
+
+  auto elem_nodes = vtkSmartPointer<vtkIdList>::New();
+  elem_nodes->Allocate(np_elem);
+  elem_nodes->Initialize();
+  elem_nodes->SetNumberOfIds(np_elem);
+
+  auto elem_ids = vtkSmartPointer<vtkIntArray>::New();
+  elem_ids->SetNumberOfComponents(1);
+  elem_ids->Allocate(num_elems,1000);
+  elem_ids->SetNumberOfTuples(num_elems);
+  elem_ids->SetName("GlobalElementID");
+
+  vtkSmartPointer<vtkCellArray> element_cells = vtkSmartPointer<vtkCellArray>::New();
+
+  for (int i = 0; i < num_elems; i++) {
+    //std::cout << "[VtkVtpData.set_connectivity] ---------- i " << i << std::endl;
+    for (int j = 0; j < np_elem; j++) {
+      //std::cout << "[VtkVtpData.set_connectivity] ----- j " << j << std::endl;
+      //std::cout << "[VtkVtpData.set_connectivity] conn(j,i): " << conn(j,i) << std::endl;
+      elem_nodes->SetId(j, conn(j,i));
+    }
+    element_cells->InsertNextCell(elem_nodes);
+    //vtk_polydata->InsertNextCell(vtk_cell_type, elem_nodes);
+    elem_ids->SetTuple1(i,i+1);
+  }
+
+  vtk_polydata->SetPolys(element_cells);
+  vtk_polydata->GetCellData()->AddArray(elem_ids);
+}
+
+//----------------
+// set_point_data
+//----------------
+//
+void VtkVtpData::VtkVtpDataImpl::set_point_data(const std::string& data_name, const Vector<int>& data)
+{
+  int num_vals = data.size();
+  auto data_array = vtkSmartPointer<vtkIntArray>::New();
+  data_array->SetNumberOfComponents(1);
+  data_array->Allocate(num_vals);
+  data_array->SetName(data_name.c_str());
+
+  for (int i = 0; i < num_vals; i++) {
+    data_array->InsertNextTuple1(data(i));
+  }
+
+  vtk_polydata->GetPointData()->AddArray(data_array);
+}
+
+//------------
+// set_points
+//------------
+// Set the 3D point (coordinate) data for the polydata.
+//
+void VtkVtpData::VtkVtpDataImpl::set_points(const Array<double>& points)
+{
+  //std::cout << "[VtkVtpData.set_points] vtk_polydata: " << vtk_polydata << std::endl;
+  int num_coords = points.ncols();
+  if (num_coords == 0) { 
+    throw std::runtime_error("Error in VTK VTP set_points: the number of points is zero.");
+  }
+  //std::cout << "[VtkVtpData.set_points] num_coords: " << num_coords << std::endl;
+
+  auto node_coords = vtkSmartPointer<vtkPoints>::New();
+  node_coords->Allocate(num_coords, 1000);
+  node_coords->SetNumberOfPoints(num_coords);
+
+  auto node_ids = vtkSmartPointer<vtkIntArray>::New();
+  node_ids->SetNumberOfComponents(1);
+  node_ids->Allocate(num_coords,1000);
+  node_ids->SetNumberOfTuples(num_coords);
+  node_ids->SetName("GlobalNodeID");
+
+  for (int i = 0; i < num_coords; i++ ) {
+    node_coords->SetPoint(i, points(0,i), points(1,i), points(2,i));
+    node_ids->SetTuple1(i,i+1);
+  }
+
+  vtk_polydata->SetPoints(node_coords);
+  vtk_polydata->GetPointData()->AddArray(node_ids);
+}
+
+//--------
+// write
+//--------
+//
+void VtkVtpData::VtkVtpDataImpl::write(const std::string& file_name)
+{
+  //std::cout << "[VtkVtpData.write] file_name: " << file_name << std::endl;
+  auto writer = vtkSmartPointer<vtkXMLPolyDataWriter>::New();
+  writer->SetInputDataObject(vtk_polydata);
+  writer->SetFileName(file_name.c_str());
+  writer->Write();
 }
 
 /////////////////////////////////////////////////////////////////
@@ -149,16 +289,26 @@ void VtkVtuData::VtkVtuDataImpl::set_connectivity(const int nsd, const Array<int
 {
   int num_elems = conn.ncols();
   int np_elem = conn.nrows();
+  int num_coords = vtk_ugrid->GetPoints()->GetNumberOfPoints();
   unsigned char vtk_cell_type;
+  std::cout << "[VtkVtuData.set_connectivity] " << std::endl;
+  std::cout << "[VtkVtuData.set_connectivity] num_elems: " << num_elems << std::endl;
+  std::cout << "[VtkVtuData.set_connectivity] np_elem: " << np_elem << std::endl;
+  std::cout << "[VtkVtuData.set_connectivity] num_coords: " << num_coords << std::endl;
 
   if (nsd == 2) {
     if (np_elem == 4) {
       vtk_cell_type = VTK_QUAD;
+      std::cout << "[VtkVtuData.set_connectivity] vtk_cell_type: VTK_QUAD " << std::endl;
+    } else if (np_elem == 3) {
+      vtk_cell_type = VTK_TRIANGLE;
+      std::cout << "[VtkVtuData.set_connectivity] vtk_cell_type: VTK_TRIANGLE " << std::endl;
     }
 
   } else if (nsd == 3) {
     if (np_elem == 4) {
       vtk_cell_type = VTK_TETRA;
+      std::cout << "[VtkVtuData.set_connectivity] vtk_cell_type: VTK_TETRA" << std::endl;
     }
     else if (np_elem == 8) {
       vtk_cell_type = VTK_HEXAHEDRON;
@@ -173,7 +323,7 @@ void VtkVtuData::VtkVtuDataImpl::set_connectivity(const int nsd, const Array<int
   }
 
   auto elem_nodes = vtkSmartPointer<vtkIdList>::New();
-  elem_nodes->Allocate(10,10);
+  elem_nodes->Allocate(np_elem);
   elem_nodes->Initialize();
   elem_nodes->SetNumberOfIds(np_elem);
 
@@ -183,10 +333,19 @@ void VtkVtuData::VtkVtuDataImpl::set_connectivity(const int nsd, const Array<int
   elem_ids->SetNumberOfTuples(num_elems);
   elem_ids->SetName("GlobalElementID");
 
+  //std::cout << "[VtkVtuData.set_connectivity] Set conn ... " << std::endl;
+
   for (int i = 0; i < num_elems; i++) {
+    //std::cout << "[VtkVtuData.set_connectivity] " << i << ": ";
     for (int j = 0; j < np_elem; j++) {
+      //std::cout << conn(j,i) << " "; 
+      if ((conn(j,i) < 0) || (conn(j,i) >= num_coords)) {
+        throw std::runtime_error("[VtkVtuData.set_connectivity] Element " + std::to_string(i+1) +
+            " has the non-valid node ID " + std::to_string(conn(j,i)) + ".");
+      }
       elem_nodes->SetId(j, conn(j,i));
     }
+    //std::cout << std::endl; 
     vtk_ugrid->InsertNextCell(vtk_cell_type, elem_nodes);
     elem_ids->SetTuple1(i,i+1);
   }
@@ -296,7 +455,7 @@ void VtkVtuData::VtkVtuDataImpl::set_point_data(const std::string& data_name, co
 //------------
 // set_points
 //------------
-// Set the 3D point (coordinate) data for the unstructure grid.
+// Set the 3D points (coordinates) data for the unstructured grid.
 //
 void VtkVtuData::VtkVtuDataImpl::set_points(const Array<double>& points)
 {
@@ -304,6 +463,8 @@ void VtkVtuData::VtkVtuDataImpl::set_points(const Array<double>& points)
   auto node_coords = vtkSmartPointer<vtkPoints>::New();
   node_coords->Allocate(num_coords ,1000);
   node_coords->SetNumberOfPoints(num_coords);
+  std::cout << "[VtkVtuData.set_points] " << std::endl;
+  std::cout << "[VtkVtuData.set_points] num_coords: " << num_coords << std::endl;
 
   auto node_ids = vtkSmartPointer<vtkIntArray>::New();
   node_ids->SetNumberOfComponents(1);
@@ -396,6 +557,7 @@ VtkVtpData::VtkVtpData()
 
 VtkVtpData::VtkVtpData(const std::string& file_name, bool reader)
 {
+  this->file_name = file_name;
   impl = new VtkVtpDataImpl;
   if (reader) {
     read_file(file_name); 
@@ -604,7 +766,7 @@ void VtkVtpData::read_file(const std::string& file_name)
 //
 void VtkVtpData::set_connectivity(const int nsd, const Array<int>& conn, const int pid)
 {
-  throw std::runtime_error("[VtkVtpData] set_connectivity not implemented.");
+  impl->set_connectivity(nsd, conn, pid);
 }
 
 //------------------
@@ -627,32 +789,35 @@ void VtkVtpData::set_element_data(const std::string& data_name, const Array<int>
 //
 void VtkVtpData::set_point_data(const std::string& data_name, const Array<double>& data)
 {
-  throw std::runtime_error("[VtkVtpData] set_point_data not implemented.");
+  throw std::runtime_error("[VtkVtpData] set_point_data for Array<double> not implemented.");
 }
 
 void VtkVtpData::set_point_data(const std::string& data_name, const Array<int>& data)
 {
-  throw std::runtime_error("[VtkVtpData] set_point_data not implemented.");
+  throw std::runtime_error("[VtkVtpData] set_point_data Array<int> not implemented.");
 }
 
 void VtkVtpData::set_point_data(const std::string& data_name, const Vector<int>& data)
 {
-  throw std::runtime_error("[VtkVtpData] set_point_data not implemented.");
+  impl->set_point_data(data_name, data);
 }
 
-//-------------
+//------------
 // set_points
-//-------------
+//------------
 //
 void VtkVtpData::set_points(const Array<double>& points)
 {
-  throw std::runtime_error("[VtkVtpData] set_points not implemented.");
+  impl->set_points(points);
 }
 
+//-------
+// write
+//-------
+//
 void VtkVtpData::write()
-//void VtkVtpData::write(const std::string& file_name)
 {
-  throw std::runtime_error("[VtkVtpData] write() not implemented.");
+  impl->write(file_name);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -904,8 +1069,12 @@ void VtkVtuData::set_points(const Array<double>& points)
   impl->set_points(points);
 }
 
+//-------
+// write
+//-------
+//
 void VtkVtuData::write()
-//void VtkVtuData::write(const std::string& file_name)
 {
   impl->write(file_name);
 }
+

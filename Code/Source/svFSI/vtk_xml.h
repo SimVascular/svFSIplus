@@ -22,6 +22,8 @@ void read_vtus(Simulation* simulation, Array<double>& lA, Array<double>& lY, Arr
 
 void write_vtp(ComMod& com_mod, faceType& lFa, const std::string& fName);
 
+void write_vtu(ComMod& com_mod, mshType& lM, const std::string& fName);
+
 void write_vtus(Simulation* simulation, const Array<double>& lA, const Array<double>& lY, const Array<double>& lD, const bool lAve);
 
 };

@@ -9,6 +9,8 @@ namespace fsi_linear_solver {
 
 void fsils_commu_create(FSILS_commuType& commu, cm_mod::MpiCommWorldType commi);
 
+void fsils_commu_free(FSILS_commuType& commu);
+
 };
 
 #endif

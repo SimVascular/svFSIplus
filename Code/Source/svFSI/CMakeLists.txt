@@ -72,7 +72,7 @@ find_package(LAPACK REQUIRED)
 #   -iframe is valid for C/C++/ObjC/ObjC++ but not for Fortran
 #
 find_package(VTK REQUIRED)
-#include(${VTK_USE_FILE})
+include(${VTK_USE_FILE})
 
 set(lib ${SV_LIB_SVFSI_NAME})
 
@@ -176,6 +176,7 @@ target_link_libraries(${SV_SVFSI_EXE}
   ${TETGEN_LIBRARY_NAME}
   ${TINYXML_LIBRARY_NAME}
   ${SV_LIB_SVFSILS_NAME}${SV_MPI_NAME_EXT}
+  ${VTK_LIBRARIES}
   )
 
 # extra MPI libraries only if there are not set to NOT_FOUND or other null

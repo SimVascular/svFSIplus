@@ -170,6 +170,7 @@ void fsType::destroy()
 
 mshType::mshType()
 {
+  std::cout << "+ + + + +  mshType ctor + + + + + " << std::endl;
   eType = consts::ElementType::NA;
 }
 

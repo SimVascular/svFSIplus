@@ -647,6 +647,9 @@ void read_vtus(Simulation* simulation, Array<double>& lA, Array<double>& lY, Arr
 void write_vtp(ComMod& com_mod, faceType& lFa, const std::string& fName)
 {
   const int nsd = com_mod.nsd;
+  //std::cout << "[write_vtp] ========== write_vtp ==========" << std::endl;
+  //std::cout << "[write_vtp] lFa.x.size(): " << lFa.x.size() << std::endl;
+  //std::cout << "[write_vtp] lFa.IEN.size(): " << lFa.IEN.size() << std::endl;
 
   auto vtk_writer = VtkData::create_writer(fName);
   vtk_writer->set_points(lFa.x);
@@ -659,6 +662,25 @@ void write_vtp(ComMod& com_mod, faceType& lFa, const std::string& fName)
   if (lFa.gE.size() != 0) {
     vtk_writer->set_point_data("GlobalElementID", lFa.gE);
   }
+
+  vtk_writer->write();
+  delete vtk_writer;
+}
+
+//-----------
+// write_vtu
+//-----------
+// Reproduces Fortran 'SUBROUTINE WRITEVTU(lM, fName)'
+//
+void write_vtu(ComMod& com_mod, mshType& lM, const std::string& fName)
+{
+  const int nsd = com_mod.nsd;
+  std::cout << "[write_vtu] ========== write_vtu ==========" << std::endl;
+  std::cout << "[write_vtu] fName: " << fName << std::endl;
+
+  auto vtk_writer = VtkData::create_writer(fName);
+  vtk_writer->set_points(lM.x);
+  vtk_writer->set_connectivity(nsd, lM.gIEN);
 
   vtk_writer->write();
   delete vtk_writer;

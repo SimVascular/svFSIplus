@@ -173,8 +173,90 @@ mat_inv(const Array<double>& A, const int nd, bool debug)
 //------------
 // This function computes inverse of a square matrix using Gauss Elimination method
 //
+Array<double>
+mat_inv_ge(const Array<double>& Ain, const int n, bool debug)
+{
+  Array<double> A(n,n);
+  Array<double> B(n,n);
+
+  A = Ain;
+
+  // Auxillary matrix
+  for (int i = 0; i < n; i++) {
+    for (int j = 0; j < n; j++) {
+      B(i,j) = 0.0;
+    }
+    B(i,i) = 1.0;
+  }
+
+  // Loop over columns of A to find a good pivot. 
+  //
+  double max_val = 0.0; 
+  int irow = 0;
+  double d = 0.0; 
+
+  for (int i = 0; i < n; i++) {
+    double max_val = A(i,i);
+
+    for (int j = i; j < n; j++) {
+      if (A(j,i) > max_val) {
+        max_val = A(j,i);
+        irow = j;
+      }
+    }
+
+    // Interchange rows.
+    //
+    if (max_val > A(i,i)) {
+      for (int k = 0; k < n; k++) {
+        d = A(i,k);
+        A(i,k) = A(irow,k);
+        A(irow,k) = d;
+
+        d = B(i,k) ;
+        B(i,k) = B(irow,k);
+        B(irow,k) = d;
+      }
+    }
+
+    d = A(i,i);
+
+    for (int j = 0; j < n; j++) {
+      A(i,j) = A(i,j) / d;
+      B(i,j) = B(i,j) / d;
+    }
+
+    for (int j = i+1; j < n; j++) {
+      d = A(j,i);
+      for (int k = 0; k < n; k++) {
+        A(j,k) = A(j,k) - d*A(i,k);
+        B(j,k) = B(j,k) - d*B(i,k);
+      }
+    }
+  }
+
+  for (int i = 0; i < n-1; i++) {
+    for (int j = i+1; j < n; j++) {
+      d = A(i,j);
+      for (int k = 0; k < n; k++) {
+        A(i,k) = A(i,k) - d*A(j,k);
+        B(i,k) = B(i,k) - d*B(j,k);
+      }
+    }
+  }
+
+  return B;
+}
+
+//------------
+// mat_inv_ge
+//------------
+// This function computes inverse of a square matrix using Gauss Elimination method
+//
+// [TODO:DaveP] The original version sometimes produced NaNs.
+//
 Array<double> 
-mat_inv_ge(const Array<double>& A, const int nd, bool debug)
+mat_inv_ge_orig(const Array<double>& A, const int nd, bool debug)
 {
   Array<double> B(nd,2*nd);
   Array<double> Ainv(nd,nd);
@@ -198,15 +280,45 @@ mat_inv_ge(const Array<double>& A, const int nd, bool debug)
     }
   }
 
+  if (debug) {
+    std::cout << "[mat_inv]  " << std::endl;
+    std::cout << "[mat_inv] B: " << B << std::endl;
+    std::cout << "[mat_inv]  " << std::endl;
+  }
+
   // Do row-column operations and reduce to diagonal
   double d;
 
   for (int i = 0; i < nd; i++) { 
+    if (debug) {
+      std::cout << "[mat_inv] ========== i " << i+1 << " ==========" << std::endl;
+    }
     for (int j = 0; j < nd; j++) { 
+      if (debug) {
+        std::cout << "[mat_inv] ########## j " << j+1 << " ##########" << std::endl;
+      }
       if (j != i) {
         d = B(j,i) / B(i,i);
+        if (debug) {
+          std::cout << "[mat_inv] B(j,i): " << B(j,i) << std::endl;
+          std::cout << "[mat_inv] B(i,i): " << B(i,i) << std::endl;
+          std::cout << "[mat_inv] d: " << d << std::endl;
+          std::cout << "[mat_inv]  " << std::endl;
+        }
         for (int k = 0; k < 2*nd; k++) { 
+          if (debug) {
+            std::cout << "[mat_inv] ------- k " << k+1 << " -------" << std::endl;
+          }
+          if (debug) {
+            std::cout << "[mat_inv] B(j,k): " << B(j,k) << std::endl;
+            std::cout << "[mat_inv] B(i,k): " << B(i,k) << std::endl;
+            std::cout << "[mat_inv] d: " << d << std::endl;
+            std::cout << "[mat_inv] d*B(i,k): " << d*B(i,k) << std::endl;
+          }
           B(j,k) = B(j,k) - d*B(i,k);
+          if (debug) {
+            std::cout << "[mat_inv] B(j,k): " << B(j,k) << std::endl;
+          }
         }
       }
     }

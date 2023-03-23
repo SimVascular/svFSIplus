@@ -1128,6 +1128,8 @@ void set_dmn_id(mshType& mesh, const int iDmn, const int ifirst, const int ilast
     mesh.eId = Vector<int>(mesh.gnEl);
   }
 
+  //std::cout << "[set_dmn_id] first: " << first << std::endl;
+
   // Set the iDimn'th bit for each element ID.
   for (int e = first; e <= last; e++) {
     mesh.eId[e] |= 1UL << iDmn;

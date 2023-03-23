@@ -80,6 +80,14 @@ void dist_msh_srf(ComMod& com_mod, ChnlMod& chnl_mod, faceType& lFa, mshType& lM
   const int nsd = com_mod.nsd;
   auto& rmsh = com_mod.rmsh;
   std::string sTmp = chnl_mod.appPath + ".remesh_tmp.dir";
+
+  #define debug_dist_msh_srf 
+  #ifdef debug_dist_msh_srf 
+  auto& cm = com_mod.cm;
+  DebugMsg dmsg(__func__, cm.idcm());
+  dmsg.banner();
+  #endif
+
   /*
   sTmp = TRIM(appPath)//".remesh_tmp.dir"
   INQUIRE(FILE=TRIM(sTmp)//"/.", EXIST=flag)
@@ -97,6 +105,8 @@ void dist_msh_srf(ComMod& com_mod, ChnlMod& chnl_mod, faceType& lFa, mshType& lM
   }
 
   for (int iFa = 0; iFa < lM.nFa; iFa++) {
+    dmsg << "---------- iFa: " << iFa;
+    dmsg << "lM.fa[iFa].name: " << lM.fa[iFa].name;
     lM.fa[iFa].nEl = lM.fa[iFa].gnEl;
     //if (ALLOCATED(lM.fa(iFa).IEN)) DEALLOCATE(lM.fa(iFa).IEN)
     //if (ALLOCATED(lM.fa(iFa).gE)) DEALLOCATE(lM.fa(iFa).gE)
@@ -109,16 +119,18 @@ void dist_msh_srf(ComMod& com_mod, ChnlMod& chnl_mod, faceType& lFa, mshType& lM
 
     int eoff = 0;
     if (iFa > 0) {
-      for (int i = 0; i < iFa-1; i++) {
-        eoff = lM.fa[i].gnEl;
+      for (int i = 0; i < iFa; i++) {
+        eoff += lM.fa[i].gnEl;
       }
       //eoff = SUM(lM.fa(1:iFa-1).gnEl)
     }
+    dmsg << "eoff: " << eoff;
 
     for (int e = 0; e < lM.fa[iFa].gnEl; e++) {
       lM.fa[iFa].gE(e) = lFa.gE(eoff+e);
       for (int i = 0; i < lM.fa[iFa].eNoN; i++) {
         lM.fa[iFa].IEN(i,e) = lFa.IEN(i,eoff+e);
+        //dmsg << "e i IEN(i,e): " + std::to_string(e+1) + " " + std::to_string(i+1) + " " << lM.fa[iFa].IEN(i,e);
       }
       //lM.fa(iFa).IEN(:,e) = lFa.IEN(:,eoff+e);
     }
@@ -129,11 +141,15 @@ void dist_msh_srf(ComMod& com_mod, ChnlMod& chnl_mod, faceType& lFa, mshType& lM
     lM.fa[iFa].x.resize(nsd, lM.fa[iFa].nNo);
     //ALLOCATE(lM.fa(iFa).x(nsd, lM.fa(iFa).nNo))
 
+    dmsg << "---------- set x ---------- " << "";
     for (int a = 0; a < lM.fa[iFa].nNo; a++) {
+      dmsg << "----- a: " << a+1;
       int Ac = lM.fa[iFa].gN(a);
+      dmsg << "Ac: " << Ac+1;
       for (int i = 0; i < nsd; i++) {
         lM.fa[iFa].x(i,a) = lM.x(i,Ac);
       }
+      dmsg << "lM.x(i,Ac): " << lM.x.col(Ac);
       //lM.fa(iFa).x(:,a) = lM.x(:,Ac)
     }
 
@@ -144,17 +160,19 @@ void dist_msh_srf(ComMod& com_mod, ChnlMod& chnl_mod, faceType& lFa, mshType& lM
 
     // [NOTE] I'm not sure about this.
     for (int i = 0; i < lM.fa[iFa].eNoN; i++) {
-      for (int j = 0; i < lM.fa[iFa].nEl; i++) {
+      for (int j = 0; j < lM.fa[iFa].nEl; j++) {
         lM.fa[iFa].gebc(i+1,j) = lM.fa[iFa].IEN(i,j);
       }
     }
     //lM.fa(iFa).gebc(2:1+lM.fa(iFa).eNoN,:) = lM.fa(iFa).IEN(:,:)
 
     if (iOpt == 1) {
-      std::string fTmp = sTmp + lM.fa[iFa].name + "_" + std::to_string(rmsh.rTS) + "_cpp.vtp";
+      std::string fTmp = sTmp + "/" + lM.fa[iFa].name + "_" + std::to_string(rmsh.rTS) + "_cpp.vtp";
       //fTmp = TRIM(sTmp)//"/"//TRIM(lM.fa(iFa).name)//"_"// STR(rmsh.rTS)//".vtp"
       Vector<int> incNd(lM.gnNo);
       //ALLOCATE(incNd(lM.gnNo))
+      dmsg << "fTmp: " << fTmp;
+      dmsg << "lM.fa[iFa].x(0): " << lM.fa[iFa].x.col(0);
 
       for (int a = 0; a < lM.fa[iFa].nNo; a++) {
         int Ac = lM.fa[iFa].gN(a);
@@ -162,9 +180,10 @@ void dist_msh_srf(ComMod& com_mod, ChnlMod& chnl_mod, faceType& lFa, mshType& lM
       }
 
       for (int e = 0; e < lM.fa[iFa].nEl; e++) {
-        for (int a = 0; lM.fa[iFa].eNoN; a++) {
+        for (int a = 0; a < lM.fa[iFa].eNoN; a++) {
           int Ac = lM.fa[iFa].IEN(a,e);
-          lM.fa[iFa].IEN(a,e) = incNd(Ac) - 1;
+          lM.fa[iFa].IEN(a,e) = incNd(Ac);
+          //lM.fa[iFa].IEN(a,e) = incNd(Ac) - 1;    // For Fortran 1-based indexing.
         }
       }
 
@@ -172,8 +191,9 @@ void dist_msh_srf(ComMod& com_mod, ChnlMod& chnl_mod, faceType& lFa, mshType& lM
       //CALL WRITEVTP(lM.fa(iFa), fTmp)
 
       for (int e = 0; e < lM.fa[iFa].nEl; e++) {
-        for (int a = 0; lM.fa[iFa].eNoN; a++) {
-          int Ac = lM.fa[iFa].IEN(a,e) + 1;
+        for (int a = 0; a < lM.fa[iFa].eNoN; a++) {
+          int Ac = lM.fa[iFa].IEN(a,e);
+          // Ac = lM%fa(iFa)%IEN(a,e) + 1        // Fortran 1-based indexing
           Ac = lM.fa[iFa].gN(Ac);
           lM.fa[iFa].IEN(a,e) = Ac;
         }
@@ -182,7 +202,6 @@ void dist_msh_srf(ComMod& com_mod, ChnlMod& chnl_mod, faceType& lFa, mshType& lM
       //DEALLOCATE(incNd)
     }
   }
-
 }
 
 //--------
@@ -312,16 +331,8 @@ void find_n(ComMod& com_mod, const Vector<double>& Xp, const int iM, const Array
   Array<double> Amat(nsd+1,msh.eNoN);
 
   Nsf = 0.0;
-  bool debug = false;
-
-#ifdef debug_find_c
-  if (pcount == 19195+1) {
-    std::cout << "[find_n] ========== find_n ==========  " << std::endl;
-    std::cout << "[find_n] ne: " << ne << std::endl;
-    std::cout << "[find_n] Xp: " << Xp << std::endl;
-    debug = true;
-  }
-#endif
+  bool debug = (pcount == 2286+1);
+  debug = false;
 
   for (int e = 0; e < ne; e++) {
     Ec = eList(e);
@@ -330,52 +341,38 @@ void find_n(ComMod& com_mod, const Vector<double>& Xp, const int iM, const Array
       break;
     }
 
-#ifdef debug_find_c
-    if (pcount == 19195+1) {
-      std::cout << "[find_n] ---------- e " << e+1 << " ----------" << std::endl;
-      std::cout << "[find_n] Ec: " << Ec+1 << std::endl;
-    }
-#endif
-
     Amat = 1.0;
 
     for (int a = 0; a <  msh.eNoN; a++) {
       int Ac = msh.IEN(a,Ec);
-#ifdef debug_find_c
-      if (pcount == 19195+1) {
-        std::cout << "[find_n] Ac: " << Ac+1 << std::endl;
-        std::cout << "[find_n] x: " << com_mod.x.col(Ac) << std::endl;
-        std::cout << "[find_n] Dg: " << Dg.col(Ac) << std::endl;
-      }
-#endif
       for (int i = 0; i < nsd; i++) {
         Amat(i,a) = com_mod.x(i,Ac) + Dg(i,Ac);
       }
     }
 
-#ifdef debug_find_c
-    if (pcount == 19195+1) {
-      std::cout << "[find_n]  " << std::endl;
+    if (debug) {
+      std::cout << "[find_n] " << std::endl;
+      std::cout << "[find_n] ------------------------------ " << e+1 << std::endl;
       std::cout << "[find_n] Amat: " << Amat << std::endl;
     }
-#endif
 
-    // [NOTE] Sometimes the inverse computed by mat_inv() is not 
+    // [TODO:DaveP] Sometimes the inverse computed by mat_inv() is not 
     // correct, A * Amt != I.  mat_inv_lp() seems to work all
     // the time.
     //
-    //Amat = mat_fun::mat_inv(Amat, msh.eNoN, debug);
-    Amat = mat_fun::mat_inv_lp(Amat, msh.eNoN);
+    //std::cout << "[find_n] ------------------------------ " << e+1 << std::endl;
+    //std::cout << "[find_n] Amat: " << Amat << std::endl;
+    Amat = mat_fun::mat_inv(Amat, msh.eNoN, debug);
+    //std::cout << "[find_n] " << std::endl;
+    //std::cout << "[find_n] Inv Amat: " << Amat << std::endl;
+
+    if (debug) {
+      std::cout << "[find_n] " << std::endl;
+      std::cout << "[find_n] Inv Amat: " << Amat << std::endl;
+      std::cout << "[find_n] " << std::endl;
+    }
 
     int a = 0;
-
-#ifdef debug_find_c
-    if (pcount == 19195+1) {
-      std::cout << "[find_n]  " << std::endl;
-      std::cout << "[find_n] inv Amat: " << Amat << std::endl;
-      //if (e == 69) exit(0);
-    }
-#endif
 
     for (int i = 0; i < nsd+1; i++) {
       Nsf(i) = 0.0;
@@ -384,25 +381,21 @@ void find_n(ComMod& com_mod, const Vector<double>& Xp, const int iM, const Array
         Nsf(i) = Nsf(i) + Amat(i,j)*Xp(j);
       }
 
-#ifdef debug_find_c
-      if (pcount == 19195+1) {
-        std::cout << "[find_n] i Nsf(i): " << i+1 << "  " << Nsf(i) << std::endl;
-      }
-#endif
-
       if (Nsf(i) > -1.0e-14 && Nsf(i) < (1.0+1.0e-14)) {
         a = a + 1;
-#ifdef debug_find_c
-        if (pcount == 19195+1) {
-          std::cout << "[find_n] a: " << a << std::endl;
+        if (debug) {
+          std::cout << "[find_n] i, Nsf(i): " << i+1 << " " << Nsf(i) << std::endl;
         }
-#endif
       }
     }
 
     if (a == nsd+1) {
       return;
     }
+  }
+
+  if (debug) {
+    std::cout << "[find_n] **** not found ****" << std::endl;
   }
 
   Ec = -1;
@@ -616,6 +609,7 @@ void interp(ComMod& com_mod, CmMod& cm_mod, const int lDof, const int iM, mshTyp
   auto& rmsh = com_mod.rmsh;
   auto& cm = com_mod.cm;
   #define debug_interp
+  #define n_debug_interp_1
   #ifdef debug_interp
   DebugMsg dmsg(__func__, cm.idcm());
   dmsg.banner();
@@ -642,31 +636,52 @@ void interp(ComMod& com_mod, CmMod& cm_mod, const int lDof, const int iM, mshTyp
   Array<double> Dg(nsd,tnNo);
   int i = nsd+1;
 
+  Array<double>::write_disabled = false;
+
   for (int j = 0; j < nsd; j++) { 
     for (int k = 0; k < tnNo; k++) { 
       Dg(j,k) = rmsh.D0(j+nsd+1,k);
     }
   }
   //Dg(:,:) = rmsh.D0(i+1:i+nsd,:)
+  //Dg.write("Dg");
+  //exit(0);
+
+  #ifdef debug_interp
+  dmsg << "Distribute nodes ..." << "";
+  #endif
 
   distrn(com_mod, cm_mod, iM, tMsh, Dg, nNo, gN);
   //CALL DISTRN(iM, tMsh, Dg, nNo, gN)
+  #ifdef debug_interp
+  dmsg << "nNo: " << nNo;
+  #endif
 
   // Distribute elements of the new mesh to all processors
+  #ifdef debug_interp
+  dmsg << "Distribute elements ..." << "";
+  #endif
   int nEl = 0;
   Vector<int> gE;
   distre(com_mod, cm_mod, tMsh, nEl, gE);
   //CALL DISTRE(tMsh, nEl, gE)
+  #ifdef debug_interp
+  dmsg << "nEl: " << nEl;
+  #endif
 
   // Setup data structures for octree search
   // Get adjacent cells for source (old) mesh
   //
+  #ifdef debug_interp
+  dmsg << "Setup data structures for octree search ... " << "";
+  #endif
   Array<int> srcAdjEl;
   get_adj_esrc(com_mod, msh[iM], srcAdjEl);
   //CALL GETADJESRC(msh(iM), srcAdjEl)
   int maxKNE = srcAdjEl.nrows();
   #ifdef debug_interp
   dmsg << "maxKNE: " << maxKNE;
+  //dmsg << "srcAdjEl: " << srcAdjEl;
   #endif
 
   // Get adjacent nodes for each node on the new mesh
@@ -674,7 +689,7 @@ void interp(ComMod& com_mod, CmMod& cm_mod, const int lDof, const int iM, mshTyp
   // tgtAdjNd stores node IDs.
   //
   #ifdef debug_interp
-  dmsg << "get_adj_ntgt " << " ...";
+  dmsg << "Get adjacent nodes " << " ...";
   #endif
   Array<int> tgtAdjNd;
   get_adj_ntgt(com_mod, tMsh, nNo, nEl, gN, gE, tgtAdjNd);
@@ -685,6 +700,7 @@ void interp(ComMod& com_mod, CmMod& cm_mod, const int lDof, const int iM, mshTyp
   #ifdef debug_interp
   dmsg << "maxKNN: " << maxKNN;
   dmsg << "nNo: " << nNo;
+  //dmsg << "tgtAdjNd: " << tgtAdjNd;
   #endif
 
   Vector<double> Xp(nsd+1), Nsf(eNoN); 
@@ -705,6 +721,9 @@ void interp(ComMod& com_mod, CmMod& cm_mod, const int lDof, const int iM, mshTyp
   //
   Vector<int> tmpL(gnNo);
   //tmpL = -1;
+  #ifdef debug_interp
+  dmsg << "gnNo: " << gnNo;
+  #endif
 
   for (int e = 0; e < tMsh.fa[0].nEl; e++) {
     for (int a = 0; a < tMsh.fa[0].eNoN; a++) {
@@ -718,6 +737,10 @@ void interp(ComMod& com_mod, CmMod& cm_mod, const int lDof, const int iM, mshTyp
   // srfNds is a really a bool array.
   //
   Vector<int>srfNds(nNo);
+  srfNds = 0;
+  #ifdef debug_interp
+  dmsg << "nNo: " << nNo;
+  #endif
 
   for (int a = 0; a < nNo; a++) {
     int Ac = gN(a);
@@ -755,7 +778,7 @@ void interp(ComMod& com_mod, CmMod& cm_mod, const int lDof, const int iM, mshTyp
 
   for (int a = 0; a < nNo; a++) {
     #ifdef debug_interp_1
-    dmsg << "---------- a " << std::to_string(a+1) + " ----------";
+    //dmsg << "---------- a " << std::to_string(a+1) + " ----------";
     #endif
     if (chckNp[a]) {
       continue; 
@@ -810,13 +833,13 @@ void interp(ComMod& com_mod, CmMod& cm_mod, const int lDof, const int iM, mshTyp
     }
   }
 
-  //exit(0);
-
   // Node-Cell search begins here. Uses fastest grid-to-grid algorithm
   // based on advancing front in the nearest vicinity
   //
-  //dmsg << " " << "";
-  //dmsg << "Node-Cell search begins ... " << "";
+  #ifdef debug_interp
+  dmsg << " " << "";
+  dmsg << "Node-Cell search begins ... " << "";
+  #endif
   Vector<int> eList(maxKNE); 
   int probe;
   int pcount = 1;
@@ -886,18 +909,6 @@ void interp(ComMod& com_mod, CmMod& cm_mod, const int lDof, const int iM, mshTyp
       if (Ec > -1) {
         gE(probe) = Ec;
         tagNd(Ac) = cm.tF(cm_mod);
-        #ifdef debug_interp_s
-        if (Ac == 8864-1) {
-          dmsg << "#### 2 Ac: " << Ac+1; 
-          dmsg << "     Ec: " << Ec+1; 
-          dmsg << "     probe: " << probe+1; 
-          dmsg << "     rootEl(probe): " << rootEl(probe)+1;
-          dmsg << "     pcount: " << pcount; 
-          dmsg << "     try: " << itry; 
-          dmsg << "     elist: " << eList; 
-          dmsg << "     Xp: " << Xp; 
-        }
-        #endif
 
         for (int i = 0; i < Nsf.size(); i++) {
           gNsf(i,probe) = Nsf(i);
@@ -912,11 +923,6 @@ void interp(ComMod& com_mod, CmMod& cm_mod, const int lDof, const int iM, mshTyp
             #endif
             utils::enqueue(rootNdQ, a);
             rootEl(a) = Ec;
-            #ifdef debug_interp_s
-            if (a == 8864-1) {
-              dmsg << "set rootEl(a): " << rootEl(a)+1; 
-            }
-            #endif
           }
         }
 
@@ -1062,6 +1068,9 @@ void interp(ComMod& com_mod, CmMod& cm_mod, const int lDof, const int iM, mshTyp
   }
 
   // Nodes belonging to other procs are reassigned 0
+  #ifdef debug_interp
+  dmsg << "Nodes in other procs set to 0 ..." << "";
+  #endif
   for (int a = 0; a < nNo; a++) {
     int Ac = gN(a);
     if (tagNd(Ac) != cm.tF(cm_mod) && tagNd(Ac) != bTag) {
@@ -1078,7 +1087,7 @@ void interp(ComMod& com_mod, CmMod& cm_mod, const int lDof, const int iM, mshTyp
   // from the source to the target mesh
   //
   #ifdef debug_interp
-  dmsg << "Interpolate from the source to the target mesh ... " << "";
+  dmsg << "Interpolate from source to target mesh ... " << "";
   #endif
   Array<double> tmpX(lDof,nNo);
 
@@ -1101,33 +1110,59 @@ void interp(ComMod& com_mod, CmMod& cm_mod, const int lDof, const int iM, mshTyp
     }
   }
 
+  Array<double>::write_disabled = false;
+  tmpX.write("tmpX");
+  sD.write("sD");
+  //exit(0);
+
   // Since there is no direct mapping for face data, we use L2 norm
   // to find the nearest face node and copy its solution. This requires
   // face node/IEN structure to NOT be changed during remeshing.
   //
   tmpL.resize(nNo);
   bool flag = false; 
+  //dmsg << "msh[iM].lN: " << msh[iM].lN; 
+
+  /*
+  for (int iFa = 0; iFa < msh[iM].nFa; iFa++) {
+    auto& fa = msh[iM].fa[iFa];
+    dmsg << "fa.gN> " << fa.gN;
+  }
+  */
 
   for (int a = 0; a < nNo; a++) {
+    //dmsg << " " << "";
+    //dmsg << "---------- a: " << a+1;
     int Ac = gN(a);
+    //dmsg << "Ac: " << Ac+1;
+    //dmsg << "srfNds(a): " << srfNds(a);
 
-    if (srfNds(a) > 0) {
+    if (srfNds(a) != 0) {      // srfNds is a bool (1|0) vector.
       flag = false; 
 
       for (int iFa = 0; iFa < msh[iM].nFa; iFa++) {
+        //dmsg << ">>>> iFa: " << iFa+1;
         auto& fa = msh[iM].fa[iFa];
 
         for (int b = 0; b <fa.nNo; b++) {
+          //dmsg << "---- b: " << b+1;
           int Bc = fa.gN(b);
           double dS = 0.0; 
+          //dmsg << "Bc: " << Bc+1;
+
           for (int i = 0; i < nsd; i++) {
             double sum = com_mod.x(i,Bc) + Dg(i,Bc) - tMsh.x(i,Ac);
-            dS += dS * dS;
+            dS += sum * sum;
           }
 
           dS = sqrt(dS);
+          //dmsg << "dS: " << dS; 
 
           if (dS < 1.E-12) {
+            //dmsg << "Set tmpL(a): " << std::to_string(a+1) + " " + std::to_string(Bc+1) + " " + std::to_string(b+1); 
+            //dmsg << "a: " << a+1; 
+            //dmsg << "Bc: " << Bc+1;
+            //dmsg << "b: " << b+1; 
             tmpL(a) = Bc;
             flag = true;
             break;
@@ -1139,6 +1174,7 @@ void interp(ComMod& com_mod, CmMod& cm_mod, const int lDof, const int iM, mshTyp
 
       if (flag) {
         int Bc = msh[iM].lN(tmpL(a));
+        //dmsg << ">>>> flag a Bc: " << std::to_string(a+1) + " " + std::to_string(Bc+1); 
         for (int i = 0; i < tmpX.nrows(); i++) { 
           tmpX(i,a) = sD(i,Bc);
         }
@@ -1155,7 +1191,7 @@ void interp(ComMod& com_mod, CmMod& cm_mod, const int lDof, const int iM, mshTyp
   // problem as the solution is simply overwritten depending on the face pointer.
   //
   #ifdef debug_interp
-  dmsg << "Map the tagged nodes and solutio ... " << "";
+  dmsg << "Map the tagged nodes and solution ... " << "";
   #endif
   nn = 0;
 
@@ -1198,25 +1234,31 @@ void interp(ComMod& com_mod, CmMod& cm_mod, const int lDof, const int iM, mshTyp
   MPI_Gather(&nn, 1, cm_mod::mpint, disp.data(), 1, cm_mod::mpint, cm_mod.master, cm.com());
   //CALL MPI_GATHER(nn, 1, mpint, disp, 1, mpint, master, cm.com(), ierr)
 
-  Vector<int> sCount, gvec;
+  Vector<int> sCount;
+  Vector<double> gvec;
 
   if (cm.mas(cm_mod)) {
+    dmsg << "cm.mas() ..." << "";
+    dmsg << "disp(0): " << disp(0);
     int i = disp.sum();
     i = i * (1 + lDof);
+    dmsg << "i: " << i;
     gvec.resize(i);
     sCount.resize(cm.np());
     for (int i = 0; i < cm.np(); i++) {
       sCount(i) = disp(i)*(1+lDof);
     }
+    dmsg << "sCount(1): " << sCount(0);
     disp(0) = 0;
     for (int i = 1; i < cm.np(); i++) {
       disp(i) = disp(i-1) + sCount(i-1);
     }
   } else { 
+    dmsg << "slave ..." << "";
     //ALLOCATE(gvec(0), sCount(0))
   }
 
-  Vector<int> vec((lDof+1)*nn);
+  Vector<double> vec((lDof+1)*nn);
   int e = 0;
 
   for (int a = 0; a < nn; a++) {
@@ -1229,6 +1271,11 @@ void interp(ComMod& com_mod, CmMod& cm_mod, const int lDof, const int iM, mshTyp
     }
   }
 
+  Vector<double>::write_disabled = false;
+  Array<double>::write_disabled = false;
+  vec.write("vec");
+  gNsf.write("gNsf");
+
   #ifdef debug_interp
   dmsg << "" << "";
   dmsg << "MPI_Gatherv ... " << "";
@@ -1240,11 +1287,13 @@ void interp(ComMod& com_mod, CmMod& cm_mod, const int lDof, const int iM, mshTyp
   dmsg << "sCount(0): " << sCount(0);
   dmsg << "disp.size(): " << disp.size();
   dmsg << "disp(0): " << disp(0);
+  dmsg << "cm_mod.master: " << cm_mod.master;
   int csize;
   MPI_Comm_size( cm.com(), &csize);
   dmsg << "csize: " << csize;
   #endif
 
+  // [TODO:DaveP] MPI_Gatherv is crashing with bad memory access for np = 1.
   if (disp.size() > 1) {
   MPI_Gatherv(vec.data(), (1+lDof)*nn, cm_mod::mpreal, gvec.data(), sCount.data(), disp.data(), 
       cm_mod::mpreal, cm_mod.master, cm.com());
@@ -1255,11 +1304,11 @@ void interp(ComMod& com_mod, CmMod& cm_mod, const int lDof, const int iM, mshTyp
 
   #ifdef debug_interp
   dmsg << "done MPI_Gatherv " << "";
-  //exit(0);
+  dmsg << "" << "";
   #endif
 
   if (cm.mas(cm_mod)) {
-    #ifdef debug_interp
+    #ifdef debug_interp_1
     dmsg << "" << "";
     dmsg << "Set tgD ... " << "";
     #endif
@@ -1270,11 +1319,13 @@ void interp(ComMod& com_mod, CmMod& cm_mod, const int lDof, const int iM, mshTyp
 
     while (true) { 
       int Ac = round(gvec(i));
-      //dmsg << "  Ac: " << std::to_string(i+1) + " " + std::to_string(Ac);
+      //dmsg << "Ac: " << std::to_string(i+1) + " " + std::to_string(Ac+1) + " " + std::to_string(gvec(i));
       i = i + 1;
 
       for (int b = 0; b < lDof; b++) {
         tgD(b,Ac) = gvec(i);
+        dmsg << "tgD(b,Ac): " << std::to_string(b+1) + " " + std::to_string(i+1) + " " + std::to_string(Ac+1) + " " + 
+            std::to_string(tgD(b,Ac)); 
         i = i + 1;
       }
       if (i == nn) break;
@@ -1283,6 +1334,10 @@ void interp(ComMod& com_mod, CmMod& cm_mod, const int lDof, const int iM, mshTyp
 
   #ifdef debug_interp
   dmsg << "i: " << i;
+  Array<double>::write_disabled = false;
+  Vector<double>::write_disabled = false;
+  tgD.write("tgD");
+  gvec.write("gvec");
   //exit(0);
   #endif
 }
@@ -1633,11 +1688,24 @@ void remesh_restart(Simulation* simulation)
   gtnNo = 0;
   int lDof = 3 * com_mod.tDof;
   mshType tMsh;
+  tMsh.dname = "remesh_restart_tMsh";
 
   Array<double> gtX, gtD, gX, gD;
   Array<double> tempD, tempX, gnD;
 
+  Array<double>::write_disabled = false;
+  rmsh.A0.write("A0");
+  rmsh.Y0.write("Y0");
+  rmsh.D0.write("D0");
+
+  #ifdef debug_remesh_restart 
+  dmsg << "Remesh ... " << fTmp;
+  #endif
+
   for (int iM = 0; iM < nMsh; iM++) {
+    #ifdef debug_remesh_restart 
+    dmsg << "---------- iM " << iM;
+    #endif
     auto& msh = com_mod.msh[iM];
 
     if (rmsh.flag[iM]) {
@@ -1661,13 +1729,18 @@ void remesh_restart(Simulation* simulation)
    
         for (int i = 0; i < tDof; i++) {
           gD(i,a) = rmsh.A0(i,Ac);
-          gD(i+tDof-1,a) = rmsh.Y0(i,Ac);
+          gD(i+tDof,a) = rmsh.Y0(i,Ac);
           gD(2*tDof+i,a) = rmsh.D0(i,Ac);
         }
         //gD(1:tDof,a) = rmsh.A0(:,Ac)
         //gD(tDof+1:2*tDof,a) = rmsh.Y0(:,Ac)
         //gD(2*tDof+1:3*tDof,a) = rmsh.D0(:,Ac)
       }
+
+      Array<double>::write_disabled = false;
+      tempX.write("tempX");
+      gD.write("gD");
+      //exit(0);
 
       tMsh.nFa = 1;
       tMsh.fa.resize(tMsh.nFa);
@@ -1760,6 +1833,7 @@ void remesh_restart(Simulation* simulation)
 
       dmsg << "2 size tMsh.x: " << tMsh.x.size();
       dmsg << "fTmp: " << fTmp;
+      dmsg << "interp ... " << "";
 
       interp(com_mod, cm_mod, lDof, iM, tMsh, gD, gnD);
       //CALL INTERP(lDof, iM, tMsh, gD, gnD)
@@ -1787,10 +1861,15 @@ void remesh_restart(Simulation* simulation)
           gtD.resize(lDof,a);
           //ALLOCATE(gtX(nsd,a), gtD(lDof,a))
 
+          for (int i = 0; i < lDof; i++) {
+            for (int j = 0; j < gtnNo; j++) {
+              gtD(i,j) = tempD(i,j);
+            }
+          }
+
           for (int i = 0; i < nsd; i++) {
             for (int j = 0; j < gtnNo; j++) {
               gtX(i,j) = tempX(i,j);
-              gtD(i,j) = tempD(i,j);
             }
           }
           //gtX(:,1:gtnNo) = tempX(:,:)
@@ -1807,48 +1886,87 @@ void remesh_restart(Simulation* simulation)
         msh.x.resize(nsd, msh.gnNo);
         //ALLOCATE(msh(iM).x(nsd,msh(iM).gnNo))
 
-        for (int i = 0; i < nsd; i++) {
-          for (int j = gtnNo; j < a; j++) {
-            gtX(i,j) = tMsh.x(i,j) - gnD(i + 2*tDof+nsd+1, j);
-            gtD(i,j) = gnD(i,j);
-            msh.x(i,j) = gtX(i,j);
+        // a = gtnNo + msh.gnNo
+        // gtX(nsd,a);
+        // gtD(lDof,a)
+        // tMsh.x(nsd, tMsh.gnNo)
+        // gnD(lDof, tMsh.gnNo)
+        // msh.x(nsd, msh.gnNo)
+
+        dmsg << "## msh.gnNo: " << msh.gnNo;
+        dmsg << "## tMsh.gnNo: " << tMsh.gnNo;
+        dmsg << "## gtnNo: " << gtnNo;
+        dmsg << "## nsd: " << nsd;
+        dmsg << "## lDof: " << lDof;
+        dmsg << "## tDof: " << tDof;
+
+        for (int i = 0; i < lDof; i++) {
+          for (int j = 0; j < tMsh.gnNo; j++) {
+            gtD(i,j+gtnNo) = gnD(i,j);
           }
         }
-        //gtX(:,gtnNo+1:a) = tMsh.x(:,:) - gnD(2*tDof+nsd+2:2*tDof+2*nsd+1,:)
-        //gtD(:,gtnNo+1:a) = gnD(:,:) msh(iM).x(:,:) = gtX(:,gtnNo+1:a)
+
+        for (int i = 0; i < nsd; i++) {
+          for (int j = 0; j < tMsh.gnNo; j++) {
+            gtX(i,j+gtnNo) = tMsh.x(i,j) - gnD(i+2*tDof+nsd+1, j);
+            if (j == 0) {
+              dmsg << " " <<  "";
+              dmsg << "i+2*tDof+nsd+1: " <<  i+2*tDof+nsd+1+1;
+              dmsg << "gnD: " <<  gnD(i+2*tDof+nsd+1, j);
+              dmsg << "tMsh.x(i,j): " <<  tMsh.x(i,j);
+              dmsg << "gtX(i,j): " <<  gtX(i,j);
+            }
+            //gtD(i,j+gtnNo) = gnD(i,j);
+            msh.x(i,j) = gtX(i,j+gtnNo);
+          }
+        }
+        //gtX(: , gtnNo+1:a) = tMsh.x(:,:) - gnD(2*tDof+nsd+2:2*tDof+2*nsd+1, :)
+        //gtD(: , gtnNo+1:a) = gnD(:,:) 
+        //msh(iM)%x(:,:) = gtX(:,gtnNo+1:a)
+
+        //dmsg << "---------- gtX ----------" << "";
+        //for (int j = 0; j < a; j++) {
+          //dmsg << "j gtX: " + std::to_string(j+1) + " " <<  gtX.col(j);
+        //}
+
+        Array<double>::write_disabled = false;
+        tMsh.x.write("tMshx");
+        msh.x.write("mshx");
+        gtX.write("gtX");
+        gnD.write("gnD");
+        gtD.write("gtD");
+        //exit(0);
 
         gtnNo = a;
 
+        dmsg << "set_face_ebc ... " << "";
         set_face_ebc(com_mod, cm_mod, tMsh.fa[0], tMsh);
         //CALL SETFACEEBC(tMsh.fa(1), tMsh)
 
         msh.eNoN = tMsh.eNoN;
         msh.gnEl = tMsh.gnEl;
-
+        dmsg << "msh.eNoN: " << msh.eNoN;
+        dmsg << "msh.gnEl: " << msh.gnEl;
 
         msh.gIEN.resize(msh.eNoN,msh.gnEl);
         for (int i = 0; i < msh.eNoN; i++) {
-          for (int j = 0; i < msh.gnEl; i++) {
+          for (int j = 0; j < msh.gnEl; j++) {
             msh.gIEN(i,j) = tMsh.gIEN(i,j);
           }
         }
         //msh(iM).gIEN(:,:) = tMsh.gIEN(:,:)
+        dmsg << "msh.gnEl: " << msh.gnEl;
 
+        dmsg << "dist_msh_srf ... " << "";
         dist_msh_srf(com_mod, chnl_mod, tMsh.fa[0], msh, 1);
         //CALL DISTMSHSRF(tMsh.fa(1), msh(iM), 1)
 
-        // HERE DaveP
-        exit(0);
+        sTmp = chnl_mod.appPath + "/" + ".remesh_tmp.dir";
+        fTmp = sTmp + "/" + msh.name +  "_" + std::to_string(rmsh.rTS) + "_cpp.vtu";
+        //msh.gIEN -= 1;  // For 1-based Fortran ?
 
-        sTmp = chnl_mod.appPath + ".remesh_tmp.dir";
-        fTmp = sTmp + msh.name +  "_" + std::to_string(rmsh.rTS) + ".vtu";
-        msh.gIEN -= 1;
-
-        //sTmp = TRIM(appPath)//".remesh_tmp.dir"
-        //fTmp = TRIM(sTmp)//"/"//TRIM(msh(iM).name)//  "_"//STR(rmsh.rTS)//".vtu"
-        //msh(iM).gIEN(:,:) = msh(iM).gIEN(:,:) - 1
-        //CALL WRITEVTU(msh(iM), fTmp)
-        //msh(iM).gIEN(:,:) = msh(iM).gIEN(:,:) + 1
+        dmsg << "write_vtu to " << fTmp;
+        vtk_xml::write_vtu(com_mod, msh, fTmp);
 
       } else {
         //if (.NOT.ALLOCATED(gtX)) }
@@ -1856,21 +1974,37 @@ void remesh_restart(Simulation* simulation)
          //}
       }
 
+      MPI_Barrier(cm.com());
       //CALL MPI_BARRIER(cm.com(), ierr)
 
       //CALL DESTROY(tMsh)
       //DEALLOCATE(gX, gD, gnD)
 
+    // rmsh.flag[iM] == false
+    //
     } else {
-     //ALLOCATE(tempX(nsd,msh(iM).nNo))
-     //ALLOCATE(tempD(lDof,msh(iM).nNo))
 
-     for (int a = 0; a < msh.nNo; a++) {
-       int Ac = msh.gN(a);
-       //tempX(1:nsd,a) = x(:,Ac)
-       //tempD(1:tDof,a) = rmsh.A0(:,Ac)
-       //tempD(tDof+1:2*tDof,a) = rmsh.Y0(:,Ac)
-       //tempD(2*tDof+1:3*tDof,a) = rmsh.D0(:,Ac)
+      tempX.resize(nsd, msh.nNo);
+      tempD.resize(lDof, msh.nNo);
+      //ALLOCATE(tempX(nsd,msh(iM).nNo))
+      //ALLOCATE(tempD(lDof,msh(iM).nNo))
+
+      for (int a = 0; a < msh.nNo; a++) {
+        int Ac = msh.gN(a);
+
+        for (int i = 0; i < nsd; i++) {
+          tempX(i,a) = x(i,Ac);
+        }
+        //tempX(1:nsd,a) = x(:,Ac)
+
+        for (int i = 0; i < lDof; i++) {
+          tempD(i,a) = rmsh.A0(i,Ac);
+          tempD(i+tDof,a) = rmsh.Y0(i,Ac);
+          tempD(2*tDof+i,a) = rmsh.D0(i,Ac);
+        }
+        //tempD(1:tDof,a) = rmsh.A0(:,Ac)
+        //tempD(tDof+1:2*tDof,a) = rmsh.Y0(:,Ac)
+        //tempD(2*tDof+1:3*tDof,a) = rmsh.D0(:,Ac)
       }
 
       int a;
@@ -1881,7 +2015,12 @@ void remesh_restart(Simulation* simulation)
         a = 0;
       }
 
+      gX.resize(nsd,a); 
+      gD.resize(lDof,a);
       //ALLOCATE(gX(nsd,a), gD(lDof,a))
+
+      gX = all_fun::global(com_mod, cm_mod, msh, tempX);
+      gD = all_fun::global(com_mod, cm_mod, msh, tempD);
       //gX = GLOBAL(msh(iM), tempX)
       //gD = GLOBAL(msh(iM), tempD)
 
@@ -1891,6 +2030,10 @@ void remesh_restart(Simulation* simulation)
 
         for (int e = 0; e < msh.gnEl; e++) { 
           int Ec = msh.otnIEN(e);
+
+          for (int i = 0; i < msh.eNoN; i++) { 
+            msh.gIEN(i,e) = tMsh.gIEN(i,Ec);
+          }
           //msh.gIEN(:,e) = tMsh.gIEN(:,Ec)
         }
 
@@ -1902,17 +2045,27 @@ void remesh_restart(Simulation* simulation)
       //ALLOCATE(msh(iM).x(nsd,msh(iM).gnNo))
 
       tMsh.nFa = 1;
+      tMsh.fa.resize(tMsh.nFa);
       //ALLOCATE(tMsh.fa(tMsh.nFa))
+
+      dmsg << "int_msh_srf ... " << "";
+      int_msh_srf(com_mod, cm_mod, msh, tMsh.fa[0]); 
       //CALL INTMSHSRF(msh(iM), tMsh.fa(1))
 
       if (cm.mas(cm_mod)) {
+        tMsh.fa[0].x.resize(nsd, tMsh.fa[0].nNo);
         //ALLOCATE(tMsh.fa(1).x(nsd,tMsh.fa(1).nNo))
+
         for (int i = 0; i < tMsh.fa[0].nNo; i++) {
           int Ac = tMsh.fa[0].gN(i);
+          for (int j = 0; j < nsd; j++) {
+            tMsh.fa[0].x(j,i) = gX(j,Ac);
+          }
           //tMsh.fa(1).x(:,i) = gX(:,Ac)
         }
         msh.x = gX;
 
+        dist_msh_srf(com_mod, chnl_mod, tMsh.fa[0], msh, 2);
         //CALL DISTMSHSRF(tMsh.fa(1), msh(iM), 2)
 
         a = gtnNo + a;
@@ -1922,17 +2075,47 @@ void remesh_restart(Simulation* simulation)
           //ALLOCATE(tempD(lDof,gtnNo))
           tempX = gtX;
           tempD = gtD;
+
           //if (ALLOCATED(gtX)) DEALLOCATE(gtX)
           //if (ALLOCATED(gtD)) DEALLOCATE(gtD)
+
+          gtX.resize(nsd,a); 
+          gtD.resize(lDof,a);
           //ALLOCATE(gtX(nsd,a), gtD(lDof,a))
+
+          for (int i = 0; i < nsd; i++) {
+            for (int j = 0; j < gtnNo; j++) {
+              gtX(i,j) = tempX(i,j);
+            }
+          }
           //gtX(:,1:gtnNo) = tempX(:,:)
+
+          for (int i = 0; i < lDof; i++) {
+            for (int j = 0; j < gtnNo; j++) {
+              gtD(i,j) = tempD(i,j);
+            }
+          }
+
           //gtD(:,1:gtnNo) = tempD(:,:)
           //DEALLOCATE(tempX, tempD)
         } else {
+          gtX.resize(nsd,a); 
+          gtD.resize(lDof,a);
           //ALLOCATE(gtX(nsd,a), gtD(lDof,a))
         }
 
+        for (int i = 0; i < nsd; i++) {
+          for (int j = 0; j < a; j++) {
+            gtX(i,j) = gX(i,j);
+          }
+        }
         //gtX(:,gtnNo+1:a) = gX(:,:)
+
+        for (int i = 0; i < lDof; i++) {
+          for (int j = 0; j < a; j++) {
+            gtD(i,j) = gD(i,j);
+          }
+        }
         //gtD(:,gtnNo+1:a) = gD(:,:)
         gtnNo = a;
 
@@ -1947,32 +2130,76 @@ void remesh_restart(Simulation* simulation)
     } // reMesh flag
   }
 
+  cm.bcast(cm_mod, &gtnNo);
+  #ifdef debug_remesh_restart 
+  dmsg << "gtnNo: " << gtnNo;
+  #endif
   //CALL cm.bcast(gtnNo)
   //DEALLOCATE(x, rmsh.A0, rmsh.Y0, rmsh.D0)
 
   if (cm.mas(cm_mod)) {
+
+    com_mod.x.resize(nsd,gtnNo);
     //ALLOCATE(x(nsd,gtnNo))
+
+    rmsh.A0.resize(tDof,gtnNo);
     //ALLOCATE(rmsh.A0(tDof,gtnNo))
+
+    rmsh.Y0.resize(tDof,gtnNo);
     //ALLOCATE(rmsh.Y0(tDof,gtnNo))
+
+    rmsh.D0.resize(tDof,gtnNo);
     //ALLOCATE(rmsh.D0(tDof,gtnNo))
     x = gtX;
 
     for (int a = 0; a < gtnNo; a++) { 
+      for (int i = 0; i < tDof; i++) { 
+        rmsh.A0(i,a) = gtD(i,a);
+        rmsh.Y0(i,a) = gtD(i+tDof,a);
+        rmsh.D0(i,a) = gtD(i+2*tDof,a);
+      }
       //rmsh.A0(:,a) = gtD(1:tDof,a)
       //rmsh.Y0(:,a) = gtD(tDof+1:2*tDof,a)
       //rmsh.D0(:,a) = gtD(2*tDof+1:3*tDof,a)
     }
 
   } else {
+    rmsh.A0.resize(0,0);
+    rmsh.Y0.resize(0,0); 
+    rmsh.D0.resize(0,0);
     //ALLOCATE(rmsh.A0(0,0),rmsh.Y0(0,0),rmsh.D0(0,0))
   }
 
+
   //DEALLOCATE(gtX, gtD)
 
+  // We better free all of these just to be safe. 
+  //
   for (int iM = 0; iM < nMsh; iM++) {
     auto& msh = com_mod.msh[iM];
 
     if (cm.mas(cm_mod)) {
+      msh.eDist.clear();
+      msh.eId.clear();
+      msh.gN.clear();
+      msh.gpN.clear();
+      msh.IEN.clear();
+      msh.otnIEN.clear();
+      msh.INN.clear();
+      msh.eIEN.clear();
+      msh.sbc.clear();
+      msh.iGC.clear();
+      msh.nW.clear();
+      msh.w.clear();
+      msh.xi.clear();
+      msh.xib.clear();
+      msh.x.clear();
+      msh.N.clear();
+      msh.Nb.clear();
+      msh.nV.clear();
+      msh.fN.clear();
+      msh.Nx.clear();
+      msh.Nxx.clear();
       //if (ALLOCATED(msh(iM).eDist))  DEALLOCATE(msh(iM).eDist)
       //if (ALLOCATED(msh(iM).eId))    DEALLOCATE(msh(iM).eId)
       //if (ALLOCATED(msh(iM).gN))     DEALLOCATE(msh(iM).gN)
@@ -1996,29 +2223,59 @@ void remesh_restart(Simulation* simulation)
       //if (ALLOCATED(msh(iM).Nx))     DEALLOCATE(msh(iM).Nx)
       //if (ALLOCATED(msh(iM).Nxx))    DEALLOCATE(msh(iM).Nxx)
 
+      // Free all of the object member data.
+      msh.nAdj.destroy();
+      msh.eAdj.destroy();
       //CALL DESTROY(msh(iM).nAdj)
       //CALL DESTROY(msh(iM).eAdj)
 
-      for (int i = 0; i < msh.nFs; i++) {
-        //CALL DESTROY(msh(iM).fs(i))
-      }
+      msh.fs.clear();
+
+      //for (int i = 0; i < msh.nFs; i++) {
+      //CALL DESTROY(msh(iM).fs(i))
+      //}
       //if (ALLOCATED(msh(iM).fs))     DEALLOCATE(msh(iM).fs)
+
+    // msh[iM] is cleared later in 'if (cm.slv(cm_mod)'.
+    //
     } else {
       //CALL DESTROY(msh(iM))
     }
   }
 
-  //if (cm.slv()) DEALLOCATE(msh)
-
-/*
-  if (ALLOCATED(eq)) {
-    for (int  iEq=1, nEq
-      CALL DESTROY(eq(iEq))
-    }
-    DEALLOCATE(eq)
+  // [TODO:DaveP] i don't see where com_mod.msh is reallocated, just for master i guess..
+  //
+  if (cm.slv(cm_mod)) {
+    com_mod.msh.clear();
+    //DEALLOCATE(msh)
   }
-*/
 
+  // Free eq.
+  //
+  com_mod.eq.clear();
+  //if (ALLOCATED(eq)) {
+  //  for (int  iEq=1, nEq
+  //    CALL DESTROY(eq(iEq))
+  //  }
+  //  DEALLOCATE(eq)
+  //}
+
+  com_mod.colPtr.clear();
+  com_mod.dmnId.clear();
+  com_mod.ltg.clear();
+  com_mod.rowPtr.clear();
+  com_mod.idMap.clear();
+  com_mod.cmmBdry.clear();
+  com_mod.iblank.clear();
+  com_mod.Ao.clear();
+  com_mod.An.clear();
+  com_mod.Do.clear();
+  com_mod.Dn.clear();
+  com_mod.R.clear();
+  com_mod.Val.clear();
+  com_mod.Yo.clear();
+  com_mod.Yn.clear();
+  com_mod.Bf.clear();
   /*
   if (ALLOCATED(colPtr))   DEALLOCATE(colPtr)
   if (ALLOCATED(dmnID))    DEALLOCATE(dmnID)
@@ -2040,20 +2297,22 @@ void remesh_restart(Simulation* simulation)
   cplBC.nFa = 0;
 
   // Additional physics based variables to be deallocated
-/*
+  com_mod.Ad.clear();
+  com_mod.Rd.clear();
+  com_mod.Kd.clear();
+  com_mod.pS0.clear();
+  com_mod.pSn.clear();
+  com_mod.pSa.clear();
+  /*
   if (ALLOCATED(Ad))       DEALLOCATE(Ad)
   if (ALLOCATED(Rd))       DEALLOCATE(Rd)
   if (ALLOCATED(Kd))       DEALLOCATE(Kd)
   if (ALLOCATED(pS0))      DEALLOCATE(pS0)
   if (ALLOCATED(pSn))      DEALLOCATE(pSn)
   if (ALLOCATED(pSa))      DEALLOCATE(pSa)
-*/
-
-
-
-
-  exit(0);
-
+  */
+  dmsg << "Done" << "";
+  //exit(0);
 }
 
 //--------------

@@ -42,6 +42,9 @@ void read_files(Simulation* simulation, const std::string& file_name)
     return;
   }
 
+  read_files_ns::read_files(simulation, file_name);
+
+/*
   try {
     read_files_ns::read_files(simulation, file_name);
 
@@ -50,6 +53,7 @@ void read_files(Simulation* simulation, const std::string& file_name)
     std::cout << "[svFSIplus] ERROR " << exception.what() << std::endl;
     exit(1);
   }
+*/
   
 }
 
@@ -78,7 +82,7 @@ void iterate_solution(Simulation* simulation)
 
   std::cout << std::scientific << std::setprecision(16);
 
-  #define debug_iterate_solution
+  #define n_debug_iterate_solution
   #ifdef debug_iterate_solution
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
@@ -580,9 +584,6 @@ void iterate_solution(Simulation* simulation)
 
   } // End of outer loop
 
-  // HERE 
-  com_mod.resetSim = true;
-
   #ifdef debug_iterate_solution
   dmsg << "End of outer loop" << std::endl;
   #endif
@@ -660,6 +661,7 @@ int main(int argc, char *argv[])
     //
     if (simulation->com_mod.resetSim) {
       remesh::remesh_restart(simulation);
+      std::cout << "[svFSIplus] continue the simulation " << std::endl;
     } else {
       break;
     }

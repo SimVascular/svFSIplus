@@ -74,7 +74,6 @@ class VtkVtpData : public VtkData {
 
     virtual void set_points(const Array<double>& points);
     virtual void write();
-    //virtual void write(const std::string& file_name);
 
   private:
     class VtkVtpDataImpl;
@@ -114,7 +113,6 @@ class VtkVtuData : public VtkData {
 
     virtual void set_points(const Array<double>& points);
     virtual void write();
-    //virtual void write(const std::string& file_name);
 
   private:
     class VtkVtuDataImpl;
