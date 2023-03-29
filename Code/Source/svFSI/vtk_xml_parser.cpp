@@ -60,15 +60,22 @@ const std::string ELEMENT_IDS_NAME("GlobalElementID");
 //
 void store_element_conn(vtkSmartPointer<vtkPolyData> vtk_polydata, faceType& face)
 {
+  #define n_debug_store_element_conn
   #ifdef debug_store_element_conn
   std::cout << "[store_element_conn(polydata)] " << std::endl;
   std::cout << "[store_element_conn(polydata)] ========== store_element_conn(polydata) =========" << std::endl;
   #endif
 
+  vtkObject::GlobalWarningDisplayOff();
+
   // Get the number of nodes per cell.
   auto cell = vtkGenericCell::New();
   vtk_polydata->GetCell(0, cell);
   int np_elem = cell->GetNumberOfPoints();
+  #ifdef debug_store_element_conn
+  std::cout << "[store_element_conn(polydata)] np_elem: " << np_elem << std::endl;
+  std::cout << "[store_element_conn(polydata)] cell type: " << vtk_polydata->GetCellType(0) << std::endl;
+  #endif
 
   // Allocate connectivity array.
   auto num_elems = vtk_polydata->GetNumberOfCells();
