@@ -143,7 +143,7 @@ void set_bf(ComMod& com_mod, const Array<double>& Dg)
 //
 void set_bf_l(ComMod& com_mod, bfType& lBf, mshType& lM, const Array<double>& Dg)
 {
-  #define debug_set_bf_l 
+  #define n_debug_set_bf_l 
   auto& cm = com_mod.cm;
   #ifdef debug_set_bf_l 
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
