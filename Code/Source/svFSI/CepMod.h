@@ -117,6 +117,20 @@ class stimType
     double A = 0.0;
 };
 
+// ECG leads type
+class ecgLeadsType
+{
+  public:
+    // x coordinates
+    std::vector<double> x_coords;
+
+    // y coordinates
+    std::vector<double> y_coords;
+
+    // z coordinates
+    std::vector<double> z_coords;
+};
+
 //!     Cardiac electrophysiology model type
 
 class cepModelType
@@ -154,6 +168,9 @@ class cepModelType
 
     //  External stimulus
     stimType Istim;
+
+    //  ECG leads
+    ecgLeadsType ecgleads;
 
     //  Time integration options
     odeType odes;

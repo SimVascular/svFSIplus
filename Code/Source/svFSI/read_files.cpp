@@ -853,6 +853,50 @@ void read_cep(Simulation* simulation, EquationParameters* eq_params, DomainParam
     }
   }
 
+  // Set ecg leads parameters. 
+  //
+  lDmn.cep.ecgleads.x_coords = {};
+  lDmn.cep.ecgleads.y_coords = {};
+  lDmn.cep.ecgleads.z_coords = {};
+
+  if (eq_params->ecg_leads.defined()) {
+    
+    std::string line;
+    auto& ecg_leads_params = eq_params->ecg_leads;
+
+    std::ifstream x_coords_file;
+    std::string x_coords_file_name = ecg_leads_params.x_coords_file_path.value();
+    x_coords_file.open(x_coords_file_name);
+    if (!x_coords_file.is_open()) {
+      throw std::runtime_error("Failed to open the ECG leads x-coordinates file '" + x_coords_file_name + "'.");
+    }
+    while(std::getline(x_coords_file, line)) { lDmn.cep.ecgleads.x_coords.push_back(std::stod(line)); }
+    x_coords_file.close();
+
+    std::ifstream y_coords_file;
+    std::string y_coords_file_name = ecg_leads_params.y_coords_file_path.value();
+    y_coords_file.open(y_coords_file_name);
+    if (!y_coords_file.is_open()) {
+      throw std::runtime_error("Failed to open the ECG leads y-coordinates file '" + y_coords_file_name + "'.");
+    }
+    while(std::getline(y_coords_file, line)) { lDmn.cep.ecgleads.y_coords.push_back(std::stod(line)); }
+    y_coords_file.close();
+
+    std::ifstream z_coords_file;
+    std::string z_coords_file_name = ecg_leads_params.z_coords_file_path.value();
+    z_coords_file.open(z_coords_file_name);
+    if (!z_coords_file.is_open()) {
+      throw std::runtime_error("Failed to open the ECG leads z-coordinates file '" + z_coords_file_name + "'.");
+    }
+    while(std::getline(z_coords_file, line)) { lDmn.cep.ecgleads.z_coords.push_back(std::stod(line)); }
+    z_coords_file.close();
+
+    if (lDmn.cep.ecgleads.x_coords.size() != lDmn.cep.ecgleads.y_coords.size() ||
+        lDmn.cep.ecgleads.y_coords.size() != lDmn.cep.ecgleads.z_coords.size()) {
+      throw std::runtime_error("ECG leads for x,y,z-coordinates must have the same dimension.");
+    }
+  }
+
   // Dual time step for cellular activation model.
   if (domain_params->time_step_for_integration.defined()) {
     lDmn.cep.dt = domain_params->time_step_for_integration.value();
