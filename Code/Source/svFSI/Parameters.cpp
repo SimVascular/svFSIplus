@@ -1468,7 +1468,7 @@ void ECGLeadsParameters::set_values(tinyxml2::XMLElement* xml_elem)
   using std::placeholders::_2;
 
   std::function<void(const std::string&, const std::string&)> ftpr =
-      std::bind( &StimulusParameters::set_parameter_value, *this, _1, _2);
+      std::bind( &ECGLeadsParameters::set_parameter_value, *this, _1, _2);
 
   xml_util_set_parameters(ftpr, xml_elem, error_msg);
 
@@ -1570,6 +1570,8 @@ void EquationParameters::print_parameters()
   for (auto& bf : body_forces) {
     bf->print_parameters();
   }
+
+  ecg_leads.print_parameters();
 }
 
 //----------------
@@ -1625,6 +1627,9 @@ void EquationParameters::set_values(tinyxml2::XMLElement* eq_elem)
 
     } else if (name == ViscosityParameters::xml_element_name_) {
       default_domain->viscosity.set_values(item);
+
+    } else if (name == ECGLeadsParameters::xml_element_name_) {
+      ecg_leads.set_values(item);
 
     } else if (item->GetText() != nullptr) {
       auto value = item->GetText();

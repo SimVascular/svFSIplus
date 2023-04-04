@@ -1007,6 +1007,7 @@ class EquationParameters : public ParameterLists
 
     ViscosityParameters viscosity;
 
+    ECGLeadsParameters ecg_leads;
 };
 
 //-----------------------------
