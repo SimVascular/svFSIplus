@@ -839,6 +839,28 @@ class StimulusParameters : public ParameterLists
     bool value_set = false;
 };
 
+//--------------------
+// ECGLeadsParameters 
+//--------------------
+
+class ECGLeadsParameters : public ParameterLists
+{ 
+  public:
+    ECGLeadsParameters();
+
+    static const std::string xml_element_name_;
+    
+    bool defined() const { return value_set; };
+    void print_parameters();
+    void set_values(tinyxml2::XMLElement* xml_elem);
+    
+    Parameter<std::string> x_coords_file_path;
+    Parameter<std::string> y_coords_file_path;
+    Parameter<std::string> z_coords_file_path;
+    
+    bool value_set = false;
+};
+
 //------------------------------------
 // FiberReinforcementStressParameters
 //------------------------------------

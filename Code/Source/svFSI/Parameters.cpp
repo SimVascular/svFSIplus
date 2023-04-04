@@ -1439,6 +1439,59 @@ void StimulusParameters::print_parameters()
 }
 
 //////////////////////////////////////////////////////////
+//                 ECGLeadsParameters                   //
+//////////////////////////////////////////////////////////
+
+// Define the XML element name for ECG leads parameters.
+const std::string ECGLeadsParameters::xml_element_name_ = "ECGLeads";
+
+ECGLeadsParameters::ECGLeadsParameters()
+{
+  // A parameter that must be defined.
+  bool required = true;
+
+  // Define attributes.
+  set_parameter("X_coords_file_path", "", !required, x_coords_file_path);
+  set_parameter("Y_coords_file_path", "", !required, y_coords_file_path);
+  set_parameter("Z_coords_file_path", "", !required, z_coords_file_path);
+}
+
+//------------
+// set_values 
+//------------
+//
+void ECGLeadsParameters::set_values(tinyxml2::XMLElement* xml_elem)
+{
+  std::string error_msg = "Unknown " + xml_element_name_ + " XML element '";
+
+  using std::placeholders::_1;
+  using std::placeholders::_2;
+
+  std::function<void(const std::string&, const std::string&)> ftpr =
+      std::bind( &StimulusParameters::set_parameter_value, *this, _1, _2);
+
+  xml_util_set_parameters(ftpr, xml_elem, error_msg);
+
+  value_set = true;
+}
+
+void ECGLeadsParameters::print_parameters()
+{
+  if (!value_set) {
+    return;
+  }
+  std::cout << std::endl;
+  std::cout << "--------------------"  << std::endl;
+  std::cout << "ECG Leads Parameters" << std::endl;
+  std::cout << "--------------------"  << std::endl;
+
+  auto params_name_value = get_parameter_list();
+  for (auto& [ key, value ] : params_name_value) { 
+    std::cout << key << ": " << value << std::endl;
+  }
+}
+
+//////////////////////////////////////////////////////////
 //                  EquationParameters                  //
 //////////////////////////////////////////////////////////
 
