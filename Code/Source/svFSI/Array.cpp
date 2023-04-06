@@ -19,7 +19,7 @@ template<>
 int Array<bool>::active = 0;
 
 template<>
-bool Array<bool>::write_disabled = true;
+bool Array<bool>::write_enabled = false;
 
 // d o u b l e //
 
@@ -51,7 +51,7 @@ void Array<double>::stats(const std::string& prefix)
 }
 
 template<>
-bool Array<double>::write_disabled = true;
+bool Array<double>::write_enabled = false;
 
 //  i n t  //
 
@@ -83,5 +83,5 @@ void Array<int>::stats(const std::string& prefix)
 }
 
 template<>
-bool Array<int>::write_disabled = true;
+bool Array<int>::write_enabled = false;
 

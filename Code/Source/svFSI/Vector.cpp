@@ -15,7 +15,7 @@ template<>
 int Vector<double>::active = 0;
 
 template<>
-bool Vector<double>::write_disabled = true;
+bool Vector<double>::write_enabled = false;
 
 template<>
 void Vector<double>::memory(const std::string& prefix)
@@ -46,7 +46,7 @@ template<>
 int Vector<int>::active = 0;
 
 template<>
-bool Vector<int>::write_disabled = true;
+bool Vector<int>::write_enabled = false;
 
 template<>
 void Vector<int>::memory(const std::string& prefix)
@@ -74,7 +74,7 @@ template<>
 int Vector<Vector<double>>::active = 0;
 
 template<>
-bool Vector<Vector<double>>::write_disabled = true;
+bool Vector<Vector<double>>::write_enabled = false;
 
 // float //
 template<>
@@ -90,7 +90,7 @@ template<>
 int Vector<float>::active = 0;
 
 template<>
-bool Vector<float>::write_disabled = true;
+bool Vector<float>::write_enabled = false;
 
 //-------------------
 // build_file_prefix
