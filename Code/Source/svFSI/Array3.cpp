@@ -15,7 +15,7 @@ template<>
 int Array3<double>::active = 0;
 
 template<>
-bool Array3<double>::write_disabled = true;
+bool Array3<double>::write_enabled = false;
 
 template<>
 void Array3<double>::memory(const std::string& prefix)
@@ -46,4 +46,4 @@ template<>
 int Array3<int>::active = 0;
 
 template<>
-bool Array3<int>::write_disabled = true;
+bool Array3<int>::write_enabled = false;
