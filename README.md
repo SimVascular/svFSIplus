@@ -1,5 +1,14 @@
 # svFSIplus 
 
+<div align="center">
+
+[![Build Status](https://github.com/SimVascular/svFSIplus/actions/workflows/test.yml/badge.svg)](https://github.com/SimVascular/svFSIplus/actions)
+![Latest Release](https://img.shields.io/github/v/release/SimVascular/svFSIplus?label=latest)
+![Platform](https://img.shields.io/badge/platform-macOS%20|%20linux-blue)
+[![DOI](https://img.shields.io/badge/DOI-10.21105%2Fjoss.04118-green)](https://doi.org/10.21105/joss.04118)
+
+</div>
+
 ## Table of Contents
 [Introduction](#introduction)<br>
 [Solver Parameter Input XML File ](#xml_file)<br>
@@ -226,11 +235,3 @@ A simulation can be run in parallel on four processors using
 ```
 mpiexec -np 4 svFSIplus solver_params.xml
 ```
-
-
-
-
-
-
-
-
