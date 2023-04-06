@@ -15,7 +15,7 @@
 
 // If set then check Array indexes.
 //
-//#define Array_check_enabled
+#define Array_check_enabled
 
 //-------
 // Array 
@@ -34,7 +34,7 @@ class Array
     static double memory_returned;
     static void memory(const std::string& prefix="");
     static void stats(const std::string& prefix="");
-    static bool write_disabled;
+    static bool write_enabled;
 
     Array() 
     {
@@ -221,12 +221,22 @@ class Array
     //-------
     // Print
     //-------
+    // Print by rows and columns.
     //
     void print(const std::string& label)
     {
-      printf("%s (%d): \n", label.c_str(), size_);
-      for (int i = 0; i < size_; i++) {
-        printf("%s %d %.16e\n", label.c_str(), i+1, data_[i]);
+      printf("%s %d x %d \n", label.c_str(), nrows_, ncols_);
+      for (int i = 0; i < nrows_; i++) {
+        printf("[ ");
+        for (int j = 0; j < ncols_; j++) {
+          printf("%.16e", value(i,j));
+          if (j == ncols_-1) {
+            printf(" ]");
+          } else {
+            printf(", ");
+          }
+        }
+        printf("\n");
       }
     }
 
@@ -308,7 +318,7 @@ class Array
     //
     void write(const std::string& label, bool memory=true, T offset={}) const
     {
-      if (write_disabled) {
+      if (!write_enabled) {
         return;
       }
 
@@ -330,7 +340,7 @@ class Array
     //
     void append(const std::string& label, bool memory=true, T offset={}) const
     {
-      if (write_disabled) {
+      if (!write_enabled) {
         return;
       }
 
@@ -787,6 +797,18 @@ class Array
       return *this;
     }
 
+    // Compound subtract assignment. 
+    //
+    Array<T> operator-=(const Array<T>& array) const
+    {
+      for (int j = 0; j < ncols_; j++) {
+        for (int i = 0; i < nrows_; i++) {
+          data_[i + j*nrows_] -= array(i,j);
+        }
+      }
+      return *this;
+    }
+
     // Compound multiply assignment. 
     //
     Array<T> operator*=(const Array<T>& array) const
@@ -871,6 +893,30 @@ class Array
         }
       }
       return result;
+    }
+
+    // Compound add assignment. 
+    //
+    Array<T> operator+=(const T value) const
+    {
+      for (int j = 0; j < ncols_; j++) {
+        for (int i = 0; i < nrows_; i++) {
+          data_[i + j*nrows_] += value;
+        }
+      }
+      return *this;
+    }
+
+    // Compound subtract assignment. 
+    //
+    Array<T> operator-=(const T value) const
+    {
+      for (int j = 0; j < ncols_; j++) {
+        for (int i = 0; i < nrows_; i++) {
+          data_[i + j*nrows_] -= value;
+        }
+      }
+      return *this;
     }
 
     //-------
