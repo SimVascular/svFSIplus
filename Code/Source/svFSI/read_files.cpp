@@ -945,6 +945,9 @@ void read_cep_equation(CepMod* cep_mod, Simulation* simulation, EquationParamete
     for (int index = 0; index < cep_mod->ecgleads.num_leads; index++) {
       cep_mod->ecgleads.out_files.push_back(simulation->chnl_mod.appPath + "ecglead_" + std::to_string(index + 1) + ".txt");
     }
+
+    cep_mod->ecgleads.pseudo_ECG.resize(cep_mod->ecgleads.num_leads);
+    std::fill(cep_mod->ecgleads.pseudo_ECG.begin(), cep_mod->ecgleads.pseudo_ECG.end(), 0.);
   }
 }
 

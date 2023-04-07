@@ -421,11 +421,16 @@ void construct_cep(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Ar
   if (lM.lFib) insd = 1;
   if (nFn == 0) nFn = 1;
   #ifdef debug_construct_cep 
+  dmsg << "nEl: " << lM.nEl;
+  dmsg << "nG: " << lM.nG;
+  dmsg << "nsd: " << nsd;
+  dmsg << "nFn: " << nFn;
   dmsg << "insd: " << insd;
+  dmsg << "dof: " << dof;
   dmsg << "tDof: " << tDof;
   dmsg << "eNoN: " << eNoN;
-  dmsg << "Dg.nrows: " << Dg.nrows_;
-  dmsg << "Dg.ncols: " << Dg.ncols_;
+  //dmsg << "Dg.nrows: " << Dg.nrows_;
+  //dmsg << "Dg.ncols: " << Dg.ncols_;
   #endif
 
   // CEP: dof = 1
@@ -434,9 +439,11 @@ void construct_cep(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Ar
       fN(nsd,nFn), Nx(insd,eNoN), lR(dof,eNoN);
   Array3<double> lK(dof*dof,eNoN,eNoN);
   Vector<double>  N(eNoN); 
+  
+  // ECG computation
+  Vector<double> Vx(3);
 
   // Loop over all elements of mesh
-  //
   for (int e = 0; e < lM.nEl; e++) {
     cDmn = all_fun::domain(com_mod, lM, cEq, e);
     auto cPhys = eq.dmn[cDmn].phys;
@@ -448,7 +455,6 @@ void construct_cep(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Ar
     //if (lM.eType .EQ. eType_NRB) CALL NRBNNX(lM, e)
 
     // Create local copies
-    //
     fN = 0.0;
 
     for (int a = 0; a < eNoN; a++) {
@@ -501,6 +507,36 @@ void construct_cep(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Ar
       } else if (insd == 1) {
         cep_1d(com_mod, cep_mod, eNoN, nFn, w, N, Nx, al, yl, lR, lK);
       }
+
+      // ECG computation
+      //if (eq.ecg_leads.defined()) {
+        Vx = 0.0;
+        for (int index = 0; index < cep_mod.ecgleads.num_leads; index++) {
+          for (int a = 0; a < eNoN; a++) {
+            double r_sq = (xl(0,a) * xl(0,a) + xl(1,a) * xl(1,a) + xl(2,a) * xl(2,a)
+                          - 2 * (xl(0,a) * cep_mod.ecgleads.x_coords[index] +
+                                 xl(1,a) * cep_mod.ecgleads.y_coords[index] +
+                                 xl(2,a) * cep_mod.ecgleads.z_coords[index])
+                          + cep_mod.ecgleads.x_coords[index] * cep_mod.ecgleads.x_coords[index]
+                          + cep_mod.ecgleads.y_coords[index] * cep_mod.ecgleads.y_coords[index]
+                          + cep_mod.ecgleads.z_coords[index] * cep_mod.ecgleads.z_coords[index]);
+
+            double drinv_x = std::pow(r_sq, -3./2.) * (cep_mod.ecgleads.x_coords[index] - xl(0,a));
+            double drinv_y = std::pow(r_sq, -3./2.) * (cep_mod.ecgleads.y_coords[index] - xl(1,a));
+            double drinv_z = std::pow(r_sq, -3./2.) * (cep_mod.ecgleads.z_coords[index] - xl(2,a));
+
+            Vx(0) = Vx(0) + Nx(0,a) * yl(0,a);
+            Vx(1) = Vx(1) + Nx(1,a) * yl(0,a);
+            Vx(2) = Vx(2) + Nx(2,a) * yl(0,a);
+
+            //lR(0,a) = lR(0,a) + w * (N(a) * Vd + Nx(0,a) * DVx(0) + Nx(1,a) * DVx(1) + Nx(2,a) * DVx(2));
+
+            cep_mod.ecgleads.pseudo_ECG[index] += w * (-Vx(0) * drinv_x
+                                                       -Vx(1) * drinv_y
+                                                       -Vx(2) * drinv_z);
+          }
+        }
+      //}
     } 
 
     // Assembly

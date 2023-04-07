@@ -135,6 +135,9 @@ class ecgLeadsType
 
     // Output files
     std::vector<std::string> out_files;
+
+    // Pseudo ECG over each lead
+    std::vector<double> pseudo_ECG;
 };
 
 //!     Cardiac electrophysiology model type
