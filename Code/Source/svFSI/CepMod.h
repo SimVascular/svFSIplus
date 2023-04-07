@@ -129,6 +129,12 @@ class ecgLeadsType
 
     // z coordinates
     std::vector<double> z_coords;
+
+    // Number of leads
+    int num_leads;
+
+    // Output files
+    std::vector<std::string> out_files;
 };
 
 //!     Cardiac electrophysiology model type
@@ -168,9 +174,6 @@ class cepModelType
 
     //  External stimulus
     stimType Istim;
-
-    //  ECG leads
-    ecgLeadsType ecgleads;
 
     //  Time integration options
     odeType odes;
@@ -230,6 +233,8 @@ class CepMod
     // Interface for Tusscher-Panfilov cellular activation model.
     CepModTtp ttp;
 
+    // ECG leads
+    ecgLeadsType ecgleads;
 };
 
 #endif

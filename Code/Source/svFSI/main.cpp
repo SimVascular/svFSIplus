@@ -49,7 +49,7 @@ void read_files(Simulation* simulation, const std::string& file_name)
 //------------------
 // iterate_solution
 //------------------
-// Iterate the simultion in time.
+// Iterate the simulation in time.
 //
 void iterate_solution(Simulation* simulation)
 {
@@ -443,9 +443,10 @@ void iterate_solution(Simulation* simulation)
     }
     */
 
-    // Saving the TXT files containing average and fluxes
+    // Saving the TXT files containing average and fluxes (or ECGs)
     #ifdef debug_iterate_solution
-    dmsg << "Saving the TXT files containing average and fluxes ..." << std::endl; 
+    dmsg << "Saving the TXT files containing average and fluxes ..." << std::endl;
+    dmsg << "Saving the TXT files containing ECGs ..." << std::endl;
     #endif
 
     txt_ns::txt(simulation, false);

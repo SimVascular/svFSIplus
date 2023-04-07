@@ -377,6 +377,26 @@ void txt(Simulation* simulation, const bool flag)
         }
      }
 */
+
+    // ECG leads output
+    auto& cep_mod = simulation->get_cep_mod();
+
+    double time = com_mod.time;
+    for (int index = 0; index < cep_mod.ecgleads.num_leads; index++) {
+      FILE *fp = fopen(cep_mod.ecgleads.out_files[index].c_str(), "a+");
+
+      /*if (fp == nullptr)
+      {
+        fp = fopen(cep_mod.ecgleads.out_files[index].c_str(), "wb");
+      }*/
+
+      fprintf(fp, "%g,", time);
+      fprintf(fp, "%g", time);
+      fprintf(fp, "\n");
+
+      fclose(fp);
+    }
+
   }
 
   #ifdef debug_txt
