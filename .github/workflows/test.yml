@@ -16,11 +16,13 @@ jobs:
           sudo apt install -y build-essential cmake qtbase5-dev libblas-dev liblapack-dev 
           sudo apt install -y libopenblas-dev mesa-common-dev libgl1-mesa-dev libglu1-mesa-dev
           sudo apt install -y libvtk7-dev
+          sudo apt install -y lcov
       - name: Install MacOS dependencies
         if: startsWith(matrix.os, 'macos')
         run: | 
           brew install cmake vtk openblas lapack mesa open-mpi qt5
           brew link --force qt5
+          brew install lcov
           sudo ln -s /usr/local/Cellar/qt@5/5.15.8_2/mkspecs /usr/local/mkspecs
           sudo ln -s /usr/local/Cellar/qt@5/5.15.8_2/plugins /usr/local/plugins
       - name: Build svFSIplus
@@ -28,7 +30,7 @@ jobs:
           mkdir build
           cd build
           cmake ..
-          make -j2
+          make -DENABLE_COVERAGE=ON -j2
       - name: Install test dependencies
         run: |
           conda create -n svfsiplus python=3.9
@@ -38,3 +40,12 @@ jobs:
           git lfs pull
           cd tests
           conda run -n svfsiplus pytest -v
+      - name: Generate code coverage
+        run: |
+          cd build/svFSI-build
+          make coverage
+      - name: Generate Coveralls report
+        uses: coverallsapp/github-action@master
+        with:
+          path-to-lcov: ${{runner.workspace}}/build/svFSI-build/coverage.info
+          github-token: ${{ secrets.GITHUB_TOKEN }}
