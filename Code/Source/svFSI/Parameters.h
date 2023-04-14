@@ -935,6 +935,11 @@ class DomainParameters : public ParameterLists
     Parameter<double> momentum_stabilization_coefficient;
     Parameter<std::string> myocardial_zone;
 
+    Parameter<double> G_Na;
+    Parameter<double> G_CaL;
+    Parameter<double> G_Kr;
+    Parameter<double> G_Ks;
+
     Parameter<std::string> ode_solver;
     Parameter<double> penalty_parameter;
     Parameter<double> poisson_ratio;

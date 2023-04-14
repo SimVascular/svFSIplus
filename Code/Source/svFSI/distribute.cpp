@@ -962,7 +962,12 @@ void dist_eq(ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, const std::
         cm.bcast(cm_mod, &cep.odes.maxItr);
         cm.bcast(cm_mod, &cep.odes.absTol);
         cm.bcast(cm_mod, &cep.odes.relTol);
-      } 
+      }
+
+      cm.bcast(cm_mod, &cep_mod.ttp.G_Na);
+      cm.bcast(cm_mod, &cep_mod.ttp.G_CaL);
+      cm.bcast(cm_mod, &cep_mod.ttp.G_Kr);
+      cm.bcast(cm_mod, cep_mod.ttp.G_Ks);
     } 
 
     if ((dmn.phys == EquationType::phys_struct) || (dmn.phys == EquationType::phys_ustruct)) {

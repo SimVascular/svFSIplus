@@ -1212,6 +1212,11 @@ DomainParameters::DomainParameters()
   set_parameter("Momentum_stabilization_coefficient", 0.0, !required, momentum_stabilization_coefficient);
   set_parameter("Myocardial_zone", "epicardium", !required, myocardial_zone);
 
+  set_parameter("G_Na", 14.838, !required, G_Na);
+  set_parameter("G_CaL", 3.98E-5, !required, G_CaL);
+  set_parameter("G_Kr", 0.153, !required, G_Kr);
+  set_parameter("G_Ks", 0.392, !required, G_Ks);
+
   set_parameter("ODE_solver", "euler", !required, ode_solver);
 
   set_parameter("Penalty_parameter", 0.0, !required, penalty_parameter);

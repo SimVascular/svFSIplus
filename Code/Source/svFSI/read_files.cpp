@@ -832,6 +832,14 @@ void read_cep_domain(Simulation* simulation, EquationParameters* eq_params, Doma
     }
   }
 
+  // Set Ttp parameters.
+  //
+  if (domain_params->G_Na.defined())  { cep_mod.ttp.G_Na = domain_params->G_Na.value(); }
+  if (domain_params->G_Kr.defined())  { cep_mod.ttp.G_Kr = domain_params->G_Kr.value(); }
+  if (domain_params->G_Ks.defined())  { cep_mod.ttp.G_Ks[lDmn.cep.imyo - 1] = domain_params->G_Ks.value(); }
+  if (domain_params->G_CaL.defined()) { cep_mod.ttp.G_CaL = domain_params->G_CaL.value(); }
+
+
   // Set stimulus parameters. 
   //
   lDmn.cep.Istim.A  = 0.0;
