@@ -96,9 +96,10 @@ void read_sv(Simulation* simulation, mshType& mesh, const MeshParameters* mesh_p
   auto mesh_name = mesh_param->get_name();
   #define n_dbg_load_msh
   #ifdef dbg_load_msh
-  DebugMsg dmsg(__func__, com_mod.cm.idcm());
+  DebugMsg dmsg(__func__, simulation->com_mod.cm.idcm());
   dmsg.banner();
-  dmsg << "[read_sv] Mesh name: " << mesh_name;
+  dmsg << "Mesh name: " << mesh_name;
+  dmsg << "Mesh path: " << mesh_path;
   #endif
 
   // Read in volume mesh.

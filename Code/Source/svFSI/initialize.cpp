@@ -675,8 +675,8 @@ void initialize(Simulation* simulation, Vector<double>& timeP)
 
   for (int iM = 0; iM < nMsh; iM++) { 
     if (cm.mas(cm_mod)) {
-      std::string fTmp = chnl_mod.appPath + ".partitioning_" + com_mod.msh[iM].name + ".bin";
-      std::string sTmp = chnl_mod.appPath + ".partitioning_" + com_mod.msh[iM].name + "_" + std::to_string(com_mod.cTS) + ".bin";
+      std::string fTmp = chnl_mod.appPath + "partitioning_" + com_mod.msh[iM].name + "_cpp.bin";
+      std::string sTmp = chnl_mod.appPath + "partitioning_" + com_mod.msh[iM].name + "_" + std::to_string(com_mod.cTS) + "_cpp.bin";
 
       if (FILE *file = fopen(fTmp.c_str(), "r")) {
         fclose(file);

@@ -113,6 +113,7 @@ void enqueue(queueType& que, int iVal)
     que.n = 1;
     que.maxN = 8;
     que.v.resize(que.maxN);
+    que.v = -1;
     que.v(0) = iVal;
 
   } else { 
@@ -121,6 +122,7 @@ void enqueue(queueType& que, int iVal)
       tmp = que.v;
       que.maxN = 4 * que.maxN;
       que.v.resize(que.maxN);
+      que.v = -1;
 
       for (int i = 0; i < que.n; i++) {
         que.v(i) = tmp(i);

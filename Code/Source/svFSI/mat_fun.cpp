@@ -178,8 +178,14 @@ mat_inv_ge(const Array<double>& Ain, const int n, bool debug)
 {
   Array<double> A(n,n);
   Array<double> B(n,n);
-
   A = Ain;
+
+  if (debug) {
+    std::cout << "[mat_inv_ge] ========== mat_inv_ge =========" << std::endl;
+    if (std::numeric_limits<double>::is_iec559) {
+      std::cout << "[mat_inv_ge] is_iec559 " << std::endl;
+    }
+  }
 
   // Auxillary matrix
   for (int i = 0; i < n; i++) {
@@ -195,19 +201,43 @@ mat_inv_ge(const Array<double>& Ain, const int n, bool debug)
   int irow = 0;
   double d = 0.0; 
 
+  if (debug) {
+    A.print("A");
+  }
+
   for (int i = 0; i < n; i++) {
-    double max_val = A(i,i);
+    if (debug) {
+      std::cout << "[mat_inv_ge] " << std::endl;
+      std::cout << "[mat_inv_ge] ---------- i: " << i+1 << std::endl;
+      A.print("A");
+    }
+    double max_val = fabs(A(i,i));
+    irow = i;
 
     for (int j = i; j < n; j++) {
-      if (A(j,i) > max_val) {
-        max_val = A(j,i);
+      //if (debug) {
+       // std::cout << "[mat_inv_ge] A(j,i): " << A(j,i) << std::endl;
+        //std::cout << "[mat_inv_ge] max_val: " << max_val << std::endl;
+      //}
+      if (fabs(A(j,i)) > max_val) {
+        max_val = fabs(A(j,i));
         irow = j;
       }
     }
 
+    if (debug) {
+      std::cout << "[mat_inv_ge] max_val: " << max_val << std::endl;
+      std::cout << "[mat_inv_ge] irow: " << irow+1 << std::endl;
+    }
+
     // Interchange rows.
     //
-    if (max_val > A(i,i)) {
+    if (max_val > fabs(A(i,i))) {
+      if (debug) {
+        std::cout << "[mat_inv_ge] " << std::endl;
+        std::cout << "[mat_inv_ge] Interchange rows " << std::endl;
+      }
+
       for (int k = 0; k < n; k++) {
         d = A(i,k);
         A(i,k) = A(irow,k);
@@ -221,13 +251,31 @@ mat_inv_ge(const Array<double>& Ain, const int n, bool debug)
 
     d = A(i,i);
 
+    if (debug) {
+      std::cout << "[mat_inv_ge]  " << std::endl;
+      std::cout << "[mat_inv_ge]  Scale ..." << std::endl;
+      std::cout << "[mat_inv_ge] d: " << d << std::endl;
+    }
+
     for (int j = 0; j < n; j++) {
       A(i,j) = A(i,j) / d;
       B(i,j) = B(i,j) / d;
     }
 
+    if (debug) {
+      std::cout << "[mat_inv_ge]  " << std::endl;
+      std::cout << "[mat_inv_ge]  Reduce ..." << std::endl;
+    }
+
     for (int j = i+1; j < n; j++) {
       d = A(j,i);
+
+      if (debug) {
+        std::cout << "[mat_inv_ge]  " << std::endl;
+        std::cout << "[mat_inv_ge]  j: " << j+1 << std::endl;
+        std::cout << "[mat_inv_ge]  d: " << d << std::endl;
+      }
+
       for (int k = 0; k < n; k++) {
         A(j,k) = A(j,k) - d*A(i,k);
         B(j,k) = B(j,k) - d*B(i,k);
@@ -235,12 +283,24 @@ mat_inv_ge(const Array<double>& Ain, const int n, bool debug)
     }
   }
 
+  if (debug) {
+    std::cout << "[mat_inv_ge]  " << std::endl;
+    std::cout << "[mat_inv_ge] Final reduce ..." << std::endl;
+  }
+
   for (int i = 0; i < n-1; i++) {
     for (int j = i+1; j < n; j++) {
       d = A(i,j);
+      if (debug) {
+        std::cout << "[mat_inv_ge] i j " << i+1 << " " << j+1 << std::endl;
+        std::cout << "[mat_inv_ge] d: " << d << std::endl;
+      }
       for (int k = 0; k < n; k++) {
         A(i,k) = A(i,k) - d*A(j,k);
         B(i,k) = B(i,k) - d*B(j,k);
+        if (debug) {
+          std::cout << "[mat_inv_ge] B(i,k): " << B(i,k) << std::endl;
+        }
       }
     }
   }

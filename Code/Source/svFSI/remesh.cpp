@@ -79,15 +79,17 @@ void dist_msh_srf(ComMod& com_mod, ChnlMod& chnl_mod, faceType& lFa, mshType& lM
 {
   const int nsd = com_mod.nsd;
   auto& rmsh = com_mod.rmsh;
-  std::string sTmp = chnl_mod.appPath + ".remesh_tmp.dir";
 
-  #define debug_dist_msh_srf 
+  #define n_debug_dist_msh_srf 
   #ifdef debug_dist_msh_srf 
   auto& cm = com_mod.cm;
   DebugMsg dmsg(__func__, cm.idcm());
   dmsg.banner();
   #endif
 
+  std::string sTmp = chnl_mod.appPath + "/" + ".remesh_tmp.dir";
+  auto mkdir_arg = std::string("mkdir -p ") + sTmp;
+  std::system(mkdir_arg.c_str());
   /*
   sTmp = TRIM(appPath)//".remesh_tmp.dir"
   INQUIRE(FILE=TRIM(sTmp)//"/.", EXIST=flag)
@@ -105,11 +107,14 @@ void dist_msh_srf(ComMod& com_mod, ChnlMod& chnl_mod, faceType& lFa, mshType& lM
   }
 
   for (int iFa = 0; iFa < lM.nFa; iFa++) {
-    dmsg << "---------- iFa: " << iFa;
-    dmsg << "lM.fa[iFa].name: " << lM.fa[iFa].name;
     lM.fa[iFa].nEl = lM.fa[iFa].gnEl;
     //if (ALLOCATED(lM.fa(iFa).IEN)) DEALLOCATE(lM.fa(iFa).IEN)
     //if (ALLOCATED(lM.fa(iFa).gE)) DEALLOCATE(lM.fa(iFa).gE)
+    #ifdef debug_dist_msh_srf 
+    dmsg << "---------- iFa: " << iFa;
+    dmsg << "lM.fa[iFa].name: " << lM.fa[iFa].name;
+    dmsg << "lM.fa[iFa].nEl: " << lM.fa[iFa].nEl;
+    #endif
 
     lM.fa[iFa].IEN.resize(lM.fa[iFa].eNoN,lM.fa[iFa].nEl);
     //ALLOCATE(lM.fa(iFa).IEN(lM.fa(iFa).eNoN,lM.fa(iFa).nEl))
@@ -124,7 +129,9 @@ void dist_msh_srf(ComMod& com_mod, ChnlMod& chnl_mod, faceType& lFa, mshType& lM
       }
       //eoff = SUM(lM.fa(1:iFa-1).gnEl)
     }
+    #ifdef debug_dist_msh_srf 
     dmsg << "eoff: " << eoff;
+    #endif
 
     for (int e = 0; e < lM.fa[iFa].gnEl; e++) {
       lM.fa[iFa].gE(e) = lFa.gE(eoff+e);
@@ -135,21 +142,29 @@ void dist_msh_srf(ComMod& com_mod, ChnlMod& chnl_mod, faceType& lFa, mshType& lM
       //lM.fa(iFa).IEN(:,e) = lFa.IEN(:,eoff+e);
     }
 
+#if 1
+    Array<int>::write_enabled = true;
+    Vector<int>::write_enabled = true;
+    lM.fa[iFa].IEN.write("lM_fa_ien_" + lM.fa[iFa].name);
+    lM.fa[iFa].gE.write("lM_fa_ge_" + lM.fa[iFa].name);
+    lFa.gE.write("lFa_ge_" + lM.fa[iFa].name);
+#endif
+
     read_msh_ns::calc_nbc(lM, lM.fa[iFa]);
     //CALL CALCNBC(lM, lM.fa(iFa))
 
     lM.fa[iFa].x.resize(nsd, lM.fa[iFa].nNo);
     //ALLOCATE(lM.fa(iFa).x(nsd, lM.fa(iFa).nNo))
 
-    dmsg << "---------- set x ---------- " << "";
+    //dmsg << "---------- set x ---------- " << "";
     for (int a = 0; a < lM.fa[iFa].nNo; a++) {
-      dmsg << "----- a: " << a+1;
+      //dmsg << "----- a: " << a+1;
       int Ac = lM.fa[iFa].gN(a);
-      dmsg << "Ac: " << Ac+1;
+      //dmsg << "Ac: " << Ac+1;
       for (int i = 0; i < nsd; i++) {
         lM.fa[iFa].x(i,a) = lM.x(i,Ac);
       }
-      dmsg << "lM.x(i,Ac): " << lM.x.col(Ac);
+      //dmsg << "lM.x(i,Ac): " << lM.x.col(Ac);
       //lM.fa(iFa).x(:,a) = lM.x(:,Ac)
     }
 
@@ -171,8 +186,8 @@ void dist_msh_srf(ComMod& com_mod, ChnlMod& chnl_mod, faceType& lFa, mshType& lM
       //fTmp = TRIM(sTmp)//"/"//TRIM(lM.fa(iFa).name)//"_"// STR(rmsh.rTS)//".vtp"
       Vector<int> incNd(lM.gnNo);
       //ALLOCATE(incNd(lM.gnNo))
-      dmsg << "fTmp: " << fTmp;
-      dmsg << "lM.fa[iFa].x(0): " << lM.fa[iFa].x.col(0);
+      //dmsg << "fTmp: " << fTmp;
+      //dmsg << "lM.fa[iFa].x(0): " << lM.fa[iFa].x.col(0);
 
       for (int a = 0; a < lM.fa[iFa].nNo; a++) {
         int Ac = lM.fa[iFa].gN(a);
@@ -331,10 +346,16 @@ void find_n(ComMod& com_mod, const Vector<double>& Xp, const int iM, const Array
   Array<double> Amat(nsd+1,msh.eNoN);
 
   Nsf = 0.0;
-  bool debug = (pcount == 2286+1);
-  debug = false;
+  bool debug = false;
+  debug = (pcount == 1538);
+  if (debug) {
+    std::cout << "[find_n] msh.eNoN: " << msh.eNoN << std::endl;
+  }
+  //debug = true;
+  //debug = false;
 
   for (int e = 0; e < ne; e++) {
+    //std::cout << "[find_n] --------------- e " << e+1 << std::endl;
     Ec = eList(e);
 
     if (Ec == -1) {
@@ -352,8 +373,8 @@ void find_n(ComMod& com_mod, const Vector<double>& Xp, const int iM, const Array
 
     if (debug) {
       std::cout << "[find_n] " << std::endl;
-      std::cout << "[find_n] ------------------------------ " << e+1 << std::endl;
-      std::cout << "[find_n] Amat: " << Amat << std::endl;
+      std::cout << "[find_n] ------------------------------ e " << e+1 << std::endl;
+      Amat.print("[find_n] Amat: " );
     }
 
     // [TODO:DaveP] Sometimes the inverse computed by mat_inv() is not 
@@ -363,15 +384,18 @@ void find_n(ComMod& com_mod, const Vector<double>& Xp, const int iM, const Array
     //std::cout << "[find_n] ------------------------------ " << e+1 << std::endl;
     //std::cout << "[find_n] Amat: " << Amat << std::endl;
     Amat = mat_fun::mat_inv(Amat, msh.eNoN, debug);
+    //Amat = mat_fun::mat_inv_lp(Amat, msh.eNoN);
     //std::cout << "[find_n] " << std::endl;
     //std::cout << "[find_n] Inv Amat: " << Amat << std::endl;
 
     if (debug) {
       std::cout << "[find_n] " << std::endl;
-      std::cout << "[find_n] Inv Amat: " << Amat << std::endl;
+      Amat.print("[find_n] Inv Amat: " );
       std::cout << "[find_n] " << std::endl;
     }
 
+    //double tol = 1e-08;
+    double tol = 1e-14;
     int a = 0;
 
     for (int i = 0; i < nsd+1; i++) {
@@ -381,23 +405,32 @@ void find_n(ComMod& com_mod, const Vector<double>& Xp, const int iM, const Array
         Nsf(i) = Nsf(i) + Amat(i,j)*Xp(j);
       }
 
-      if (Nsf(i) > -1.0e-14 && Nsf(i) < (1.0+1.0e-14)) {
+      //std::cout << "[find_n] i, Nsf(i): " << i+1 << " " << Nsf(i) << std::endl;
+      if ( (Nsf(i) > -tol) && (Nsf(i) < (1.0+tol))) {
         a = a + 1;
         if (debug) {
           std::cout << "[find_n] i, Nsf(i): " << i+1 << " " << Nsf(i) << std::endl;
         }
+        //std::cout << "[find_n] pass a " << a  << std::endl;
       }
     }
 
     if (a == nsd+1) {
+      if (debug) {
+        std::cout << "[find_n] **** found ****" << std::endl;
+        std::cout << "[find_n] e: " << e+1 << std::endl;
+        std::cout << "[find_n] Ec: " << Ec+1 << std::endl;
+        std::cout << "[find_n] Nsf: " << Nsf << std::endl;
+      }
       return;
     }
   }
 
-  if (debug) {
-    std::cout << "[find_n] **** not found ****" << std::endl;
-  }
-
+  /*
+  std::cout << "[find_n] **** not found ****" << std::endl;
+  std::cout << "[find_n] pcount: " << pcount+1 << std::endl;
+  std::cout << "[find_n] Xp: " << Xp << std::endl;
+  */
   Ec = -1;
   Nsf = 0.0;
 }
@@ -636,7 +669,7 @@ void interp(ComMod& com_mod, CmMod& cm_mod, const int lDof, const int iM, mshTyp
   Array<double> Dg(nsd,tnNo);
   int i = nsd+1;
 
-  Array<double>::write_disabled = false;
+  //Array<double>::write_enabled = true;
 
   for (int j = 0; j < nsd; j++) { 
     for (int k = 0; k < tnNo; k++) { 
@@ -778,7 +811,7 @@ void interp(ComMod& com_mod, CmMod& cm_mod, const int lDof, const int iM, mshTyp
 
   for (int a = 0; a < nNo; a++) {
     #ifdef debug_interp_1
-    //dmsg << "---------- a " << std::to_string(a+1) + " ----------";
+    dmsg << "---------- a " << std::to_string(a+1) + " ----------";
     #endif
     if (chckNp[a]) {
       continue; 
@@ -842,23 +875,28 @@ void interp(ComMod& com_mod, CmMod& cm_mod, const int lDof, const int iM, mshTyp
   #endif
   Vector<int> eList(maxKNE); 
   int probe;
-  int pcount = 1;
+  int pcount = 0;
+  //#define debug_interp_1
  
   while (dequeue(rootNdQ, probe)) {
     #ifdef debug_interp_1
+    dmsg << " " << " ";
     dmsg << "---------- probe " << std::to_string(probe+1) + " ----------";
-    dmsg << "pcount: " << pcount;
+    dmsg << "pcount: " << pcount+1;
+    //dmsg << "rootNdQ.v: " << rootNdQ.v;
+    //Array<int>::write_enabled = true;
+    //rootNdQ.v.write("rootNdQ_v"+std::to_string(pcount+1));
     #endif
     pcount += 1;
 
-     if (std::all_of(chckNp.begin(), chckNp.end(), [](bool v) { return v; })) {
-       //dmsg << "break, chckNp all true " << "";
-       break;
-     }
+    if (std::all_of(chckNp.begin(), chckNp.end(), [](bool v) { return v; })) {
+      //dmsg << "break, chckNp all true " << "";
+      break;
+    }
     //if (ALL(chckNp(:))) EXIT
 
     if (chckNp[probe]) {
-      //dmsg << "continue" << "";
+      //dmsg << "continue probe: " << std::to_string(probe+1);
       continue;
     }
 
@@ -879,7 +917,7 @@ void interp(ComMod& com_mod, CmMod& cm_mod, const int lDof, const int iM, mshTyp
       if (Ec > -1) {
         eList(e) = Ec;
         #ifdef debug_interp_1
-        dmsg << "srcAdjEl:  e Ec: " << std::to_string(e+1) + " " + std::to_string(Ec+1);
+        //dmsg << "srcAdjEl:  e Ec: " << std::to_string(e+1) + " " + std::to_string(Ec+1);
         #endif
       }
     }
@@ -887,7 +925,9 @@ void interp(ComMod& com_mod, CmMod& cm_mod, const int lDof, const int iM, mshTyp
     for (int itry = 1; itry <= 2; itry++) {
       #ifdef debug_interp_1
       dmsg << ">>>>> try: " << itry; 
+      dmsg << "pcount: " << pcount; 
       dmsg << "Xp: " << Xp; 
+      dmsg << "eList: " << eList; 
       #endif
       int Ec;
       find_n(com_mod, Xp, iM, Dg, eList, Ec, Nsf, pcount);
@@ -919,7 +959,7 @@ void interp(ComMod& com_mod, CmMod& cm_mod, const int lDof, const int iM, mshTyp
 
           if (a > -1) {
             #ifdef debug_interp_1
-            dmsg << "tgtAdjNd:   nn a Ec: " << std::to_string(nn+1) + " " + std::to_string(a+1) + " " + std::to_string(Ec+1); 
+            //dmsg << "tgtAdjNd:   nn a Ec: " << std::to_string(nn+1) + " " + std::to_string(a+1) + " " + std::to_string(Ec+1); 
             #endif
             utils::enqueue(rootNdQ, a);
             rootEl(a) = Ec;
@@ -988,15 +1028,6 @@ void interp(ComMod& com_mod, CmMod& cm_mod, const int lDof, const int iM, mshTyp
   }
   */
 
-  /*
-  Vector<int>::write_disabled = false;
-  tagNd.write("tagNd");
-
-  Array<int>::write_disabled = false;
-  tgtAdjNd.write("tgtAdjNd");
-  Array<int>::write_disabled = false;
-  srcAdjEl.write("srcAdjEl");
-  */
 
   tmpL.resize(gnNo);
   tmpL = 0;
@@ -1110,9 +1141,9 @@ void interp(ComMod& com_mod, CmMod& cm_mod, const int lDof, const int iM, mshTyp
     }
   }
 
-  Array<double>::write_disabled = false;
-  tmpX.write("tmpX");
-  sD.write("sD");
+  //Array<double>::write_disabled = false;
+  //tmpX.write("tmpX");
+  //sD.write("sD");
   //exit(0);
 
   // Since there is no direct mapping for face data, we use L2 norm
@@ -1238,23 +1269,26 @@ void interp(ComMod& com_mod, CmMod& cm_mod, const int lDof, const int iM, mshTyp
   Vector<double> gvec;
 
   if (cm.mas(cm_mod)) {
-    dmsg << "cm.mas() ..." << "";
-    dmsg << "disp(0): " << disp(0);
     int i = disp.sum();
     i = i * (1 + lDof);
+    
+    #ifdef debug_interp
+    dmsg << "cm.mas ... " << "";
+    dmsg << "disp(1): " << disp(0);
     dmsg << "i: " << i;
+    #endif
     gvec.resize(i);
     sCount.resize(cm.np());
     for (int i = 0; i < cm.np(); i++) {
       sCount(i) = disp(i)*(1+lDof);
+      dmsg << "sCount(i): " << sCount(i);
     }
-    dmsg << "sCount(1): " << sCount(0);
     disp(0) = 0;
     for (int i = 1; i < cm.np(); i++) {
       disp(i) = disp(i-1) + sCount(i-1);
+      dmsg << "disp(i): " << disp(i);
     }
   } else { 
-    dmsg << "slave ..." << "";
     //ALLOCATE(gvec(0), sCount(0))
   }
 
@@ -1271,10 +1305,10 @@ void interp(ComMod& com_mod, CmMod& cm_mod, const int lDof, const int iM, mshTyp
     }
   }
 
-  Vector<double>::write_disabled = false;
-  Array<double>::write_disabled = false;
-  vec.write("vec");
-  gNsf.write("gNsf");
+  //Vector<double>::write_disabled = false;
+  //Array<double>::write_disabled = false;
+  //vec.write("vec");
+  //gNsf.write("gNsf");
 
   #ifdef debug_interp
   dmsg << "" << "";
@@ -1284,9 +1318,7 @@ void interp(ComMod& com_mod, CmMod& cm_mod, const int lDof, const int iM, mshTyp
   dmsg << "vec.size(): " << vec.size();
   dmsg << "gvec.size(): " << gvec.size();
   dmsg << "sCount.size(): " << sCount.size();
-  dmsg << "sCount(0): " << sCount(0);
   dmsg << "disp.size(): " << disp.size();
-  dmsg << "disp(0): " << disp(0);
   dmsg << "cm_mod.master: " << cm_mod.master;
   int csize;
   MPI_Comm_size( cm.com(), &csize);
@@ -1294,7 +1326,7 @@ void interp(ComMod& com_mod, CmMod& cm_mod, const int lDof, const int iM, mshTyp
   #endif
 
   // [TODO:DaveP] MPI_Gatherv is crashing with bad memory access for np = 1.
-  if (disp.size() > 1) {
+  if (disp.size() > -1) {
   MPI_Gatherv(vec.data(), (1+lDof)*nn, cm_mod::mpreal, gvec.data(), sCount.data(), disp.data(), 
       cm_mod::mpreal, cm_mod.master, cm.com());
   //CALL MPI_GATHERV(vec, (1+lDof)*nn, mpreal, gvec, sCount, disp, mpreal, master, cm.com(), ierr)
@@ -1308,7 +1340,7 @@ void interp(ComMod& com_mod, CmMod& cm_mod, const int lDof, const int iM, mshTyp
   #endif
 
   if (cm.mas(cm_mod)) {
-    #ifdef debug_interp_1
+    #ifdef debug_interp
     dmsg << "" << "";
     dmsg << "Set tgD ... " << "";
     #endif
@@ -1316,6 +1348,7 @@ void interp(ComMod& com_mod, CmMod& cm_mod, const int lDof, const int iM, mshTyp
     nn = sCount.sum();
     i = 0;
     dmsg << "nn: " << nn;
+    dmsg << "lDof: " << lDof;
 
     while (true) { 
       int Ac = round(gvec(i));
@@ -1324,22 +1357,30 @@ void interp(ComMod& com_mod, CmMod& cm_mod, const int lDof, const int iM, mshTyp
 
       for (int b = 0; b < lDof; b++) {
         tgD(b,Ac) = gvec(i);
-        dmsg << "tgD(b,Ac): " << std::to_string(b+1) + " " + std::to_string(i+1) + " " + std::to_string(Ac+1) + " " + 
-            std::to_string(tgD(b,Ac)); 
         i = i + 1;
       }
-      if (i == nn) break;
+      if (i == nn) {
+        dmsg << "i == nn " << " break "; 
+        break;
+      }
     }
+
+
+    #ifdef debug_interp
+    dmsg << "i: " << i;
+    Array<double>::write_enabled = true;
+    Vector<double>::write_enabled = true;
+    tgD.write("tgD");
+    gvec.write("gvec");
+    //exit(0);
+    #endif
   }
 
-  #ifdef debug_interp
-  dmsg << "i: " << i;
-  Array<double>::write_disabled = false;
-  Vector<double>::write_disabled = false;
-  tgD.write("tgD");
-  gvec.write("gvec");
-  //exit(0);
-  #endif
+  //Vector<int>::write_disabled = false;
+  //Array<int>::write_disabled = false;
+  //tagNd.write("tagNd");
+  //tgtAdjNd.write("tgtAdjNd");
+  //srcAdjEl.write("srcAdjEl");
 }
 
 //-------------
@@ -1458,7 +1499,31 @@ void remesher_3d(ComMod& com_mod, CmMod& cm_mod, int iM, faceType& lFa, mshType&
     rmsh.maxEdgeSize(iM)
   };
 
+  dmsg << "lFa.nNo: " << lFa.nNo; 
+  dmsg << "lFa.nEl: " << lFa.nEl; 
   int iOK = 0;
+  Array<double>::write_enabled = true;
+  Array<int>::write_enabled = true;
+  lFa.x.write("lFa_x");
+  lFa.IEN.write("lFa_ien");
+  //lFa.x.write("lFa_x_" + std::to_string(rmsh.rTS));
+  //lFa.IEN.write("lFa_ien_" + std::to_string(rmsh.rTS));
+  //lFa.x.read("lFa_x_" +  std::to_string(rmsh.rTS) + "_fm.bin");
+
+  // 1st: [235, 236, 233] #0
+  // 2nd: [235, 236, 238] #0
+
+  dmsg << "  " << " ";
+  dmsg << "---- tri 1 ---- " << " "; 
+  dmsg << "235: " << lFa.x.col(235); 
+  dmsg << "236: " << lFa.x.col(236); 
+  dmsg << "233: " << lFa.x.col(233); 
+
+  dmsg << "  " << " ";
+  dmsg << "---- tri 2 ---- " << " "; 
+  dmsg << "235: " << lFa.x.col(235); 
+  dmsg << "236: " << lFa.x.col(236); 
+  dmsg << "238: " << lFa.x.col(238); 
 
   if (rmsh.method == MeshGeneratorType::RMSH_TETGEN) {
      remesh3d_tetgen(lFa.nNo, lFa.nEl, lFa.x.data(), lFa.IEN.data(), rparams, &iOK);
@@ -1496,11 +1561,13 @@ void remesher_3d(ComMod& com_mod, CmMod& cm_mod, int iM, faceType& lFa, mshType&
 
   new_elem_mesh.clear();
   new_elem_mesh.seekg(0);
+  int min_e = 1000000;
+  int max_e = -1000000;
 
   if (rmsh.method == MeshGeneratorType::RMSH_TETGEN) {
     lM.gnEl = lM.gnEl - 1;
   }
-  std::cout << "[remesher_3d] Number of elements after remesh " << lM.gnEl << std::endl;
+  dmsg << "Number of elements after remesh: " << lM.gnEl;
   lM.gIEN.resize(lM.eNoN,lM.gnEl);
 
   // Read element connectivity.
@@ -1522,13 +1589,17 @@ void remesher_3d(ComMod& com_mod, CmMod& cm_mod, int iM, faceType& lFa, mshType&
     while (line_input >> value) {
       //std::cout << value << "  ";
       //values.push_back(value);
-      lM.gIEN(i,e) = value;
+      lM.gIEN(i,e) = value;    
+      if (value < min_e) min_e = value;
+      if (value > max_e) max_e = value;
       i += 1;
     }
 
     e += 1;
     //std::cout << std::endl;
   }
+  dmsg << "min_e: " << min_e;
+  dmsg << "max_e: " << max_e;
 
   /*
   if (ALLOCATED(lM.gIEN)) DEALLOCATE(lM.gIEN)
@@ -1556,7 +1627,7 @@ void remesher_3d(ComMod& com_mod, CmMod& cm_mod, int iM, faceType& lFa, mshType&
     lM.gnNo = lM.gnNo - 1;
   }
  
-  std::cout << "[remesher_3d] Number of nodes after remesh " << lM.gnNo << std::endl;
+  dmsg << "Number of vertices after remesh: " << lM.gnNo;
   new_node_mesh.clear();
   new_node_mesh.seekg(0);
   lM.x.resize(com_mod.nsd,lM.gnNo);
@@ -1571,6 +1642,8 @@ void remesher_3d(ComMod& com_mod, CmMod& cm_mod, int iM, faceType& lFa, mshType&
       first_list = false;
       continue;
     }
+    //dmsg << "---------- n: " << n;
+    //dmsg << "line: " << line;
     std::istringstream line_input(line);
     int i = 0;
     double value;
@@ -1580,6 +1653,7 @@ void remesher_3d(ComMod& com_mod, CmMod& cm_mod, int iM, faceType& lFa, mshType&
       i += 1;
     }
 
+    //dmsg << "lM.x(:,n): " << lM.x.col(n);
     n += 1;
   }
 
@@ -1632,7 +1706,8 @@ void remesh_restart(Simulation* simulation)
 
   auto sTmp = stFileName + "_last_cpp.bin";
   #ifdef debug_remesh_restart 
-  dmsg << "sTmp: " << sTmp;
+  dmsg << "rmsh.rTS: " << rmsh.rTS;
+  dmsg << "tDof: " << com_mod.tDof;
   #endif
   std::filesystem::remove(sTmp);
 
@@ -1654,8 +1729,6 @@ void remesh_restart(Simulation* simulation)
   auto& timeP = com_mod.timeP;
  
   #ifdef debug_remesh_restart 
-  dmsg << "fTmp: " << fTmp;
-  dmsg << "cm.tF: " << cm.tF(cm_mod);
   dmsg << "dFlag: " << dFlag;
   #endif
 
@@ -1693,20 +1766,35 @@ void remesh_restart(Simulation* simulation)
   Array<double> gtX, gtD, gX, gD;
   Array<double> tempD, tempX, gnD;
 
-  Array<double>::write_disabled = false;
-  rmsh.A0.write("A0");
-  rmsh.Y0.write("Y0");
-  rmsh.D0.write("D0");
+  dmsg << "rmsh.A0.nrows: " << rmsh.A0.nrows();
+  dmsg << "        ncols: " << rmsh.A0.ncols();
+
+#if 1
+  Array<double>::write_enabled = true;
+  rmsh.A0.write("A0_"+dmsg.prefix());
+  rmsh.Y0.write("Y0_"+dmsg.prefix());
+  rmsh.D0.write("D0_"+dmsg.prefix());
+  x.write("x_"+dmsg.prefix());
+#endif
 
   #ifdef debug_remesh_restart 
-  dmsg << "Remesh ... " << fTmp;
+  dmsg << " " << " ";
+  dmsg << "Remesh ... " << " ";
   #endif
 
   for (int iM = 0; iM < nMsh; iM++) {
+    auto& msh = com_mod.msh[iM];
     #ifdef debug_remesh_restart 
     dmsg << "---------- iM " << iM;
+    dmsg << "msh.gnNo: " << msh.gnNo;
+    dmsg << "msh.nNo: " << msh.nNo;
+    dmsg << "msh.gnEl: " << msh.gnEl;
+    dmsg << "msh.nEl: " << msh.nEl;
+    dmsg << "rmsh.flag: " << rmsh.flag[iM];
     #endif
-    auto& msh = com_mod.msh[iM];
+
+    //MPI_Barrier(cm.com());
+    //exit(0);
 
     if (rmsh.flag[iM]) {
       if (rmsh.method == MeshGeneratorType::RMSH_TETGEN) {
@@ -1737,10 +1825,12 @@ void remesh_restart(Simulation* simulation)
         //gD(2*tDof+1:3*tDof,a) = rmsh.D0(:,Ac)
       }
 
-      Array<double>::write_disabled = false;
-      tempX.write("tempX");
-      gD.write("gD");
-      //exit(0);
+      Array<double>::write_enabled = true;
+      tempX.write("tempX_"+dmsg.prefix());
+      gD.write("gD_"+dmsg.prefix());
+
+      Vector<int>::write_enabled = true;
+      msh.gN.write("msh_gN_"+dmsg.prefix());
 
       tMsh.nFa = 1;
       tMsh.fa.resize(tMsh.nFa);
@@ -1762,6 +1852,10 @@ void remesh_restart(Simulation* simulation)
       //gX = GLOBAL(msh(iM), tempX);
       //DEALLOCATE(tempX);
 
+      Array<double>::write_enabled = true;
+      gX.write("gX_"+dmsg.prefix());
+      //exit(0);
+
       if (cm.mas(cm_mod)) {
         tMsh.gIEN.resize(tMsh.eNoN,tMsh.gnEl);
         //ALLOCATE(tMsh.gIEN(tMsh.eNoN,tMsh.gnEl))
@@ -1779,6 +1873,9 @@ void remesh_restart(Simulation* simulation)
       //CALL INTMSHSRF(msh(iM), tMsh.fa(1))
 
       if (cm.mas(cm_mod)) {
+        Vector<int>::write_enabled = true;
+        tMsh.fa[0].gN.write("gN_"+dmsg.prefix());
+
         tMsh.fa[0].x.resize(nsd,tMsh.fa[0].nNo);
         //ALLOCATE(tMsh.fa(1).x(nsd,tMsh.fa(1).nNo))
         for (int a = 0; a < tMsh.fa[0].nNo; a++) {
@@ -1787,6 +1884,12 @@ void remesh_restart(Simulation* simulation)
             tMsh.fa[0].x(i,a) = gX(i,Ac);
           }
           //tMsh.fa(1).x(:,a) = gX(:,Ac)
+
+          if (a >= 232 && a <= 233) {
+            dmsg << ">>> a: " << a+1;
+            dmsg << "  Ac: " << Ac+1;
+            dmsg << "  tMsh.fa[0].x(:,a): " << tMsh.fa[0].x.col(a);
+          }
         }
 
         if (nsd == 2) {
@@ -1795,6 +1898,8 @@ void remesh_restart(Simulation* simulation)
           remesher_3d(com_mod, cm_mod, iM, tMsh.fa[0], tMsh);
           //CALL REMESHER_3D(iM, tMsh.fa(1), tMsh)
         }
+
+        //exit(0);
 
         gnD.resize(lDof,tMsh.gnNo);
         //ALLOCATE(gnD(lDof,tMsh.gnNo))
@@ -1808,8 +1913,10 @@ void remesh_restart(Simulation* simulation)
       //CALL cm.bcast(tMsh.gnNo)
       //CALL cm.bcast(tMsh.eNoN)
       //CALL cm.bcast(tMsh.gnEl)
+      dmsg << "  " << " ";
+      dmsg << "Bcast " << " ...";
       dmsg << "tMsh.gnNo: " << tMsh.gnNo;
-      dmsg << "tMsh.eNoN: " << tMsh.eNoN;
+      dmsg << "tMsh.gnEl: " << tMsh.gnEl;
 
       if (cm.slv(cm_mod)) {
         tMsh.x.resize(nsd,tMsh.gnNo);
@@ -1831,10 +1938,6 @@ void remesh_restart(Simulation* simulation)
       MPI_Bcast(tMsh.fa[0].gN.data(), tMsh.fa[0].nNo, cm_mod::mpint, cm_mod.master, cm.com());
       //CALL MPI_BCAST(tMsh.fa(1).gN, tMsh.fa(1).nNo, mpint, master, cm.com(), ierr)
 
-      dmsg << "2 size tMsh.x: " << tMsh.x.size();
-      dmsg << "fTmp: " << fTmp;
-      dmsg << "interp ... " << "";
-
       interp(com_mod, cm_mod, lDof, iM, tMsh, gD, gnD);
       //CALL INTERP(lDof, iM, tMsh, gD, gnD)
 
@@ -1849,6 +1952,10 @@ void remesh_restart(Simulation* simulation)
       if (cm.mas(cm_mod)) {
         msh.gnNo = tMsh.gnNo;
         int a = gtnNo + msh.gnNo;
+        dmsg << "  " << " ";
+        dmsg << "Master " << " ...";
+        dmsg << "msh.gnNo: " << msh.gnNo;
+        dmsg << "a: " << a;
 
         if (iM > 0) {
           tempX.resize(nsd,gtnNo); 
@@ -1929,12 +2036,12 @@ void remesh_restart(Simulation* simulation)
           //dmsg << "j gtX: " + std::to_string(j+1) + " " <<  gtX.col(j);
         //}
 
-        Array<double>::write_disabled = false;
-        tMsh.x.write("tMshx");
-        msh.x.write("mshx");
-        gtX.write("gtX");
-        gnD.write("gnD");
-        gtD.write("gtD");
+        //Array<double>::write_disabled = false;
+        //tMsh.x.write("tMshx");
+        //msh.x.write("mshx");
+        //gtX.write("gtX");
+        //gnD.write("gnD");
+        //gtD.write("gtD");
         //exit(0);
 
         gtnNo = a;
@@ -2335,6 +2442,7 @@ void set_face_ebc(ComMod& com_mod, CmMod& cm_mod, faceType& lFa, mshType& lM)
   int maxAssocEl = nAssocEl.max();
   Array<int> assocEl(maxAssocEl, lM.gnNo);
   nAssocEl = 0;
+  //std::cout << "[set_face_ebc] maxAssocEl: " << maxAssocEl << std::endl;
 
   for (int e = 0; e < lM.gnEl; e++) {
     for (int a = 0; a < lM.eNoN; a++) {
@@ -2345,10 +2453,17 @@ void set_face_ebc(ComMod& com_mod, CmMod& cm_mod, faceType& lFa, mshType& lM)
   }
 
   lFa.gE.resize(lFa.nEl);
+
+  // 'bin(:,0) is an element ID
+  // 'bin(:,1) is a counter.
+  //
   Array<int> bin(maxAssocEl,2);
 
   for (int e = 0; e < lFa.gnEl; e++) {
-    bin = 0;
+    for (int j = 0; j < maxAssocEl; j++) {
+      bin(j,0) = -1;
+      bin(j,1) = 0;
+    }
 
     for (int a = 0; a < lFa.eNoN; a++) {
       int Ac = lFa.IEN(a,e);
@@ -2361,7 +2476,7 @@ void set_face_ebc(ComMod& com_mod, CmMod& cm_mod, faceType& lFa, mshType& lM)
       } else {
         for (int i = 0; i < nAssocEl(Ac); i++) {
           for (int j = 0; j < maxAssocEl; j++) {
-            if (bin(j,0) == 0) {
+            if (bin(j,0) == -1) {
               bin(j,0) = assocEl(i,Ac);
               bin(j,1) = 1;
               break;
@@ -2376,6 +2491,7 @@ void set_face_ebc(ComMod& com_mod, CmMod& cm_mod, faceType& lFa, mshType& lM)
     for (int j = 0; j < maxAssocEl; j++) {
       if (bin(j,1) == lFa.eNoN) {
         lFa.gE(e) = bin(j,0);
+        //std::cout << "[set_face_ebc] e lFa.gE(e): " << e+1 << "  " << lFa.gE(e)+1 << std::endl;
         break;
       }
     } 
@@ -2385,7 +2501,12 @@ void set_face_ebc(ComMod& com_mod, CmMod& cm_mod, faceType& lFa, mshType& lM)
 
   // Check mesh quality and reset IEN if necessary
   //
+  std::cout << "[set_face_ebc] " << std::endl;
+  std::cout << "[set_face_ebc] Check mesh quality ..." << std::endl;
   int e = lFa.gE(0);
+
+  //read_msh_ns::check_tet_conn(lM);
+
   for (int i = 0; i < nsd; i++) {
     for (int j = 0; j < lM.eNoN; j++) {
       xl(i,j) = lM.x(i,lM.gIEN(j,e));
@@ -2415,6 +2536,7 @@ void set_face_ebc(ComMod& com_mod, CmMod& cm_mod, faceType& lFa, mshType& lM)
   //sn = SGN(SUM(v(:,3)*v(:,4)))
 
   if (sn == 1) {
+    std::cout << "[set_face_ebc] Reordering element connectivity " << std::endl;
     int a=0, b=1;
 
     for (int e = 0; e < lM.gnEl; e++) {
@@ -2436,12 +2558,14 @@ void set_face_ebc(ComMod& com_mod, CmMod& cm_mod, faceType& lFa, mshType& lM)
     }
 
     double Jac = all_fun::jacobian(com_mod, nsd, lM.eNoN, xl, lM.Nx.rslice(0));
-    //std::cout << "[set_face_ebc] e Jac: " << e+1 << " " << Jac << std::endl;
+    std::cout << "[set_face_ebc] e Jac: " << e << "  " << Jac << std::endl;
 
     if (Jac < 0.0) {
       throw std::runtime_error("[set_face_ebc] Remeshing didn't improve mesh quality.");
     }
   }
+
+  //read_msh_ns::check_tet_conn(lM);
 
 }
 

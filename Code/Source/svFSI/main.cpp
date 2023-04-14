@@ -632,8 +632,14 @@ int main(int argc, char *argv[])
   // from the Simulation constructor. 
   //
   auto simulation = new Simulation();
-
+  auto& cm = simulation->com_mod.cm;
   std::string file_name(argv[1]);
+
+  #define debug_main
+  #ifdef debug_main
+  DebugMsg dmsg(__func__, cm.idcm());
+  dmsg.banner();
+  #endif
 
   // Iterate for restarting a simulation after remeshing. 
   //
@@ -641,9 +647,11 @@ int main(int argc, char *argv[])
 
     // Read in the solver commands .xml file.
     //
+    dmsg << "Call read_files " << " ... ";
     read_files(simulation, file_name);
 
     // Distribute data to processors.
+    dmsg << "Call distribute " << " ... ";
     distribute(simulation);
 
     // Initialize simulation data.
@@ -652,16 +660,26 @@ int main(int argc, char *argv[])
 
     initialize(simulation, init_time);
 
+    for (int iM = 0; iM < simulation->com_mod.nMsh; iM++) {
+      dmsg << "---------- iM " << iM;
+      dmsg << "msh[iM].nNo: " << simulation->com_mod.msh[iM].nNo;
+      dmsg << "msh[iM].gnNo: " << simulation->com_mod.msh[iM].gnNo;
+      dmsg << "msh[iM].nEl: " << simulation->com_mod.msh[iM].nEl;
+    }
+
     // Run the simulation.
     run_simulation(simulation);
 
-    std::cout << "[svFSIplus] resetSim: " << simulation->com_mod.resetSim << std::endl;
+    dmsg << "resetSim: " << simulation->com_mod.resetSim;
 
     // Remesh and continue the simulation.
     //
     if (simulation->com_mod.resetSim) {
+      #ifdef debug_main
+      dmsg << "Calling remesh_restart" << " ..."; 
+      #endif
       remesh::remesh_restart(simulation);
-      std::cout << "[svFSIplus] continue the simulation " << std::endl;
+      dmsg << "Continue the simulation " << " ";
     } else {
       break;
     }

@@ -190,9 +190,9 @@ void calc_elem_jac(ComMod& com_mod, const CmMod& cm_mod, mshType& lM, bool& rfla
 
     //dmsg << "Comp jac ... " << 1;
     Jac(e) = all_fun::jacobian(com_mod, nsd, lM.eNoN, xl, lM.Nx.slice(0));
-    //dmsg << "Jac(e): " << Jac(e);
 
     if (Jac(e) < 0.0) {
+      dmsg << "e Jac(e) " + std::to_string(e) + ": " << Jac(e);
       cnt = cnt + 1;
       if (cPhys != Equation_fluid) {
         throw std::runtime_error("[calc_elem_jac] Negative Jacobian in non-fluid domain.");
@@ -227,6 +227,7 @@ void calc_elem_jac(ComMod& com_mod, const CmMod& cm_mod, mshType& lM, bool& rfla
     std = "    Min normalized Jacobian <"//minJ//">"
     std = "    No. of Elements with Jac < 0: "//cnt// 2  " ("//tmp//".)"
     */
+    dmsg << "Mesh is DISTORTED (Min. Jacobian < 0) at time " << com_mod.cTS;
 
     if (!com_mod.rmsh.isReqd) {
       throw std::runtime_error("[calc_elem_jac] Unexpected behavior! Mesh is DISTORTED.");
@@ -652,10 +653,15 @@ void check_quad4_conn(mshType& mesh)
 //
 void check_tet_conn(mshType& mesh)
 {
+  //std::cout << "[check_tet_conn] ========== check_tet_conn ========== " << std::endl;
   Vector<double> v1, v2, v3;
   int num_elems = mesh.gnEl;
+  int num_reorder = 0;
+  //std::cout << "[check_tet_conn] mesh.gIEN.data(): " << mesh.gIEN.data() << std::endl;
+  //std::cout << "[check_tet_conn] mesh.x.data(): " << mesh.x.data() << std::endl;
 
   for (int e = 0; e < num_elems; e++) {
+    //std::cout << "[check_tet_conn] -------- e " << e << std::endl;
     int a = 0, b = 0;
     bool qFlag = false;
     auto elem_conn = mesh.gIEN.col(e);
@@ -671,9 +677,11 @@ void check_tet_conn(mshType& mesh)
       a = 0;
       b = 1;
       qFlag = true;
+      num_reorder += 1;
       if (e == 0) {
-        //std::cout << "[check_tet_conn] Reorder element connectivity." << std::endl;
+        //std::cout << "[check_tet_conn] Reorder element connectivity for element " << e << std::endl;
       }
+      //std::cout << "[check_tet_conn] Reorder element connectivity for element " << e << std::endl;
     } else if (sn == 0) { 
       throw std::runtime_error("Tet element " + std::to_string(e) + " is distorted.");
     } 
@@ -689,6 +697,8 @@ void check_tet_conn(mshType& mesh)
       }
     }
   }
+
+  std::cout << "[check_tet_conn] Reorder " << num_reorder << " element connectivity from " << num_elems << "  elements." << std::endl;
 }
 
 //-----------------
