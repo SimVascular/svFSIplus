@@ -895,16 +895,18 @@ void read_cep_domain(Simulation* simulation, EquationParameters* eq_params, Doma
 //----------
 // read_cep_equation
 //----------
-// Set parameters that are affecting the whole equation of cardiac electrophysiology a model (for the moment ECG leads only)
+// Set parameters that are affecting the whole equation of a cardiac electrophysiology model (for the moment ECG leads only)
 //
 void read_cep_equation(CepMod* cep_mod, Simulation* simulation, EquationParameters* eq_params)
 {
   // Set ECG leads parameters.
-  cep_mod->ecgleads.x_coords = {};
-  cep_mod->ecgleads.y_coords = {};
-  cep_mod->ecgleads.z_coords = {};
+  std::vector<double> x_coords, y_coords, z_coords;
   auto& chnl_mod = simulation->get_chnl_mod();
   if (eq_params->ecg_leads.defined()) {
+
+    if (simulation->get_com_mod().nsd != 3) {
+      throw std::runtime_error("ECG leads computation is allowed only for 3D geometries");
+    }
 
     std::string line;
     auto& ecg_leads_params = eq_params->ecg_leads;
@@ -915,7 +917,7 @@ void read_cep_equation(CepMod* cep_mod, Simulation* simulation, EquationParamete
     if (!x_coords_file.is_open()) {
       throw std::runtime_error("[read_cep_equation] Failed to open the ECG leads x-coordinates file '" + x_coords_file_name + "'.");
     }
-    while(std::getline(x_coords_file, line)) { cep_mod->ecgleads.x_coords.push_back(std::stod(line)); }
+    while(std::getline(x_coords_file, line)) { x_coords.push_back(std::stod(line)); }
     x_coords_file.close();
 
     std::ifstream y_coords_file;
@@ -924,7 +926,7 @@ void read_cep_equation(CepMod* cep_mod, Simulation* simulation, EquationParamete
     if (!y_coords_file.is_open()) {
       throw std::runtime_error("[read_cep_equation] Failed to open the ECG leads y-coordinates file '" + y_coords_file_name + "'.");
     }
-    while(std::getline(y_coords_file, line)) { cep_mod->ecgleads.y_coords.push_back(std::stod(line)); }
+    while(std::getline(y_coords_file, line)) { y_coords.push_back(std::stod(line)); }
     y_coords_file.close();
 
     std::ifstream z_coords_file;
@@ -933,18 +935,22 @@ void read_cep_equation(CepMod* cep_mod, Simulation* simulation, EquationParamete
     if (!z_coords_file.is_open()) {
       throw std::runtime_error("[read_cep_equation] Failed to open the ECG leads z-coordinates file '" + z_coords_file_name + "'.");
     }
-    while(std::getline(z_coords_file, line)) { cep_mod->ecgleads.z_coords.push_back(std::stod(line)); }
+    while(std::getline(z_coords_file, line)) { z_coords.push_back(std::stod(line)); }
     z_coords_file.close();
 
-    if (cep_mod->ecgleads.x_coords.size() != cep_mod->ecgleads.y_coords.size() ||
-        cep_mod->ecgleads.y_coords.size() != cep_mod->ecgleads.z_coords.size()) {
+    if (x_coords.size() != y_coords.size() ||
+        y_coords.size() != z_coords.size()) {
       throw std::runtime_error("[read_cep_equation] ECG leads for x,y,z-coordinates must have the same dimension.");
     }
-    cep_mod->ecgleads.num_leads = cep_mod->ecgleads.x_coords.size();
+    cep_mod->ecgleads.num_leads = x_coords.size();
 
     for (int index = 0; index < cep_mod->ecgleads.num_leads; index++) {
       cep_mod->ecgleads.out_files.push_back(simulation->chnl_mod.appPath + "ecglead_" + std::to_string(index + 1) + ".txt");
     }
+
+    cep_mod->ecgleads.x_coords.set_values(x_coords);
+    cep_mod->ecgleads.y_coords.set_values(y_coords);
+    cep_mod->ecgleads.z_coords.set_values(z_coords);
 
     cep_mod->ecgleads.pseudo_ECG.resize(cep_mod->ecgleads.num_leads);
     std::fill(cep_mod->ecgleads.pseudo_ECG.begin(), cep_mod->ecgleads.pseudo_ECG.end(), 0.);

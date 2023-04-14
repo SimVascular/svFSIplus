@@ -121,23 +121,23 @@ class stimType
 class ecgLeadsType
 {
   public:
+    // Number of leads
+    int num_leads = 0;
+
     // x coordinates
-    std::vector<double> x_coords;
+    Vector<double> x_coords;
 
     // y coordinates
-    std::vector<double> y_coords;
+    Vector<double> y_coords;
 
     // z coordinates
-    std::vector<double> z_coords;
+    Vector<double> z_coords;
 
-    // Number of leads
-    int num_leads;
+    // Pseudo ECG over each lead
+    Vector<double> pseudo_ECG;
 
     // Output files
     std::vector<std::string> out_files;
-
-    // Pseudo ECG over each lead
-    std::vector<double> pseudo_ECG;
 };
 
 //!     Cardiac electrophysiology model type

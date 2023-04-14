@@ -998,6 +998,20 @@ void dist_eq(ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, const std::
     }
   } 
 
+  // Distribute ECG leads parameters
+  //
+  cm.bcast(cm_mod, &cep_mod.ecgleads.num_leads);
+  if (com_mod.cm.idcm() != cm_mod.master) {
+    cep_mod.ecgleads.x_coords.resize(cep_mod.ecgleads.num_leads);
+    cep_mod.ecgleads.y_coords.resize(cep_mod.ecgleads.num_leads);
+    cep_mod.ecgleads.z_coords.resize(cep_mod.ecgleads.num_leads);
+    cep_mod.ecgleads.pseudo_ECG.resize(cep_mod.ecgleads.num_leads);
+  }
+  cm.bcast(cm_mod, cep_mod.ecgleads.x_coords);
+  cm.bcast(cm_mod, cep_mod.ecgleads.y_coords);
+  cm.bcast(cm_mod, cep_mod.ecgleads.z_coords);
+  cm.bcast(cm_mod, cep_mod.ecgleads.pseudo_ECG);
+
   // Distribute output parameters
   //
   if (cm.slv(cm_mod)) {

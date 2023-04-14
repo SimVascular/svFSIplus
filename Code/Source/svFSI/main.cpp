@@ -208,7 +208,7 @@ void iterate_solution(Simulation* simulation)
     int iEqOld;
 
     while (true) { 
-      #ifdef debug_iterate_solution
+      #ifdef debug_iterate_solutifon
       dmsg << "---------- Inner Loop " + std::to_string(inner_count) << " -----------" << std::endl;
       dmsg << "cEq: " << cEq;
       dmsg << "com_mod.eq[cEq].sym: " << com_mod.eq[cEq].sym;
@@ -605,16 +605,15 @@ int main(int argc, char *argv[])
   auto simulation = new Simulation();
 
   // Read in the solver commands .xml file.
-  //
   std::string file_name(argv[1]);
 
+  // Read xml file (master processor only).
   read_files(simulation, file_name);
 
   // Distribute data to processors.
   distribute(simulation);
 
   // Initialize simulation data.
-  //
   Vector<double> init_time(3);
 
   initialize(simulation, init_time);
