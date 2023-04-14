@@ -29,8 +29,8 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake ..
-          make -DENABLE_COVERAGE=ON -j2
+          cmake -DENABLE_COVERAGE=ON ..
+          make -j2
       - name: Install test dependencies
         run: |
           conda create -n svfsiplus python=3.9
