@@ -44,8 +44,12 @@ jobs:
         run: |
           cd build/svFSI-build
           make coverage
-      - name: Generate Coveralls report
-        uses: coverallsapp/github-action@master
+      - name: Report code coverage
+        uses: zgosalvez/github-actions-report-lcov@v3
         with:
-          path-to-lcov: ${{runner.workspace}}/build/svFSI-build/coverage.info
+          working-directory: build/svFSI-build
+          coverage-files: coverage.info
+          artifact-name: code-coverage-report
+          minimum-coverage: 0
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          update-comment: false
