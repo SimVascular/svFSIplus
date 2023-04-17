@@ -12,7 +12,8 @@ this_file_dir = os.path.abspath(os.path.dirname(__file__))
 cpp_exec = os.path.join(this_file_dir, "..", "build", "svFSI-build", "bin", "svFSI")
 # todo: add second executable for "classic" svFSI and compare results
 
-RTOL = {'Pressure': 1.0e-12, 'Velocity': 1.0e-12, 'Action_potential': 1.0e-12, 'Temperature': 1.0e-12}
+RTOL = {'Pressure': 1.0e-12, 'Velocity': 1.0e-12, 'Action_potential': 1.0e-12, 
+        'Temperature': 1.0e-12, 'Displacement': 1.0e-12, 'Stress': 1.0e-12}
 
 
 def run_by_name(folder, name, t_max, n_proc=1):
@@ -68,6 +69,16 @@ def run_with_reference(folder, name_inp, name_ref, fields, t_max, n_proc=1):
         # compare solution to reference
         assert np.all(np.isclose(a, b, rtol=RTOL[f]))
 
+@pytest.mark.parametrize("mesh", ["P1/N016","P2/N008"])
+def test_struct_block_compression(mesh):
+    folder = os.path.join("cases", "struct_block_compression")
+    field = ["Displacement", "Stress"]
+    t_max = 5 # Run for 5 timesteps
+    PP = mesh.split("/")[0]
+    NN = mesh.split("/")[1]
+    name_inp = f"{PP}_svFSI.xml"
+    name_ref = f"{PP}_{NN}_result_" + str(t_max).zfill(3) + ".vtu"
+    run_with_reference(folder, name_inp, name_ref, field, t_max)
 
 @pytest.mark.parametrize("mesh", ["N" + str(2**i).zfill(3) for i in range(2, 5)])
 @pytest.mark.parametrize("ele", ["P1P1"])
