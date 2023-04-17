@@ -9,7 +9,7 @@
 
 std::string build_file_prefix(const std::string& label);
 
-#define Vector_check_enabled
+//#define Vector_check_enabled
 
 //-------
 // Vector 
