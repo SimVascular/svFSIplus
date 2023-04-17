@@ -27,7 +27,7 @@ class Array3
     static int active;
     static double memory_in_use;
     static double memory_returned;
-    static bool write_disabled;
+    static bool write_enabled;
     static void memory(const std::string& prefix="");
     static void stats(const std::string& prefix="");
 
@@ -284,7 +284,7 @@ class Array3
     //
     void write(const std::string& label, bool memory=true)
     {
-      if (write_disabled) {
+      if (!write_enabled) {
         return;
       }
 
@@ -300,7 +300,7 @@ class Array3
 
     void append(const std::string& label, bool memory=true)
     {
-      if (write_disabled) {
+      if (!write_enabled) {
         return;
       }
 
