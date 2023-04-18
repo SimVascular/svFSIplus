@@ -4,6 +4,7 @@
 
 #include "ComMod.h"
 #include "Parameters.h"
+#include "SimulationLogger.h"
 
 #include <string>
 
@@ -37,6 +38,9 @@ class Simulation {
     // Solver parameters read in from solver input XML file.
     Parameters parameters;
 
+    // Log solution information.
+    SimulationLogger logger;
+
     // Number of time steps
     int nTs;
 
@@ -48,6 +52,9 @@ class Simulation {
 
     // Simulation requires remeshing
     bool isReqd;
+
+    // Name of the history file.
+    std::string history_file_name;
 };
 
 #endif

@@ -87,6 +87,7 @@ set(CSRCS
   DebugMsg.h 
   Parameters.h Parameters.cpp
   Simulation.h Simulation.cpp
+  SimulationLogger.h
   VtkData.h VtkData.cpp
 
   all_fun.h all_fun.cpp
