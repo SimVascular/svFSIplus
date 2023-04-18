@@ -29,6 +29,7 @@ class SimulationLogger {
       }
 
       cout_write_ = cout_write;
+      file_name_ = file_name;
     }
 
     ~SimulationLogger() 
@@ -38,19 +39,31 @@ class SimulationLogger {
 
   template <class T> SimulationLogger& operator<< (const T& value)
   {
+    if (file_name_ == "") { 
+      return *this;
+    }
+
     log_file_ << value;
+
     if (cout_write_) {
       std::cout << value;
     }
+
     return *this;
   }
 
   SimulationLogger& operator<<(std::ostream&(*value)(std::ostream& o))
   {
+    if (file_name_ == "") { 
+      return *this;
+    }
+
     log_file_ << value;
+
     if (cout_write_) {
       std::cout << value;
     }
+
     return *this;
   };
 
