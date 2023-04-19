@@ -13,7 +13,7 @@ And the results are
    <img src="./results.gif" width="600">
 </p>
 
-The input file `svFSI.inp` follows the master input file [`svFSI_master.inp`](./svFSI_master.inp) as a template. More on ALE-FSI simulations can be found here:
+The input file `svFSI.xml` follows the input file format for svFSIplus. More on ALE-FSI simulations can be found here:
 
 - SimVascular Website: https://simvascular.github.io/docssvFSI-FSI.html
 - Youtube Tutorial: https://www.youtube.com/watch?v=QIpyThIAD7k
