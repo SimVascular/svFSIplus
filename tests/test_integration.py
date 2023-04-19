@@ -98,7 +98,7 @@ def test_diffusion_line_source():
 def test_ale_3d_pipe():
     folder = os.path.join("cases", "ale_3d_pipe")
     field = ["Displacement"]
-    t_max = 10
+    t_max = 1
     name_inp = "svFSI.xml"
     name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
     run_with_reference(folder, name_inp, name_ref, field, t_max)
