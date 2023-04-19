@@ -30,6 +30,9 @@ void output_result(Simulation* simulation,  std::array<double,3>& timeP, const i
   auto& eq = com_mod.eq[iEq];
   auto cTS = com_mod.cTS;
 
+  // Writes to history file and optionally to cout.
+  auto& logger = simulation->logger;
+
   if (com_mod.cm.slv(cm_mod)) {
     return;
   }
@@ -41,16 +44,19 @@ void output_result(Simulation* simulation,  std::array<double,3>& timeP, const i
   if (co == 1) {
      timeP[0] = tmp - timeP[0];
      timeP[1] = 0.0;
-     std::cout << sepLine << std::endl;
-     std::cout << " Eq     N-i     T       dB  Ri/R1   Ri/R0    R/Ri     lsIt   dB  %t" << std::endl;
+     logger << sepLine << std::endl;
+     logger << " Eq     N-i     T       dB  Ri/R1   Ri/R0    R/Ri     lsIt   dB  %t" << std::endl;
+     //std::cout << sepLine << std::endl;
+     //std::cout << " Eq     N-i     T       dB  Ri/R1   Ri/R0    R/Ri     lsIt   dB  %t" << std::endl;
      if (com_mod.nEq == 1) {
-       std::cout << sepLine << std::endl;
+       logger << sepLine << std::endl;
+       //std::cout << sepLine << std::endl;
      }
      return;
   }
 
   if ((com_mod.nEq > 1) && (iEq == 0) && (eq.itr == 1)) {
-    std::cout << sepLine << std::endl;
+    logger << sepLine << std::endl;
   }
 
   std::string c1 = " ";
@@ -129,9 +135,9 @@ void output_result(Simulation* simulation,  std::array<double,3>& timeP, const i
   sOut += "  " + c1 + std::to_string(eq.FSILS.RI.itr) + " " + db_str + " " + calld_str + c2;
 
   if (com_mod.nEq > 1) {
-    std::cout << sOut << std::endl;
+    logger << sOut << std::endl;
   } else {
-    std::cout << sOut << std::endl;
+    logger << sOut << std::endl;
   }
 }
 
