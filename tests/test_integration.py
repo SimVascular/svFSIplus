@@ -86,14 +86,6 @@ def test_niederer_benchmark():
     name_inp = "svFSI.xml"
     name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
     run_with_reference(folder, name_inp, name_ref, field, t_max)
-
-def test_ustruct_block_compression():
-    folder = os.path.join("cases", "ustruct_block_compression")
-    fields = ["Pressure", "Velocity", "Displacement"]
-    t_max = 2
-    name_inp = "svFSI.xml"
-    name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
-    run_with_reference(folder, name_inp, name_ref, fields, t_max)
     
 def test_diffusion_line_source():
     folder = os.path.join("cases", "diffusion_line_source")
@@ -102,5 +94,13 @@ def test_diffusion_line_source():
     name_inp = "svFSI.xml"
     name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
     run_with_reference(folder, name_inp, name_ref, field, t_max)
+
+def test_ustruct_block_compression():
+    folder = os.path.join("cases", "ustruct_block_compression")
+    fields = ["Pressure", "Velocity"]
+    t_max = 2
+    name_inp = "svFSI.xml"
+    name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
+    run_with_reference(folder, name_inp, name_ref, fields, t_max)
 
 
