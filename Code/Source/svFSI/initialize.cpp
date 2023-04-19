@@ -309,10 +309,19 @@ void initialize(Simulation* simulation, Vector<double>& timeP)
   dmsg.banner();
   #endif
 
+  std::string hist_file_name;
+
   if (chnl_mod.appPath != "") { 
     auto mkdir_arg = std::string("mkdir -p ") + chnl_mod.appPath;
     std::system(mkdir_arg.c_str());
+    hist_file_name = chnl_mod.appPath + "/" + simulation->history_file_name;
+  } else {
+    hist_file_name = simulation->history_file_name;
   }
+
+  // Setup logging to history file.
+  bool output_to_cout = true;
+  simulation->logger.initialize(hist_file_name, output_to_cout);
 
   #ifdef debug_initialize
   dmsg << "Set time " << std::endl;
