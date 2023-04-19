@@ -1,0 +1,155 @@
+#----------------------------------------------------------------
+# General simulation parameters
+
+Continue previous simulation: 0
+Number of spatial dimensions: 3
+Number of time steps: 80
+Time step size: 1e-4
+Spectral radius of infinite time step: 0.50
+Searched file name to trigger stop: STOP_SIM
+
+Save results to VTK format: 1
+Name prefix of saved VTK files: result
+Increment in saving VTK files: 1
+Start saving after time step: 1
+
+Increment in saving restart files: 1
+Convert BIN to VTK format: 0
+
+Verbose: 1
+Warning: 0
+Debug: 0
+
+#----------------------------------------------------------------
+# Mesh data
+Add mesh: lumen {
+   Mesh file path: mesh/lumen/mesh-complete.mesh.vtu
+   Add face: lumen_inlet {
+      Face file path: mesh/lumen/mesh-surfaces/lumen_inlet.vtp
+   }
+   Add face: lumen_outlet {
+      Face file path: mesh/lumen/mesh-surfaces/lumen_outlet.vtp
+   }
+   Add face: lumen_wall {
+      Face file path: mesh/lumen/mesh-surfaces/lumen_wall.vtp
+   }
+   Domain: 0
+}
+
+Add mesh: wall {
+   Mesh file path: mesh/wall/mesh-complete.mesh.vtu
+   Add face: wall_inlet {
+      Face file path: mesh/wall/mesh-surfaces/wall_inlet.vtp
+   }
+   Add face: wall_outlet {
+      Face file path: mesh/wall/mesh-surfaces/wall_outlet.vtp
+   }
+   Add face: wall_inner {
+      Face file path: mesh/wall/mesh-surfaces/wall_inner.vtp
+   }
+   Add face: wall_outer {
+      Face file path: mesh/wall/mesh-surfaces/wall_outer.vtp
+   }
+   Domain: 1
+}
+
+#----------------------------------------------------------------
+# Projections
+Add projection: wall_inner {
+   Project from face: lumen_wall
+}
+
+#----------------------------------------------------------------
+# Equations
+Add equation: FSI {
+   Coupled: 1
+   Min iterations: 1
+   Max iterations: 10
+   Tolerance: 1e-6
+
+   Domain: 0 {
+      Equation: fluid
+      Density: 1.0
+      Viscosity: Constant {Value: 0.04}
+      Backflow stabilization coefficient: 0.2
+   }
+
+   Domain: 1 {
+      Equation: struct  # (or) ustruct
+      Constitutive model: nHK
+      Dilational penalty model: M94
+      Density: 1.0
+      Elasticity modulus: 1.0e7
+      Poisson ratio: 0.3
+
+      ##### For ustruct eq.
+      ## Momentum stabilization coefficient: 0.001
+      ## Continuity stabilization coefficient: 0.0
+   }
+
+   LS type: GMRES {
+      Preconditioner: Trilinos-ILUT
+      Tolerance: 1e-6
+      Max iterations: 100
+      Krylov space dimension: 50
+   }
+
+   Output: Spatial {
+      Displacement: t
+      Velocity: t
+      Pressure: t
+   }
+
+   Output: Alias {
+      Displacement: FS_Displacement
+   }
+
+   Add BC: lumen_inlet {
+      Type: Neu
+      Value: 5.0e4
+   }
+
+   Add BC: wall_inlet {
+      Type: Dir
+      Value: 0.0
+      Impose on state variable integral: t
+      Zero out perimeter: f
+      Effective direction: (0, 0, 1)
+   }
+
+   Add BC: wall_outlet {
+      Type: Dir
+      Value: 0.0
+      Impose on state variable integral: t
+      Zero out perimeter: f
+      Effective direction: (0, 0, 1)
+   }
+}
+
+Add equation: mesh {
+   Coupled: 1
+   Min iterations: 1
+   Max iterations: 5
+   Tolerance: 1e-4
+   Poisson ratio: 0.3
+
+   LS type: CG {
+      Preconditioner: FSILS
+      Tolerance: 1e-4
+   }
+
+   Output: Spatial {
+      Displacement: t
+   }
+
+   Add BC: lumen_inlet {
+      Type: Dir
+      Value: 0.0
+   }
+
+   Add BC: lumen_outlet {
+      Type: Dir
+      Value: 0.0
+   }
+}
+
