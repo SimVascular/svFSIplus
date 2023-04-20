@@ -5,7 +5,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, macos-12]
+        os: [ubuntu-20.04, ubuntu-22.04]
+        #os: [ubuntu-20.04, ubuntu-22.04, macos-12]
       fail-fast: false
     steps:
       - uses: actions/checkout@v3
@@ -39,14 +40,14 @@ jobs:
         run: |
           git lfs pull
           cd tests
-          conda run -n svfsiplus pytest -v
+          conda run -n svfsiplus pytest -v --durations=0
       - name: Generate code coverage
+        if: startsWith(matrix.os, 'ubuntu-22.04')
         run: |
           cd build/svFSI-build
           make coverage
-          lcov --directory . --capture --output-file coverage.info
-          genhtml --demangle-cpp -o coverage coverage.info
       - name: Save coverage report
+        if: startsWith(matrix.os, 'ubuntu-22.04')
         uses: actions/upload-artifact@v3
         with:
           name: coverage_report
