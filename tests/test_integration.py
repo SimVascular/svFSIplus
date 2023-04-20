@@ -69,7 +69,7 @@ def run_with_reference(folder, name_inp, name_ref, fields, t_max, n_proc=1):
         assert np.all(np.isclose(a, b, rtol=RTOL[f]))
 
 
-@pytest.mark.parametrize("mesh", ["N" + str(2**i).zfill(3) for i in range(2, 2)])
+@pytest.mark.parametrize("mesh", ["N" + str(2**i).zfill(3) for i in range(2, 3)])
 @pytest.mark.parametrize("ele", ["P1P1"])
 def test_stokes_manufactured_solution(ele, mesh):
     folder = os.path.join("cases", "stokes_manufactured_solution", ele, mesh)
@@ -79,7 +79,7 @@ def test_stokes_manufactured_solution(ele, mesh):
     name_ref = "result_" + str(t_max[ele]).zfill(3) + ".vtu"
     run_with_reference(folder, name_inp, name_ref, fields, t_max[ele])
 
-#def test_niederer_benchmark():
+def test_niederer_benchmark():
     folder = os.path.join("cases", "niederer_benchmark")
     field = ["Action_potential"]
     t_max = 30
@@ -87,7 +87,7 @@ def test_stokes_manufactured_solution(ele, mesh):
     name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
     run_with_reference(folder, name_inp, name_ref, field, t_max)
 
-#def test_diffusion_line_source():
+def test_diffusion_line_source():
     folder = os.path.join("cases", "diffusion_line_source")
     field = ["Temperature"]
     t_max = 20
