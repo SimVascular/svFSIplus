@@ -1001,7 +1001,7 @@ void dist_eq(ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, const std::
   // Distribute ECG leads parameters
   //
   cm.bcast(cm_mod, &cep_mod.ecgleads.num_leads);
-  if (com_mod.cm.idcm() != cm_mod.master) {
+  if (!cm.mas(cm_mod)) {
     cep_mod.ecgleads.x_coords.resize(cep_mod.ecgleads.num_leads);
     cep_mod.ecgleads.y_coords.resize(cep_mod.ecgleads.num_leads);
     cep_mod.ecgleads.z_coords.resize(cep_mod.ecgleads.num_leads);
@@ -1154,7 +1154,6 @@ void part_face(Simulation* simulation, mshType& lM, faceType& lFa, faceType& gFa
 
   // Broadcasting the number of nodes and elements of to slaves and
   // populating gFa to all procs
-
   if (cm.mas(cm_mod)) {
     gFa.d = lFa.d;
     gFa.eNoN = lFa.eNoN;
@@ -1162,6 +1161,7 @@ void part_face(Simulation* simulation, mshType& lM, faceType& lFa, faceType& gFa
     gFa.nEl = lFa.nEl;
     gFa.gnEl = lFa.gnEl;
     gFa.nNo = lFa.nNo;
+    gFa.qmTRI3 = lFa.qmTRI3;
 
     if (com_mod.rmsh.isReqd) {
       gFa.gebc.resize(1+gFa.eNoN, gFa.gnEl);
@@ -1171,6 +1171,7 @@ void part_face(Simulation* simulation, mshType& lM, faceType& lFa, faceType& gFa
       //ALLOCATE(gFa%gebc(0,0))
     }
   }
+  cm.bcast(cm_mod, &lFa.qmTRI3);
 
   cm.bcast(cm_mod, &gFa.d);
   cm.bcast(cm_mod, &gFa.eNoN);
@@ -1178,6 +1179,7 @@ void part_face(Simulation* simulation, mshType& lM, faceType& lFa, faceType& gFa
   cm.bcast(cm_mod, &gFa.nEl);
   cm.bcast(cm_mod, &gFa.gnEl);
   cm.bcast(cm_mod, &gFa.nNo);
+  cm.bcast(cm_mod, &gFa.qmTRI3);
 
   #ifdef debug_part_face
   dmsg << "gFa.d: " << gFa.d;
@@ -1186,6 +1188,7 @@ void part_face(Simulation* simulation, mshType& lM, faceType& lFa, faceType& gFa
   dmsg << "gFa.nEl: " << gFa.nEl;
   dmsg << "gFa.gnEl: " << gFa.gnEl;
   dmsg << "gFa.nNo: " << gFa.nNo;
+  dmsg << "gFa.qmTRI3: " << gFa.qmTRI3;
   #endif
 
   // Set face properties for the input element type.
@@ -1393,6 +1396,7 @@ void part_msh(Simulation* simulation, mshType& lM, Vector<int>& gmtl, int nP, Ve
   cm.bcast(cm_mod, lM.name);
   cm.bcast(cm_mod, &lM.nFn);
   cm.bcast(cm_mod, &lM.scF);
+  cm.bcast(cm_mod, &lM.qmTET4);
 
   // Number of fibers.
   int nFn = lM.nFn;
