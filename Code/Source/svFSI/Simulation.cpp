@@ -7,7 +7,7 @@
 #include "mpi.h"
 
 #include <iostream>
- 
+
 //------------
 // Simulation
 //------------
@@ -18,6 +18,8 @@ Simulation::Simulation()
   isReqd = false;
 
   com_mod.cm.new_cm(MPI_COMM_WORLD);
+
+  history_file_name = "histor.dat";
 }
 
 //-------------
