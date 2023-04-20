@@ -6,6 +6,7 @@
 #include <set>
 #include <sstream>
 #include <limits>
+#include <math.h>
 
 //////////////////////////////////////////////////////////
 //                   Parameters                         //
@@ -1786,6 +1787,8 @@ FaceParameters::FaceParameters()
 
   set_parameter("End_nodes_face_file_path", "", !required, end_nodes_face_file_path);
   set_parameter("Face_file_path", "", !required, face_file_path);
+
+  set_parameter("Quadrature_modifier_TRI3", (2.0/3.0), !required, quadrature_modifier_TRI3);
 }
 
 void FaceParameters::print_parameters()
@@ -1866,6 +1869,8 @@ MeshParameters::MeshParameters()
 
   set_parameter("Set_mesh_as_fibers", false, !required, set_mesh_as_fibers);
   set_parameter("Set_mesh_as_shell", false, !required, set_mesh_as_shell);
+
+  set_parameter("Quadrature_modifier_TET4", (5.0+3.0*sqrt(5.0))/20.0, !required, quadrature_modifier_TET4);
 }
 
 void MeshParameters::print_parameters()

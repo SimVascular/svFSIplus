@@ -1017,6 +1017,11 @@ void read_msh(Simulation* simulation)
     dmsg << "  scale factor: " << mesh.scF;
     #endif
 
+    mesh.qmTET4 = param->quadrature_modifier_TET4();
+    if (mesh.qmTET4 < (1.0/4.0) || mesh.qmTET4 > 1.0) {
+      throw std::runtime_error("Quadrature_modifier_TET4 must be in the range [1/4, 1].");
+    }
+
     // Read mesh nodal coordinates and element connectivity.
     load_msh::read_sv(simulation, mesh, param);
 

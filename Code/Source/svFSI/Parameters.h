@@ -1086,6 +1086,8 @@ class FaceParameters : public ParameterLists
     Parameter<std::string> face_file_path;
     Parameter<std::string> name;
 
+    Parameter<double> quadrature_modifier_TRI3;
+
     using FP = FaceParameters*; 
     using CS = const std::string&; 
     using SetParamMapType = std::map<const std::string, std::function<void(FP, CS)>>;
@@ -1134,6 +1136,8 @@ class MeshParameters : public ParameterLists
 
     Parameter<bool> set_mesh_as_fibers;
     Parameter<bool> set_mesh_as_shell;
+
+    Parameter<double> quadrature_modifier_TET4;
 };
 
 //------------
