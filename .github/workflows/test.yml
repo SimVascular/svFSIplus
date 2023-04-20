@@ -44,12 +44,10 @@ jobs:
         run: |
           cd build/svFSI-build
           make coverage
-      - name: Report code coverage
-        uses: zgosalvez/github-actions-report-lcov@v3
+          lcov --directory . --capture --output-file coverage.info
+          genhtml --demangle-cpp -o coverage coverage.info
+      - name: Save coverage report
+        uses: actions/upload-artifact@v3
         with:
-          working-directory: build/svFSI-build
-          coverage-files: coverage.info
-          artifact-name: code-coverage-report
-          minimum-coverage: 0
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          update-comment: false
+          name: coverage_report
+          path: build/svFSI-build/coverage
