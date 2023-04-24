@@ -1498,6 +1498,9 @@ void part_msh(Simulation* simulation, mshType& lM, Vector<int>& gmtl, int nP, Ve
   }
 
   lM.eDist[num_proc] = lM.gnEl;
+  #ifdef dbg_part_msh
+  dmsg << "lM.eDist: " << lM.eDist;
+  #endif
 
   for (int i = 0; i < num_proc; i++) { 
     disp[i] = lM.eDist[i] * eNoN;
@@ -1546,7 +1549,10 @@ void part_msh(Simulation* simulation, mshType& lM, Vector<int>& gmtl, int nP, Ve
   if (lM.eType == consts::ElementType::NRB) {
     part = cm.id();
 
-  } else if (flag && !com_mod.resetSim) {
+  // [TODO:DaveP] Reading partition data does not seem to work.
+  //
+  } else if (false) { 
+  //} else if (flag && !com_mod.resetSim) {
     #ifdef dbg_part_msh
     dmsg << " " << " ";
     dmsg << "Reading partition data from file " << fTmp;
@@ -1558,7 +1564,15 @@ void part_msh(Simulation* simulation, mshType& lM, Vector<int>& gmtl, int nP, Ve
     MPI_File_close(&fid);
     #ifdef dbg_part_msh
     dmsg << "  nEl: " << nEl;
+    dmsg << "  idisp: " << idisp;
+    //if (cm.mas(cm_mod)) {
+    //dmsg << "  part = " << part;
+    //}
+    dmsg << "---------- " << "---------- ";
     #endif
+
+    //Vector<int>::write_enabled = true;
+    //part.write("part_read_"+dmsg.prefix());
 
   // Scattering the lM.gIEN array to all processors.
   //
@@ -1609,21 +1623,31 @@ void part_msh(Simulation* simulation, mshType& lM, Vector<int>& gmtl, int nP, Ve
 
     if (com_mod.rmsh.isReqd) {
       #ifdef dbg_part_msh
-      dmsg << "Writing partition data to file" << fTmp;
+      dmsg << "---------------------------" << "------ ";
+      dmsg << "Writing partition data to file: " << fTmp;
       dmsg << "  nEl: " << nEl;
+      dmsg << "  idisp: " << idisp;
+      dmsg << "  idisp: " << idisp;
+      //if (cm.mas(cm_mod)) {
+      //dmsg << "  part = " << part;
+      //}
+      dmsg << "---------------------------" << "------ ";
       #endif
       MPI_File fid;
       MPI_File_open(cm.com(), fTmp.c_str(), MPI_MODE_WRONLY + MPI_MODE_CREATE, MPI_INFO_NULL, &fid);
       MPI_File_set_view(fid, idisp, cm_mod::mpint, cm_mod::mpint, "native", MPI_INFO_NULL);
       MPI_File_write(fid, part.data(), nEl, cm_mod::mpint, MPI_STATUS_IGNORE);
       MPI_File_close(&fid);
+
+      //Vector<int>::write_enabled = true;
+      //part.write("part_write_"+dmsg.prefix());
     }
   }
 
-  Array<int>::write_enabled = true;
-  Vector<int>::write_enabled = true;
-  part.write("part_"+dmsg.prefix());
-  exit(0);
+  //Array<int>::write_enabled = true;
+  //Vector<int>::write_enabled = true;
+  //part.write("part_"+dmsg.prefix());
+  //exit(0);
 
   for (int i = 0; i < num_proc; i++) { 
     disp[i] = lM.eDist[i];
@@ -1664,11 +1688,15 @@ void part_msh(Simulation* simulation, mshType& lM, Vector<int>& gmtl, int nP, Ve
   bool fnFlag = false;
 
   #ifdef dbg_part_msh
+  dmsg << "sCount: " << sCount;
+  dmsg << "disp: " << disp;
+  //dmsg << "gPart: " << gPart;
   dmsg << " " << " ";
   dmsg << "Making the lM%IEN array " << " ...";
   #endif
  
   if (cm.mas(cm_mod)) {
+    gPart.write("gPart"+dmsg.prefix());
     sCount = 0;
     for (int e = 0; e < lM.gnEl; e++) {
       sCount[gPart[e]] = sCount[gPart[e]] + 1;
@@ -1817,7 +1845,6 @@ void part_msh(Simulation* simulation, mshType& lM, Vector<int>& gmtl, int nP, Ve
   #ifdef dbg_part_msh
   dmsg << " " << " ";
   dmsg << "Constructing the initial global to local pointer " << " ...";
-  dmsg << "lM.gnNo: " << lM.gnNo;
   #endif
 
   Vector<int> gtlPtr(lM.gnNo);
@@ -1835,9 +1862,6 @@ void part_msh(Simulation* simulation, mshType& lM, Vector<int>& gmtl, int nP, Ve
     }
   }
 
-  #ifdef dbg_part_msh
-  dmsg << "nNo: " << nNo;
-  #endif
   lM.nNo = nNo;
   if (cm.slv(cm_mod)) {
     lM.gN.resize(lM.gnNo);
@@ -1853,6 +1877,13 @@ void part_msh(Simulation* simulation, mshType& lM, Vector<int>& gmtl, int nP, Ve
       part[a] = lM.gN[Ac];
     }
   }
+
+  #ifdef dbg_part_msh
+  dmsg << "----------" << "----------";
+  dmsg << "lM.nNo: " << lM.nNo;
+  dmsg << "lM.gnNo: " << lM.gnNo;
+  dmsg << "lM.nEl: " << lM.nEl;
+  #endif
 
   // mapping and converting other parameters.
   // I will use an upper bound for gPart as a container for ltg,

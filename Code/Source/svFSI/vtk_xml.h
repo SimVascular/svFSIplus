@@ -8,6 +8,8 @@
 
 namespace vtk_xml {
 
+void do_test();
+
 void int_msh_data(const ComMod& com_mod, const CmMod& cm_mod, const mshType& lM, dataType& d, const int outDof, const int nOute);
 
 void read_vtp(const std::string& file_name, faceType& face);
@@ -23,6 +25,8 @@ void read_vtus(Simulation* simulation, Array<double>& lA, Array<double>& lY, Arr
 void write_vtp(ComMod& com_mod, faceType& lFa, const std::string& fName);
 
 void write_vtu(ComMod& com_mod, mshType& lM, const std::string& fName);
+
+void write_vtu_debug(ComMod& com_mod, mshType& lM, const std::string& fName);
 
 void write_vtus(Simulation* simulation, const Array<double>& lA, const Array<double>& lY, const Array<double>& lD, const bool lAve);
 

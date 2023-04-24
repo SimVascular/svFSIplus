@@ -209,7 +209,9 @@ global(const ComMod& com_mod, const CmMod& cm_mod, const mshType& lM, const Arra
   #ifdef debug_global_rv 
   dmsg << "m: " << m;
   dmsg << "U.ncols(): " << U.ncols();
+  dmsg << "lM.nNo: " << lM.nNo;
   dmsg << "lM.gnNo: " << lM.gnNo;
+  dmsg << "lM.nEl: " << lM.nEl;
   #endif 
 
   if (U.ncols() != lM.nNo) {
@@ -246,11 +248,23 @@ global(const ComMod& com_mod, const CmMod& cm_mod, const mshType& lM, const Arra
     }
   }
 
+#if 0
+  Vector<int>::write_enabled = true;
+  Array<int>::write_enabled = true;
+  ienU.write("ienU_"+dmsg.prefix());
+  gienU.write("gienU_"+dmsg.prefix());
+#endif
+
   int a = lM.eNoN*m;
 
   for (int i = 0; i < cm.np(); i++) {
     disp(i) = lM.eDist(i)*a;
     sCount(i) = lM.eDist(i+1)*a - disp(i);
+    #ifdef debug_global_rv 
+    dmsg << ">>> i: " << i;
+    dmsg << "  disp(i): " << disp(i);
+    dmsg << "  sCount(i): " << sCount(i);
+    #endif
   }
 
   MPI_Gatherv(ienU.data(), lM.nEl*a, cm_mod::mpreal, gienU.data(), sCount.data(), disp.data(), cm_mod::mpreal, cm_mod.master, cm.com());
@@ -268,6 +282,9 @@ global(const ComMod& com_mod, const CmMod& cm_mod, const mshType& lM, const Arra
       }
     }
   }
+
+  //lM.IEN.write("lM_IEN_"+dmsg.prefix());
+  //lM.lN.write("lM_lN_"+dmsg.prefix());
 
   return result;
 }

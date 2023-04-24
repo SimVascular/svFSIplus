@@ -142,7 +142,7 @@ void dist_msh_srf(ComMod& com_mod, ChnlMod& chnl_mod, faceType& lFa, mshType& lM
       //lM.fa(iFa).IEN(:,e) = lFa.IEN(:,eoff+e);
     }
 
-#if 1
+#if 0
     Array<int>::write_enabled = true;
     Vector<int>::write_enabled = true;
     lM.fa[iFa].IEN.write("lM_fa_ien_" + lM.fa[iFa].name);
@@ -1368,10 +1368,10 @@ void interp(ComMod& com_mod, CmMod& cm_mod, const int lDof, const int iM, mshTyp
 
     #ifdef debug_interp
     dmsg << "i: " << i;
-    Array<double>::write_enabled = true;
-    Vector<double>::write_enabled = true;
-    tgD.write("tgD");
-    gvec.write("gvec");
+    //Array<double>::write_enabled = true;
+    //Vector<double>::write_enabled = true;
+    //tgD.write("tgD");
+    //gvec.write("gvec");
     //exit(0);
     #endif
   }
@@ -1502,10 +1502,10 @@ void remesher_3d(ComMod& com_mod, CmMod& cm_mod, int iM, faceType& lFa, mshType&
   dmsg << "lFa.nNo: " << lFa.nNo; 
   dmsg << "lFa.nEl: " << lFa.nEl; 
   int iOK = 0;
-  Array<double>::write_enabled = true;
-  Array<int>::write_enabled = true;
-  lFa.x.write("lFa_x");
-  lFa.IEN.write("lFa_ien");
+  //Array<double>::write_enabled = true;
+  //Array<int>::write_enabled = true;
+  //lFa.x.write("lFa_x");
+  //lFa.IEN.write("lFa_ien");
   //lFa.x.write("lFa_x_" + std::to_string(rmsh.rTS));
   //lFa.IEN.write("lFa_ien_" + std::to_string(rmsh.rTS));
   //lFa.x.read("lFa_x_" +  std::to_string(rmsh.rTS) + "_fm.bin");
@@ -1513,23 +1513,33 @@ void remesher_3d(ComMod& com_mod, CmMod& cm_mod, int iM, faceType& lFa, mshType&
   // 1st: [235, 236, 233] #0
   // 2nd: [235, 236, 238] #0
 
+#if 0
   dmsg << "  " << " ";
   dmsg << "---- tri 1 ---- " << " "; 
-  dmsg << "235: " << lFa.x.col(235); 
-  dmsg << "236: " << lFa.x.col(236); 
-  dmsg << "233: " << lFa.x.col(233); 
+  dmsg << "236: " << lFa.x.col(235); 
+  dmsg << "237: " << lFa.x.col(236); 
+  dmsg << "234: " << lFa.x.col(233); 
 
   dmsg << "  " << " ";
   dmsg << "---- tri 2 ---- " << " "; 
-  dmsg << "235: " << lFa.x.col(235); 
-  dmsg << "236: " << lFa.x.col(236); 
-  dmsg << "238: " << lFa.x.col(238); 
+  dmsg << "236: " << lFa.x.col(235); 
+  dmsg << "237: " << lFa.x.col(236); 
+  dmsg << "239: " << lFa.x.col(238); 
+#endif
 
   if (rmsh.method == MeshGeneratorType::RMSH_TETGEN) {
+
+    //Array<double>::write_enabled = true;
+    //Array<int>::write_enabled = true;
+    //lFa.x.write("lFa_x");
+    //lFa.IEN.write("lFa_ien");
+    //vtk_xml::write_vtp(com_mod, lFa, "surf_" + std::to_string(cm.idcm()) + ".vtp");
+
      remesh3d_tetgen(lFa.nNo, lFa.nEl, lFa.x.data(), lFa.IEN.data(), rparams, &iOK);
      //CALL remesh3d_tetgen(lFa.nNo, lFa.nEl, lFa.x, lFa.IEN, rparams, iOK)
      //if (iOK .LT. 0)
      //2  err = "Fatal! TetGen returned with error. Check log"
+
   } else { 
      //err = "Unknown remesher choice."
   }
@@ -1678,7 +1688,10 @@ void remesher_3d(ComMod& com_mod, CmMod& cm_mod, int iM, faceType& lFa, mshType&
   CLOSE(fid, STATUS='DELETE')
   */
 
+  // Re-orient element connectivity.
   nn::select_ele(com_mod, lM);
+
+  //vtk_xml::write_vtu(com_mod, lM, "remesher_3d_remesh.vtu");
 }
 
 //----------------
@@ -1768,13 +1781,16 @@ void remesh_restart(Simulation* simulation)
 
   dmsg << "rmsh.A0.nrows: " << rmsh.A0.nrows();
   dmsg << "        ncols: " << rmsh.A0.ncols();
+  dmsg << "               " << " ";
+  dmsg << "com_mod.x nrows: " << x.nrows();
+  dmsg << "          ncols: " << x.ncols();
 
-#if 1
+#if 0
   Array<double>::write_enabled = true;
-  rmsh.A0.write("A0_"+dmsg.prefix());
-  rmsh.Y0.write("Y0_"+dmsg.prefix());
-  rmsh.D0.write("D0_"+dmsg.prefix());
-  x.write("x_"+dmsg.prefix());
+  rmsh.A0.write("A0_"+dmsg.prefix()+std::to_string(rmsh.rTS));
+  rmsh.Y0.write("Y0_"+dmsg.prefix()+std::to_string(rmsh.rTS));
+  rmsh.D0.write("D0_"+dmsg.prefix()+std::to_string(rmsh.rTS));
+  x.write("x_"+dmsg.prefix()+std::to_string(rmsh.rTS));
 #endif
 
   #ifdef debug_remesh_restart 
@@ -1793,6 +1809,7 @@ void remesh_restart(Simulation* simulation)
     dmsg << "rmsh.flag: " << rmsh.flag[iM];
     #endif
 
+    //vtk_xml::write_vtu_debug(com_mod, msh, "msh_" + std::to_string(cm.idcm()) + ".vtu");
     //MPI_Barrier(cm.com());
     //exit(0);
 
@@ -1811,7 +1828,7 @@ void remesh_restart(Simulation* simulation)
       for (int a = 0; a < msh.nNo; a++) {
         int Ac = msh.gN(a);
         for (int i = 0; i < nsd; i++) {
-          tempX(i,a) = x(i,Ac) + rmsh.D0(i+nsd+1);
+          tempX(i,a) = x(i,Ac) + rmsh.D0(i+nsd+1, Ac);
         }
         //tempX(:,a) = x(:,Ac) + rmsh.D0(nsd+2:2*nsd+1,Ac)
    
@@ -1825,12 +1842,12 @@ void remesh_restart(Simulation* simulation)
         //gD(2*tDof+1:3*tDof,a) = rmsh.D0(:,Ac)
       }
 
-      Array<double>::write_enabled = true;
-      tempX.write("tempX_"+dmsg.prefix());
-      gD.write("gD_"+dmsg.prefix());
+      //Array<double>::write_enabled = true;
+      //tempX.write("tempX_"+dmsg.prefix());
+      //gD.write("gD_"+dmsg.prefix());
 
-      Vector<int>::write_enabled = true;
-      msh.gN.write("msh_gN_"+dmsg.prefix());
+      //Vector<int>::write_enabled = true;
+      //msh.gN.write("msh_gN_"+dmsg.prefix());
 
       tMsh.nFa = 1;
       tMsh.fa.resize(tMsh.nFa);
@@ -1852,10 +1869,6 @@ void remesh_restart(Simulation* simulation)
       //gX = GLOBAL(msh(iM), tempX);
       //DEALLOCATE(tempX);
 
-      Array<double>::write_enabled = true;
-      gX.write("gX_"+dmsg.prefix());
-      //exit(0);
-
       if (cm.mas(cm_mod)) {
         tMsh.gIEN.resize(tMsh.eNoN,tMsh.gnEl);
         //ALLOCATE(tMsh.gIEN(tMsh.eNoN,tMsh.gnEl))
@@ -1873,8 +1886,13 @@ void remesh_restart(Simulation* simulation)
       //CALL INTMSHSRF(msh(iM), tMsh.fa(1))
 
       if (cm.mas(cm_mod)) {
-        Vector<int>::write_enabled = true;
-        tMsh.fa[0].gN.write("gN_"+dmsg.prefix());
+        dmsg << "#### tMsh.fa[0].nNo: " << tMsh.fa[0].nNo;
+
+        //Vector<int>::write_enabled = true;
+        //tMsh.fa[0].gN.write("gN_"+dmsg.prefix());
+
+        //Array<double>::write_enabled = true;
+        //gX.write("gX_"+dmsg.prefix());
 
         tMsh.fa[0].x.resize(nsd,tMsh.fa[0].nNo);
         //ALLOCATE(tMsh.fa(1).x(nsd,tMsh.fa(1).nNo))
@@ -1883,14 +1901,10 @@ void remesh_restart(Simulation* simulation)
           for (int i = 0; i < nsd; i++) {
             tMsh.fa[0].x(i,a) = gX(i,Ac);
           }
-          //tMsh.fa(1).x(:,a) = gX(:,Ac)
-
-          if (a >= 232 && a <= 233) {
-            dmsg << ">>> a: " << a+1;
-            dmsg << "  Ac: " << Ac+1;
-            dmsg << "  tMsh.fa[0].x(:,a): " << tMsh.fa[0].x.col(a);
-          }
         }
+
+        //Array<double>::write_enabled = true;
+        //tMsh.fa[0].x.write("fa_x");
 
         if (nsd == 2) {
           //err = "Remesher not yet developed for 2D objects"
@@ -1899,7 +1913,6 @@ void remesh_restart(Simulation* simulation)
           //CALL REMESHER_3D(iM, tMsh.fa(1), tMsh)
         }
 
-        //exit(0);
 
         gnD.resize(lDof,tMsh.gnNo);
         //ALLOCATE(gnD(lDof,tMsh.gnNo))
@@ -2015,6 +2028,7 @@ void remesh_restart(Simulation* simulation)
 
         for (int i = 0; i < nsd; i++) {
           for (int j = 0; j < tMsh.gnNo; j++) {
+            // [TODO:DaveP] gnD is wrong
             gtX(i,j+gtnNo) = tMsh.x(i,j) - gnD(i+2*tDof+nsd+1, j);
             if (j == 0) {
               dmsg << " " <<  "";
@@ -2071,7 +2085,6 @@ void remesh_restart(Simulation* simulation)
         sTmp = chnl_mod.appPath + "/" + ".remesh_tmp.dir";
         fTmp = sTmp + "/" + msh.name +  "_" + std::to_string(rmsh.rTS) + "_cpp.vtu";
         //msh.gIEN -= 1;  // For 1-based Fortran ?
-
         dmsg << "write_vtu to " << fTmp;
         vtk_xml::write_vtu(com_mod, msh, fTmp);
 
@@ -2558,7 +2571,7 @@ void set_face_ebc(ComMod& com_mod, CmMod& cm_mod, faceType& lFa, mshType& lM)
     }
 
     double Jac = all_fun::jacobian(com_mod, nsd, lM.eNoN, xl, lM.Nx.rslice(0));
-    std::cout << "[set_face_ebc] e Jac: " << e << "  " << Jac << std::endl;
+    //std::cout << "[set_face_ebc] e Jac: " << e << "  " << Jac << std::endl;
 
     if (Jac < 0.0) {
       throw std::runtime_error("[set_face_ebc] Remeshing didn't improve mesh quality.");

@@ -15,7 +15,7 @@
 
 // If set then check Array indexes.
 //
-#define Array_check_enabled
+//#define Array_check_enabled
 
 //-------
 // Array 
