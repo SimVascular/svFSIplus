@@ -35,7 +35,7 @@ void distribute(Simulation* simulation)
   auto& com_mod = simulation->com_mod;
   auto& cm = com_mod.cm;
 
-  #define n_debug_distribute
+  #define debug_distribute
   #ifdef debug_distribute
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
@@ -102,8 +102,9 @@ void distribute(Simulation* simulation)
     dmsg << "---------- i " << i;
     dmsg << "msh[i].name: " << com_mod.msh[i].name;
     dmsg << "msh[i].gnNo: " << com_mod.msh[i].gnNo;
-    //dmsg << "msh[i].nNo: " << com_mod.msh[i].nNo;
-    //dmsg << "msh[i].msh.nEl: " << com_mod.msh[i].nEl;
+    dmsg << "com_mod.gtnNo: " << com_mod.gtnNo;
+    dmsg << "msh[i].nNo: " << com_mod.msh[i].nNo;
+    dmsg << "msh[i].msh.nEl: " << com_mod.msh[i].nEl;
     dmsg << "wrk[i]: "  << wrk[i];
     #endif
   }
@@ -115,9 +116,13 @@ void distribute(Simulation* simulation)
 
   #ifdef debug_distribute
   dmsg << " "  << " ";
+  dmsg << "Split jobs .. "  << " ";
   dmsg << "wrk: "  << wrk;
   dmsg << "wgt: "  << wgt;
   #endif
+
+  //MPI_Barrier(cm.com());
+  //exit(0);
 
   // First partitioning the meshes
   // gmtl:  gtnNo --> tnNo
@@ -139,18 +144,23 @@ void distribute(Simulation* simulation)
   Vector<int> gmtl(com_mod.gtnNo);
   Vector<float> iWgt(num_proc); 
 
-  for (int iM = 0; iM < nMsh; iM++) {
   #ifdef debug_distribute
-    dmsg << "Partitioning mesh: " << iM;
+  dmsg << "          " << " ";
+  dmsg << "wgt: " << wgt;
   #endif
+
+  for (int iM = 0; iM < nMsh; iM++) {
+    #ifdef debug_distribute
+    dmsg << "          " << " ";
+    dmsg << "Partitioning mesh: " << iM;
+    #endif
     auto sum = wgt.sum_row(iM);
     for (int i = 0; i < num_proc; i++) {
       iWgt[i] = wgt(iM,i) / sum;
-  #ifdef debug_distribute
-      dmsg << "wgt[iM,i]: " << wgt(iM,i);
-      dmsg << "iWgt[i]: " << iWgt[i];
-  #endif
     }
+    #ifdef debug_distribute
+    dmsg << "iWgt: " << iWgt;
+    #endif
     part_msh(simulation, com_mod.msh[iM], gmtl, num_proc, iWgt);
   }
 
@@ -1499,6 +1509,7 @@ void part_msh(Simulation* simulation, mshType& lM, Vector<int>& gmtl, int nP, Ve
 
   lM.eDist[num_proc] = lM.gnEl;
   #ifdef dbg_part_msh
+  dmsg << "wgt: " << wgt; 
   dmsg << "lM.eDist: " << lM.eDist;
   #endif
 
@@ -1845,6 +1856,7 @@ void part_msh(Simulation* simulation, mshType& lM, Vector<int>& gmtl, int nP, Ve
   #ifdef dbg_part_msh
   dmsg << " " << " ";
   dmsg << "Constructing the initial global to local pointer " << " ...";
+  dmsg << "lM.gnNo: " << lM.gnNo;
   #endif
 
   Vector<int> gtlPtr(lM.gnNo);
@@ -1861,6 +1873,10 @@ void part_msh(Simulation* simulation, mshType& lM, Vector<int>& gmtl, int nP, Ve
       lM.IEN(a,e) = gtlPtr[Ac];
     }
   }
+
+  #ifdef dbg_part_msh
+  dmsg << "nNo: " << nNo;
+  #endif
 
   lM.nNo = nNo;
   if (cm.slv(cm_mod)) {

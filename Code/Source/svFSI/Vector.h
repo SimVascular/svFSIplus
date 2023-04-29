@@ -9,7 +9,7 @@
 
 std::string build_file_prefix(const std::string& label);
 
-#define Vector_check_enabled
+//#define Vector_check_enabled
 
 //-------
 // Vector 
@@ -488,11 +488,21 @@ class Vector
 
     T min() const
     {
+      /*
+      if (size_ == 0) {
+        return std::numeric_limits<T>::max();
+      }
+      */
       return *std::min_element((*this).begin(), (*this).end());
     }
 
     T max() const
     {
+      /*
+      if (size_ == 0) {
+        return -std::numeric_limits<T>::max();
+      }
+      */
       return *std::max_element((*this).begin(), (*this).end());
     }
 

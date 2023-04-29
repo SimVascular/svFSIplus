@@ -56,7 +56,7 @@ std::map<consts::ElementType, std::function<void(mshType&)>> check_element_conn 
 //
 void calc_elem_ar(ComMod& com_mod, const CmMod& cm_mod, mshType& lM, bool& rflag)
 {
-  #define debug_calc_elem_ar  
+  #define n_debug_calc_elem_ar  
   #ifdef debug_calc_elem_ar
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
@@ -117,7 +117,10 @@ void calc_elem_ar(ComMod& com_mod, const CmMod& cm_mod, mshType& lM, bool& rflag
     }
   } 
 
-  double maxAR = AsR.max();
+  double maxAR = -std::numeric_limits<double>::max();
+  if (AsR.size() != 0) {
+    maxAR = AsR.max();
+  }
   maxAR = com_mod.cm.reduce(cm_mod, maxAR, MPI_MAX);
   bins = com_mod.cm.reduce(cm_mod, bins);
   #ifdef debug_calc_elem_ar
@@ -156,11 +159,17 @@ void calc_elem_jac(ComMod& com_mod, const CmMod& cm_mod, mshType& lM, bool& rfla
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
   dmsg << "lM.nEl: " << lM.nEl;
+  dmsg << "lM.eNoN: " << lM.eNoN;
+  dmsg << "lM.Nx.nrows: " << lM.Nx.nrows();
+  dmsg << "lM.Nx.cols: " << lM.Nx.ncols();
+  dmsg << "lM.Nx.slices: " << lM.Nx.nslices();
   #endif
   using namespace consts;
   const int nsd = com_mod.nsd;
   rflag = false; 
 
+  // Careful here, lM.nEl can be 0.
+  //
   Vector<double> Jac(lM.nEl);
   Array<double> xl(nsd,lM.eNoN);
   Array<double> dol(nsd,lM.eNoN);
@@ -188,25 +197,48 @@ void calc_elem_jac(ComMod& com_mod, const CmMod& cm_mod, mshType& lM, bool& rfla
       xl = xl + dol;
     }
 
-    //dmsg << "Comp jac ... " << 1;
-    Jac(e) = all_fun::jacobian(com_mod, nsd, lM.eNoN, xl, lM.Nx.slice(0));
+    if (Jac.size() != 0) {
+      //dmsg << "Comp jac ... " << 1;
+      Jac(e) = all_fun::jacobian(com_mod, nsd, lM.eNoN, xl, lM.Nx.slice(0));
 
-    if (Jac(e) < 0.0) {
-      dmsg << "e Jac(e) " + std::to_string(e) + ": " << Jac(e);
-      cnt = cnt + 1;
-      if (cPhys != Equation_fluid) {
-        throw std::runtime_error("[calc_elem_jac] Negative Jacobian in non-fluid domain.");
+      if (Jac(e) < 0.0) {
+        #ifdef debug_calc_elem_jac 
+        dmsg << "e Jac(e) " + std::to_string(e) + ": " << Jac(e);
+        #endif
+        cnt = cnt + 1;
+        if (cPhys != Equation_fluid) {
+          throw std::runtime_error("[calc_elem_jac] Negative Jacobian in non-fluid domain.");
+        }
       }
-    }
+    } 
   } 
 
-  double maxJ = Jac.abs().max();
-  maxJ = com_mod.cm.reduce(cm_mod, maxJ, MPI_MAX);
+  double maxJ = -std::numeric_limits<double>::max();
+  if (Jac.size() != 0) {
+    maxJ = Jac.abs().max();
+  }
+  #ifdef debug_calc_elem_jac 
   dmsg << "maxJ: " << maxJ;
-  Jac = Jac / std::abs(maxJ);
+  maxJ = com_mod.cm.reduce(cm_mod, maxJ, MPI_MAX);
+  #endif
 
-  double minJ = Jac.min();
+  #ifdef debug_calc_elem_jac 
+  dmsg << "reduce maxJ: " << maxJ;
+  #endif
+  double minJ = std::numeric_limits<double>::max();
+  if (Jac.size() != 0) {
+    Jac = Jac / std::abs(maxJ);
+    minJ = Jac.min();
+  }
+  #ifdef debug_calc_elem_jac 
   dmsg << "minJ: " << minJ;
+  #endif
+
+  minJ = com_mod.cm.reduce(cm_mod, minJ, MPI_MIN);
+  #ifdef debug_calc_elem_jac 
+  dmsg << "reduce minJ: " << minJ;
+  #endif
+
   cnt = com_mod.cm.reduce(cm_mod, cnt);
   double tmp = 100.0 * static_cast<double>(cnt) / static_cast<double>(lM.gnEl);
 
@@ -227,13 +259,15 @@ void calc_elem_jac(ComMod& com_mod, const CmMod& cm_mod, mshType& lM, bool& rfla
     std = "    Min normalized Jacobian <"//minJ//">"
     std = "    No. of Elements with Jac < 0: "//cnt// 2  " ("//tmp//".)"
     */
-    dmsg << "Mesh is DISTORTED (Min. Jacobian < 0) at time " << com_mod.cTS;
+    //dmsg << "Mesh is DISTORTED (Min. Jacobian < 0) at time " << com_mod.cTS;
 
     if (!com_mod.rmsh.isReqd) {
       throw std::runtime_error("[calc_elem_jac] Unexpected behavior! Mesh is DISTORTED.");
     }
   }
+  #ifdef debug_calc_elem_jac 
   dmsg << "Done " << "";
+  #endif
 }
 
 //----------------
@@ -243,7 +277,7 @@ void calc_elem_jac(ComMod& com_mod, const CmMod& cm_mod, mshType& lM, bool& rfla
 //
 void calc_elem_skew(ComMod& com_mod, const CmMod& cm_mod, mshType& lM, bool& rflag)
 {
-  #define debug_calc_elem_skew
+  #define n_debug_calc_elem_skew
   #ifdef debug_calc_elem_skew
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
@@ -296,9 +330,14 @@ void calc_elem_skew(ComMod& com_mod, const CmMod& cm_mod, mshType& lM, bool& rfl
     } 
   } 
 
-  double maxSk = Skw.max();
+  double maxSk = -std::numeric_limits<double>::max();
+  if (Skw.size() != 0) {
+    maxSk = Skw.max();
+  }
   maxSk = com_mod.cm.reduce(cm_mod, maxSk, MPI_MAX);
+  #ifdef debug_calc_elem_skew
   dmsg << "maxSk: " << maxSk;
+  #endif
   bins = com_mod.cm.reduce(cm_mod, bins);
 
   std::array<double,5> tmp;
@@ -319,7 +358,9 @@ void calc_elem_skew(ComMod& com_mod, const CmMod& cm_mod, mshType& lM, bool& rfl
     //std = "    Max Skewness <"//maxSk//">"
   }
 
+  #ifdef debug_calc_elem_skew
   dmsg << "Done" << "";
+  #endif
 }
 
 //-----------------
@@ -356,6 +397,7 @@ void calc_mesh_props(ComMod& com_mod, const CmMod& cm_mod, const int nMesh, std:
     //rmsh.flag[iM] = true;
   }
 
+
   if (rmsh.isReqd && std::count(rmsh.flag.begin(), rmsh.flag.end(), true) != rmsh.flag.size()) {
     if (com_mod.cTS == rmsh.fTS) {
       rmsh.fTS = rmsh.fTS + rmsh.freq;
@@ -375,6 +417,7 @@ void calc_mesh_props(ComMod& com_mod, const CmMod& cm_mod, const int nMesh, std:
     }
   }
 
+
   Array<bool> gFlag(nMesh, com_mod.cm.np());
 
   // The bool vector rmsh.flag does not have a data()
@@ -385,7 +428,8 @@ void calc_mesh_props(ComMod& com_mod, const CmMod& cm_mod, const int nMesh, std:
     rmsh_flag[i] = rmsh.flag[i];
   }
 
-  MPI_Allgather(rmsh_flag, nMesh, cm_mod::mpint, gFlag.data(), nMesh, cm_mod::mpint, com_mod.cm.com());
+  MPI_Allgather(rmsh_flag, nMesh, cm_mod::mplog, gFlag.data(), nMesh, cm_mod::mplog, com_mod.cm.com());
+  //MPI_Allgather(rmsh_flag, nMesh, cm_mod::mpint, gFlag.data(), nMesh, cm_mod::mpint, com_mod.cm.com());
 
   delete[] rmsh_flag;
 

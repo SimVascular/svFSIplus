@@ -1232,12 +1232,13 @@ double skewness(ComMod& com_mod, const int nDim, const int eNoN, const Array<dou
 //
 void split_jobs(int tid, int m, int n, Array<double>& A, Vector<double>& b)
 {
-  #define ndebug_split_jobs
+  #define debug_split_jobs
   #ifdef debug_split_jobs
-  DebugMsg dmsg(__func__, com_mod.cm.idcm());
+  DebugMsg dmsg(__func__, tid);
   dmsg.banner();
   dmsg << "m: " << m;
   dmsg << "n: " << n;
+  dmsg << "b: " << b;
   #endif
 
   if ((m <= 0) || (n <= 0)) {
@@ -1248,7 +1249,7 @@ void split_jobs(int tid, int m, int n, Array<double>& A, Vector<double>& b)
   //
   if (n == 1) {
     #ifdef debug_split_jobs
-    dmsg << "n == 1  ";
+    dmsg << "n == 1  " << " ";
     #endif
     int j = 0;
     for (int i = 0; i < m; i++) {
@@ -1264,13 +1265,13 @@ void split_jobs(int tid, int m, int n, Array<double>& A, Vector<double>& b)
   //
   if (m == 1) {
     #ifdef debug_split_jobs
-    dmsg << "m == 1  ";
+    dmsg << "m == 1  " << " ";
     #endif
     int i = 0;
     for (int j = 0; j < n; j++) {
       A(i,j) = b[i] / static_cast<double>(n); 
       #ifdef debug_split_jobs
-      dmsg << "m=1 A(0,j): " << A(i,j);
+      dmsg << "m=1 A(i,j): " << A(i,j);
       #endif
     }
     return;
@@ -1282,12 +1283,6 @@ void split_jobs(int tid, int m, int n, Array<double>& A, Vector<double>& b)
   int nr  = n - nl;
 
   // This is the total amount of work
-  #ifdef debug_split_jobs
-  dmsg << "b: ";
-  for (int i = 0; i < m; i++) {
-    dmsg << "b( " << i << "): " << b[i] ;
-  }
-  #endif
   double sb  = b.sum();
 
   // The work that suppose to be done by "l"
@@ -1316,14 +1311,14 @@ void split_jobs(int tid, int m, int n, Array<double>& A, Vector<double>& b)
   dmsg << "optsl: " << optsl;
   dmsg << "ml: " << ml;
   dmsg;
-  dmsg << "Set j ... ";
+  dmsg << "Set j ... " << " ";
   #endif
 
   int j = -1;
 
   for (int i = ml; i < m; i++) {
     #ifdef debug_split_jobs
-    dmsg << "---- i " << i << " ----";
+    dmsg << "---- i " << i;
     #endif
     if (fabs(sl + b[i] - sbl) < optsl) {
       j = i;
@@ -1364,13 +1359,24 @@ void split_jobs(int tid, int m, int n, Array<double>& A, Vector<double>& b)
       k = k + 1;
     }
   } else { 
+    dmsg << " " << " ";
+    dmsg << "Set bl ... " << " ";
+    dmsg << "b.size(): " << b.size();
     for (int i = 0; i < ml; i++) {
       bl[i] = b[i];
     }
-    for (int i = 0; i < mr; i++) {
-      br[i] = b[i+ml-1];
+    // [TODO:DaveP] bug fix
+    dmsg << "Set br ... " << " ";
+    dmsg << "mr: " << mr;
+    dmsg << "m: " << m;
+    for (int i = ml, j = 0; i < m; i++, j++) {
+      dmsg << "i: " << i;
+      dmsg << "i+ml: " << i+ml;
+      br[j] = b[i];
     }
   }
+
+  dmsg << "###### " << " ";
 
   nl = round(static_cast<double>(n) * bl.sum() / sb);
   if (nl == 0) {
@@ -1382,8 +1388,18 @@ void split_jobs(int tid, int m, int n, Array<double>& A, Vector<double>& b)
   nr = n - nl;
 
   #ifdef debug_split_jobs
+  dmsg << "  " << " ";
   dmsg << "nl: " << nl;
   dmsg << "nr: " << nr;
+  dmsg << "  " << " ";
+  dmsg << "Allocate Al: ml: " << ml;
+  dmsg << "             nl: " << nl;
+  dmsg << "             bl: " << bl;
+  dmsg << "  " << " ";
+  dmsg << "Allocate Ar: mr: " << mr;
+  dmsg << "             nr: " << nr;
+  dmsg << "             br: " << br;
+  //dmsg << "Allocate A: " << A.nrows() << " x " << A.ncols();
   #endif
 
   Array<double> Al(ml,nl); 
@@ -1392,17 +1408,12 @@ void split_jobs(int tid, int m, int n, Array<double>& A, Vector<double>& b)
   Array<double> Ar(mr,nr);
   split_jobs(tid, mr, nr, Ar, br);
 
-  #ifdef debug_split_jobs
-  dmsg << "Allocate Al: " << ml << " x " << nl;
-  dmsg << "Allocate Ar: " << mr << " x " << nr;
-  dmsg << "Allocate A: " << A.nrows() << " x " << A.ncols();
-  #endif
 
   A = 0.0;
 
   if (j != -1) {
     #ifdef debug_split_jobs
-    dmsg << "";
+    dmsg << "" << " ";
     dmsg << "set A from Al ... ml: " << ml;
     #endif
     for (int i = 0; i < ml-1; i++) {
@@ -1410,16 +1421,16 @@ void split_jobs(int tid, int m, int n, Array<double>& A, Vector<double>& b)
       A.set_row(i, Al_row);
       #ifdef debug_split_jobs
       for (int ii = 0; ii < n; ii++) {
-        dmsg << " Al set A(i, " << i << ", " << ii << "): " << A(i,ii);
+        dmsg << " Al set A(i,ii): " << A(i,ii);
       }
       #endif
     }
 
     A.set_row(j, Al.row(ml-1));
     #ifdef debug_split_jobs
-    dmsg << "----------";
+    dmsg << "----------" << " ";
     for (int ii = 0; ii < n; ii++) {
-      dmsg << " set from Al:  A(i, " << j << ", " << ii << "): " << A(j,ii);
+      dmsg << " set from Al:  A(j,ii): " << A(j,ii);
     }
     #endif
 
@@ -1432,14 +1443,33 @@ void split_jobs(int tid, int m, int n, Array<double>& A, Vector<double>& b)
       k = k + 1;
     }
   } else { 
+    // [TODO:DaveP] another bug fix
+    #ifdef debug_split_jobs
+    dmsg << "----------" << " ";
+    dmsg << "Set A from Al and Ar " << " ";
+    dmsg << "m: " << m;
+    dmsg << "ml: " << ml;
+    dmsg << "mr: " << mr;
+    #endif
     for (int i = 0; i < ml; i++) {
       for (int j = 0; j < nl; j++) {
         A(i, j) = Al(i, j);
-        A(i+ml, j+nl) = Al(i, j);
+       }
+     }
+
+    for (int i = 0; i < mr; i++) {
+      for (int j = 0; j < nr; j++) {
+        A(i+ml, j+nl) = Ar(i, j);
       }
     }
+
+    // A(1:ml,1:nl) = Al
+    // A(ml+1:m,nl+1:n) = Ar
   }
 
+  #ifdef debug_split_jobs
+  dmsg << "Returned A: " << A;
+  #endif
 }
 
 

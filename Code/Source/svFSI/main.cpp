@@ -665,6 +665,7 @@ int main(int argc, char *argv[])
       dmsg << "msh[iM].nNo: " << simulation->com_mod.msh[iM].nNo;
       dmsg << "msh[iM].gnNo: " << simulation->com_mod.msh[iM].gnNo;
       dmsg << "msh[iM].nEl: " << simulation->com_mod.msh[iM].nEl;
+      dmsg << "msh[iM].gnEl: " << simulation->com_mod.msh[iM].gnEl;
     }
 
     // Run the simulation.

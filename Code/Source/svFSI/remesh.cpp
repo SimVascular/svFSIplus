@@ -306,7 +306,7 @@ void distrn(ComMod& com_mod, CmMod& cm_mod, const int iM, mshType& lM, Array<dou
       std::cout << "[distrn] Found only " + std::to_string(b) + " nodes in pass " + std::to_string(i) + 
         " out of " + std::to_string(gnNo) + " nodes." << std::endl;
 
-      if (i > 5) {
+      if (i > 6) {
         throw std::runtime_error("[distrn] Could not distribute all nodes in " + std::to_string(i) + " passes.");
       }
     }
@@ -464,8 +464,11 @@ void get_adj_esrc(ComMod& com_mod, mshType& lM, Array<int>& kneList)
     }
   }
 
-  int maxKNE = std::max(nL.max(), 0);
-  dmsg << "maxKNE: " << maxKNE;
+  int maxKNE = 0;
+  if (nL.size() != 0) {
+    maxKNE = std::max(nL.max(), 0);
+  }
+  dmsg << "1 maxKNE: " << maxKNE;
 
   Array<int> tmpList(maxKNE, lM.nNo);
   tmpList = -1;  // Stores element IDs
@@ -522,7 +525,12 @@ void get_adj_esrc(ComMod& com_mod, mshType& lM, Array<int>& kneList)
 
     } // for e
 
-  maxKNE = std::max(nL.max(), 0);
+  maxKNE = 0;
+  if (nL.size() != 0) {
+    maxKNE = std::max(nL.max(), 0);
+  }
+  dmsg << "2 maxKNE: " << maxKNE;
+
   tmpList.resize(b,lM.nEl);
   tmpList = kneList;
   kneList.resize(maxKNE, lM.nEl);
@@ -576,7 +584,10 @@ void get_adj_ntgt(ComMod& com_mod, mshType& lM, const int nNo, const int nEl, co
     }
   }
 
-  int maxKNN = std::max(nL.max(), 0);
+  int maxKNN = 0;
+  if (nL.size() != 0) {
+    maxKNN = std::max(nL.max(), 0);
+  }
 
   Array<int> tmpList(maxKNN, nNo);
 
@@ -614,7 +625,10 @@ void get_adj_ntgt(ComMod& com_mod, mshType& lM, const int nNo, const int nEl, co
     }
   }
 
-  maxKNN = std::max(nL.max(), 0);
+  maxKNN = 0;
+  if (nL.size() != 0) {
+    maxKNN = std::max(nL.max(), 0);
+  }
   knnList.resize(maxKNN, nNo);
   knnList = -1;
 
@@ -1986,6 +2000,7 @@ void remesh_restart(Simulation* simulation)
               gtD(i,j) = tempD(i,j);
             }
           }
+          //gtD(:,1:gtnNo) = tempD(:,:)
 
           for (int i = 0; i < nsd; i++) {
             for (int j = 0; j < gtnNo; j++) {
@@ -1993,7 +2008,6 @@ void remesh_restart(Simulation* simulation)
             }
           }
           //gtX(:,1:gtnNo) = tempX(:,:)
-          //gtD(:,1:gtnNo) = tempD(:,:)
           //DEALLOCATE(tempX, tempD)
         } else {
           gtX.resize(nsd,a);
@@ -2025,24 +2039,16 @@ void remesh_restart(Simulation* simulation)
             gtD(i,j+gtnNo) = gnD(i,j);
           }
         }
+        // gtD(:,gtnNo+1:a) = gnD(:,:)
+
 
         for (int i = 0; i < nsd; i++) {
           for (int j = 0; j < tMsh.gnNo; j++) {
-            // [TODO:DaveP] gnD is wrong
             gtX(i,j+gtnNo) = tMsh.x(i,j) - gnD(i+2*tDof+nsd+1, j);
-            if (j == 0) {
-              dmsg << " " <<  "";
-              dmsg << "i+2*tDof+nsd+1: " <<  i+2*tDof+nsd+1+1;
-              dmsg << "gnD: " <<  gnD(i+2*tDof+nsd+1, j);
-              dmsg << "tMsh.x(i,j): " <<  tMsh.x(i,j);
-              dmsg << "gtX(i,j): " <<  gtX(i,j);
-            }
-            //gtD(i,j+gtnNo) = gnD(i,j);
             msh.x(i,j) = gtX(i,j+gtnNo);
           }
         }
         //gtX(: , gtnNo+1:a) = tMsh.x(:,:) - gnD(2*tDof+nsd+2:2*tDof+2*nsd+1, :)
-        //gtD(: , gtnNo+1:a) = gnD(:,:) 
         //msh(iM)%x(:,:) = gtX(:,gtnNo+1:a)
 
         //dmsg << "---------- gtX ----------" << "";
@@ -2117,7 +2123,9 @@ void remesh_restart(Simulation* simulation)
         }
         //tempX(1:nsd,a) = x(:,Ac)
 
-        for (int i = 0; i < lDof; i++) {
+        // rmsh.A0.resize(tDof,gtnNo);
+        //
+        for (int i = 0; i < tDof; i++) {
           tempD(i,a) = rmsh.A0(i,Ac);
           tempD(i+tDof,a) = rmsh.Y0(i,Ac);
           tempD(2*tDof+i,a) = rmsh.D0(i,Ac);
@@ -2134,6 +2142,7 @@ void remesh_restart(Simulation* simulation)
       } else {
         a = 0;
       }
+      dmsg << "1 a: " << a;
 
       gX.resize(nsd,a); 
       gD.resize(lDof,a);
@@ -2173,6 +2182,7 @@ void remesh_restart(Simulation* simulation)
       //CALL INTMSHSRF(msh(iM), tMsh.fa(1))
 
       if (cm.mas(cm_mod)) {
+        dmsg << "Master set tMsh.fa[0] ... " << "";
         tMsh.fa[0].x.resize(nsd, tMsh.fa[0].nNo);
         //ALLOCATE(tMsh.fa(1).x(nsd,tMsh.fa(1).nNo))
 
@@ -2185,10 +2195,12 @@ void remesh_restart(Simulation* simulation)
         }
         msh.x = gX;
 
+        dmsg << "dist_msh_srf ... " << "";
         dist_msh_srf(com_mod, chnl_mod, tMsh.fa[0], msh, 2);
         //CALL DISTMSHSRF(tMsh.fa(1), msh(iM), 2)
 
         a = gtnNo + a;
+        dmsg << "2 a: " << a;
 
         if (iM > 0) {
           //ALLOCATE(tempX(nsd,gtnNo))
@@ -2199,6 +2211,7 @@ void remesh_restart(Simulation* simulation)
           //if (ALLOCATED(gtX)) DEALLOCATE(gtX)
           //if (ALLOCATED(gtD)) DEALLOCATE(gtD)
 
+          dmsg << "gtX.resize(nsd,a) a: " << a;
           gtX.resize(nsd,a); 
           gtD.resize(lDof,a);
           //ALLOCATE(gtX(nsd,a), gtD(lDof,a))
@@ -2224,16 +2237,24 @@ void remesh_restart(Simulation* simulation)
           //ALLOCATE(gtX(nsd,a), gtD(lDof,a))
         }
 
+        dmsg << "Set gtX(i,j) " << " ...";
+        dmsg << "gtX.nrows: " << gtX.nrows();
+        dmsg << "gtX.ncols: " << gtX.ncols();
+        dmsg << "gX.nrows: " << gX.nrows();
+        dmsg << "gX.ncols: " << gX.ncols();
+        dmsg << "a: " << a;
+        dmsg << "gtnNo: " << gtnNo;
+
         for (int i = 0; i < nsd; i++) {
-          for (int j = 0; j < a; j++) {
-            gtX(i,j) = gX(i,j);
+          for (int j = 0; j < gX.ncols(); j++) {
+            gtX(i,j+gtnNo) = gX(i,j);
           }
         }
         //gtX(:,gtnNo+1:a) = gX(:,:)
 
         for (int i = 0; i < lDof; i++) {
-          for (int j = 0; j < a; j++) {
-            gtD(i,j) = gD(i,j);
+          for (int j = 0; j < gD.ncols(); j++) {
+            gtD(i,j+gtnNo) = gD(i,j);
           }
         }
         //gtD(:,gtnNo+1:a) = gD(:,:)
