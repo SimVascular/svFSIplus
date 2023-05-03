@@ -66,8 +66,7 @@ tetOptions::tetOptions () {
 void remesh3d_tetgen(const int nPoints, const int nFacets, const double* pointList, 
                      const int* facetList, const std::array<double,3>& params, int* pOK)
 {
-   std::cout << "========== remesh3d_tetgen ==========" << std::endl;
-
+   //std::cout << "========== remesh3d_tetgen ==========" << std::endl;
    tetgenio in, out;
    tetgenio::facet *f;
    tetgenio::polygon *p;
@@ -115,9 +114,9 @@ void remesh3d_tetgen(const int nPoints, const int nFacets, const double* pointLi
    options.minDihedAng = params[1];
    options.maxEdgeSize = params[2];
 
-   std::cout << "[remesh3d_tetgen] Using parameter <maxRadRatio> " << options.maxRadRatio << "\n";
-   std::cout << "[remesh3d_tetgen] Using parameter <minDihedAng> " << options.minDihedAng << "\n";
-   std::cout << "[remesh3d_tetgen] Using parameter <maxEdgeSize> " << options.maxEdgeSize << "\n\n";
+   //std::cout << "[remesh3d_tetgen] Using parameter <maxRadRatio> " << options.maxRadRatio << "\n";
+   //std::cout << "[remesh3d_tetgen] Using parameter <minDihedAng> " << options.minDihedAng << "\n";
+   //std::cout << "[remesh3d_tetgen] Using parameter <maxEdgeSize> " << options.maxEdgeSize << "\n\n";
 
    int len;
    len = sprintf(switches,"pYq%.2f/%.1fa%8.3eO%d/%d",    \

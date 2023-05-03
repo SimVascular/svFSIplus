@@ -218,10 +218,7 @@ global(const ComMod& com_mod, const CmMod& cm_mod, const mshType& lM, const Arra
     throw std::runtime_error("GLOBAL is only specified for array with columns size nNo");
   }
 
-  // [TODO:DaveP] what's going on here?
-  //
   if (cm.seq()) {
-    // ALLOCATE(GLOBALRV(m,lM.gnNo))
     return U;
   }
 
@@ -235,7 +232,6 @@ global(const ComMod& com_mod, const CmMod& cm_mod, const mshType& lM, const Arra
     gienU.resize(m*lM.eNoN, lM.gnEl); 
     result.resize(m,lM.gnNo);
    } else {
-    //ALLOCATE(gienU(0,0), GLOBALRV(0,0))
   }
 
   for (int e = 0; e < lM.nEl; e++) {
@@ -247,13 +243,6 @@ global(const ComMod& com_mod, const CmMod& cm_mod, const mshType& lM, const Arra
       }
     }
   }
-
-#if 0
-  Vector<int>::write_enabled = true;
-  Array<int>::write_enabled = true;
-  ienU.write("ienU_"+dmsg.prefix());
-  gienU.write("gienU_"+dmsg.prefix());
-#endif
 
   int a = lM.eNoN*m;
 
@@ -282,9 +271,6 @@ global(const ComMod& com_mod, const CmMod& cm_mod, const mshType& lM, const Arra
       }
     }
   }
-
-  //lM.IEN.write("lM_IEN_"+dmsg.prefix());
-  //lM.lN.write("lM_lN_"+dmsg.prefix());
 
   return result;
 }
@@ -1232,7 +1218,7 @@ double skewness(ComMod& com_mod, const int nDim, const int eNoN, const Array<dou
 //
 void split_jobs(int tid, int m, int n, Array<double>& A, Vector<double>& b)
 {
-  #define debug_split_jobs
+  #define n_debug_split_jobs
   #ifdef debug_split_jobs
   DebugMsg dmsg(__func__, tid);
   dmsg.banner();
@@ -1359,24 +1345,13 @@ void split_jobs(int tid, int m, int n, Array<double>& A, Vector<double>& b)
       k = k + 1;
     }
   } else { 
-    dmsg << " " << " ";
-    dmsg << "Set bl ... " << " ";
-    dmsg << "b.size(): " << b.size();
     for (int i = 0; i < ml; i++) {
       bl[i] = b[i];
     }
-    // [TODO:DaveP] bug fix
-    dmsg << "Set br ... " << " ";
-    dmsg << "mr: " << mr;
-    dmsg << "m: " << m;
     for (int i = ml, j = 0; i < m; i++, j++) {
-      dmsg << "i: " << i;
-      dmsg << "i+ml: " << i+ml;
       br[j] = b[i];
     }
   }
-
-  dmsg << "###### " << " ";
 
   nl = round(static_cast<double>(n) * bl.sum() / sb);
   if (nl == 0) {

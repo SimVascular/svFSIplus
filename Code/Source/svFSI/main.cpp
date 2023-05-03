@@ -623,8 +623,8 @@ int main(int argc, char *argv[])
   MPI_Init(&argc, &argv);
   MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
   MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
-  std::cout << "[svFSI] MPI rank: " << mpi_rank << std::endl;
-  std::cout << "[svFSI] MPI size: " << mpi_size << std::endl;
+  //std::cout << "[svFSI] MPI rank: " << mpi_rank << std::endl;
+  //std::cout << "[svFSI] MPI size: " << mpi_size << std::endl;
 
   // Create a Simulation object that stores all data structures for a simulation.
   //
@@ -635,7 +635,7 @@ int main(int argc, char *argv[])
   auto& cm = simulation->com_mod.cm;
   std::string file_name(argv[1]);
 
-  #define debug_main
+  #define n_debug_main
   #ifdef debug_main
   DebugMsg dmsg(__func__, cm.idcm());
   dmsg.banner();
@@ -647,11 +647,9 @@ int main(int argc, char *argv[])
 
     // Read in the solver commands .xml file.
     //
-    dmsg << "Call read_files " << " ... ";
     read_files(simulation, file_name);
 
     // Distribute data to processors.
-    dmsg << "Call distribute " << " ... ";
     distribute(simulation);
 
     // Initialize simulation data.
@@ -660,6 +658,7 @@ int main(int argc, char *argv[])
 
     initialize(simulation, init_time);
 
+    #ifdef debug_main
     for (int iM = 0; iM < simulation->com_mod.nMsh; iM++) {
       dmsg << "---------- iM " << iM;
       dmsg << "msh[iM].nNo: " << simulation->com_mod.msh[iM].nNo;
@@ -667,11 +666,14 @@ int main(int argc, char *argv[])
       dmsg << "msh[iM].nEl: " << simulation->com_mod.msh[iM].nEl;
       dmsg << "msh[iM].gnEl: " << simulation->com_mod.msh[iM].gnEl;
     }
+    #endif
 
     // Run the simulation.
     run_simulation(simulation);
 
+    #ifdef debug_main
     dmsg << "resetSim: " << simulation->com_mod.resetSim;
+    #endif
 
     // Remesh and continue the simulation.
     //
@@ -680,7 +682,9 @@ int main(int argc, char *argv[])
       dmsg << "Calling remesh_restart" << " ..."; 
       #endif
       remesh::remesh_restart(simulation);
+      #ifdef debug_main
       dmsg << "Continue the simulation " << " ";
+      #endif
     } else {
       break;
     }

@@ -303,7 +303,7 @@ void initialize(Simulation* simulation, Vector<double>& timeP)
   int nsd = com_mod.nsd;
   #include "set_equation_dof.h"
 
-  #define debug_initialize
+  #define n_debug_initialize
   #ifdef debug_initialize
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
@@ -316,8 +316,8 @@ void initialize(Simulation* simulation, Vector<double>& timeP)
 
   #ifdef debug_initialize
   dmsg << "Set time " << std::endl;
-  #endif
   dmsg << "com_mod.timeP[0]: " << com_mod.timeP[0] << std::endl;
+  #endif
   com_mod.timeP[0] = timeP[0];
   com_mod.timeP[1] = timeP[1];
   com_mod.timeP[2] = timeP[2];
@@ -330,7 +330,6 @@ void initialize(Simulation* simulation, Vector<double>& timeP)
   auto& dFlag = com_mod.dFlag;
   auto& nFacesLS = com_mod.nFacesLS;
   auto& recLn = com_mod.recLn;
-  dmsg << "tDof: " << tDof << std::endl;
 
   tDof = 0;
   dFlag = false;

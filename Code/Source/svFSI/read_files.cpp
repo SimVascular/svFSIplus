@@ -2480,7 +2480,7 @@ void read_rmsh(Simulation* simulation, EquationParameters* eq_param)
 { 
   using namespace consts;
 
-  #define debug_read_rmsh 
+  #define n_debug_read_rmsh 
   #ifdef debug_read_rmsh 
   DebugMsg dmsg(__func__, simulation->com_mod.cm.idcm());
   dmsg.banner();

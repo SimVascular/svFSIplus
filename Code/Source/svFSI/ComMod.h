@@ -798,7 +798,7 @@ class mshType
 
     ~mshType() 
     { 
-      std::cout << "- - - - -  mshType dtor - - - - -   dname: " << dname << std::endl;
+      //std::cout << "- - - - -  mshType dtor - - - - -   dname: " << dname << std::endl;
     };
 
     // Whether the shape function is linear

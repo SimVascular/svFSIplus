@@ -291,24 +291,24 @@ void VtkVtuData::VtkVtuDataImpl::set_connectivity(const int nsd, const Array<int
   int np_elem = conn.nrows();
   int num_coords = vtk_ugrid->GetPoints()->GetNumberOfPoints();
   unsigned char vtk_cell_type;
-  std::cout << "[VtkVtuData.set_connectivity] " << std::endl;
-  std::cout << "[VtkVtuData.set_connectivity] num_elems: " << num_elems << std::endl;
-  std::cout << "[VtkVtuData.set_connectivity] np_elem: " << np_elem << std::endl;
-  std::cout << "[VtkVtuData.set_connectivity] num_coords: " << num_coords << std::endl;
+  //std::cout << "[VtkVtuData.set_connectivity] " << std::endl;
+  //std::cout << "[VtkVtuData.set_connectivity] num_elems: " << num_elems << std::endl;
+  //std::cout << "[VtkVtuData.set_connectivity] np_elem: " << np_elem << std::endl;
+  //std::cout << "[VtkVtuData.set_connectivity] num_coords: " << num_coords << std::endl;
 
   if (nsd == 2) {
     if (np_elem == 4) {
       vtk_cell_type = VTK_QUAD;
-      std::cout << "[VtkVtuData.set_connectivity] vtk_cell_type: VTK_QUAD " << std::endl;
+      //std::cout << "[VtkVtuData.set_connectivity] vtk_cell_type: VTK_QUAD " << std::endl;
     } else if (np_elem == 3) {
       vtk_cell_type = VTK_TRIANGLE;
-      std::cout << "[VtkVtuData.set_connectivity] vtk_cell_type: VTK_TRIANGLE " << std::endl;
+      //std::cout << "[VtkVtuData.set_connectivity] vtk_cell_type: VTK_TRIANGLE " << std::endl;
     }
 
   } else if (nsd == 3) {
     if (np_elem == 4) {
       vtk_cell_type = VTK_TETRA;
-      std::cout << "[VtkVtuData.set_connectivity] vtk_cell_type: VTK_TETRA" << std::endl;
+      //std::cout << "[VtkVtuData.set_connectivity] vtk_cell_type: VTK_TETRA" << std::endl;
     }
     else if (np_elem == 8) {
       vtk_cell_type = VTK_HEXAHEDRON;
@@ -463,8 +463,8 @@ void VtkVtuData::VtkVtuDataImpl::set_points(const Array<double>& points)
   auto node_coords = vtkSmartPointer<vtkPoints>::New();
   node_coords->Allocate(num_coords ,1000);
   node_coords->SetNumberOfPoints(num_coords);
-  std::cout << "[VtkVtuData.set_points] " << std::endl;
-  std::cout << "[VtkVtuData.set_points] num_coords: " << num_coords << std::endl;
+  //std::cout << "[VtkVtuData.set_points] " << std::endl;
+  //std::cout << "[VtkVtuData.set_points] num_coords: " << num_coords << std::endl;
 
   auto node_ids = vtkSmartPointer<vtkIntArray>::New();
   node_ids->SetNumberOfComponents(1);

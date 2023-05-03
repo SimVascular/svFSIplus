@@ -744,9 +744,9 @@ void read_vtus(Simulation* simulation, Array<double>& lA, Array<double>& lY, Arr
 void write_vtp(ComMod& com_mod, faceType& lFa, const std::string& fName)
 {
   const int nsd = com_mod.nsd;
-  std::cout << "[write_vtp] ========== write_vtp ==========" << std::endl;
-  std::cout << "[write_vtp] lFa.x.size(): " << lFa.x.size() << std::endl;
-  std::cout << "[write_vtp] lFa.IEN.size(): " << lFa.IEN.size() << std::endl;
+  //std::cout << "[write_vtp] ========== write_vtp ==========" << std::endl;
+  //std::cout << "[write_vtp] lFa.x.size(): " << lFa.x.size() << std::endl;
+  //std::cout << "[write_vtp] lFa.IEN.size(): " << lFa.IEN.size() << std::endl;
 
   auto vtk_writer = VtkData::create_writer(fName);
   vtk_writer->set_points(lFa.x);
@@ -772,8 +772,8 @@ void write_vtp(ComMod& com_mod, faceType& lFa, const std::string& fName)
 void write_vtu(ComMod& com_mod, mshType& lM, const std::string& fName)
 {
   const int nsd = com_mod.nsd;
-  std::cout << "[write_vtu] ========== write_vtu ==========" << std::endl;
-  std::cout << "[write_vtu] fName: " << fName << std::endl;
+  //std::cout << "[write_vtu] ========== write_vtu ==========" << std::endl;
+  //std::cout << "[write_vtu] fName: " << fName << std::endl;
 
   auto vtk_writer = VtkData::create_writer(fName);
 
@@ -792,15 +792,15 @@ void write_vtu(ComMod& com_mod, mshType& lM, const std::string& fName)
 void write_vtu_debug(ComMod& com_mod, mshType& lM, const std::string& fName)
 {
   const int nsd = com_mod.nsd;
-  std::cout << "[write_vtu_debug] ========== write_vtu_debug ==========" << std::endl;
-  std::cout << "[write_vtu_debug] fName: " << fName << std::endl;
-  std::cout << "[write_vtu_debug] nsd: " << nsd << std::endl;
-  std::cout << "[write_vtu_debug] lM.nNo: " << lM.nNo << std::endl;
-  std::cout << "[write_vtu_debug] lM.gIEN nrows: " << lM.gIEN.nrows() << std::endl;
-  std::cout << "[write_vtu_debug]         ncols: " << lM.gIEN.ncols() << std::endl;
-  std::cout << "[write_vtu_debug] lM.IEN nrows: " << lM.IEN.nrows() << std::endl;
-  std::cout << "[write_vtu_debug]        ncols: " << lM.IEN.ncols() << std::endl;
-  std::cout << "[write_vtu_debug] lM.gN size: " << lM.gN.size() << std::endl;
+  //std::cout << "[write_vtu_debug] ========== write_vtu_debug ==========" << std::endl;
+  //std::cout << "[write_vtu_debug] fName: " << fName << std::endl;
+  //std::cout << "[write_vtu_debug] nsd: " << nsd << std::endl;
+  //std::cout << "[write_vtu_debug] lM.nNo: " << lM.nNo << std::endl;
+  //std::cout << "[write_vtu_debug] lM.gIEN nrows: " << lM.gIEN.nrows() << std::endl;
+  //std::cout << "[write_vtu_debug]         ncols: " << lM.gIEN.ncols() << std::endl;
+  //std::cout << "[write_vtu_debug] lM.IEN nrows: " << lM.IEN.nrows() << std::endl;
+  //std::cout << "[write_vtu_debug]        ncols: " << lM.IEN.ncols() << std::endl;
+  //std::cout << "[write_vtu_debug] lM.gN size: " << lM.gN.size() << std::endl;
 
   Array<double> x(nsd, lM.nNo);
 
@@ -813,7 +813,6 @@ void write_vtu_debug(ComMod& com_mod, mshType& lM, const std::string& fName)
 
   auto vtk_writer = VtkData::create_writer(fName);
 
-  std::cout << "[write_vtu_debug] Set points ... " << std::endl;
   vtk_writer->set_points(x);
 
   vtk_writer->set_connectivity(nsd, lM.IEN);
@@ -821,10 +820,7 @@ void write_vtu_debug(ComMod& com_mod, mshType& lM, const std::string& fName)
   vtk_writer->write();
 
   delete vtk_writer;
-
-  std::cout << "[write_vtu_debug] Done " << std::endl;
 }
-
 
 //------------
 // write_vtus

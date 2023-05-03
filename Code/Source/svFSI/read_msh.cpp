@@ -154,7 +154,7 @@ void calc_elem_ar(ComMod& com_mod, const CmMod& cm_mod, mshType& lM, bool& rflag
 //
 void calc_elem_jac(ComMod& com_mod, const CmMod& cm_mod, mshType& lM, bool& rflag)
 {
-  #define debug_calc_elem_jac 
+  #define n_debug_calc_elem_jac 
   #ifdef debug_calc_elem_jac 
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
@@ -369,7 +369,7 @@ void calc_elem_skew(ComMod& com_mod, const CmMod& cm_mod, mshType& lM, bool& rfl
 //
 void calc_mesh_props(ComMod& com_mod, const CmMod& cm_mod, const int nMesh, std::vector<mshType>& mesh)
 {
-  #define debug_calc_mesh_props
+  #define n_debug_calc_mesh_props
   #ifdef debug_calc_mesh_props
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
@@ -386,17 +386,18 @@ void calc_mesh_props(ComMod& com_mod, const CmMod& cm_mod, const int nMesh, std:
   #endif
 
   for (int iM = 0; iM < nMesh; iM++) {
+    #ifdef debug_calc_mesh_props
     dmsg << "----- mesh " + mesh[iM].name << " -----";
+    #endif
     bool flag = false;
     calc_elem_jac(com_mod, cm_mod, mesh[iM], flag);
     calc_elem_skew(com_mod, cm_mod, mesh[iM], flag);
     calc_elem_ar(com_mod, cm_mod, mesh[iM], flag);
     rmsh.flag[iM] = flag;
+    #ifdef debug_calc_mesh_props
     dmsg << "mesh[iM].flag: " << rmsh.flag[iM];
-    // [DaveP] fake remeshing.
-    //rmsh.flag[iM] = true;
+    #endif
   }
-
 
   if (rmsh.isReqd && std::count(rmsh.flag.begin(), rmsh.flag.end(), true) != rmsh.flag.size()) {
     if (com_mod.cTS == rmsh.fTS) {
@@ -408,7 +409,6 @@ void calc_mesh_props(ComMod& com_mod, const CmMod& cm_mod, const int nMesh, std:
           auto cPhys = com_mod.eq[com_mod.cEq].dmn[cDmn].phys;
           if (cPhys == Equation_fluid) {
             rmsh.flag[iM] = true; 
-            dmsg << "fluid mesh[iM].flag set to true " << rmsh.flag[iM];
             break;
           }
         }
@@ -416,7 +416,6 @@ void calc_mesh_props(ComMod& com_mod, const CmMod& cm_mod, const int nMesh, std:
       rmsh.cntr = rmsh.cntr + 1;
     }
   }
-
 
   Array<bool> gFlag(nMesh, com_mod.cm.np());
 
@@ -429,7 +428,6 @@ void calc_mesh_props(ComMod& com_mod, const CmMod& cm_mod, const int nMesh, std:
   }
 
   MPI_Allgather(rmsh_flag, nMesh, cm_mod::mplog, gFlag.data(), nMesh, cm_mod::mplog, com_mod.cm.com());
-  //MPI_Allgather(rmsh_flag, nMesh, cm_mod::mpint, gFlag.data(), nMesh, cm_mod::mpint, com_mod.cm.com());
 
   delete[] rmsh_flag;
 
@@ -446,8 +444,6 @@ void calc_mesh_props(ComMod& com_mod, const CmMod& cm_mod, const int nMesh, std:
   if (std::count(rmsh.flag.begin(), rmsh.flag.end(), true) != 0) {
     com_mod.resetSim = true;
   }
-
-  dmsg << "resetSim: " << com_mod.resetSim;
 }
 
 //----------
@@ -742,7 +738,7 @@ void check_tet_conn(mshType& mesh)
     }
   }
 
-  std::cout << "[check_tet_conn] Reorder " << num_reorder << " element connectivity from " << num_elems << "  elements." << std::endl;
+  //std::cout << "[check_tet_conn] Reorder " << num_reorder << " element connectivity from " << num_elems << "  elements." << std::endl;
 }
 
 //-----------------
@@ -1090,7 +1086,7 @@ void read_msh(Simulation* simulation)
 {
   auto& com_mod = simulation->get_com_mod();
 
-  #define debug_read_msh 
+  #define n_debug_read_msh 
   #ifdef debug_read_msh 
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
@@ -1232,22 +1228,24 @@ void read_msh(Simulation* simulation)
  // Allocate new mesh nodes or something.
  //
  } else {
+    #ifdef debug_read_msh 
     dmsg << "Allocate new mesh nodes or something ..." << "";
     dmsg << "com_mod.gtnNo: " << com_mod.gtnNo;
+    #endif
     gX.resize(com_mod.nsd,com_mod.gtnNo);
     gX = com_mod.x;
 
     for (int iM = 0; iM < com_mod.nMsh; iM++) {
       auto& msh = com_mod.msh[iM];
+      #ifdef debug_read_msh 
       dmsg << "msh.dname: " << msh.dname;
       dmsg << "msh.gnNo: " << msh.gnNo;
       dmsg << "msh.eNoN: " << msh.eNoN;
       dmsg << "msh.gnEl: " << msh.gnEl;
+      #endif
 
       nn::select_ele(com_mod, msh);
-      //CALL SELECTELE(msh(iM))
       msh.gN.resize(msh.gnNo);
-      dmsg << "msh.gN.size(): " << msh.gN.size();
       msh.gN = -1;
     }
   } 

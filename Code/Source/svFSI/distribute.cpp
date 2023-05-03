@@ -35,7 +35,7 @@ void distribute(Simulation* simulation)
   auto& com_mod = simulation->com_mod;
   auto& cm = com_mod.cm;
 
-  #define debug_distribute
+  #define n_debug_distribute
   #ifdef debug_distribute
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
@@ -121,9 +121,6 @@ void distribute(Simulation* simulation)
   dmsg << "wgt: "  << wgt;
   #endif
 
-  //MPI_Barrier(cm.com());
-  //exit(0);
-
   // First partitioning the meshes
   // gmtl:  gtnNo --> tnNo
   //
@@ -161,7 +158,7 @@ void distribute(Simulation* simulation)
     #ifdef debug_distribute
     dmsg << "iWgt: " << iWgt;
     #endif
-    part_msh(simulation, com_mod.msh[iM], gmtl, num_proc, iWgt);
+    part_msh(simulation, iM, com_mod.msh[iM], gmtl, num_proc, iWgt);
   }
 
   // Setting gtl pointer in case that it is needed and mapping IEN.
@@ -1378,7 +1375,7 @@ void part_face(Simulation* simulation, mshType& lM, faceType& lFa, faceType& gFa
 //----------
 // Reproduces the Fortran 'PARTMSH' subroutine.
 //
-void part_msh(Simulation* simulation, mshType& lM, Vector<int>& gmtl, int nP, Vector<float>& wgt)
+void part_msh(Simulation* simulation, int iM, mshType& lM, Vector<int>& gmtl, int nP, Vector<float>& wgt)
 {
   auto& cm_mod = simulation->cm_mod;
   auto& com_mod = simulation->com_mod;
@@ -1387,7 +1384,7 @@ void part_msh(Simulation* simulation, mshType& lM, Vector<int>& gmtl, int nP, Ve
   int num_proc = cm.np();
   int task_id = cm.idcm();
 
-  #define dbg_part_msh
+  #define n_dbg_part_msh
   #ifdef dbg_part_msh
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
@@ -1541,7 +1538,6 @@ void part_msh(Simulation* simulation, mshType& lM, Vector<int>& gmtl, int nP, Ve
   if (com_mod.rmsh.isReqd) { 
     fp = fopen(fTmp.c_str(), "r");
     if (FILE *fp = fopen(fTmp.c_str(), "r")) {
-      dmsg << "### partitioning_ file exists!  " << "  ";
       flag = true;
       fclose(fp);
     }
@@ -1582,9 +1578,6 @@ void part_msh(Simulation* simulation, mshType& lM, Vector<int>& gmtl, int nP, Ve
     dmsg << "---------- " << "---------- ";
     #endif
 
-    //Vector<int>::write_enabled = true;
-    //part.write("part_read_"+dmsg.prefix());
-
   // Scattering the lM.gIEN array to all processors.
   //
   } else { 
@@ -1607,7 +1600,9 @@ void part_msh(Simulation* simulation, mshType& lM, Vector<int>& gmtl, int nP, Ve
 
     int eNoNb = consts::element_type_to_elem_nonb.at(lM.eType);
     #ifdef dbg_part_msh
+    dmsg << "nEl: " << nEl;
     dmsg << "eNoNb: " << eNoNb;
+    dmsg << "lM.IEN.size(): " << lM.IEN.size();
     #endif
 
     // The output of this process is "part" array which part(i) says
@@ -1649,16 +1644,8 @@ void part_msh(Simulation* simulation, mshType& lM, Vector<int>& gmtl, int nP, Ve
       MPI_File_set_view(fid, idisp, cm_mod::mpint, cm_mod::mpint, "native", MPI_INFO_NULL);
       MPI_File_write(fid, part.data(), nEl, cm_mod::mpint, MPI_STATUS_IGNORE);
       MPI_File_close(&fid);
-
-      //Vector<int>::write_enabled = true;
-      //part.write("part_write_"+dmsg.prefix());
     }
   }
-
-  //Array<int>::write_enabled = true;
-  //Vector<int>::write_enabled = true;
-  //part.write("part_"+dmsg.prefix());
-  //exit(0);
 
   for (int i = 0; i < num_proc; i++) { 
     disp[i] = lM.eDist[i];
@@ -1678,16 +1665,6 @@ void part_msh(Simulation* simulation, mshType& lM, Vector<int>& gmtl, int nP, Ve
   // gpart is a global version of part in which processor p = gpart(e)
   // is the owner of element "e".
   //
-  /*
-  std::cout << "#######################" << std::endl;
-  std::cout << "part.size: " << part.size() << std::endl;
-  std::cout << "nEl: " << nEl << std::endl;
-  std::cout << "gPart.size: " << gPart.size() << std::endl;
-  std::cout << "sCount.size: " << sCount.size() << std::endl;
-  std::cout << "disp.size: " << disp.size() << std::endl;
-  */
-  //exit(0);
-
   MPI_Gatherv(part.data(), nEl, cm_mod::mpint, gPart.data(), sCount.data(), disp.data(), 
       cm_mod::mpint, cm_mod.master, cm.com());
 
@@ -1707,7 +1684,6 @@ void part_msh(Simulation* simulation, mshType& lM, Vector<int>& gmtl, int nP, Ve
   #endif
  
   if (cm.mas(cm_mod)) {
-    gPart.write("gPart"+dmsg.prefix());
     sCount = 0;
     for (int e = 0; e < lM.gnEl; e++) {
       sCount[gPart[e]] = sCount[gPart[e]] + 1;
@@ -1895,10 +1871,11 @@ void part_msh(Simulation* simulation, mshType& lM, Vector<int>& gmtl, int nP, Ve
   }
 
   #ifdef dbg_part_msh
-  dmsg << "----------" << "----------";
+  dmsg << "---------- partitioned mesh " << std::to_string(iM) + " ----------";
   dmsg << "lM.nNo: " << lM.nNo;
   dmsg << "lM.gnNo: " << lM.gnNo;
   dmsg << "lM.nEl: " << lM.nEl;
+  dmsg << "lM.gnEl: " << lM.gnEl;
   #endif
 
   // mapping and converting other parameters.
