@@ -53,11 +53,11 @@ jobs:
           name: coverage_report
           path: build/svFSI-build/coverage
       - name: Generate Code Coverage report
+        if: startsWith(matrix.os, 'ubuntu-22.04')
         id: code-coverage
         uses: barecheck/code-coverage-action@v1
         with:
           barecheck-github-app-token: ${{ secrets.BARECHECK_GITHUB_APP_TOKEN }}
-          lcov-file: "build/svFSI-build/coverage/lcov.info"
-          base-lcov-file: "build/svFSI-build/coverage/base-lcov.info"
+          lcov-file: "build/svFSI-build/coverage.info"
           send-summary-comment: true
           show-annotations: "warning"
