@@ -299,10 +299,9 @@ void VtkVtuData::VtkVtuDataImpl::set_connectivity(const int nsd, const Array<int
   if (nsd == 2) {
     if (np_elem == 4) {
       vtk_cell_type = VTK_QUAD;
-      //std::cout << "[VtkVtuData.set_connectivity] vtk_cell_type: VTK_QUAD " << std::endl;
+
     } else if (np_elem == 3) {
       vtk_cell_type = VTK_TRIANGLE;
-      //std::cout << "[VtkVtuData.set_connectivity] vtk_cell_type: VTK_TRIANGLE " << std::endl;
     }
 
   } else if (nsd == 3) {

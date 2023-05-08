@@ -88,15 +88,3 @@ option(SV_USE_WIN32_REGISTRY "Use Windows registry to obtain certain settings (i
 mark_as_advanced(SV_USE_WIN32_REGISTRY)
 #-----------------------------------------------------------------------------
 
-#-----------------------------------------------------------------------------
-# Enable Fortran
-enable_language(Fortran)
-if(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
-  # svsolver requires -ffixed-line-length-132 but
-  # svFSI does not compile with this flag
-  # reset flags for svFSILS and svFSI in their local CMakeLists
-  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -ffixed-line-length-132 -cpp")
-else()
-  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -132 -fpp")
-endif()
-#-----------------------------------------------------------------------------

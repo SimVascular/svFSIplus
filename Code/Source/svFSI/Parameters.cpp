@@ -37,6 +37,7 @@
 #include <regex>
 #include <set>
 #include <sstream>
+#include <limits>
 
 //-------------------------
 // xml_util_set_parameters 

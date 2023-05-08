@@ -1,18 +1,4 @@
 #-----------------------------------------------------------------------------
-# ZLIB
-if(SV_USE_ZLIB)
-  set(USE_ZLIB ON)
-  simvascular_third_party(zlib)
-  if(NOT SV_USE_SYSTEM_ZLIB)
-    set(ZLIB_LIBRARY ${SV_LIB_THIRDPARTY_ZLIB_NAME})
-  else()
-    find_package(ZLIB)
-  endif()
-else()
-  unset(ZLIB_LIBRARY CACHE)
-endif()
-
-#-----------------------------------------------------------------------------
 # METIS_SVFSI
 if(SV_USE_METIS_SVFSI)
   set(USE_METIS_SVFSI ON)
