@@ -73,6 +73,22 @@ mat_det(const Array<double>& A, const int nd)
   return D;
 }
 
+//---------
+// mat_dev
+//---------
+//
+Array<double> 
+mat_dev(const Array<double>& A, const int nd)
+{
+  Array<double> result(nd,nd);
+
+  double trA = mat_trace(A,nd);
+
+  result = A - (trA / static_cast<double>(nd)) * mat_id(nd);
+
+  return result;
+}
+
 //---------------
 // mat_dyad_prod
 //---------------
@@ -400,6 +416,25 @@ void mat_mul(const Array<double>& A, const Array<double>& B, Array<double>& resu
       result(i,j) = sum;
     }
   }
+}
+
+//---------
+// mat_sym
+//---------
+// Symmetric part of a matrix, S = (A + A.T)/2
+//
+Array<double> 
+mat_symm(const Array<double>& A, const int nd)
+{
+  Array<double> S(nd, nd);
+
+  for (int i = 0; i < nd; i++) { 
+    for (int j = 0; j < nd; j++) { 
+      S(i,j) = 0.5* (A(i,j) + A(j,i));
+    }
+  }
+
+  return S;
 }
 
 

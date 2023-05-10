@@ -18,6 +18,8 @@
 namespace mat_fun {
     double mat_ddot(const Array<double>& A, const Array<double>& B, const int nd);
     double mat_det(const Array<double>& A, const int nd);
+    Array<double> mat_dev(const Array<double>& A, const int nd);
+
     Array<double> mat_dyad_prod(const Vector<double>& u, const Vector<double>& v, const int nd);
 
     Array<double> mat_id(const int nsd);
@@ -28,6 +30,7 @@ namespace mat_fun {
     Vector<double> mat_mul(const Array<double>& A, const Vector<double>& v);
     Array<double> mat_mul(const Array<double>& A, const Array<double>& B);
     void mat_mul(const Array<double>& A, const Array<double>& B, Array<double>& result);
+    Array<double> mat_symm(const Array<double>& A, const int nd);
     Array<double> mat_symm_prod(const Vector<double>& u, const Vector<double>& v, const int nd);
     double mat_trace(const Array<double>& A, const int nd);
 
