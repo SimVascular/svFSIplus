@@ -18,6 +18,14 @@ class stackType
     Vector<int> v;
 };
 
+class queueType
+{
+  public:
+    int n = 0;
+    int maxN = 0;
+    Vector<int> v;
+};
+
 
 bool btest(int value, int pos);
 
@@ -26,6 +34,9 @@ int CountBits(int n);
 double cput();
 
 Vector<double> cross(const Array<double>& V);
+
+bool dequeue(queueType& que, int& iVal);
+void enqueue(queueType& que, int iVal);
 
 int ibclr(int value, int pos);
 int ibset(int value, int pos);

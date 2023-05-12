@@ -16,7 +16,7 @@ endif()
 #
 #   -iframe is valid for C/C++/ObjC/ObjC++ but not for Fortran
 #
-find_package(VTK REQUIRED)
+#find_package(VTK REQUIRED)
 #include(${VTK_USE_FILE})
 
 set(lib ${SV_LIB_SVFSILS_NAME})
@@ -49,7 +49,8 @@ set(CSRCS
 
 add_library(${lib} ${SV_LIBRARY_TYPE} ${CSRCS})
 
-target_link_libraries(${lib} ${MPI_LIBRARY} ${MPI_Fortran_LIBRARIES} ${VTK_LIBRARIES})
+target_link_libraries(${lib} ${MPI_LIBRARY} ${MPI_Fortran_LIBRARIES})
+#target_link_libraries(${lib} ${MPI_LIBRARY} ${MPI_Fortran_LIBRARIES} ${VTK_LIBRARIES})
 
 # extra MPI libraries only if there are not set to NOT_FOUND or other null 
 if(SV_MPI_EXTRA_LIBRARY)

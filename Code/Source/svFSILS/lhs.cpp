@@ -348,6 +348,38 @@ void fsils_lhs_create(FSILS_lhsType& lhs, FSILS_commuType& commu, int gnNo, int 
   }
 }
 
+//----------------
+// fsils_lhs_free
+//----------------
+//
+void fsils_lhs_free(FSILS_lhsType& lhs)
+{
+  for (int faIn = 0; faIn < lhs.nFaces; faIn++) {
+    if (lhs.face[faIn].foC) {
+      fsils_bc_free(lhs, faIn);
+    }
+  }
+
+  for (int i = 0; i < lhs.nReq; i++) {
+    //IF (ALLOCATED(lhs.cS(i).ptr)) DEALLOCATE(lhs.cS(i).ptr)
+  }
+
+  lhs.foC = false;
+  lhs.gnNo   = 0;
+  lhs.nNo    = 0;
+  lhs.nnz    = 0;
+  lhs.nFaces = 0;
+
+  //IF (ALLOCATED(lhs.colPtr)) DEALLOCATE(lhs.colPtr)
+  //IF (ALLOCATED(lhs.rowPtr)) DEALLOCATE(lhs.rowPtr)
+  //IF (ALLOCATED(lhs.diagPtr)) DEALLOCATE(lhs.diagPtr)
+  //IF (ALLOCATED(lhs.cS)) DEALLOCATE(lhs.cS)
+  //IF (ALLOCATED(lhs.map)) DEALLOCATE(lhs.map)
+  //IF (ALLOCATED(lhs.face)) DEALLOCATE(lhs.face)
+
+}
+
+
 };
 
 

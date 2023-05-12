@@ -113,5 +113,26 @@ void fsils_bc_create(FSILS_lhsType& lhs, int faIn, int nNo, int dof, BcType BC_t
   fsils_bc_create(lhs, faIn, nNo, dof, BC_type, gNodes, Val);
 }
 
+//---------------
+// fsils_bc_free
+//---------------
+//
+void fsils_bc_free(FSILS_lhsType& lhs, int faIn)
+{
+  //IF (.NOT.lhs%face(faIn)%foC) THEN
+  //       PRINT *, 'FSILS: Cannot free a face that is not created yet'
+  //      STOP "FSILS: FATAL ERROR"
+  //END IF
+
+  lhs.face[faIn].foC        = false;
+  lhs.face[faIn].nNo        = 0;
+  lhs.face[faIn].bGrp       = BcType::BC_TYPE_Dir;
+  lhs.face[faIn].res        = 0.0;
+  lhs.face[faIn].sharedFlag = false;
+
+  //DEALLOCATE(lhs.face(faIn).glob, lhs.face(faIn).val, lhs.face(faIn).valM)
+
+}
+
 };
 
