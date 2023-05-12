@@ -362,7 +362,7 @@ SetEquationPropertiesMapType set_equation_props = {
   read_ls(simulation, eq_params, SolverType::lSolver_GMRES, lEq);
 
   if (com_mod.rmsh.isReqd && !com_mod.resetSim) {
-    read_rmsh(simulation);
+    read_rmsh(simulation, eq_params);
   }
 
 } },
