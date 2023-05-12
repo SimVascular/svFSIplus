@@ -303,7 +303,7 @@ void initialize(Simulation* simulation, Vector<double>& timeP)
   int nsd = com_mod.nsd;
   #include "set_equation_dof.h"
 
-  #define debug_initialize
+  #define n_debug_initialize
   #ifdef debug_initialize
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
@@ -325,8 +325,8 @@ void initialize(Simulation* simulation, Vector<double>& timeP)
 
   #ifdef debug_initialize
   dmsg << "Set time " << std::endl;
-  #endif
   dmsg << "com_mod.timeP[0]: " << com_mod.timeP[0] << std::endl;
+  #endif
   com_mod.timeP[0] = timeP[0];
   com_mod.timeP[1] = timeP[1];
   com_mod.timeP[2] = timeP[2];
@@ -339,7 +339,6 @@ void initialize(Simulation* simulation, Vector<double>& timeP)
   auto& dFlag = com_mod.dFlag;
   auto& nFacesLS = com_mod.nFacesLS;
   auto& recLn = com_mod.recLn;
-  dmsg << "tDof: " << tDof << std::endl;
 
   tDof = 0;
   dFlag = false;
@@ -515,12 +514,18 @@ void initialize(Simulation* simulation, Vector<double>& timeP)
 
   // Initialize FSILS structures
   //
+  fsi_linear_solver::FSILS_commuType communicator;
+
   if (com_mod.resetSim) {
-    //if (communicator%foC) CALL FSILS_COMMU_FREE(communicator)
-    //if (lhs%foC) CALL FSILS_LHS_FREE(lhs)
+    if (communicator.foC) {
+      fsils_commu_free(communicator);
+    }
+
+    if (com_mod.lhs.foC) {
+      fsils_lhs_free(com_mod.lhs);
+    }
   }
 
-  fsi_linear_solver::FSILS_commuType communicator;
   fsi_linear_solver::fsils_commu_create(communicator, cm.com());
 
   fsi_linear_solver::fsils_lhs_create(com_mod.lhs, communicator, com_mod.gtnNo, com_mod.tnNo, nnz, 
@@ -629,18 +634,19 @@ void initialize(Simulation* simulation, Vector<double>& timeP)
           zero_init(simulation);
         }
 
-        // [TODO] What's this about?
-        /*
         if (rmsh.isReqd) {
-          rmsh.fTS = (cTS/rmsh.fTS + 1)*rmsh.freq
-          rmsh.rTS = cTS
-          rmsh.time = time
-          rmsh.iNorm(:) = eq(:).iNorm
-          rmsh.A0(:,:) = Ao(:,:)
-          rmsh.Y0(:,:) = Yo(:,:)
-          rmsh.D0(:,:) = Do(:,:)
+          auto& cTS = com_mod.cTS;
+          rmsh.fTS = (cTS/rmsh.fTS + 1)*rmsh.freq;
+          rmsh.rTS = cTS;
+          rmsh.time = com_mod.time;
+          for (int i = 0; i < rmsh.iNorm.size(); i++) {
+            rmsh.iNorm(i) = com_mod.eq[i].iNorm;
+          }
+          rmsh.A0 = com_mod.Ao;
+          rmsh.Y0 = com_mod.Yo;
+          rmsh.D0 = com_mod.Do;
         }
-        */
+
       } else {
         zero_init(simulation);
       } 
@@ -677,8 +683,8 @@ void initialize(Simulation* simulation, Vector<double>& timeP)
 
   for (int iM = 0; iM < nMsh; iM++) { 
     if (cm.mas(cm_mod)) {
-      std::string fTmp = chnl_mod.appPath + ".partitioning_" + com_mod.msh[iM].name + ".bin";
-      std::string sTmp = chnl_mod.appPath + ".partitioning_" + com_mod.msh[iM].name + "_" + std::to_string(com_mod.cTS) + ".bin";
+      std::string fTmp = chnl_mod.appPath + "partitioning_" + com_mod.msh[iM].name + "_cpp.bin";
+      std::string sTmp = chnl_mod.appPath + "partitioning_" + com_mod.msh[iM].name + "_" + std::to_string(com_mod.cTS) + "_cpp.bin";
 
       if (FILE *file = fopen(fTmp.c_str(), "r")) {
         fclose(file);

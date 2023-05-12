@@ -51,6 +51,7 @@ class Simulation {
     double roInf;
 
     // Simulation requires remeshing
+
     bool isReqd;
 
     // Name of the history file.

@@ -319,7 +319,7 @@ void bw_fluid_3d(ComMod& com_mod, const int eNoNw, const int eNoNq, const double
 
   double p = 0.0;
   for (int a = 0; a < eNoNq; a++) {
-    p = p + Nq(a)*yl(2,a);
+    p = p + Nq(a)*yl(3,a);
   }
 
   Vector<double> uh(3); 

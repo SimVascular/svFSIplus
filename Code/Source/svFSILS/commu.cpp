@@ -38,6 +38,17 @@ void fsils_commu_create(FSILS_commuType& commu, cm_mod::MpiCommWorldType commi)
   }
 }
 
+//------------------
+// fsils_commu_free
+//------------------
+//
+void fsils_commu_free(FSILS_commuType& commu)
+{
+  //IF (.NOT.commu%foC) STOP 'COMMU is not created yet to be freed'
+
+  commu.foC = false;
+}
+
 };
 
 
