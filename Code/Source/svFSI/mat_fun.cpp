@@ -114,7 +114,7 @@ mat_id(const int nd)
 // This function computes inverse of a square matrix
 //
 Array<double> 
-mat_inv(const Array<double>& A, const int nd)
+mat_inv(const Array<double>& A, const int nd, bool debug)
 {
   int iok = 0;
   Array<double> Ainv(nd,nd);
@@ -155,7 +155,7 @@ mat_inv(const Array<double>& A, const int nd)
     if (utils::is_zero(fabs(d))) {
       iok = -1;
     }
-    Ainv = mat_inv_ge(A, nd);
+    Ainv = mat_inv_ge(A, nd, debug);
 
   } else {
     Ainv = mat_inv_lp(A, nd);
@@ -173,8 +173,150 @@ mat_inv(const Array<double>& A, const int nd)
 //------------
 // This function computes inverse of a square matrix using Gauss Elimination method
 //
+Array<double>
+mat_inv_ge(const Array<double>& Ain, const int n, bool debug)
+{
+  Array<double> A(n,n);
+  Array<double> B(n,n);
+  A = Ain;
+
+  if (debug) {
+    std::cout << "[mat_inv_ge] ========== mat_inv_ge =========" << std::endl;
+    if (std::numeric_limits<double>::is_iec559) {
+      std::cout << "[mat_inv_ge] is_iec559 " << std::endl;
+    }
+  }
+
+  // Auxillary matrix
+  for (int i = 0; i < n; i++) {
+    for (int j = 0; j < n; j++) {
+      B(i,j) = 0.0;
+    }
+    B(i,i) = 1.0;
+  }
+
+  // Loop over columns of A to find a good pivot. 
+  //
+  double max_val = 0.0; 
+  int irow = 0;
+  double d = 0.0; 
+
+  if (debug) {
+    A.print("A");
+  }
+
+  for (int i = 0; i < n; i++) {
+    if (debug) {
+      std::cout << "[mat_inv_ge] " << std::endl;
+      std::cout << "[mat_inv_ge] ---------- i: " << i+1 << std::endl;
+      A.print("A");
+    }
+    double max_val = fabs(A(i,i));
+    irow = i;
+
+    for (int j = i; j < n; j++) {
+      //if (debug) {
+       // std::cout << "[mat_inv_ge] A(j,i): " << A(j,i) << std::endl;
+        //std::cout << "[mat_inv_ge] max_val: " << max_val << std::endl;
+      //}
+      if (fabs(A(j,i)) > max_val) {
+        max_val = fabs(A(j,i));
+        irow = j;
+      }
+    }
+
+    if (debug) {
+      std::cout << "[mat_inv_ge] max_val: " << max_val << std::endl;
+      std::cout << "[mat_inv_ge] irow: " << irow+1 << std::endl;
+    }
+
+    // Interchange rows.
+    //
+    if (max_val > fabs(A(i,i))) {
+      if (debug) {
+        std::cout << "[mat_inv_ge] " << std::endl;
+        std::cout << "[mat_inv_ge] Interchange rows " << std::endl;
+      }
+
+      for (int k = 0; k < n; k++) {
+        d = A(i,k);
+        A(i,k) = A(irow,k);
+        A(irow,k) = d;
+
+        d = B(i,k) ;
+        B(i,k) = B(irow,k);
+        B(irow,k) = d;
+      }
+    }
+
+    d = A(i,i);
+
+    if (debug) {
+      std::cout << "[mat_inv_ge]  " << std::endl;
+      std::cout << "[mat_inv_ge]  Scale ..." << std::endl;
+      std::cout << "[mat_inv_ge] d: " << d << std::endl;
+    }
+
+    for (int j = 0; j < n; j++) {
+      A(i,j) = A(i,j) / d;
+      B(i,j) = B(i,j) / d;
+    }
+
+    if (debug) {
+      std::cout << "[mat_inv_ge]  " << std::endl;
+      std::cout << "[mat_inv_ge]  Reduce ..." << std::endl;
+    }
+
+    for (int j = i+1; j < n; j++) {
+      d = A(j,i);
+
+      if (debug) {
+        std::cout << "[mat_inv_ge]  " << std::endl;
+        std::cout << "[mat_inv_ge]  j: " << j+1 << std::endl;
+        std::cout << "[mat_inv_ge]  d: " << d << std::endl;
+      }
+
+      for (int k = 0; k < n; k++) {
+        A(j,k) = A(j,k) - d*A(i,k);
+        B(j,k) = B(j,k) - d*B(i,k);
+      }
+    }
+  }
+
+  if (debug) {
+    std::cout << "[mat_inv_ge]  " << std::endl;
+    std::cout << "[mat_inv_ge] Final reduce ..." << std::endl;
+  }
+
+  for (int i = 0; i < n-1; i++) {
+    for (int j = i+1; j < n; j++) {
+      d = A(i,j);
+      if (debug) {
+        std::cout << "[mat_inv_ge] i j " << i+1 << " " << j+1 << std::endl;
+        std::cout << "[mat_inv_ge] d: " << d << std::endl;
+      }
+      for (int k = 0; k < n; k++) {
+        A(i,k) = A(i,k) - d*A(j,k);
+        B(i,k) = B(i,k) - d*B(j,k);
+        if (debug) {
+          std::cout << "[mat_inv_ge] B(i,k): " << B(i,k) << std::endl;
+        }
+      }
+    }
+  }
+
+  return B;
+}
+
+//------------
+// mat_inv_ge
+//------------
+// This function computes inverse of a square matrix using Gauss Elimination method
+//
+// [TODO:DaveP] The original version sometimes produced NaNs.
+//
 Array<double> 
-mat_inv_ge(const Array<double>& A, const int nd)
+mat_inv_ge_orig(const Array<double>& A, const int nd, bool debug)
 {
   Array<double> B(nd,2*nd);
   Array<double> Ainv(nd,nd);
@@ -198,13 +340,45 @@ mat_inv_ge(const Array<double>& A, const int nd)
     }
   }
 
+  if (debug) {
+    std::cout << "[mat_inv]  " << std::endl;
+    std::cout << "[mat_inv] B: " << B << std::endl;
+    std::cout << "[mat_inv]  " << std::endl;
+  }
+
   // Do row-column operations and reduce to diagonal
+  double d;
+
   for (int i = 0; i < nd; i++) { 
+    if (debug) {
+      std::cout << "[mat_inv] ========== i " << i+1 << " ==========" << std::endl;
+    }
     for (int j = 0; j < nd; j++) { 
+      if (debug) {
+        std::cout << "[mat_inv] ########## j " << j+1 << " ##########" << std::endl;
+      }
       if (j != i) {
-        double d = B(j,i) / B(i,i);
+        d = B(j,i) / B(i,i);
+        if (debug) {
+          std::cout << "[mat_inv] B(j,i): " << B(j,i) << std::endl;
+          std::cout << "[mat_inv] B(i,i): " << B(i,i) << std::endl;
+          std::cout << "[mat_inv] d: " << d << std::endl;
+          std::cout << "[mat_inv]  " << std::endl;
+        }
         for (int k = 0; k < 2*nd; k++) { 
+          if (debug) {
+            std::cout << "[mat_inv] ------- k " << k+1 << " -------" << std::endl;
+          }
+          if (debug) {
+            std::cout << "[mat_inv] B(j,k): " << B(j,k) << std::endl;
+            std::cout << "[mat_inv] B(i,k): " << B(i,k) << std::endl;
+            std::cout << "[mat_inv] d: " << d << std::endl;
+            std::cout << "[mat_inv] d*B(i,k): " << d*B(i,k) << std::endl;
+          }
           B(j,k) = B(j,k) - d*B(i,k);
+          if (debug) {
+            std::cout << "[mat_inv] B(j,k): " << B(j,k) << std::endl;
+          }
         }
       }
     }
@@ -238,10 +412,10 @@ mat_inv_ge(const Array<double>& A, const int nd)
 Array<double> 
 mat_inv_lp(const Array<double>& A, const int nd)
 {
-  Array<double> Ad(nd, nd);
   Vector<int> IPIV(nd);
   int iok;
   int n = nd;
+  auto Ad = A;
 
   dgetrf_(&n, &n, Ad.data(), &n, IPIV.data(), &iok);
 
