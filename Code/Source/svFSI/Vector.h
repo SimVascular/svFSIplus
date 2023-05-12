@@ -488,11 +488,21 @@ class Vector
 
     T min() const
     {
+      /*
+      if (size_ == 0) {
+        return std::numeric_limits<T>::max();
+      }
+      */
       return *std::min_element((*this).begin(), (*this).end());
     }
 
     T max() const
     {
+      /*
+      if (size_ == 0) {
+        return -std::numeric_limits<T>::max();
+      }
+      */
       return *std::max_element((*this).begin(), (*this).end());
     }
 

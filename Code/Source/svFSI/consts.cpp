@@ -175,6 +175,11 @@ const std::map<std::string,EquationType> equation_name_to_type = {
 
   };
 
+const std::map<std::string,MeshGeneratorType> mesh_generator_name_to_type = {
+    {"Tetgen", MeshGeneratorType::RMSH_TETGEN},
+    {"Meshsim", MeshGeneratorType::RMSH_MESHSIM}
+};
+
 //-----------------------------
 // preconditioner_name_to_type
 //-----------------------------

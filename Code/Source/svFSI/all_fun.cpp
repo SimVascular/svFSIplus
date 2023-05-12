@@ -32,15 +32,13 @@ double aspect_ratio(ComMod& com_mod, const int nDim, const int eNoN, const Array
       }
       auto x_diff = x.col(a) - x.col(ap);
       s(a) = sqrt( x_diff * x_diff );
-      //s(a) = SQRT(SUM((x(:,a) - x(:,ap))**2.))
     }
 
   // This is only for tri and tets so for nDim=3 eNoN=4.
+  //
   } else if (nDim == 3) {
-    Array<int> rowM{ {0, 0, 0}, {1, 1, 1}, {2, 2, 2}, {3, 3, 3} }; 
-    Array<int> colM{ {0, 1}, {2, 1}, {2, 0} };
-    //rowM = reshape( (/1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4/), shape(rowM) )
-    //colM = reshape( (/1, 2, 3, 2, 3, 1/), shape(colM) )
+    Array<int> rowM{ {0, 1, 2}, {0, 1, 3}, {0, 2, 3}, {1, 2, 3} }; 
+    Array<int> colM{ {0, 1}, {1, 2}, {2, 0} };
 
     for (int a = 0; a < eNoN; a++) {
       for (int b = 0; b < nDim; b++) {
@@ -56,12 +54,10 @@ double aspect_ratio(ComMod& com_mod, const int nDim, const int eNoN, const Array
         detD(b) = mat_fun::mat_det(Dsub,nDim);
       } 
       s(a) = 0.5 * sqrt(detD * detD);
-      //s(a) = 0.5*SQRT(SUM(detD(:)**2.))
     } 
   }
 
   return s.max() / s.min();
-  //AR = MAXVAL(s)/MINVAL(s)
 }
 
 //-------
@@ -213,17 +209,16 @@ global(const ComMod& com_mod, const CmMod& cm_mod, const mshType& lM, const Arra
   #ifdef debug_global_rv 
   dmsg << "m: " << m;
   dmsg << "U.ncols(): " << U.ncols();
+  dmsg << "lM.nNo: " << lM.nNo;
   dmsg << "lM.gnNo: " << lM.gnNo;
+  dmsg << "lM.nEl: " << lM.nEl;
   #endif 
 
   if (U.ncols() != lM.nNo) {
     throw std::runtime_error("GLOBAL is only specified for array with columns size nNo");
   }
 
-  // [TODO:DaveP] what's going on here?
-  //
   if (cm.seq()) {
-    // ALLOCATE(GLOBALRV(m,lM.gnNo))
     return U;
   }
 
@@ -237,7 +232,6 @@ global(const ComMod& com_mod, const CmMod& cm_mod, const mshType& lM, const Arra
     gienU.resize(m*lM.eNoN, lM.gnEl); 
     result.resize(m,lM.gnNo);
    } else {
-    //ALLOCATE(gienU(0,0), GLOBALRV(0,0))
   }
 
   for (int e = 0; e < lM.nEl; e++) {
@@ -255,6 +249,11 @@ global(const ComMod& com_mod, const CmMod& cm_mod, const mshType& lM, const Arra
   for (int i = 0; i < cm.np(); i++) {
     disp(i) = lM.eDist(i)*a;
     sCount(i) = lM.eDist(i+1)*a - disp(i);
+    #ifdef debug_global_rv 
+    dmsg << ">>> i: " << i;
+    dmsg << "  disp(i): " << disp(i);
+    dmsg << "  sCount(i): " << sCount(i);
+    #endif
   }
 
   MPI_Gatherv(ienU.data(), lM.nEl*a, cm_mod::mpreal, gienU.data(), sCount.data(), disp.data(), cm_mod::mpreal, cm_mod.master, cm.com());
@@ -1132,6 +1131,8 @@ void set_dmn_id(mshType& mesh, const int iDmn, const int ifirst, const int ilast
     mesh.eId = Vector<int>(mesh.gnEl);
   }
 
+  //std::cout << "[set_dmn_id] first: " << first << std::endl;
+
   // Set the iDimn'th bit for each element ID.
   for (int e = first; e <= last; e++) {
     mesh.eId[e] |= 1UL << iDmn;
@@ -1158,14 +1159,12 @@ double skewness(ComMod& com_mod, const int nDim, const int eNoN, const Array<dou
   Array<double> Dsub(eNoN,nDim+1);
 
   for (int a = 0; a < eNoN; a++) {
-    auto col = com_mod.x.col(a);
+    auto col = x.col(a);
     Dmat(a,0) = col * col;
-    //Dmat(a,1) = SUM(x(:,a)**2.)
 
-    for (int i = 0; i < nDim; a++) {
+    for (int i = 0; i < nDim; i++) {
       Dmat(a, i+1) = x(i,a);
     }
-    //Dmat(a,2:nDim+1) = x(:,a)
   }
 
   Vector<double> detD(nDim+2);
@@ -1187,7 +1186,6 @@ double skewness(ComMod& com_mod, const int nDim, const int eNoN, const Array<dou
     circumRad += detD(i+1)*detD(i+1);
   }
   circumRad = sqrt(circumRad - 4.0*detD(0)*detD(nDim+1)) / (2.0*fabs(detD(0)));
-  //circumRad = SQRT(SUM(detD(2:nDim+1)**2.) - 4.*detD(1)*detD(nDim+2)) /(2.*ABS(detD(1)))
 
   double integ_eq, integ_el;
 
@@ -1220,12 +1218,13 @@ double skewness(ComMod& com_mod, const int nDim, const int eNoN, const Array<dou
 //
 void split_jobs(int tid, int m, int n, Array<double>& A, Vector<double>& b)
 {
-  #define ndebug_split_jobs
+  #define n_debug_split_jobs
   #ifdef debug_split_jobs
-  DebugMsg dmsg(__func__, com_mod.cm.idcm());
+  DebugMsg dmsg(__func__, tid);
   dmsg.banner();
   dmsg << "m: " << m;
   dmsg << "n: " << n;
+  dmsg << "b: " << b;
   #endif
 
   if ((m <= 0) || (n <= 0)) {
@@ -1236,7 +1235,7 @@ void split_jobs(int tid, int m, int n, Array<double>& A, Vector<double>& b)
   //
   if (n == 1) {
     #ifdef debug_split_jobs
-    dmsg << "n == 1  ";
+    dmsg << "n == 1  " << " ";
     #endif
     int j = 0;
     for (int i = 0; i < m; i++) {
@@ -1252,13 +1251,13 @@ void split_jobs(int tid, int m, int n, Array<double>& A, Vector<double>& b)
   //
   if (m == 1) {
     #ifdef debug_split_jobs
-    dmsg << "m == 1  ";
+    dmsg << "m == 1  " << " ";
     #endif
     int i = 0;
     for (int j = 0; j < n; j++) {
       A(i,j) = b[i] / static_cast<double>(n); 
       #ifdef debug_split_jobs
-      dmsg << "m=1 A(0,j): " << A(i,j);
+      dmsg << "m=1 A(i,j): " << A(i,j);
       #endif
     }
     return;
@@ -1270,12 +1269,6 @@ void split_jobs(int tid, int m, int n, Array<double>& A, Vector<double>& b)
   int nr  = n - nl;
 
   // This is the total amount of work
-  #ifdef debug_split_jobs
-  dmsg << "b: ";
-  for (int i = 0; i < m; i++) {
-    dmsg << "b( " << i << "): " << b[i] ;
-  }
-  #endif
   double sb  = b.sum();
 
   // The work that suppose to be done by "l"
@@ -1304,14 +1297,14 @@ void split_jobs(int tid, int m, int n, Array<double>& A, Vector<double>& b)
   dmsg << "optsl: " << optsl;
   dmsg << "ml: " << ml;
   dmsg;
-  dmsg << "Set j ... ";
+  dmsg << "Set j ... " << " ";
   #endif
 
   int j = -1;
 
   for (int i = ml; i < m; i++) {
     #ifdef debug_split_jobs
-    dmsg << "---- i " << i << " ----";
+    dmsg << "---- i " << i;
     #endif
     if (fabs(sl + b[i] - sbl) < optsl) {
       j = i;
@@ -1355,8 +1348,8 @@ void split_jobs(int tid, int m, int n, Array<double>& A, Vector<double>& b)
     for (int i = 0; i < ml; i++) {
       bl[i] = b[i];
     }
-    for (int i = 0; i < mr; i++) {
-      br[i] = b[i+ml-1];
+    for (int i = ml, j = 0; i < m; i++, j++) {
+      br[j] = b[i];
     }
   }
 
@@ -1370,8 +1363,18 @@ void split_jobs(int tid, int m, int n, Array<double>& A, Vector<double>& b)
   nr = n - nl;
 
   #ifdef debug_split_jobs
+  dmsg << "  " << " ";
   dmsg << "nl: " << nl;
   dmsg << "nr: " << nr;
+  dmsg << "  " << " ";
+  dmsg << "Allocate Al: ml: " << ml;
+  dmsg << "             nl: " << nl;
+  dmsg << "             bl: " << bl;
+  dmsg << "  " << " ";
+  dmsg << "Allocate Ar: mr: " << mr;
+  dmsg << "             nr: " << nr;
+  dmsg << "             br: " << br;
+  //dmsg << "Allocate A: " << A.nrows() << " x " << A.ncols();
   #endif
 
   Array<double> Al(ml,nl); 
@@ -1380,17 +1383,12 @@ void split_jobs(int tid, int m, int n, Array<double>& A, Vector<double>& b)
   Array<double> Ar(mr,nr);
   split_jobs(tid, mr, nr, Ar, br);
 
-  #ifdef debug_split_jobs
-  dmsg << "Allocate Al: " << ml << " x " << nl;
-  dmsg << "Allocate Ar: " << mr << " x " << nr;
-  dmsg << "Allocate A: " << A.nrows() << " x " << A.ncols();
-  #endif
 
   A = 0.0;
 
   if (j != -1) {
     #ifdef debug_split_jobs
-    dmsg << "";
+    dmsg << "" << " ";
     dmsg << "set A from Al ... ml: " << ml;
     #endif
     for (int i = 0; i < ml-1; i++) {
@@ -1398,16 +1396,16 @@ void split_jobs(int tid, int m, int n, Array<double>& A, Vector<double>& b)
       A.set_row(i, Al_row);
       #ifdef debug_split_jobs
       for (int ii = 0; ii < n; ii++) {
-        dmsg << " Al set A(i, " << i << ", " << ii << "): " << A(i,ii);
+        dmsg << " Al set A(i,ii): " << A(i,ii);
       }
       #endif
     }
 
     A.set_row(j, Al.row(ml-1));
     #ifdef debug_split_jobs
-    dmsg << "----------";
+    dmsg << "----------" << " ";
     for (int ii = 0; ii < n; ii++) {
-      dmsg << " set from Al:  A(i, " << j << ", " << ii << "): " << A(j,ii);
+      dmsg << " set from Al:  A(j,ii): " << A(j,ii);
     }
     #endif
 
@@ -1420,14 +1418,33 @@ void split_jobs(int tid, int m, int n, Array<double>& A, Vector<double>& b)
       k = k + 1;
     }
   } else { 
+    // [TODO:DaveP] another bug fix
+    #ifdef debug_split_jobs
+    dmsg << "----------" << " ";
+    dmsg << "Set A from Al and Ar " << " ";
+    dmsg << "m: " << m;
+    dmsg << "ml: " << ml;
+    dmsg << "mr: " << mr;
+    #endif
     for (int i = 0; i < ml; i++) {
       for (int j = 0; j < nl; j++) {
         A(i, j) = Al(i, j);
-        A(i+ml, j+nl) = Al(i, j);
+       }
+     }
+
+    for (int i = 0; i < mr; i++) {
+      for (int j = 0; j < nr; j++) {
+        A(i+ml, j+nl) = Ar(i, j);
       }
     }
+
+    // A(1:ml,1:nl) = Al
+    // A(ml+1:m,nl+1:n) = Ar
   }
 
+  #ifdef debug_split_jobs
+  dmsg << "Returned A: " << A;
+  #endif
 }
 
 
