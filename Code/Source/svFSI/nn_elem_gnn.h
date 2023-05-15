@@ -1384,6 +1384,12 @@ using SetFaceShapeMapType = std::map<ElementType, std::function<void(int, faceTy
 
 SetFaceShapeMapType set_face_shape_data = {
 
+  {ElementType::PNT, [](int g, faceType& face) -> void 
+    {
+    face.N(0,g) = 1.0;
+    }
+  },
+
   {ElementType::QUD8, [](int g, faceType& face) -> void 
     {
     auto& xi = face.xi;

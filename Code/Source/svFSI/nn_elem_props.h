@@ -187,7 +187,7 @@ using SetFacePropsMapType = std::map<int, std::function<void(int, faceType&)>>;
 //
 SetFacePropsMapType set_face_element_props = {
 
-  {0, [](int insd, faceType& face) -> void 
+  {1, [](int insd, faceType& face) -> void 
     {
       face.eType = ElementType::PNT;
       face.nG = 1;
