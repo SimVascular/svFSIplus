@@ -169,8 +169,10 @@ class cmType {
       MPI_Datatype data_type;
       if (typeid(T) == typeid(double)) {
         data_type = MPI_DOUBLE_PRECISION;
-      } if (typeid(T) == typeid(int)) {
+      } else if (typeid(T) == typeid(int)) {
         data_type = MPI_INTEGER;
+      } else {
+        throw std::runtime_error("[cm_mod::reduce called with unknown data type.");
       }
 
       if (seq()) {

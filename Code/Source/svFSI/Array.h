@@ -1044,7 +1044,8 @@ class Array
     void check_index(const int row, const int col) const
     { 
       if (data_ == nullptr) { 
-        throw std::runtime_error(+"Accessing null data in Array.");
+        //throw std::runtime_error(+"Accessing null data in Array.");
+        return;
       }
       if ((row < 0) || (row >= nrows_) || (col < 0) || (col >= ncols_)) {
         auto nr_str = std::to_string(nrows_);

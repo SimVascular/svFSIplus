@@ -20,7 +20,7 @@ void dist_visc_model(const ComMod& com_mod, const CmMod& cm_mod, const cmType& c
 
 void part_face(Simulation* simulation, mshType& lM, faceType& lFa, faceType& gFa, Vector<int>& gmtl);
 
-void part_msh(Simulation* simulation, mshType& lM, Vector<int>& mtl, int nP, Vector<float>& wgt);
+void part_msh(Simulation* simulation, int iM, mshType& lM, Vector<int>& mtl, int nP, Vector<float>& wgt);
 
 #endif
 
