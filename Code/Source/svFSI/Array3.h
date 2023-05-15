@@ -23,7 +23,7 @@ class Array3
 {
   public:
 
-    static int allocated;
+    static int num_allocated;
     static int active;
     static double memory_in_use;
     static double memory_returned;
@@ -39,18 +39,24 @@ class Array3
       slice_size_ = 0;
       size_ = 0;
       data_ = nullptr;
-      allocated += 1;
+      num_allocated += 1;
       active += 1;
     };
 
     Array3(const int num_rows, const int num_cols, const int num_slices, bool row_major=true) 
     {
+      // [NOTE] This is tfu but need to mimic fortran.
+      nrows_ = num_rows;
+      ncols_ = num_cols;
+      nslices_ = num_slices;
+
       if ((num_rows <= 0) || (num_cols <= 0) || (num_slices <= 0)) { 
-        throw std::runtime_error(+"Allocating zero size Array3.");
+        return; 
+        //throw std::runtime_error(+"Allocating zero size Array3.");
       }
 
       allocate(num_rows, num_cols, num_slices, row_major);
-      allocated += 1;
+      num_allocated += 1;
       active += 1;
     }
 
@@ -63,7 +69,7 @@ class Array3
 
       allocate(rhs.nrows_, rhs.ncols_, rhs.nslices_);
       memcpy(data_, rhs.data_, size_*sizeof(T));
-      allocated += 1;
+      num_allocated += 1;
       active += 1;
     }
 
@@ -245,6 +251,20 @@ class Array3
       return size_;
     }
 
+    // Test if an array has rows or columns or slices set
+    // but no data.
+    //
+    // [NOTE] This is tfu but need to mimic fortran.
+    //
+    bool allocated()
+    {
+      if ((nrows_ > 0) || (ncols_ > 0) || nslices_ > 0) {
+        return true;
+      }
+
+      return false;
+    }
+
     int msize() const
     {
       return size_ * sizeof(T);
@@ -257,6 +277,15 @@ class Array3
     //
     void resize(const int num_rows, const int num_cols, const int num_slices)
     {
+      // [NOTE] This is tfu but need to mimic fortran.
+      nrows_ = num_rows;
+      ncols_ = num_cols;
+      nslices_ = num_slices;
+
+      if ((num_rows <= 0) || (num_cols <= 0) || (num_slices <= 0)) { 
+        return; 
+      }
+
       if (data_ != nullptr) {
         delete [] data_;
         memory_in_use -= sizeof(T) * size_;;

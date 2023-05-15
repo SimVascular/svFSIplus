@@ -59,9 +59,6 @@ int split_(int *nElptr, int *eNoNptr, int *eNoNbptr, int *IEN,
 
    MPI_Comm_rank(MPI_COMM_WORLD, &task);
 
-   printf("[split:%d] ========== metis split_ ========= \n", task);
-   printf("[split:%d] nTasks: %d\n", task, nTasks);
-
 // This is for the case one of the processors doesn't posses any
 // part of this mesh
    nExRanks   = 0;
@@ -142,9 +139,6 @@ int split_(int *nElptr, int *eNoNptr, int *eNoNbptr, int *IEN,
    free (elmdist);
    free (map);
    free (exRanks);
-
-   printf("[split:%d] edgecut: %d \n", task, edgecut);
-   printf("[split:%d] Done.\n", task);
 
    return edgecut;
 }

@@ -121,6 +121,8 @@ set(CSRCS
   post.h post.cpp
   read_files.h read_files.cpp
   read_msh.h read_msh.cpp
+  remesh.h remesh.cpp
+  remeshTet.cpp
   set_bc.h set_bc.cpp
   shells.h shells.cpp
   stokes.h stokes.cpp
@@ -175,6 +177,7 @@ target_link_libraries(${SV_SVFSI_EXE}
   ${TETGEN_LIBRARY_NAME}
   ${TINYXML_LIBRARY_NAME}
   ${SV_LIB_SVFSILS_NAME}${SV_MPI_NAME_EXT}
+  ${VTK_LIBRARIES}
   )
 
 # extra MPI libraries only if there are not set to NOT_FOUND or other null

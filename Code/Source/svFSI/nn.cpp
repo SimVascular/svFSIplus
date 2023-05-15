@@ -65,7 +65,7 @@ void get_gip(const int insd, consts::ElementType eType, const int nG, Vector<dou
 //
 // [NOTE] There should just have a single map for mesh and face types.
 //
-void get_gip(Simulation* simulation, mshType& mesh)
+void get_gip(mshType& mesh)
 {
   try {
     set_element_gauss_int_data[mesh.eType](mesh);
@@ -120,7 +120,7 @@ void get_gnn(const int nsd, consts::ElementType eType, const int eNoN, Vector<do
   Nx = Nx_a.slice(0);
 }
 
-void get_gnn(Simulation* simulation, int gaus_pt, mshType& mesh)
+void get_gnn(int gaus_pt, mshType& mesh)
 {
   try {
     set_element_shape_data[mesh.eType](gaus_pt, mesh);
@@ -295,9 +295,8 @@ void get_nn_bnds(const int nsd, consts::ElementType eType, const int eNoN, Array
 //
 // Replicates Fortran SUBROUTINE GETNNBNDS.
 //
-void get_nn_bnds(Simulation* simulation, mshType& mesh)
+void get_nn_bnds(const ComMod& com_mod, mshType& mesh)
 {
-  auto& com_mod = simulation->get_com_mod();
   int nsd = com_mod.nsd;
   auto eType = mesh.eType;
   int eNoN = mesh.eNoN;
@@ -914,11 +913,8 @@ void gn_nxx(const int l, const int eNoN, const int nsd, const int insd, Array<do
 //   mesh % xib(2,nsd) - Bounds on Gauss integration points in parametric space
 //   mesh % Nb(2,mesh % eNoN) - Bounds on shape functions
 //
-void select_ele(Simulation* simulation, mshType& mesh)
+void select_ele(const ComMod& com_mod, mshType& mesh)
 {
-  // Get the object storing global variables.
-  auto& com_mod = simulation->get_com_mod();
-
   // Set integration dimension.
   int insd;
   if (mesh.lShl) {
@@ -951,19 +947,19 @@ void select_ele(Simulation* simulation, mshType& mesh)
   // Set mesh 'w' and 'xi' arrays used for Gauss integration.
   mesh.w = Vector<double>(mesh.nG); 
   mesh.xi = Array<double>(insd, mesh.nG); 
-  get_gip(simulation, mesh);
+  get_gip(mesh);
 
   // Create mesh 'N' and 'Nx' shape function arrays.
   mesh.N = Array<double>(mesh.eNoN, mesh.nG); 
   mesh.Nx = Array3<double>(insd, mesh.eNoN, mesh.nG); 
   for (int g = 0; g < mesh.nG; g++) {
-    get_gnn(simulation, g, mesh);
+    get_gnn(g, mesh);
   }
 
   // Create bounds on Gauss integration points and shape functions.
   mesh.xib = Array<double>(2, com_mod.nsd); 
   mesh.Nb = Array<double>(2, mesh.eNoN); 
-  get_nn_bnds(simulation, mesh);
+  get_nn_bnds(com_mod, mesh);
 }
 
 //-------------
