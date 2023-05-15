@@ -1220,6 +1220,7 @@ DomainParameters::DomainParameters()
   set_parameter("Relative_tolerance", 1e-4, !required, relative_tolerance);
   set_parameter("Shell_thicknes", 0.0, !required, shell_thickness);
   set_parameter("Solid_density", 0.5, !required, solid_density);
+  set_parameter("Solid_viscosity", 0.9, !required, solid_viscosity);
   set_parameter("Source_term", 0.0, !required, source_term);
   set_parameter("Time_step_for_integration", 0.0, !required, time_step_for_integration);
 }

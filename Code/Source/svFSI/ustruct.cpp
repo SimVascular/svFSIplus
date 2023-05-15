@@ -170,7 +170,7 @@ void construct_usolid(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const
 {
   using namespace consts;
 
-  #define debug_construct_usolid
+  #define n_debug_construct_usolid
   #ifdef debug_construct_usolid
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
@@ -1806,7 +1806,7 @@ void ustruct_r(ComMod& com_mod, const Array<double>& Yg)
 {
   using namespace consts;
 
-  #define debug_ustruct_r 
+  #define n_debug_ustruct_r 
   #ifdef debug_ustruct_r 
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();

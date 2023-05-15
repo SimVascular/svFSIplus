@@ -356,7 +356,7 @@ mat_mul(const Array<double>& A, const Vector<double>& v)
 //---------
 // mat_mul
 //---------
-// Multiply a matrix by a vector.
+// Multiply a matrix by a matrix.
 //
 // Reproduces Fortran MATMUL.
 //
@@ -391,6 +391,8 @@ mat_mul(const Array<double>& A, const Array<double>& B)
 //---------
 // mat_mul
 //---------
+// Multiply a matrix by a matrix.
+//
 // Compute result directly into the passed argument.
 //
 void mat_mul(const Array<double>& A, const Array<double>& B, Array<double>& result)

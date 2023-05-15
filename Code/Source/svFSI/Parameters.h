@@ -920,6 +920,7 @@ class DomainParameters : public ParameterLists
 
     Parameter<double> shell_thickness;
     Parameter<double> solid_density;
+    Parameter<double> solid_viscosity;
     Parameter<double> source_term;
     Parameter<double> time_step_for_integration;
 };

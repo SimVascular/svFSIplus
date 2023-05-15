@@ -213,11 +213,11 @@ void construct_dsolid(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const
   }
 
   #ifdef debug_construct_dsolid
-  debug << "lM.nEl: " << lM.nEl;
-  debug << "eNoN: " << eNoN;
-  debug << "nsymd: " << nsymd;
-  debug << "nFn: " << nFn;
-  debug << "lM.nG: " << lM.nG;
+  dmsg << "lM.nEl: " << lM.nEl;
+  dmsg << "eNoN: " << eNoN;
+  dmsg << "nsymd: " << nsymd;
+  dmsg << "nFn: " << nFn;
+  dmsg << "lM.nG: " << lM.nG;
   #endif
 
   // STRUCT: dof = nsd
@@ -318,7 +318,6 @@ void construct_dsolid(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const
         }
       }
     } 
-
 
     // Assembly
     //
@@ -608,7 +607,15 @@ void struct_3d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, 
   double afu = eq.af * eq.beta*dt*dt;
   double afv = eq.af * eq.gam*dt;
   double amd = eq.am * rho  +  eq.af * eq.gam * dt * dmp;
-  double afl = eq.af * eq.beta * dt * dt;
+
+  #ifdef debug_struct_3d 
+  dmsg << "rho: " << rho;
+  dmsg << "mu: " << mu;
+  dmsg << "dmp: " << dmp;
+  dmsg << "afu: " << afu;
+  dmsg << "afv: " << afv;
+  dmsg << "amd: " << amd;
+  #endif
 
   int i = eq.s;
   int j = i + 1;
@@ -645,7 +652,7 @@ void struct_3d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, 
     vx(1,2) = vx(1,2) + Nx(2,a)*yl(j,a);
     vx(2,0) = vx(2,0) + Nx(0,a)*yl(k,a);
     vx(2,1) = vx(2,1) + Nx(1,a)*yl(k,a);
-    vx(2,2) = vx(2,2) + Nx(3,a)*yl(k,a);
+    vx(2,2) = vx(2,2) + Nx(2,a)*yl(k,a);
 
     F(0,0) = F(0,0) + Nx(0,a)*dl(i,a);
     F(0,1) = F(0,1) + Nx(1,a)*dl(i,a);
@@ -705,6 +712,14 @@ void struct_3d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, 
 
   // Elastic + Viscous stresses
   S = S + Svis;
+
+  #ifdef debug_struct_3d 
+  dmsg << "Jac: " << Jac;
+  dmsg << "Fi: " << Fi;
+  dmsg << "VxFi: " << VxFi;
+  dmsg << "ddev: " << ddev;
+  dmsg << "S: " << S;
+  #endif
 
   // Prestress
   pSl(0) = S(0,0);
@@ -785,7 +800,9 @@ void struct_3d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, 
   double NxSNx, T1, NxNx, BmDBm, Tv;
 
   for (int b = 0; b < eNoN; b++) {
+
     for (int a = 0; a < eNoN; a++) {
+
       // Geometric stiffness
       NxSNx = Nx(0,a)*S(0,0)*Nx(0,b) + Nx(1,a)*S(1,0)*Nx(0,b) +
               Nx(2,a)*S(2,0)*Nx(0,b) + Nx(0,a)*S(0,1)*Nx(1,b) +
@@ -796,8 +813,7 @@ void struct_3d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, 
       T1 = amd*N(a)*N(b) + afu*NxSNx;
 
       // Material Stiffness (Bt*D*B)
-      //DBm = MATMUL(Dm, Bm(:,:,b))
-
+      mat_mul(Dm, Bm.rslice(b), DBm);
       NxNx = NxFi(0,a)*NxFi(0,b) + NxFi(1,a)*NxFi(1,b) + NxFi(2,a)*NxFi(2,b);
 
       // dM1/du1
@@ -810,7 +826,11 @@ void struct_3d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, 
       Tv = (2.0*(DdNx(0,a)*NxFi(0,b) - DdNx(0,b)*NxFi(0,a)) - (NxNx*VxFi(0,0) + NxFi(0,b)*VxNx(0,a) -  
            r23*NxFi(0,a)*VxNx(0,b))) * rmu + (r13*NxFi(0,a)*NxFi(0,b) + NxNx) * rmv;
 
-      lK(1,a,b) = lK(1,a,b) + w*(T1 + afu*BmDBm + Tv);
+      //dmsg << "Tv: " << Tv;
+      //dmsg << "BmDBm: " << BmDBm;
+      //dmsg << "NxNx: " << NxNx;
+
+      lK(0,a,b) = lK(0,a,b) + w*(T1 + afu*BmDBm + Tv);
 
       // dM1/du2
       // Material stiffness: Bt*D*B
