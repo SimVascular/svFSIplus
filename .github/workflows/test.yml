@@ -5,8 +5,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04]
-        #os: [ubuntu-20.04, ubuntu-22.04, macos-12]
+        os: [ubuntu-20.04, ubuntu-22.04, macos-12]
       fail-fast: false
     steps:
       - uses: actions/checkout@v3
@@ -52,12 +51,3 @@ jobs:
         with:
           name: coverage_report
           path: build/svFSI-build/coverage
-      - name: Generate Code Coverage report
-        if: startsWith(matrix.os, 'ubuntu-22.04')
-        id: code-coverage
-        uses: barecheck/code-coverage-action@v1
-        with:
-          barecheck-github-app-token: ${{ secrets.BARECHECK_GITHUB_APP_TOKEN }}
-          lcov-file: "build/svFSI-build/coverage.info"
-          send-summary-comment: true
-          show-annotations: "warning"
