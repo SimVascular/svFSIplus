@@ -837,6 +837,7 @@ void read_cep_domain(Simulation* simulation, EquationParameters* eq_params, Doma
   if (domain_params->G_Na.defined())  { cep_mod.ttp.G_Na = domain_params->G_Na.value(); }
   if (domain_params->G_Kr.defined())  { cep_mod.ttp.G_Kr = domain_params->G_Kr.value(); }
   if (domain_params->G_Ks.defined())  { cep_mod.ttp.G_Ks[lDmn.cep.imyo - 1] = domain_params->G_Ks.value(); }
+  if (domain_params->G_to.defined())  { cep_mod.ttp.G_to[lDmn.cep.imyo - 1] = domain_params->G_to.value(); }
   if (domain_params->G_CaL.defined()) { cep_mod.ttp.G_CaL = domain_params->G_CaL.value(); }
 
 

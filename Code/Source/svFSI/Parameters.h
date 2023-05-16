@@ -939,6 +939,7 @@ class DomainParameters : public ParameterLists
     Parameter<double> G_CaL;
     Parameter<double> G_Kr;
     Parameter<double> G_Ks;
+    Parameter<double> G_to;
 
     Parameter<std::string> ode_solver;
     Parameter<double> penalty_parameter;

@@ -1217,6 +1217,7 @@ DomainParameters::DomainParameters()
   set_parameter("G_CaL", 3.98E-5, !required, G_CaL);
   set_parameter("G_Kr", 0.153, !required, G_Kr);
   set_parameter("G_Ks", 0.392, !required, G_Ks);
+  set_parameter("G_to", 0.294, !required, G_to);
 
   set_parameter("ODE_solver", "euler", !required, ode_solver);
 
