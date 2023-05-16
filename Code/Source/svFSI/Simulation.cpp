@@ -7,7 +7,7 @@
 #include "mpi.h"
 
 #include <iostream>
- 
+
 //------------
 // Simulation
 //------------
@@ -15,9 +15,9 @@
 Simulation::Simulation() 
 {
   roInf = 0.2;
-  isReqd = false;
-
   com_mod.cm.new_cm(MPI_COMM_WORLD);
+
+  history_file_name = "histor.dat";
 }
 
 //-------------
@@ -62,7 +62,8 @@ void Simulation::read_parameters(const std::string& file_name)
 //
 void Simulation::set_module_parameters()
 {
-  // set ComMod module varliables.
+  // Set ComMod module varliables.
+  //
   auto& general = parameters.general_simulation_parameters;
 
   com_mod.iniFilePath = general.simulation_initialization_file_path.value();
@@ -86,10 +87,10 @@ void Simulation::set_module_parameters()
   com_mod.stFileRepl = general.overwrite_restart_file.value();
   com_mod.stFileName = chnl_mod.appPath + general.restart_file_name.value();
   com_mod.stFileIncr = general.increment_in_saving_restart_files.value();
+  com_mod.rmsh.isReqd = general.simulation_requires_remeshing.value();
 
   // Set simulation parameters.
   nTs = general.number_of_time_steps.value();
   fTmp = general.simulation_initialization_file_path.value();
   roInf = general.spectral_radius_of_infinite_time_step.value();
-  isReqd = general.simulation_requires_remeshing.value();
 }

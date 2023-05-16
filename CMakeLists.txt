@@ -83,6 +83,7 @@ include(SimVascularFunctionCheckCompilerFlags)
 # These variables must later be add to 'ExternalProject_Add(svFSI' as -D options. 
 #
 set(SV_USE_TRILINOS OFF CACHE BOOL "Use Trilinos Library with svFSI")
+set(ENABLE_COVERAGE OFF CACHE BOOL "Enable code coverage")
 
 #-----------------------------------------------------------------------------
 # RPATH handling
@@ -139,6 +140,7 @@ ExternalProject_Add(svFSI
     -DSV_EXTERNALS_USE_TOPLEVEL_DIR:BOOL=ON
     -DSV_EXTERNALS_TOPLEVEL_DIR:PATH=${SV_EXTERNALS_TOPLEVEL_DIR}
     -DSV_USE_TRILINOS:BOOL=${SV_USE_TRILINOS}
+    -DENABLE_COVERAGE:BOOL=${ENABLE_COVERAGE}
     ${SV_APPLE_CMAKE_ARGS}
     ${SV_ADDITIONAL_CMAKE_ARGS}
     )

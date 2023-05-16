@@ -9,13 +9,13 @@ template<>
 double Array3<double>::memory_returned = 0;
 
 template<>
-int Array3<double>::allocated = 0;
+int Array3<double>::num_allocated = 0;
 
 template<>
 int Array3<double>::active = 0;
 
 template<>
-bool Array3<double>::write_disabled = true;
+bool Array3<double>::write_enabled = false;
 
 template<>
 void Array3<double>::memory(const std::string& prefix)
@@ -26,7 +26,7 @@ void Array3<double>::memory(const std::string& prefix)
 template<>
 void Array3<double>::stats(const std::string& prefix)
 {
-  utils::print_stats("Array3<double>", prefix, allocated, active);
+  utils::print_stats("Array3<double>", prefix, num_allocated, active);
 }
 
 //--------------------------//
@@ -40,10 +40,10 @@ template<>
 double Array3<int>::memory_returned = 0;
 
 template<>
-int Array3<int>::allocated = 0;
+int Array3<int>::num_allocated = 0;
 
 template<>
 int Array3<int>::active = 0;
 
 template<>
-bool Array3<int>::write_disabled = true;
+bool Array3<int>::write_enabled = false;

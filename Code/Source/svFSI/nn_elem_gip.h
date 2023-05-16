@@ -595,6 +595,13 @@ using SetFaceGausIntMapType = std::map<ElementType, std::function<void(faceType&
 //
 SetFaceGausIntMapType set_face_gauss_int_data = {
 
+  {ElementType::PNT, [](faceType& face) -> void {
+      for (int i = 0; i < face.nG; i++) {
+        face.w(i) =  1.0;
+      }
+    }
+  },
+
   {ElementType::LIN1, [](faceType& face) -> void {
       for (int i = 0; i < face.nG; i++) {
         face.w(i) =  1.0;

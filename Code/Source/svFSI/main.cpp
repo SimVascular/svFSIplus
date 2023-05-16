@@ -1,4 +1,10 @@
 
+// The functions defined here are used to run a simulation from the command line.
+//
+// Usage:
+//
+//   svFSIplus XML_FILE_NAME
+//
 #include "Simulation.h"
 
 #include "all_fun.h"
@@ -13,6 +19,7 @@
 #include "pic.h"
 #include "read_files.h"
 #include "read_msh.h"
+#include "remesh.h"
 #include "set_bc.h"
 #include "txt.h"
 #include "ustruct.h"
@@ -25,7 +32,7 @@
 //------------
 // read_files
 //------------
-// Read in XML file and all mesh and BC data.  
+// Read in a solver XML file and all mesh and BC data.  
 //
 void read_files(Simulation* simulation, const std::string& file_name)
 {
@@ -35,14 +42,18 @@ void read_files(Simulation* simulation, const std::string& file_name)
     return;
   }
 
+  read_files_ns::read_files(simulation, file_name);
+
+/*
   try {
     read_files_ns::read_files(simulation, file_name);
 
   } catch (const std::exception& exception) {
-    std::cout << "[svFSI] ERROR The svFSI program has failed." << std::endl;
-    std::cout << "[svFSI] ERROR " << exception.what() << std::endl;
+    std::cout << "[svFSIplus] ERROR The svFSIplus program has failed." << std::endl;
+    std::cout << "[svFSIplus] ERROR " << exception.what() << std::endl;
     exit(1);
   }
+*/
   
 }
 
@@ -50,6 +61,8 @@ void read_files(Simulation* simulation, const std::string& file_name)
 // iterate_solution
 //------------------
 // Iterate the simulation in time.
+//
+// Reproduces the outer and inner loops in Fortan MAIN.f. 
 //
 void iterate_solution(Simulation* simulation)
 {
@@ -161,6 +174,8 @@ void iterate_solution(Simulation* simulation)
     dmsg << "cTS: " << cTS;
     dmsg << "dt: " << dt;
     dmsg << "time: " << time;
+    dmsg << "mvMsh: " << com_mod.mvMsh;
+    dmsg << "rmsh.isReqd: " << com_mod.rmsh.isReqd;
     #endif
 
     for (auto& eq : com_mod.eq) {
@@ -451,14 +466,23 @@ void iterate_solution(Simulation* simulation)
 
     txt_ns::txt(simulation, false);
 
+    // If remeshing is required then save current solution.
+    //
     if (com_mod.rmsh.isReqd) {
       l1 = ((cTS % com_mod.rmsh.cpVar) == 0);
       if (l1) {
+        #ifdef debug_iterate_solution
+        dmsg << "Saving last solution for remeshing." << std::endl; 
+        #endif
         com_mod.rmsh.rTS = cTS - 1;
         com_mod.rmsh.time = time - dt;
         for (int i = 0; i < com_mod.rmsh.iNorm.size(); i++) {
           com_mod.rmsh.iNorm(i) = com_mod.eq[i].iNorm;
         }
+
+        com_mod.rmsh.A0 = com_mod.Ao;
+        com_mod.rmsh.Y0 = com_mod.Yo;
+        com_mod.rmsh.D0 = com_mod.Do;
       }
     }
 
@@ -562,8 +586,12 @@ void iterate_solution(Simulation* simulation)
   } // End of outer loop
 
   #ifdef debug_iterate_solution
-  dmsg << "=======  Simulation Finished   ========== " << std::endl;
+  dmsg << "End of outer loop" << std::endl;
   #endif
+
+  //#ifdef debug_iterate_solution
+  //dmsg << "=======  Simulation Finished   ========== " << std::endl;
+  //#endif
 }
 
 //----------------
@@ -578,11 +606,13 @@ void run_simulation(Simulation* simulation)
 //------
 // main
 //------
+// Run a simulation from the command line using the name of a solver input 
+// XML file as an argument.
 //
 int main(int argc, char *argv[])
 {
   if (argc != 2) {
-    std::cout << "[svFSI:ERROR] The svFSI program requires the solver input file name as an argument." << std::endl;
+    std::cout << "[svFSIplus:ERROR] The svFSIplus program requires the solver input XML file name as an argument." << std::endl;
     exit(1);
   }
 
@@ -594,8 +624,8 @@ int main(int argc, char *argv[])
   MPI_Init(&argc, &argv);
   MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
   MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
-  std::cout << "[svFSI] MPI rank: " << mpi_rank << std::endl;
-  std::cout << "[svFSI] MPI size: " << mpi_size << std::endl;
+  //std::cout << "[svFSI] MPI rank: " << mpi_rank << std::endl;
+  //std::cout << "[svFSI] MPI size: " << mpi_size << std::endl;
 
   // Create a Simulation object that stores all data structures for a simulation.
   //
@@ -603,23 +633,64 @@ int main(int argc, char *argv[])
   // from the Simulation constructor. 
   //
   auto simulation = new Simulation();
-
-  // Read in the solver commands .xml file.
+  auto& cm = simulation->com_mod.cm;
   std::string file_name(argv[1]);
 
-  // Read xml file (master processor only).
-  read_files(simulation, file_name);
+  #define n_debug_main
+  #ifdef debug_main
+  DebugMsg dmsg(__func__, cm.idcm());
+  dmsg.banner();
+  #endif
 
-  // Distribute data to processors.
-  distribute(simulation);
+  // Iterate for restarting a simulation after remeshing. 
+  //
+  while (true) {
 
-  // Initialize simulation data.
-  Vector<double> init_time(3);
+    // Read in the solver commands .xml file.
+    //
+    read_files(simulation, file_name);
 
-  initialize(simulation, init_time);
+    // Distribute data to processors.
+    distribute(simulation);
 
-  // Run the simulation.
-  run_simulation(simulation);
+    // Initialize simulation data.
+    //
+    Vector<double> init_time(3);
+
+    initialize(simulation, init_time);
+
+    #ifdef debug_main
+    for (int iM = 0; iM < simulation->com_mod.nMsh; iM++) {
+      dmsg << "---------- iM " << iM;
+      dmsg << "msh[iM].nNo: " << simulation->com_mod.msh[iM].nNo;
+      dmsg << "msh[iM].gnNo: " << simulation->com_mod.msh[iM].gnNo;
+      dmsg << "msh[iM].nEl: " << simulation->com_mod.msh[iM].nEl;
+      dmsg << "msh[iM].gnEl: " << simulation->com_mod.msh[iM].gnEl;
+    }
+    #endif
+
+    // Run the simulation.
+    run_simulation(simulation);
+
+    #ifdef debug_main
+    dmsg << "resetSim: " << simulation->com_mod.resetSim;
+    #endif
+
+    // Remesh and continue the simulation.
+    //
+    if (simulation->com_mod.resetSim) {
+      #ifdef debug_main
+      dmsg << "Calling remesh_restart" << " ..."; 
+      #endif
+      remesh::remesh_restart(simulation);
+      #ifdef debug_main
+      dmsg << "Continue the simulation " << " ";
+      #endif
+    } else {
+      break;
+    }
+
+  }
 
   MPI_Finalize();
 }
