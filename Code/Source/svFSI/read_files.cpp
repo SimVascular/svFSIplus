@@ -1364,10 +1364,13 @@ void read_files(Simulation* simulation, const std::string& file_name)
 {
   using namespace consts;
 
-  // Read the solver XML file.
-  simulation->read_parameters(std::string(file_name));
-
   auto& com_mod = simulation->get_com_mod();
+
+  // Read the solver XML file.
+  if (!com_mod.resetSim) {
+    simulation->read_parameters(std::string(file_name));
+  }
+
   auto& chnl_mod = simulation->get_chnl_mod();
   auto& gen_params = simulation->parameters.general_simulation_parameters;
 
@@ -2473,11 +2476,63 @@ void read_trac_bcff(ComMod& com_mod, MBType& lMB, faceType& lFa, const std::stri
 //-----------
 // read_rmsh
 //-----------
-// [NOTE] no test example for this, not implemented.
+// Set remesher parameters.
 //
-void read_rmsh(Simulation* simulation)
+// Replicates Fortran 'SUBROUTINE READRMSH(list)'.
+//
+void read_rmsh(Simulation* simulation, EquationParameters* eq_param)
 { 
   using namespace consts;
+
+  #define n_debug_read_rmsh 
+  #ifdef debug_read_rmsh 
+  DebugMsg dmsg(__func__, simulation->com_mod.cm.idcm());
+  dmsg.banner();
+  #endif
+
+  auto& remesher = eq_param->remesher;
+  if (!remesher.defined()) { 
+    return;
+  }
+
+  auto& com_mod = simulation->com_mod;
+  auto& rmsh = com_mod.rmsh;
+  int nMsh = com_mod.nMsh;
+
+  auto mesh_gen_str = remesher.type.value();
+  #ifdef debug_read_rmsh 
+  dmsg << "Remesh type: " << mesh_gen_str;
+  #endif
+
+  try {
+    rmsh.method = mesh_generator_name_to_type.at(mesh_gen_str);
+  } catch (const std::out_of_range& exception) {
+    throw std::runtime_error("Unknown mesh generator '" + mesh_gen_str + ".");
+  }
+
+  rmsh.maxEdgeSize.resize(nMsh);
+  rmsh.maxEdgeSize = 0.5;
+
+  for (int i = 0; i < nMsh; i++) {
+    if (remesher.has_edge_size(com_mod.msh[i].name)) {
+      rmsh.maxEdgeSize[i] = remesher.get_edge_size(com_mod.msh[i].name);
+    }
+    #ifdef debug_read_rmsh 
+    dmsg << "mesh: " << com_mod.msh[i].name + "  edge size: " + std::to_string(rmsh.maxEdgeSize[i]);
+    #endif
+  }
+
+  rmsh.minDihedAng = remesher.min_dihedral_angle.value();
+  rmsh.maxRadRatio = remesher.max_radius_ratio.value();
+  rmsh.freq = remesher.remesh_frequency.value();
+  rmsh.cpVar = remesher.frequency_for_copying_data.value();
+
+  #ifdef debug_read_rmsh 
+  dmsg << "rmsh.minDihedAng: " << rmsh.minDihedAng; 
+  dmsg << "rmsh.maxRadRatio: " << rmsh.maxRadRatio; 
+  dmsg << "rmsh.freq: " << rmsh.freq;
+  dmsg << "rmsh.cpVar: " << rmsh.cpVar;
+  #endif
 }
 
 //-----------------

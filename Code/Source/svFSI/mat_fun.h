@@ -23,8 +23,8 @@ namespace mat_fun {
     Array<double> mat_dyad_prod(const Vector<double>& u, const Vector<double>& v, const int nd);
 
     Array<double> mat_id(const int nsd);
-    Array<double> mat_inv(const Array<double>& A, const int nd);
-    Array<double> mat_inv_ge(const Array<double>& A, const int nd);
+    Array<double> mat_inv(const Array<double>& A, const int nd, bool debug = false);
+    Array<double> mat_inv_ge(const Array<double>& A, const int nd, bool debug = false);
     Array<double> mat_inv_lp(const Array<double>& A, const int nd);
 
     Vector<double> mat_mul(const Array<double>& A, const Vector<double>& v);
