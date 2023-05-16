@@ -535,9 +535,9 @@ void construct_cep(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Ar
                         + cep_mod.ecgleads.y_coords[index] * cep_mod.ecgleads.y_coords[index]
                         + cep_mod.ecgleads.z_coords[index] * cep_mod.ecgleads.z_coords[index]);
 
-          double drinv_x = std::pow(r_sq, -3./2.) * (cep_mod.ecgleads.x_coords[index] - x_coords);
-          double drinv_y = std::pow(r_sq, -3./2.) * (cep_mod.ecgleads.y_coords[index] - y_coords);
-          double drinv_z = std::pow(r_sq, -3./2.) * (cep_mod.ecgleads.z_coords[index] - z_coords);
+          double drinv_x = pow(r_sq, -3./2.) * (cep_mod.ecgleads.x_coords[index] - x_coords);
+          double drinv_y = pow(r_sq, -3./2.) * (cep_mod.ecgleads.y_coords[index] - y_coords);
+          double drinv_z = pow(r_sq, -3./2.) * (cep_mod.ecgleads.z_coords[index] - z_coords);
 
           pseudo_ECG_proc(index) += w * (-Vx(0) * drinv_x
                                          -Vx(1) * drinv_y
