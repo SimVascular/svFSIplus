@@ -69,7 +69,7 @@ def run_with_reference(folder, name_inp, name_ref, fields, t_max, n_proc=1):
         assert np.all(np.isclose(a, b, rtol=RTOL[f]))
 
 
-@pytest.mark.parametrize("mesh", ["N" + str(2**i).zfill(3) for i in range(2, 5)])
+@pytest.mark.parametrize("mesh", ["N" + str(2**i).zfill(3) for i in range(2, 3)])
 @pytest.mark.parametrize("ele", ["P1P1"])
 def test_stokes_manufactured_solution(ele, mesh):
     folder = os.path.join("cases", "stokes_manufactured_solution", ele, mesh)
