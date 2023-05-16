@@ -223,7 +223,7 @@ void iterate_solution(Simulation* simulation)
     int iEqOld;
 
     while (true) { 
-      #ifdef debug_iterate_solutifon
+      #ifdef debug_iterate_solution
       dmsg << "---------- Inner Loop " + std::to_string(inner_count) << " -----------" << std::endl;
       dmsg << "cEq: " << cEq;
       dmsg << "com_mod.eq[cEq].sym: " << com_mod.eq[cEq].sym;

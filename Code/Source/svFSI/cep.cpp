@@ -421,16 +421,11 @@ void construct_cep(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Ar
   if (lM.lFib) insd = 1;
   if (nFn == 0) nFn = 1;
   #ifdef debug_construct_cep 
-  dmsg << "nEl: " << lM.nEl;
-  dmsg << "nG: " << lM.nG;
-  dmsg << "nsd: " << nsd;
-  dmsg << "nFn: " << nFn;
   dmsg << "insd: " << insd;
-  dmsg << "dof: " << dof;
   dmsg << "tDof: " << tDof;
   dmsg << "eNoN: " << eNoN;
-  //dmsg << "Dg.nrows: " << Dg.nrows_;
-  //dmsg << "Dg.ncols: " << Dg.ncols_;
+  dmsg << "Dg.nrows: " << Dg.nrows_;
+  dmsg << "Dg.ncols: " << Dg.ncols_;
   #endif
 
   // CEP: dof = 1

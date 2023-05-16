@@ -640,7 +640,7 @@ void cep_integ_l(CepMod& cep_mod, cepModelType& cep, int nX, int nG, Vector<doub
   } 
 
   if (isnan(X(0)) ||  isnan(yl)) {
-    throw std::runtime_error("[cep_integ_l] A NaN has been computed during time integrattion of electrophysiology variables.");
+    throw std::runtime_error("[cep_integ_l] A NaN has been computed during time integration of electrophysiology variables.");
   }
 }
 
