@@ -86,10 +86,6 @@ void cep_1d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, con
       lK(0,a,b) = lK(0,a,b) + wl*(N(a)*N(b)*amd + Nx(0,a)*DNx(b));
     }
   }
-
-  //dmsg << "lR: " << lR;
-  //dmsg << "lK: " << lK;
-  //exit(0);
 }
 
 //--------
@@ -399,15 +395,6 @@ void cep_3d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, con
       lK(0,a,b) = lK(0,a,b) + wl*(N(a)*N(b)*amd + Nx(0,a)*DNx(0,b) + Nx(1,a)*DNx(1,b) + Nx(2,a)*DNx(2,b));
     }
   }
-
-#if 0
-  Array<double>::write_enabled = true;
-  Array3<double>::write_enabled = true;
-  lR.write("lR"+dmsg.prefix());
-  lK.write("lK"+dmsg.prefix());
-  exit(0);
-#endif
-
 }
 
 //---------------
@@ -446,13 +433,6 @@ void construct_cep(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Ar
   dmsg << "Dg.nrows: " << Dg.nrows();
   dmsg << "Dg.ncols: " << Dg.ncols();
   #endif
-
-  Array<double>::write_enabled = true;
-  Array3<double>::write_enabled = true;
-  //Ag.write("Ag"+dmsg.prefix());
-  //Yg.write("Yg"+dmsg.prefix());
-  //Dg.write("Dg"+dmsg.prefix());
-  //exit(0);
 
   // CEP: dof = 1
   Vector<int> ptr(eNoN); 
@@ -549,16 +529,6 @@ void construct_cep(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Ar
 #ifdef WITH_TRILINOS
     }
 #endif
-
-#if 0
-  if (cDmn+1 == 13) {
-    lR.write("lR_"+dmsg.prefix());
-    lK.write("lK_"+dmsg.prefix());
-    com_mod.x.write("x_"+dmsg.prefix());
-    exit(0);
-    }
-#endif
-
   } 
 }
 
