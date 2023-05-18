@@ -15,7 +15,7 @@ jobs:
           sudo apt update
           sudo apt install -y build-essential cmake qtbase5-dev libblas-dev liblapack-dev 
           sudo apt install -y libopenblas-dev mesa-common-dev libgl1-mesa-dev libglu1-mesa-dev
-          sudo apt install -y libvtk7-dev
+          sudo apt install -y libvtk7-dev openmpi-bin libopenmpi-dev
           sudo apt install -y lcov
       - name: Install MacOS dependencies
         if: startsWith(matrix.os, 'macos')

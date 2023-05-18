@@ -29,7 +29,8 @@ def run_by_name(folder, name, t_max, n_proc=1):
     Simulation results
     """
     # run simulation
-    subprocess.call(["mpirun -np " + str(n_proc), cpp_exec, name], cwd=folder, shell=True)
+    cmd = " ".join(["mpirun", "-np " + str(n_proc), cpp_exec, name])
+    subprocess.call(cmd, cwd=folder, shell=True)
 
     # read results
     fname = os.path.join(folder, str(n_proc) + "-procs", "result_" + str(t_max).zfill(3) + "_cpp.vtu")
