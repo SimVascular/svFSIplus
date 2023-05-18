@@ -246,6 +246,8 @@ void cep_3d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, con
   #ifdef debug_cep_3d 
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
+  dmsg << "nFn: " << nFn;
+  dmsg << "w: " << w;
   #endif
 
   using namespace consts;
@@ -269,6 +271,9 @@ void cep_3d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, con
   double wl = w * T1;
   double Diso = dmn.cep.Diso;
   #ifdef debug_cep_3d 
+  dmsg << "T1: " << T1;
+  dmsg << "amd: " << amd;
+  dmsg << "wl: " << wl;
   dmsg << "Diso: " << Diso;
   #endif
 
@@ -421,11 +426,12 @@ void construct_cep(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Ar
   if (lM.lFib) insd = 1;
   if (nFn == 0) nFn = 1;
   #ifdef debug_construct_cep 
+  dmsg << "lM.nEl: " << lM.nEl;
   dmsg << "insd: " << insd;
   dmsg << "tDof: " << tDof;
   dmsg << "eNoN: " << eNoN;
-  dmsg << "Dg.nrows: " << Dg.nrows_;
-  dmsg << "Dg.ncols: " << Dg.ncols_;
+  dmsg << "Dg.nrows: " << Dg.nrows();
+  dmsg << "Dg.ncols: " << Dg.ncols();
   #endif
 
   // CEP: dof = 1
@@ -491,6 +497,16 @@ void construct_cep(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Ar
 
       double w = lM.w(g) * Jac;
       N = lM.N.col(g);
+
+      #ifdef debug_construct_cep 
+      dmsg << "   " << " ";
+      dmsg << "g: " << g+1;
+      dmsg << "lM.Nx.slice(g): " << lM.Nx.slice(g);
+      dmsg << "xl: " << xl;
+      dmsg << "Nx: " << Nx;
+      dmsg << "Jac: " << Jac;
+      dmsg << "lM.w(g): " << lM.w(g);
+      #endif
 
       if (insd == 3) {
         cep_3d(com_mod, cep_mod, eNoN, nFn, w, N, Nx, al, yl, dl, fN, lR, lK);
