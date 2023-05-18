@@ -137,6 +137,11 @@ void read_sv(Simulation* simulation, mshType& mesh, const MeshParameters* mesh_p
     dmsg << "face.name: " << face.name;
     #endif
 
+    face.qmTRI3 = face_param->quadrature_modifier_TRI3();
+    if (face.qmTRI3 < (1.0/3.0) || face.qmTRI3 > 1.0) {
+      throw std::runtime_error("Quadrature_modifier_TRI3 must be in the range [1/3, 1].");
+    }
+
     if (mesh.lFib) {
       auto face_path = face_param->end_nodes_face_file_path();
       #ifdef dbg_read_sv

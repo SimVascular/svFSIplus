@@ -751,11 +751,11 @@ void read_bf(ComMod& com_mod, BodyForceParameters* bf_params, bfType& lBf)
 }
 
 //----------
-// read_cep
+// read_cep_domain
 //----------
-// Set parameters for a cardiac electrophysiology a model.
+// Set domain-specific parameters for a cardiac electrophysiology model.
 //
-void read_cep(Simulation* simulation, EquationParameters* eq_params, DomainParameters* domain_params, dmnType& lDmn)
+void read_cep_domain(Simulation* simulation, EquationParameters* eq_params, DomainParameters* domain_params, dmnType& lDmn)
 { 
   auto model_str = domain_params->electrophysiology_model.value();
   std::transform(model_str.begin(), model_str.end(), model_str.begin(), ::tolower);
@@ -767,7 +767,7 @@ void read_cep(Simulation* simulation, EquationParameters* eq_params, DomainParam
   try {
     model_type = cep_model_name_to_type.at(model_str);
   } catch (const std::out_of_range& exception) {
-    throw std::runtime_error("[read_cep] Unknown model type '" + model_str + "'.");
+    throw std::runtime_error("[read_cep_domain] Unknown model type '" + model_str + "'.");
   }
   
   // Set model parameters based on model type.
@@ -832,6 +832,15 @@ void read_cep(Simulation* simulation, EquationParameters* eq_params, DomainParam
     }
   }
 
+  // Set Ttp parameters.
+  //
+  if (domain_params->G_Na.defined())  { cep_mod.ttp.G_Na = domain_params->G_Na.value(); }
+  if (domain_params->G_Kr.defined())  { cep_mod.ttp.G_Kr = domain_params->G_Kr.value(); }
+  if (domain_params->G_Ks.defined())  { cep_mod.ttp.G_Ks[lDmn.cep.imyo - 1] = domain_params->G_Ks.value(); }
+  if (domain_params->G_to.defined())  { cep_mod.ttp.G_to[lDmn.cep.imyo - 1] = domain_params->G_to.value(); }
+  if (domain_params->G_CaL.defined()) { cep_mod.ttp.G_CaL = domain_params->G_CaL.value(); }
+
+
   // Set stimulus parameters. 
   //
   lDmn.cep.Istim.A  = 0.0;
@@ -868,12 +877,12 @@ void read_cep(Simulation* simulation, EquationParameters* eq_params, DomainParam
   try {
     time_integration_type = cep_time_int_to_type.at(ode_solver_str);
   } catch (const std::out_of_range& exception) {
-    throw std::runtime_error("[read_cep] Unknown ode solver type '" + ode_solver_str + "'.");
+    throw std::runtime_error("[read_cep_domain] Unknown ode solver type '" + ode_solver_str + "'.");
   }
   lDmn.cep.odes.tIntType = time_integration_type;
 
   if ((lDmn.cep.odes.tIntType == TimeIntegratioType::CN2) && (lDmn.cep.cepType == ElectrophysiologyModelType::TTP)) {
-    throw std::runtime_error("[read_cep] Implicit time integration for tenTusscher-Panfilov model can give unexpected results. Use FE or RK4 instead");
+    throw std::runtime_error("[read_cep_domain] Implicit time integration for tenTusscher-Panfilov model can give unexpected results. Use FE or RK4 instead");
   }
 
   if (lDmn.cep.odes.tIntType == TimeIntegratioType::CN2) {
@@ -889,6 +898,71 @@ void read_cep(Simulation* simulation, EquationParameters* eq_params, DomainParam
     lDmn.cep.Ksac = domain_params->feedback_parameter_for_stretch_activated_currents.value();
   } else {
     lDmn.cep.Ksac = 0.0;
+  }
+}
+
+//----------
+// read_cep_equation
+//----------
+// Set parameters that are affecting the whole equation of a cardiac electrophysiology model (for the moment ECG leads only)
+//
+void read_cep_equation(CepMod* cep_mod, Simulation* simulation, EquationParameters* eq_params)
+{
+  // Set ECG leads parameters.
+  std::vector<double> x_coords, y_coords, z_coords;
+  auto& chnl_mod = simulation->get_chnl_mod();
+  if (eq_params->ecg_leads.defined()) {
+
+    if (simulation->get_com_mod().nsd != 3) {
+      throw std::runtime_error("ECG leads computation is allowed only for 3D geometries");
+    }
+
+    std::string line;
+    auto& ecg_leads_params = eq_params->ecg_leads;
+
+    std::ifstream x_coords_file;
+    std::string x_coords_file_name = ecg_leads_params.x_coords_file_path.value();
+    x_coords_file.open(x_coords_file_name);
+    if (!x_coords_file.is_open()) {
+      throw std::runtime_error("[read_cep_equation] Failed to open the ECG leads x-coordinates file '" + x_coords_file_name + "'.");
+    }
+    while(std::getline(x_coords_file, line)) { x_coords.push_back(std::stod(line)); }
+    x_coords_file.close();
+
+    std::ifstream y_coords_file;
+    std::string y_coords_file_name = ecg_leads_params.y_coords_file_path.value();
+    y_coords_file.open(y_coords_file_name);
+    if (!y_coords_file.is_open()) {
+      throw std::runtime_error("[read_cep_equation] Failed to open the ECG leads y-coordinates file '" + y_coords_file_name + "'.");
+    }
+    while(std::getline(y_coords_file, line)) { y_coords.push_back(std::stod(line)); }
+    y_coords_file.close();
+
+    std::ifstream z_coords_file;
+    std::string z_coords_file_name = ecg_leads_params.z_coords_file_path.value();
+    z_coords_file.open(z_coords_file_name);
+    if (!z_coords_file.is_open()) {
+      throw std::runtime_error("[read_cep_equation] Failed to open the ECG leads z-coordinates file '" + z_coords_file_name + "'.");
+    }
+    while(std::getline(z_coords_file, line)) { z_coords.push_back(std::stod(line)); }
+    z_coords_file.close();
+
+    if (x_coords.size() != y_coords.size() ||
+        y_coords.size() != z_coords.size()) {
+      throw std::runtime_error("[read_cep_equation] ECG leads for x,y,z-coordinates must have the same dimension.");
+    }
+    cep_mod->ecgleads.num_leads = x_coords.size();
+
+    for (int index = 0; index < cep_mod->ecgleads.num_leads; index++) {
+      cep_mod->ecgleads.out_files.push_back(simulation->chnl_mod.appPath + "ecglead_" + std::to_string(index + 1) + ".txt");
+    }
+
+    cep_mod->ecgleads.x_coords.set_values(x_coords);
+    cep_mod->ecgleads.y_coords.set_values(y_coords);
+    cep_mod->ecgleads.z_coords.set_values(z_coords);
+
+    cep_mod->ecgleads.pseudo_ECG.resize(cep_mod->ecgleads.num_leads);
+    std::fill(cep_mod->ecgleads.pseudo_ECG.begin(), cep_mod->ecgleads.pseudo_ECG.end(), 0.);
   }
 }
 
@@ -1083,9 +1157,9 @@ void read_domain(Simulation* simulation, EquationParameters* eq_params, eqType& 
         lEq.dmn[iDmn].prop[prop] = rtmp;
      }
 
-     // Set parameters for a cardiac electrophysiology a model.
+     // Set parameters for a cardiac electrophysiology model.
      if (lEq.dmn[iDmn].phys == EquationType::phys_CEP) {
-        read_cep(simulation, eq_params, domain_params, lEq.dmn[iDmn]);
+        read_cep_domain(simulation, eq_params, domain_params, lEq.dmn[iDmn]);
      }
 
      // Set parameters for a solid material model.
@@ -1497,6 +1571,18 @@ void read_files(Simulation* simulation, const std::string& file_name)
   }
 
   auto& cep_mod = simulation->get_cep_mod();
+
+  // Read equation-specific parameters for a cardiac electrophysiology model (ECG leads only, at the moment)
+  if (cep_mod.cepEq) {
+    for (int iEq = 0; iEq < nEq; iEq++) {
+      auto& eq = com_mod.eq[iEq];
+
+      if (eq.phys == EquationType::phys_CEP) {
+        auto& eq_params = simulation->parameters.equation_parameters[iEq];
+        read_cep_equation(&cep_mod, simulation, eq_params);
+      }
+    }
+  }
 
   if (cep_mod.cem.cpld) {
     if (nEq == 1) {

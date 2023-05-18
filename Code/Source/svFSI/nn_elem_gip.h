@@ -463,8 +463,14 @@ SetElementGausIntMapType set_element_gauss_int_data = {
       for (int i = 0; i < mesh.nG; i++) { 
         mesh.w(i) = 1.0 / 24.0;
       }
-      double s = (5.0 + 3.0*sqrt(5.0)) / 20.0;
-      double t = (5.0 - sqrt(5.0)) / 20.0;
+      // s=0.25: central quadrature rule
+      // s=(5.0+3.0*sqrt(5.0))/20.0: original gaussian quadrature rule
+      // s=1.0: nodal quadrature
+      double s = mesh.qmTET4;
+      // t=0.25: central quadrature rule
+      // t=(5.0-sqrt(5.0))/20.0: original gaussian quadrature rule
+      // t=0.0: nodal quadrature
+      double t = (1-s)/3.0;
       mesh.xi(0,0) = s; mesh.xi(1,0) = t; mesh.xi(2,0) = t;
       mesh.xi(0,1) = t; mesh.xi(1,1) = s; mesh.xi(2,1) = t;
       mesh.xi(0,2) = t; mesh.xi(1,2) = t; mesh.xi(2,2) = s;
@@ -707,8 +713,15 @@ SetFaceGausIntMapType set_face_gauss_int_data = {
       //  face.w(i) =  1.0 / 6.0;
       //}
       face.w =  1.0 / 6.0;
-      double s =  2.0 / 3.0;
-      double t = 1.0 / 6.0;
+
+      // s=1.0/3.0: central quadrature rule
+      // s=2.0/3.0: original gaussian quadrature rule
+      // s=1.0: nodal quadrature
+      double s = face.qmTRI3;
+      // t=1.0/3.0: central quadrature rule
+      // t=1.0/6.0: original gaussian quadrature rule
+      // t=0.0: nodal quadrature
+      double t = -0.5*s+0.5;
       face.xi(0,0) = t; face.xi(1,0) = t;
       face.xi(0,1) = s; face.xi(1,1) = t;
       face.xi(0,2) = t; face.xi(1,2) = s;

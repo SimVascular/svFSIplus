@@ -117,6 +117,29 @@ class stimType
     double A = 0.0;
 };
 
+// ECG leads type
+class ecgLeadsType
+{
+  public:
+    // Number of leads
+    int num_leads = 0;
+
+    // x coordinates
+    Vector<double> x_coords;
+
+    // y coordinates
+    Vector<double> y_coords;
+
+    // z coordinates
+    Vector<double> z_coords;
+
+    // Pseudo ECG over each lead
+    Vector<double> pseudo_ECG;
+
+    // Output files
+    std::vector<std::string> out_files;
+};
+
 //!     Cardiac electrophysiology model type
 
 class cepModelType
@@ -213,6 +236,8 @@ class CepMod
     // Interface for Tusscher-Panfilov cellular activation model.
     CepModTtp ttp;
 
+    // ECG leads
+    ecgLeadsType ecgleads;
 };
 
 #endif
