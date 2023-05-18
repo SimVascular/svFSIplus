@@ -7,12 +7,13 @@ import pdb
 import pytest
 
 import numpy as np
+import pandas as pd
 
 this_file_dir = os.path.abspath(os.path.dirname(__file__))
 cpp_exec = os.path.join(this_file_dir, "..", "build", "svFSI-build", "bin", "svFSI")
 # todo: add second executable for "classic" svFSI and compare results
 
-RTOL = {'Pressure': 1.0e-12, 'Velocity': 1.0e-12, 'Action_potential': 1.0e-12, 'Temperature': 1.0e-12}
+RTOL = {'Pressure': 1.0e-12, 'Velocity': 1.0e-12, 'Action_potential': 1.0e-12, 'Temperature': 1.0e-12, 'ECG': 1.0e-12}
 
 
 def run_by_name(folder, name, t_max, n_proc=1):
@@ -79,13 +80,18 @@ def test_stokes_manufactured_solution(ele, mesh):
     name_ref = "result_" + str(t_max[ele]).zfill(3) + ".vtu"
     run_with_reference(folder, name_inp, name_ref, fields, t_max[ele])
 
-def test_niederer_benchmark():
-    folder = os.path.join("cases", "niederer_benchmark")
+def test_niederer_benchmark_ECGs_quadrature():
+    folder = os.path.join("cases", "niederer_benchmark_ECGs_quadrature")
     field = ["Action_potential"]
-    t_max = 30
+    t_max = 1
     name_inp = "svFSI.xml"
     name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
     run_with_reference(folder, name_inp, name_ref, field, t_max)
+
+    ecg_true_values = [-0.0786707, 0.0786707, 0.00891599]
+    for index in range(0, 3):
+        ecg_trace = pd.read_csv(folder + '/ecglead_' + str(index + 1) + '.txt', header = None)
+        assert abs(ecg_trace.iloc[-1, 1] - ecg_true_values[index]) < RTOL['ECG']
 
 def test_diffusion_line_source():
     folder = os.path.join("cases", "diffusion_line_source")

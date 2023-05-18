@@ -1202,6 +1202,12 @@ void read_msh(Simulation* simulation)
       #ifdef debug_read_msh 
       dmsg << "Global total number of nodes (gtnNo): " << com_mod.gtnNo;
       #endif
+
+      // Check modified quadrature formula for consts::ElementType::TET4.
+      mesh.qmTET4 = param->quadrature_modifier_TET4();
+      if (mesh.qmTET4 < (1.0/4.0) || mesh.qmTET4 > 1.0) {
+        throw std::runtime_error("Quadrature_modifier_TET4 must be in the range [1/4, 1].");
+      }
     }
 
     // Create global nodal coordinate array. 
