@@ -913,6 +913,14 @@ void load_var_ini(Simulation* simulation, ComMod& com_mod)
 //
 void match_faces(const ComMod& com_mod, const faceType& lFa, const faceType& pFa, const double ptol, utils::stackType& lPrj)
 {
+  #define n_debug_match_faces
+  #ifdef debug_match_faces
+  DebugMsg dmsg(__func__, com_mod.cm.idcm());
+  dmsg.banner();
+  dmsg << "lFa.name: " << lFa.name;
+  dmsg << "pFa.name: " << pFa.name;
+  #endif
+
   int iM  = lFa.iM;
   int iSh = 0;
   for (int i = 0; i < iM; i++) {
@@ -924,6 +932,13 @@ void match_faces(const ComMod& com_mod, const faceType& lFa, const faceType& pFa
   for (int j = 0; j < jM; j++) {
     jSh = jSh + com_mod.msh[j].gnNo;
   }
+
+  #ifdef debug_match_faces
+  dmsg << "iM: " << iM;
+  dmsg << "iSh: " << iSh;
+  dmsg << "jM: " << jM;
+  dmsg << "jSh: " << jSh;
+  #endif
 
   double tol;
   double eps = std::numeric_limits<double>::epsilon();
@@ -945,6 +960,11 @@ void match_faces(const ComMod& com_mod, const faceType& lFa, const faceType& pFa
   }
   int nsd = com_mod.nsd;;
   int nBk = pow(nBkd, nsd);
+  #ifdef debug_match_faces
+  dmsg << "a: " << a;
+  dmsg << "nBkd: " << nBkd;
+  dmsg << "nBk: " << nBk;
+  #endif
 
   // Find the extents of the domain and size of each block.
   //
@@ -1047,6 +1067,11 @@ void match_faces(const ComMod& com_mod, const faceType& lFa, const faceType& pFa
     }
   }
 
+  #ifdef debug_match_faces
+  dmsg << "cnt: " << cnt;
+  dmsg << "lFa.nNo: " << lFa.nNo;
+  #endif
+
   if (cnt != lFa.nNo) {
     throw std::runtime_error("Failed to find matching nodes between faces " + lFa.name + " and " + pFa.name + ".");
   }
@@ -1067,6 +1092,8 @@ void match_faces(const ComMod& com_mod, const faceType& lFa, const faceType& pFa
 // Read fiber direction from a vtu file.
 //
 // The fiber orientations data is copied into mesh.fN. 
+//
+// Reproduces Fortran READFIBNFF.
 //
 void read_fib_nff(Simulation* simulation, mshType& mesh, const std::string& fName, const std::string& kwrd, const int idx)
 {
@@ -1156,7 +1183,7 @@ void read_msh(Simulation* simulation)
       // Check for unique face names.
       //
       #ifdef debug_read_msh 
-      dmsg << "Check for unique face names ....";
+      dmsg << "Check for unique face names " << " ....";
       #endif
       for (int iFa = 0; iFa < mesh.nFa; iFa++) {
         mesh.fa[iFa].iM = iM;
@@ -1229,7 +1256,7 @@ void read_msh(Simulation* simulation)
  //
  } else {
     #ifdef debug_read_msh 
-    dmsg << "Allocate new mesh nodes or something ..." << "";
+    dmsg << "Allocate new mesh nodes or something " << " ...";
     dmsg << "com_mod.gtnNo: " << com_mod.gtnNo;
     #endif
     gX.resize(com_mod.nsd,com_mod.gtnNo);
@@ -1277,7 +1304,7 @@ void read_msh(Simulation* simulation)
   }
 
   #ifdef debug_read_msh 
-  dmsg << "Allocate com_mod.x ... " << "";
+  dmsg << "Allocate com_mod.x " << " ...";
   dmsg << "com_mod.gtnNo: " << com_mod.gtnNo;
   #endif
   com_mod.x = Array<double>(com_mod.nsd, com_mod.gtnNo);
@@ -1291,8 +1318,8 @@ void read_msh(Simulation* simulation)
   // will later be deallocated in DISTRIBUTE
   //
   #ifdef debug_read_msh 
-  dmsg << " " << "" ;
-  dmsg << "Temporarily allocate msh%lN array ... "  << "";
+  dmsg << " " << " " ;
+  dmsg << "Temporarily allocate msh%lN array ... "  << " ";
   #endif
 
   for (int iM = 0; iM < com_mod.nMsh; iM++) {
@@ -1320,6 +1347,12 @@ void read_msh(Simulation* simulation)
   maxX = -std::numeric_limits<double>::max();
 
   for (int iM = 0; iM < com_mod.nMsh; iM++) {
+    #ifdef debug_read_msh 
+    dmsg << " " << " "; 
+    dmsg << "---------- iM: " << iM+1; 
+    dmsg << "com_mod.msh[iM].gnNo: " << com_mod.msh[iM].gnNo; 
+    dmsg << "msh[iM].lFib: " << com_mod.msh[iM].lFib;
+    #endif
     if (com_mod.msh[iM].lFib) {
       b = b + com_mod.msh[iM].gnNo;
       continue;
@@ -1331,6 +1364,7 @@ void read_msh(Simulation* simulation)
 
       for (int i = 0; i < com_mod.nsd; i++) {
         com_mod.x(i,Ac) = gX(i,b);
+
         if (maxX[i] < com_mod.x(i,Ac)) {
           maxX[i] = com_mod.x(i,Ac);
         }
@@ -1341,10 +1375,21 @@ void read_msh(Simulation* simulation)
 
       b  = b + 1;
     } 
+
+    #ifdef debug_read_msh 
+    dmsg << "b: " << b+1;
+    #endif
   } 
 
   b = 0;
+
   for (int iM = 0; iM < com_mod.nMsh; iM++) {
+    #ifdef debug_read_msh 
+    dmsg << " " << " "; 
+    dmsg << "---------- iM: " << iM+1; 
+    dmsg << "msh[iM].lFib: " << com_mod.msh[iM].lFib;
+    #endif
+
     if (!com_mod.msh[iM].lFib) {
       b = b + com_mod.msh[iM].gnNo;
       continue;
@@ -1352,11 +1397,15 @@ void read_msh(Simulation* simulation)
 
     for (int a = 0; a < com_mod.msh[iM].gnNo; a++) {
       int Ac = com_mod.msh[iM].gN[a];
+
       if (ichk[Ac]) {
+        b = b + 1;
         continue; 
       }
+
       for (int i = 0; i < com_mod.nsd; i++) {
         com_mod.x(i,Ac) = gX(i,b);
+
         if (maxX[i] < com_mod.x(i,Ac)) {
           maxX[i] = com_mod.x(i,Ac);
         }
@@ -1367,6 +1416,10 @@ void read_msh(Simulation* simulation)
 
       b  = b + 1;
     }
+
+    #ifdef debug_read_msh 
+    dmsg << "b: " << b+1;
+    #endif
   }
 
   #ifdef debug_read_msh 
@@ -1736,6 +1789,12 @@ void set_dmn_id_vtk(Simulation* simulation, mshType& mesh, const std::string& fi
 //
 void set_projector(Simulation* simulation, utils::stackType& avNds)
 {
+  #define n_debug_set_projector 
+  #ifdef debug_set_projector
+  DebugMsg dmsg(__func__, simulation->com_mod.cm.idcm());
+  dmsg.banner();
+  #endif
+
   auto& com_mod = simulation->get_com_mod();
   int nPrj = simulation->parameters.projection_parameters.size();
 
@@ -1758,6 +1817,9 @@ void set_projector(Simulation* simulation, utils::stackType& avNds)
   }
   std::vector<utils::stackType> stk(nStk);
   utils::stackType lPrj;
+  #ifdef debug_set_projector
+  dmsg << "nStk: " << nStk;
+  #endif
 
   // Match the nodal coordinates for each projection face.
   //
@@ -1766,11 +1828,21 @@ void set_projector(Simulation* simulation, utils::stackType& avNds)
     auto ctmpi = params->name();
     all_fun::find_face(com_mod.msh, ctmpi, iM, iFa);
     auto& face1 = com_mod.msh[iM].fa[iFa];
+    #ifdef debug_set_projector
+    dmsg << "iM: " << iM;
+    dmsg << "iFa: " << iFa;
+    dmsg << "face1.name: " << face1.name;
+    #endif
 
     int jM, jFa;
     auto ctmpj = params->project_from_face();
     all_fun::find_face(com_mod.msh, ctmpj, jM, jFa);
     auto& face2 = com_mod.msh[jM].fa[jFa];
+    #ifdef debug_set_projector
+    dmsg << "jM: " << jM;
+    dmsg << "jFa: " << jFa;
+    dmsg << "face2.name: " << face2.name;
+    #endif
 
     double tol = params->projection_tolerance();
 
@@ -1800,6 +1872,7 @@ void set_projector(Simulation* simulation, utils::stackType& avNds)
           }
           com_mod.msh[iM].gN[ia] = k;
           com_mod.msh[jM].gN[ja] = k;
+
           push_stack(stk[k], {iM,ia,jM,ja});
 
         // This is the case one of them has already been assigned. So just using that value for the other one

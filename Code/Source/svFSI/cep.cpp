@@ -86,6 +86,10 @@ void cep_1d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, con
       lK(0,a,b) = lK(0,a,b) + wl*(N(a)*N(b)*amd + Nx(0,a)*DNx(b));
     }
   }
+
+  //dmsg << "lR: " << lR;
+  //dmsg << "lK: " << lK;
+  //exit(0);
 }
 
 //--------
@@ -246,6 +250,8 @@ void cep_3d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, con
   #ifdef debug_cep_3d 
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
+  dmsg << "nFn: " << nFn;
+  dmsg << "w: " << w;
   #endif
 
   using namespace consts;
@@ -269,6 +275,9 @@ void cep_3d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, con
   double wl = w * T1;
   double Diso = dmn.cep.Diso;
   #ifdef debug_cep_3d 
+  dmsg << "T1: " << T1;
+  dmsg << "amd: " << amd;
+  dmsg << "wl: " << wl;
   dmsg << "Diso: " << Diso;
   #endif
 
@@ -390,6 +399,15 @@ void cep_3d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, con
       lK(0,a,b) = lK(0,a,b) + wl*(N(a)*N(b)*amd + Nx(0,a)*DNx(0,b) + Nx(1,a)*DNx(1,b) + Nx(2,a)*DNx(2,b));
     }
   }
+
+#if 0
+  Array<double>::write_enabled = true;
+  Array3<double>::write_enabled = true;
+  lR.write("lR"+dmsg.prefix());
+  lK.write("lK"+dmsg.prefix());
+  exit(0);
+#endif
+
 }
 
 //---------------
@@ -421,12 +439,20 @@ void construct_cep(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Ar
   if (lM.lFib) insd = 1;
   if (nFn == 0) nFn = 1;
   #ifdef debug_construct_cep 
+  dmsg << "lM.nEl: " << lM.nEl;
   dmsg << "insd: " << insd;
   dmsg << "tDof: " << tDof;
   dmsg << "eNoN: " << eNoN;
-  dmsg << "Dg.nrows: " << Dg.nrows_;
-  dmsg << "Dg.ncols: " << Dg.ncols_;
+  dmsg << "Dg.nrows: " << Dg.nrows();
+  dmsg << "Dg.ncols: " << Dg.ncols();
   #endif
+
+  Array<double>::write_enabled = true;
+  Array3<double>::write_enabled = true;
+  //Ag.write("Ag"+dmsg.prefix());
+  //Yg.write("Yg"+dmsg.prefix());
+  //Dg.write("Dg"+dmsg.prefix());
+  //exit(0);
 
   // CEP: dof = 1
   Vector<int> ptr(eNoN); 
@@ -492,6 +518,16 @@ void construct_cep(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Ar
       double w = lM.w(g) * Jac;
       N = lM.N.col(g);
 
+      #ifdef debug_construct_cep 
+      dmsg << "   " << " ";
+      dmsg << "g: " << g+1;
+      dmsg << "lM.Nx.slice(g): " << lM.Nx.slice(g);
+      dmsg << "xl: " << xl;
+      dmsg << "Nx: " << Nx;
+      dmsg << "Jac: " << Jac;
+      dmsg << "lM.w(g): " << lM.w(g);
+      #endif
+
       if (insd == 3) {
         cep_3d(com_mod, cep_mod, eNoN, nFn, w, N, Nx, al, yl, dl, fN, lR, lK);
 
@@ -513,6 +549,16 @@ void construct_cep(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Ar
 #ifdef WITH_TRILINOS
     }
 #endif
+
+#if 0
+  if (cDmn+1 == 13) {
+    lR.write("lR_"+dmsg.prefix());
+    lK.write("lK_"+dmsg.prefix());
+    com_mod.x.write("x_"+dmsg.prefix());
+    exit(0);
+    }
+#endif
+
   } 
 }
 
