@@ -6,6 +6,7 @@
 #include <float.h>
 #include <iostream>
 #include <string>
+#include <vector>
 
 std::string build_file_prefix(const std::string& label);
 
@@ -182,6 +183,16 @@ class Vector
     }
 
     void set_values(std::initializer_list<T> values)
+    {
+      if (values.size() == 0) {
+        return;
+      }
+      check_type();
+      allocate(values.size());
+      std::copy(values.begin(), values.end(), data_);
+    }
+
+    void set_values(std::vector<T> values)
     {
       if (values.size() == 0) {
         return;

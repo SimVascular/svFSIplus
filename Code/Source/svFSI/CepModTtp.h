@@ -75,7 +75,7 @@ class CepModTtp
       double G_K1 = 5.405;       // units: nS/pF
 
 //     G_to: Maximal epicardial I_to conductance, units: nS/pF
-      double G_to[3] = {0.294, 0.073, 0.294};
+      Vector<double> G_to = {0.294, 0.073, 0.294};
 
 //     G_Kr: Maximal I_Kr conductance
       double G_Kr = 0.153;      // units: nS/pF
@@ -84,7 +84,7 @@ class CepModTtp
 //      double G_Kr = 0.172;     // units: nS/pF
 
 //     G_Ks: Maximal epicardial I_Ks conductance, units: nS/pF
-      double G_Ks[3] = {0.392, 0.392, 0.098};
+      Vector<double> G_Ks = {0.392, 0.392, 0.098};
 
 //     G_Ks for spiral wave breakup (epi)
 //      double G_Ks(3) = (/0.441, 0.392_RKIND, 0.098_RKIND/)
