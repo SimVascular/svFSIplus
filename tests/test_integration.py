@@ -118,7 +118,7 @@ def test_pipe3D_RCR(n_proc):
     t_max = 2
     name_inp = "svFSI.xml"
     name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
-    run_with_reference(folder, name_inp, name_ref, field, t_max, n_proc)
+    run_with_reference(folder, name_inp, name_ref, fields, t_max, n_proc)
 
     
 @pytest.mark.parametrize("n_proc", procs)
@@ -128,4 +128,4 @@ def test_cavity_2d(n_proc):
     t_max = 2
     name_inp = "svFSI.xml"
     name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
-    run_with_reference(folder, name_inp, name_ref, field, t_max, n_proc)
+    run_with_reference(folder, name_inp, name_ref, fields, t_max, n_proc)
