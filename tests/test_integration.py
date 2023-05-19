@@ -11,9 +11,12 @@ import pandas as pd
 
 this_file_dir = os.path.abspath(os.path.dirname(__file__))
 cpp_exec = os.path.join(this_file_dir, "..", "build", "svFSI-build", "bin", "svFSI")
-# todo: add second executable for "classic" svFSI and compare results
 
+# relative tolerances for tested results
 RTOL = {'Pressure': 1.0e-12, 'Velocity': 1.0e-12, 'Action_potential': 1.0e-12, 'Temperature': 1.0e-12, 'ECG': 1.0e-12}
+
+# number of processors to test
+procs = [1, 3, 4]
 
 
 def run_by_name(folder, name, t_max, n_proc=1):
@@ -73,7 +76,7 @@ def run_with_reference(folder, name_inp, name_ref, fields, t_max, n_proc=1):
 
 @pytest.mark.parametrize("mesh", ["N" + str(2**i).zfill(3) for i in range(2, 3)])
 @pytest.mark.parametrize("ele", ["P1P1"])
-@pytest.mark.parametrize("n_proc", range(1, 3))
+@pytest.mark.parametrize("n_proc", procs)
 def test_stokes_manufactured_solution(ele, mesh, n_proc):
     folder = os.path.join("cases", "stokes_manufactured_solution", ele, mesh)
     fields = ["Pressure", "Velocity"]
@@ -83,7 +86,7 @@ def test_stokes_manufactured_solution(ele, mesh, n_proc):
     run_with_reference(folder, name_inp, name_ref, fields, t_max[ele], n_proc)
 
 
-@pytest.mark.parametrize("n_proc", range(1, 3))
+@pytest.mark.parametrize("n_proc", procs)
 def test_niederer_benchmark_ECGs_quadrature(n_proc):
     folder = os.path.join("cases", "niederer_benchmark_ECGs_quadrature")
     field = ["Action_potential"]
@@ -98,7 +101,7 @@ def test_niederer_benchmark_ECGs_quadrature(n_proc):
         assert abs(ecg_trace.iloc[-1, 1] - ecg_true_values[index]) < RTOL['ECG']
 
 
-@pytest.mark.parametrize("n_proc", range(1, 3))
+@pytest.mark.parametrize("n_proc", procs)
 def test_diffusion_line_source(n_proc):
     folder = os.path.join("cases", "diffusion_line_source")
     field = ["Temperature"]
