@@ -246,6 +246,8 @@ void cep_3d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, con
   #ifdef debug_cep_3d 
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
+  dmsg << "nFn: " << nFn;
+  dmsg << "w: " << w;
   #endif
 
   using namespace consts;
@@ -269,6 +271,9 @@ void cep_3d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, con
   double wl = w * T1;
   double Diso = dmn.cep.Diso;
   #ifdef debug_cep_3d 
+  dmsg << "T1: " << T1;
+  dmsg << "amd: " << amd;
+  dmsg << "wl: " << wl;
   dmsg << "Diso: " << Diso;
   #endif
 
@@ -421,11 +426,12 @@ void construct_cep(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Ar
   if (lM.lFib) insd = 1;
   if (nFn == 0) nFn = 1;
   #ifdef debug_construct_cep 
+  dmsg << "lM.nEl: " << lM.nEl;
   dmsg << "insd: " << insd;
   dmsg << "tDof: " << tDof;
   dmsg << "eNoN: " << eNoN;
-  dmsg << "Dg.nrows: " << Dg.nrows_;
-  dmsg << "Dg.ncols: " << Dg.ncols_;
+  dmsg << "Dg.nrows: " << Dg.nrows();
+  dmsg << "Dg.ncols: " << Dg.ncols();
   #endif
 
   // CEP: dof = 1
@@ -434,9 +440,17 @@ void construct_cep(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Ar
       fN(nsd,nFn), Nx(insd,eNoN), lR(dof,eNoN);
   Array3<double> lK(dof*dof,eNoN,eNoN);
   Vector<double>  N(eNoN); 
+  
+  // ECG computation
+  Vector<double> pseudo_ECG_proc(cep_mod.ecgleads.num_leads);
+  Vector<double> Vx(3);
+  double x_coords;
+  double y_coords;
+  double z_coords;
+
+  pseudo_ECG_proc = 0.0;
 
   // Loop over all elements of mesh
-  //
   for (int e = 0; e < lM.nEl; e++) {
     cDmn = all_fun::domain(com_mod, lM, cEq, e);
     auto cPhys = eq.dmn[cDmn].phys;
@@ -448,7 +462,6 @@ void construct_cep(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Ar
     //if (lM.eType .EQ. eType_NRB) CALL NRBNNX(lM, e)
 
     // Create local copies
-    //
     fN = 0.0;
 
     for (int a = 0; a < eNoN; a++) {
@@ -492,6 +505,16 @@ void construct_cep(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Ar
       double w = lM.w(g) * Jac;
       N = lM.N.col(g);
 
+      #ifdef debug_construct_cep 
+      dmsg << "   " << " ";
+      dmsg << "g: " << g+1;
+      dmsg << "lM.Nx.slice(g): " << lM.Nx.slice(g);
+      dmsg << "xl: " << xl;
+      dmsg << "Nx: " << Nx;
+      dmsg << "Jac: " << Jac;
+      dmsg << "lM.w(g): " << lM.w(g);
+      #endif
+
       if (insd == 3) {
         cep_3d(com_mod, cep_mod, eNoN, nFn, w, N, Nx, al, yl, dl, fN, lR, lK);
 
@@ -501,6 +524,43 @@ void construct_cep(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Ar
       } else if (insd == 1) {
         cep_1d(com_mod, cep_mod, eNoN, nFn, w, N, Nx, al, yl, lR, lK);
       }
+
+      // ECG computation
+      if (cep_mod.ecgleads.num_leads) {
+        // Compute transmembrane gauss points location and potential space derivative
+        x_coords = 0.0;
+        y_coords = 0.0;
+        z_coords = 0.0;
+        Vx       = 0.0;
+        for (int a = 0; a < eNoN; a++) {
+          x_coords += N(a) * xl(0,a);
+          y_coords += N(a) * xl(1,a);
+          z_coords += N(a) * xl(2,a);
+          Vx(0) += Nx(0,a) * yl(0,a);
+          Vx(1) += Nx(1,a) * yl(0,a);
+          Vx(2) += Nx(2,a) * yl(0,a);
+        }
+
+        // Compute integral from Equation (8) in Costabal, Yao, Kuhl 2018
+        for (int index = 0; index < cep_mod.ecgleads.num_leads; index++) {
+          double r_sq = (x_coords * x_coords + y_coords * y_coords + z_coords * z_coords
+                        - 2 * (x_coords * cep_mod.ecgleads.x_coords[index] +
+                               y_coords * cep_mod.ecgleads.y_coords[index] +
+                               z_coords * cep_mod.ecgleads.z_coords[index])
+                        + cep_mod.ecgleads.x_coords[index] * cep_mod.ecgleads.x_coords[index]
+                        + cep_mod.ecgleads.y_coords[index] * cep_mod.ecgleads.y_coords[index]
+                        + cep_mod.ecgleads.z_coords[index] * cep_mod.ecgleads.z_coords[index]);
+
+          double drinv_x = pow(r_sq, -3./2.) * (cep_mod.ecgleads.x_coords[index] - x_coords);
+          double drinv_y = pow(r_sq, -3./2.) * (cep_mod.ecgleads.y_coords[index] - y_coords);
+          double drinv_z = pow(r_sq, -3./2.) * (cep_mod.ecgleads.z_coords[index] - z_coords);
+
+          pseudo_ECG_proc(index) += w * (-Vx(0) * drinv_x
+                                         -Vx(1) * drinv_y
+                                         -Vx(2) * drinv_z);
+        }
+      }
+
     } 
 
     // Assembly
@@ -513,7 +573,18 @@ void construct_cep(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Ar
 #ifdef WITH_TRILINOS
     }
 #endif
-  } 
+  }
+
+  // Communications among processors for ECG leads computation
+  if (cep_mod.ecgleads.num_leads) {
+    MPI_Reduce(pseudo_ECG_proc.data(),
+               cep_mod.ecgleads.pseudo_ECG.data(),
+               cep_mod.ecgleads.num_leads,
+               cm_mod::mpreal,
+               MPI_SUM,
+               0,
+               com_mod.cm.com());
+  }
 }
 
 };
