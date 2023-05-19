@@ -12,7 +12,7 @@ this_file_dir = os.path.abspath(os.path.dirname(__file__))
 cpp_exec = os.path.join(this_file_dir, "..", "build", "svFSI-build", "bin", "svFSI")
 # todo: add second executable for "classic" svFSI and compare results
 
-RTOL = {'Pressure': 1.0e-10, 'Velocity': 1.0e-12, 'Action_potential': 1.0e-12, 'Temperature': 1.0e-12}
+RTOL = {'Pressure': 1.0e-12, 'Velocity': 1.0e-12, 'Action_potential': 1.0e-12, 'Temperature': 1.0e-12}
 
 
 def run_by_name(folder, name, t_max, n_proc=1):
