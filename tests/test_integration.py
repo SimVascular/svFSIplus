@@ -112,7 +112,7 @@ def test_diffusion_line_source(n_proc):
 
 
 @pytest.mark.parametrize("n_proc", procs)
-def test_pipe3D_RCR():
+def test_pipe3D_RCR(n_proc):
     folder = os.path.join("cases", "pipe3D_RCR")
     fields = ["Pressure", "Velocity"]
     t_max = 2
@@ -122,7 +122,7 @@ def test_pipe3D_RCR():
 
     
 @pytest.mark.parametrize("n_proc", procs)
-def test_cavity_2d():
+def test_cavity_2d(n_proc):
     folder = os.path.join("cases", "driven_cavity_2D")
     fields = ["Pressure", "Velocity"]
     t_max = 2
