@@ -32,7 +32,7 @@ def run_by_name(folder, name, t_max, n_proc=1):
     Simulation results
     """
     # run simulation
-    cmd = " ".join(["mpirun", "-np " + str(n_proc), cpp_exec, name])
+    cmd = " ".join(["mpirun", "--oversubscribe", "-np", str(n_proc), cpp_exec, name])
     subprocess.call(cmd, cwd=folder, shell=True)
 
     # read results
