@@ -1059,16 +1059,23 @@ void dist_eq(ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, const std::
   // Distribute ECG leads parameters
   //
   cm.bcast(cm_mod, &cep_mod.ecgleads.num_leads);
-  if (!cm.mas(cm_mod)) {
-    cep_mod.ecgleads.x_coords.resize(cep_mod.ecgleads.num_leads);
-    cep_mod.ecgleads.y_coords.resize(cep_mod.ecgleads.num_leads);
-    cep_mod.ecgleads.z_coords.resize(cep_mod.ecgleads.num_leads);
-    cep_mod.ecgleads.pseudo_ECG.resize(cep_mod.ecgleads.num_leads);
+  #ifdef dist_eq
+  dmsg << "cep_mod.ecgleads.num_leads: " << cep_mod.ecgleads.num_leads;
+  #endif
+
+  if (cep_mod.ecgleads.num_leads != 0) {
+    if (!cm.mas(cm_mod)) {
+      cep_mod.ecgleads.x_coords.resize(cep_mod.ecgleads.num_leads);
+      cep_mod.ecgleads.y_coords.resize(cep_mod.ecgleads.num_leads);
+      cep_mod.ecgleads.z_coords.resize(cep_mod.ecgleads.num_leads);
+      cep_mod.ecgleads.pseudo_ECG.resize(cep_mod.ecgleads.num_leads);
+    }
+
+    cm.bcast(cm_mod, cep_mod.ecgleads.x_coords);
+    cm.bcast(cm_mod, cep_mod.ecgleads.y_coords);
+    cm.bcast(cm_mod, cep_mod.ecgleads.z_coords);
+    cm.bcast(cm_mod, cep_mod.ecgleads.pseudo_ECG);
   }
-  cm.bcast(cm_mod, cep_mod.ecgleads.x_coords);
-  cm.bcast(cm_mod, cep_mod.ecgleads.y_coords);
-  cm.bcast(cm_mod, cep_mod.ecgleads.z_coords);
-  cm.bcast(cm_mod, cep_mod.ecgleads.pseudo_ECG);
 
   // Distribute output parameters
   //
