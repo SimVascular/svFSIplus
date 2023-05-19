@@ -307,12 +307,9 @@ void VtkVtuData::VtkVtuDataImpl::set_connectivity(const int nsd, const Array<int
   } else if (nsd == 3) {
     if (np_elem == 4) {
       vtk_cell_type = VTK_TETRA;
-      //std::cout << "[VtkVtuData.set_connectivity] vtk_cell_type: VTK_TETRA" << std::endl;
-    }
-    else if (np_elem == 8) {
+    } else if (np_elem == 8) {
       vtk_cell_type = VTK_HEXAHEDRON;
-    }
-    else if (np_elem == 10) {
+    } else if (np_elem == 10) {
       vtk_cell_type = VTK_HEXAHEDRON;
     }
   }
@@ -325,13 +322,6 @@ void VtkVtuData::VtkVtuDataImpl::set_connectivity(const int nsd, const Array<int
   elem_nodes->Allocate(np_elem);
   elem_nodes->Initialize();
   elem_nodes->SetNumberOfIds(np_elem);
-
-  auto elem_ids = vtkSmartPointer<vtkIntArray>::New();
-  elem_ids->SetNumberOfComponents(1);
-  elem_ids->Allocate(num_elems,1000);
-  elem_ids->SetNumberOfTuples(num_elems);
-  elem_ids->SetName("GlobalElementID");
-
   //std::cout << "[VtkVtuData.set_connectivity] Set conn ... " << std::endl;
 
   for (int i = 0; i < num_elems; i++) {
@@ -346,10 +336,7 @@ void VtkVtuData::VtkVtuDataImpl::set_connectivity(const int nsd, const Array<int
     }
     //std::cout << std::endl; 
     vtk_ugrid->InsertNextCell(vtk_cell_type, elem_nodes);
-    elem_ids->SetTuple1(i,i+1);
   }
-
-  vtk_ugrid->GetCellData()->AddArray(elem_ids);
 }
 
 //------------------
@@ -465,19 +452,11 @@ void VtkVtuData::VtkVtuDataImpl::set_points(const Array<double>& points)
   //std::cout << "[VtkVtuData.set_points] " << std::endl;
   //std::cout << "[VtkVtuData.set_points] num_coords: " << num_coords << std::endl;
 
-  auto node_ids = vtkSmartPointer<vtkIntArray>::New();
-  node_ids->SetNumberOfComponents(1);
-  node_ids->Allocate(num_coords,1000);
-  node_ids->SetNumberOfTuples(num_coords);
-  node_ids->SetName("GlobalNodeID");
-
   for (int i = 0; i < num_coords; i++ ) {
     node_coords->SetPoint(i, points(0,i), points(1,i), points(2,i)); 
-    node_ids->SetTuple1(i,i+1);
   }
 
   vtk_ugrid->SetPoints(node_coords);
-  vtk_ugrid->GetPointData()->AddArray(node_ids);
 }
 
 //--------

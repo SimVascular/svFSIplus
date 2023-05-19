@@ -34,7 +34,7 @@ jobs:
       - name: Install test dependencies
         run: |
           conda create -n svfsiplus python=3.9
-          conda run -n svfsiplus pip install pytest pytest-cov pytest-mock numpy meshio
+          conda run -n svfsiplus pip install pytest pytest-cov pytest-mock numpy meshio pandas
       - name: Run integration tests
         run: |
           git lfs pull

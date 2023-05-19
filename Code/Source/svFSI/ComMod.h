@@ -578,6 +578,9 @@ class faceType
 
     // Function spaces (basis)
     std::vector<fsType> fs;
+
+    // TRI3 quadrature modifier
+    double qmTRI3 = 2.0/3.0;
 };
 
 // Declared type for outputed variables
@@ -948,6 +951,9 @@ class mshType
 
     // IB: tracers
     traceType trc;
+
+    // TET4 quadrature modifier
+    double qmTET4 = (5.0+3.0*sqrt(5.0))/20.0;
 
   private:
     //mshType(const mshType&);
