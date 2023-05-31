@@ -829,6 +829,12 @@ void write_vtu_debug(ComMod& com_mod, mshType& lM, const std::string& fName)
 //
 void write_vtus(Simulation* simulation, const Array<double>& lA, const Array<double>& lY, const Array<double>& lD, const bool lAve)
 {
+  #define n_debug_write_vtus
+  #ifdef debug_write_vtus 
+  DebugMsg dmsg(__func__, simulation->com_mod.cm.idcm());
+  dmsg.banner();
+  #endif
+
   using namespace consts;
 
   auto& com_mod = simulation->com_mod;
@@ -1228,33 +1234,23 @@ void write_vtus(Simulation* simulation, const Array<double>& lA, const Array<dou
 
   // Writing the connectivity data
   //
-
-  // [NOTE] This is a hack for now, only includes elements
-  // of a single type and write all connectivity at one time.
-  //
-  std::map<int,int> np_elem_map;
-  int eNoN = 0;
-  for (int iM = 0; iM < nMsh; iM++) {
-    eNoN = d[iM].eNoN;
-    np_elem_map[eNoN] += 1;
-  }
-  Array<int> tmpI(eNoN, nEl);
-
   nSh = 0;     // For 0-based IDs.
   int num_elems = 0;
 
   for (int iM = 0; iM < nMsh; iM++) {
-    for (int e = 0; e < d[iM].nEl; e++) {
-      for (int i = 0; i < d[iM].eNoN; i++) {
-        tmpI(i,num_elems) = d[iM].IEN(i,e) + nSh;
+    int eNoN = d[iM].eNoN;
+    int nEl = d[iM].nEl;
+    Array<int> tmpI(eNoN, nEl);
+
+    for (int e = 0; e < nEl; e++) {
+      for (int i = 0; i < eNoN; i++) {
+        tmpI(i,e) = d[iM].IEN(i,e) + nSh;
       }
-      num_elems += 1;
     }
 
+    vtk_writer->set_connectivity(nsd, tmpI);
     nSh = nSh + d[iM].nNo;
   }
-
-  vtk_writer->set_connectivity(nsd, tmpI);
 
   // Writing all solutions
   //

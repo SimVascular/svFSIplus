@@ -936,6 +936,28 @@ class StimulusParameters : public ParameterLists
     bool value_set = false;
 };
 
+//--------------------
+// ECGLeadsParameters 
+//--------------------
+
+class ECGLeadsParameters : public ParameterLists
+{ 
+  public:
+    ECGLeadsParameters();
+
+    static const std::string xml_element_name_;
+    
+    bool defined() const { return value_set; };
+    void print_parameters();
+    void set_values(tinyxml2::XMLElement* xml_elem);
+    
+    Parameter<std::string> x_coords_file_path;
+    Parameter<std::string> y_coords_file_path;
+    Parameter<std::string> z_coords_file_path;
+    
+    bool value_set = false;
+};
+
 //------------------------------------
 // FiberReinforcementStressParameters
 //------------------------------------
@@ -1016,6 +1038,12 @@ class DomainParameters : public ParameterLists
     Parameter<double> momentum_stabilization_coefficient;
     Parameter<std::string> myocardial_zone;
 
+    Parameter<double> G_Na;
+    Parameter<double> G_CaL;
+    Parameter<double> G_Kr;
+    Parameter<double> G_Ks;
+    Parameter<double> G_to;
+
     Parameter<std::string> ode_solver;
     Parameter<double> penalty_parameter;
     Parameter<double> poisson_ratio;
@@ -1023,6 +1051,7 @@ class DomainParameters : public ParameterLists
 
     Parameter<double> shell_thickness;
     Parameter<double> solid_density;
+    Parameter<double> solid_viscosity;
     Parameter<double> source_term;
     Parameter<double> time_step_for_integration;
 };
@@ -1123,6 +1152,8 @@ class EquationParameters : public ParameterLists
     VariableWallPropsParameters variable_wall_properties;
 
     ViscosityParameters viscosity;
+
+    ECGLeadsParameters ecg_leads;
 };
 
 //-----------------------------
@@ -1190,6 +1221,8 @@ class FaceParameters : public ParameterLists
     Parameter<std::string> end_nodes_face_file_path;
     Parameter<std::string> face_file_path;
     Parameter<std::string> name;
+
+    Parameter<double> quadrature_modifier_TRI3;
 };
 
 //----------------
@@ -1236,6 +1269,8 @@ class MeshParameters : public ParameterLists
 
     Parameter<bool> set_mesh_as_fibers;
     Parameter<bool> set_mesh_as_shell;
+
+    Parameter<double> quadrature_modifier_TET4;
 };
 
 //------------

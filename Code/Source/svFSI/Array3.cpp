@@ -9,7 +9,7 @@ template<>
 double Array3<double>::memory_returned = 0;
 
 template<>
-int Array3<double>::allocated = 0;
+int Array3<double>::num_allocated = 0;
 
 template<>
 int Array3<double>::active = 0;
@@ -26,7 +26,7 @@ void Array3<double>::memory(const std::string& prefix)
 template<>
 void Array3<double>::stats(const std::string& prefix)
 {
-  utils::print_stats("Array3<double>", prefix, allocated, active);
+  utils::print_stats("Array3<double>", prefix, num_allocated, active);
 }
 
 //--------------------------//
@@ -40,7 +40,7 @@ template<>
 double Array3<int>::memory_returned = 0;
 
 template<>
-int Array3<int>::allocated = 0;
+int Array3<int>::num_allocated = 0;
 
 template<>
 int Array3<int>::active = 0;
