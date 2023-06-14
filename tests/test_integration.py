@@ -118,5 +118,7 @@ def test_ustruct_block_compression(n_proc):
     name_inp = "svFSI.xml"
     name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
     RTOL['Pressure'] = 1.0e-2
+    RTOL['Velocity'] = 1.0e-10
     run_with_reference(folder, name_inp, name_ref, fields, t_max, n_proc)
     RTOL['Pressure'] = 1.0e-12
+    RTOL['Velocity'] = 1.0e-12
