@@ -364,6 +364,15 @@ class stModelType
     // Collagen fiber dispersion parameter (Holzapfel model)
     double kap = 0.0;
 
+    // Heaviside function parameter (Holzapfel-Ogden model)
+    double khs = 100.0;
+
+    // Lee-Sacks model
+    double a0 = 0.0;
+    double b1 = 0.0;
+    double b2 = 0.0;
+    double mu0 = 0.0;
+
     // Fiber reinforcement stress
     fibStrsType Tf;
 };
