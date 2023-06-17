@@ -117,7 +117,7 @@ void construct_shell(ComMod& com_mod, const mshType& lM, const Array<double>& Ag
      //  Constant strain triangles, no numerical integration
      //
      if (lM.eType == ElementType::TRI3) {
-       //CALL SHELLCST(lM, e, eNoN, nFn, fN, al, yl, dl, xl, bfl, ptr)
+       shell_cst(com_mod, lM, e, eNoN, nFn, fN, al, yl, dl, xl, bfl, ptr);
 
      } else {
         lR = 0.0;
@@ -128,7 +128,7 @@ void construct_shell(ComMod& com_mod, const mshType& lM, const Array<double>& Ag
 
         // Gauss integration
         for (int g = 0; g < lM.nG; g++) {
-          //CALL SHELL3D(lM, g, eNoN, nFn, fN, al, yl, dl, xl, 2        bfl, lR, lK)
+          shell_3d(com_mod, lM, g, eNoN, nFn, fN, al, yl, dl, xl, bfl, lR, lK);
         }
       }
 
@@ -146,6 +146,372 @@ void construct_shell(ComMod& com_mod, const mshType& lM, const Array<double>& Ag
 
   } // e: loop
 
+}
+
+//----------
+// shell_3d
+//----------
+// Construct shell mechanics for higher order elements/NURBS
+//
+void shell_3d(ComMod& com_mod, const mshType& lM, const int g, const int eNoN, 
+    const int nFn, const Array<double>& fN,
+    const Array<double>& al, const Array<double>& yl, const Array<double>& dl, const Array<double>& xl,
+    const Array<double>& bfl, Array<double>& lR, Array3<double>& lK)
+{
+  using namespace consts;
+  using namespace mat_fun;
+
+  const int nsd = com_mod.nsd;
+  const int dof = com_mod.dof;
+  int cEq = com_mod.cEq;
+  auto& eq = com_mod.eq[cEq];
+  auto cDmn = com_mod.cDmn;
+  auto& dmn = eq.dmn[cDmn];
+  const double dt = com_mod.dt;
+
+  // Define parameters
+  double rho = eq.dmn[cDmn].prop.at(PhysicalProperyType::solid_density);
+  double dmp = dmn.prop.at(PhysicalProperyType::damping);
+  double ht = eq.dmn[cDmn].prop.at(PhysicalProperyType::shell_thickness);
+  Vector<double> fb({dmn.prop.at(PhysicalProperyType::f_x), dmn.prop.at(PhysicalProperyType::f_y), 
+      dmn.prop.at(PhysicalProperyType::f_z)});
+  double amd = eq.am * rho  +  eq.af * eq.gam * dt * dmp;
+  double afl = eq.af * eq.beta * dt * dt;
+
+  int i = eq.s;
+  int j = i + 1;
+  int k = j + 1;
+
+  // Get the reference configuration
+  auto x0 = xl;
+
+  // Get the current configuration
+  //
+  Array<double> xc(3,eNoN);
+
+  for (int a = 0; a < eNoN; a++) {
+    xc(0,a) = x0(0,a) + dl(i,a);
+    xc(1,a) = x0(1,a) + dl(j,a);
+    xc(2,a) = x0(2,a) + dl(k,a);
+  }
+
+  // Define shape functions and their derivatives at Gauss point
+  //
+  Vector<double> N; 
+  Array<double> Nx, Nxx;
+
+  /* [TODO] Nurbs are not supported.
+  if (lM.eType == ElementType::eType_NRB) {
+    N = lM.N.rcol(g);
+    Nx = lM.Nx.rslice(g);
+    Nxx = lM.Nxx.rslice(g);
+  } else {
+    N = lM.fs(0).N.rcol(g);
+    Nx = lM.fs(0).Nx.rslice(g);
+    Nxx = lM.fs(0).Nxx.rslice(g);
+  }
+  */
+  N = lM.fs[0].N.rcol(g);
+  Nx = lM.fs[0].Nx.rslice(g);
+  Nxx = lM.fs[0].Nxx.rslice(g);
+
+//=====================================================================
+//    TODO: Might have to call GNNxx for Jacobian transformation. Check
+//    formulation again.
+//
+//     CALL GNNxx(2, eNoN, 2, lM.fs(0).Nx(:,:,g), lM.fs(0).Nxx(:,:,g),
+//    xl, Nx, Nxx)
+//
+//=====================================================================
+
+  // Compute preliminaries on the reference configuration
+  // Covariant and contravariant bases (reference config)
+  //
+  Array<double> aCov0(3,2), aCnv0(3,2);
+  Vector<double> nV0(3);
+  nn::gnns(nsd, lM.eNoN, Nx, x0, nV0, aCov0, aCnv0);
+  double Jac0 = sqrt(utils::norm(nV0));
+  nV0 = nV0 / Jac0;
+
+  // Second derivatives for computing curvature coeffs. (ref. config)
+  //
+  Array3<double> r0_xx(2,2,3);
+
+  for (int a = 0; a < eNoN; a++) {
+    for (int i = 0; i < 3; i++) {
+      r0_xx(0,0,i) = r0_xx(0,0,i) + Nxx(0,a)*x0(i,a);
+      r0_xx(1,1,i) = r0_xx(1,1,i) + Nxx(1,a)*x0(i,a);
+      r0_xx(0,1,i) = r0_xx(0,1,i) + Nxx(2,a)*x0(i,a);
+    }
+  }
+
+  for (int i = 0; i < 3; i++) {
+    r0_xx(1,0,i) = r0_xx(0,1,i);
+  }
+
+  //  Compute metric tensor and curvature coefficients (ref. config)
+  //
+  double aa_0[2][2], bb_0[2][2];
+
+  for (int l = 0; l < nsd; l++) {
+    aa_0[0][0] = aa_0[0][0] + aCov0(l,0)*aCov0(l,0);
+    aa_0[0][1] = aa_0[0][1] + aCov0(l,0)*aCov0(l,1);
+    aa_0[1][0] = aa_0[1][0] + aCov0(l,1)*aCov0(l,0);
+    aa_0[1][1] = aa_0[1][1] + aCov0(l,1)*aCov0(l,1);
+
+    bb_0[0][0] = bb_0[0][0] + r0_xx(0,0,l)*nV0(l);
+    bb_0[0][1] = bb_0[0][1] + r0_xx(0,1,l)*nV0(l);
+    bb_0[1][0] = bb_0[1][0] + r0_xx(1,0,l)*nV0(l);
+    bb_0[1][1] = bb_0[1][1] + r0_xx(1,1,l)*nV0(l);
+  }
+
+  // Compute fiber orientation in curvature coordinates
+  //
+  Array<double> fNa0(2,nFn);
+
+  for (int iFn = 0; iFn < nFn; iFn++) {
+    for (int l = 0; l < 3; l++) { 
+      fNa0(0,iFn) = fNa0(0,iFn) + fN(l,iFn)*aCnv0(l,0);
+      fNa0(1,iFn) = fNa0(1,iFn) + fN(l,iFn)*aCnv0(l,1);
+    }
+  }
+
+  // Now compute preliminaries on the current configuration
+  // Covariant and contravariant bases (current/spatial config)
+  //
+  Array<double> aCov(3,2), aCnv(3,2);
+  Vector<double> nV(3);
+  nn::gnns(nsd, eNoN, Nx, xc, nV, aCov, aCnv);
+  double Jac = sqrt(utils::norm(nV));
+  nV = nV / Jac;
+
+  // Second derivatives for computing curvature coeffs. (cur. config)
+  Array3<double> r_xx(2,2,3);
+
+  for (int a = 0; a < eNoN; a++) {
+     r_xx(0,0,i) = r_xx(0,0,i) + Nxx(0,a)*xc(i,a);
+     r_xx(1,1,i) = r_xx(1,1,i) + Nxx(1,a)*xc(i,a);
+     r_xx(0,1,i) = r_xx(0,1,i) + Nxx(2,a)*xc(i,a);
+  }
+
+  for (int i = 0; i < 3; i++) {
+    r_xx(1,0,i) = r_xx(0,1,i);
+  }
+
+  // Compute metric tensor and curvature coefficients (cur. config)
+  //
+  // [TODO] are these dimensions correct? is nsd = 3?
+  //
+  double aa_x[2][2], bb_x[2][2];
+
+  for (int l = 0; l < nsd; l++) {
+     aa_x[0][0] = aa_x[0][0] + aCov(l,0)*aCov(l,0);
+     aa_x[0][1] = aa_x[0][1] + aCov(l,0)*aCov(l,1);
+     aa_x[1][0] = aa_x[1][0] + aCov(l,1)*aCov(l,0);
+     aa_x[1][1] = aa_x[1][1] + aCov(l,1)*aCov(l,1);
+
+     bb_x[0][0] = bb_x[0][0] + r_xx(0,0,l)*nV(l);
+     bb_x[0][1] = bb_x[0][1] + r_xx(0,1,l)*nV(l);
+     bb_x[1][0] = bb_x[1][0] + r_xx(1,0,l)*nV(l);
+     bb_x[1][1] = bb_x[1][1] + r_xx(1,1,l)*nV(l);
+  }
+
+  // Compute stress resultants by integrating 2nd Piola Kirchhoff
+  // stress and elasticity tensors through the shell thickness. These
+  // resultants are computed in Voigt notation.
+  //
+  Array3<double> Dm(3,3,3);
+  Array<double> Sm(3,2);
+  double lam3;
+
+  shl_strs_res(com_mod, dmn, nFn, fNa0, aa_0, aa_x, bb_0, bb_x, lam3, Sm, Dm);
+
+  // Variation in the membrane strain
+  //
+  Array3<double> Bm(3,3,eNoN);
+
+  for (int a = 0; a < eNoN; a++) {
+    Bm(0,0,a) = Nx(0,a)*aCov(0,0);
+    Bm(0,1,a) = Nx(0,a)*aCov(1,0);
+    Bm(0,2,a) = Nx(0,a)*aCov(2,0);
+
+    Bm(1,0,a) = Nx(1,a)*aCov(0,1);
+    Bm(1,1,a) = Nx(1,a)*aCov(1,1);
+    Bm(1,2,a) = Nx(1,a)*aCov(2,1);
+
+    Bm(2,0,a) = Nx(1,a)*aCov(0,0) + Nx(0,a)*aCov(0,1);
+    Bm(2,1,a) = Nx(1,a)*aCov(1,0) + Nx(0,a)*aCov(1,1);
+    Bm(2,2,a) = Nx(1,a)*aCov(2,0) + Nx(0,a)*aCov(2,1);
+  }
+
+  // Variation in the bending strain
+  // dB = -(B1 + B2) du; B1 = N_xx * n;
+  // B2 = (r_xx Nm M1 Nx - r_xx N M2 Nx)
+  //
+  //     Second derivatives of the position vector (current)
+  //
+  Array<double> Kc(3,3);
+
+  for (int i = 0; i < 3; i++) {
+    Kc(0,i) = r_xx(0,0,i);
+    Kc(1,i) = r_xx(1,1,i);
+    Kc(2,i) = r_xx(0,1,i)  + r_xx(1,0,i);
+  }
+
+  // N matrix
+  auto Nm = mat_id(3) - mat_dyad_prod(nV, nV, 3);
+  Nm = Nm / Jac;
+
+  // M1, M2 matrices
+  //
+  Array<double> Mm(3,3);
+  Array3<double> KNmMm(3,3,2);
+
+  for (int l = 0; l < 2; l++) { 
+    Mm = 0.0;
+    Mm(0,1) = -aCov(2,l);
+    Mm(0,2) =  aCov(1,l);
+    Mm(1,2) = -aCov(0,l);
+
+    // Skew-symmetric
+    Mm(1,0) = -Mm(0,1);
+    Mm(2,0) = -Mm(0,2);
+    Mm(2,1) = -Mm(1,2);
+
+    KNmMm.set_slice(l, mat_mul(Kc, mat_mul(Nm, Mm)));
+  }
+
+  // Define variation in bending strain tensor (Bb), Voigt notation
+  //
+  Array3<double> Bb(3,3,eNoN);
+
+  for (int a = 0; a < eNoN; a++) {
+    for (int i = 0; i < 3; i++) {
+      Bb(0,i,a) = -Nxx(0,a)*nV(i);
+      Bb(1,i,a) = -Nxx(1,a)*nV(i);
+      Bb(2,i,a) = -Nxx(2,a)*nV(i)*2.0;
+    }
+  }
+
+  for (int a = 0; a < eNoN; a++) {
+    for (int i = 0; i < 3; i++) {
+      for (int j = 0; j < 3; j++) {
+        Bb(i,j,a) = Bb(i,j,a) + Nx(0,a)*KNmMm(i,j,1) - Nx(1,a)*KNmMm(i,j,0);
+      }
+    }
+  }
+
+  //  Contribution to tangent matrices: Dm * Bm, Dm*Bb
+  //
+  Array3<double> D0Bm(3,3,eNoN), D1Bm(3,3,eNoN), D1Bb(3,3,eNoN), D2Bb(3,3,eNoN);
+
+  for (int a = 0; a < eNoN; a++) {
+    D0Bm.set_slice(a, mat_mul(Dm.rslice(0), Bm.rslice(a)));
+    D1Bm.set_slice(a, mat_mul(Dm.rslice(1), Bm.rslice(a)));
+    D1Bb.set_slice(a, mat_mul(Dm.rslice(1), Bb.rslice(a)));
+    D2Bb.set_slice(a, mat_mul(Dm.rslice(2), Bb.rslice(a)));
+  }
+
+  // Acceleration and mass damping at the integration point
+  //
+  auto ud = -fb;
+
+  for (int a = 0; a < eNoN; a++) {
+    ud(0) = ud(0) + N(a)*(rho*(al(i,a)-bfl(0,a)) + dmp*yl(i,a));
+    ud(1) = ud(1) + N(a)*(rho*(al(j,a)-bfl(1,a)) + dmp*yl(j,a));
+    ud(2) = ud(2) + N(a)*(rho*(al(k,a)-bfl(2,a)) + dmp*yl(k,a));
+  }
+
+  // Local residue
+  //
+  auto w = lM.w(g)*Jac0;
+  auto wh = w*ht;
+
+  for (int a = 0; a < eNoN; a++) {
+     double BmS = Bm(0,0,a)*Sm(0,0) + Bm(1,0,a)*Sm(1,0) + Bm(2,0,a)*Sm(2,0);
+     double BbS = Bb(0,0,a)*Sm(0,1) + Bb(1,0,a)*Sm(1,1) + Bb(2,0,a)*Sm(2,1);
+     lR(0,a) = lR(0,a) + wh*N(a)*ud(0) + w*(BmS + BbS);
+
+     BmS = Bm(0,1,a)*Sm(0,0) + Bm(1,1,a)*Sm(1,0) + Bm(2,1,a)*Sm(2,0);
+     BbS = Bb(0,1,a)*Sm(0,1) + Bb(1,1,a)*Sm(1,1) + Bb(2,1,a)*Sm(2,1);
+     lR(1,a) = lR(1,a) + wh*N(a)*ud(1) + w*(BmS + BbS);
+
+     BmS = Bm(0,2,a)*Sm(0,0) + Bm(1,2,a)*Sm(1,0) + Bm(2,2,a)*Sm(2,0);
+     BbS = Bb(0,2,a)*Sm(0,1) + Bb(1,2,a)*Sm(1,1) + Bb(2,2,a)*Sm(2,1);
+     lR(2,a) = lR(2,a) + wh*N(a)*ud(2) + w*(BmS + BbS);
+  }
+
+  // Local stiffness
+  //
+  amd = wh*amd;
+  afl = w*afl;
+
+  for (int b = 0; b < eNoN; b++) {
+    for (int a = 0; a < eNoN; a++) {
+      // Contribution from inertia and geometric stiffness
+      double NxSNx = Nx(0,a)*Nx(0,b)*Sm(0,0) + Nx(1,a)*Nx(1,b)*Sm(1,0) + Nx(0,a)*Nx(1,b)*Sm(2,0) + 
+          Nx(1,a)*Nx(0,b)*Sm(2,0);
+      double T1 = amd*N(a)*N(b) + afl*NxSNx;
+
+      lK(0,a,b) = lK(0,a,b) + T1;
+      lK(dof+1,a,b) = lK(dof+1,a,b) + T1;
+      lK(2*dof+2,a,b) = lK(2*dof+2,a,b) + T1;
+
+      // Contribution from material stiffness
+      double BmDBm = Bm(0,0,a)*D0Bm(0,0,b) + Bm(1,0,a)*D0Bm(1,0,b) + Bm(2,0,a)*D0Bm(2,0,b);
+      double BmDBb = Bm(0,0,a)*D1Bb(0,0,b) + Bm(1,0,a)*D1Bb(1,0,b) + Bm(2,0,a)*D1Bb(2,0,b);
+      double BbDBm = Bb(0,0,a)*D1Bm(0,0,b) + Bb(1,0,a)*D1Bm(1,0,b) + Bb(2,0,a)*D1Bm(2,0,b);
+      double BbDBb = Bb(0,0,a)*D2Bb(0,0,b) + Bb(1,0,a)*D2Bb(1,0,b) + Bb(2,0,a)*D2Bb(2,0,b);
+      lK(0,a,b) = lK(0,a,b) + afl*(BmDBm + BmDBb + BbDBm + BbDBb);
+
+      BmDBm = Bm(0,0,a)*D0Bm(0,1,b) + Bm(1,0,a)*D0Bm(1,1,b) + Bm(2,0,a)*D0Bm(2,1,b);
+      BmDBb = Bm(0,0,a)*D1Bb(0,1,b) + Bm(1,0,a)*D1Bb(1,1,b) + Bm(2,0,a)*D1Bb(2,1,b);
+      BbDBm = Bb(0,0,a)*D1Bm(0,1,b) + Bb(1,0,a)*D1Bm(1,1,b) + Bb(2,0,a)*D1Bm(2,1,b);
+      BbDBb = Bb(0,0,a)*D2Bb(0,1,b) + Bb(1,0,a)*D2Bb(1,1,b) + Bb(2,0,a)*D2Bb(2,1,b);
+      lK(1,a,b) = lK(1,a,b) + afl*(BmDBm + BmDBb + BbDBm + BbDBb);
+
+      BmDBm = Bm(0,0,a)*D0Bm(0,2,b) + Bm(1,0,a)*D0Bm(1,2,b) + Bm(2,0,a)*D0Bm(2,2,b);
+      BmDBb = Bm(0,0,a)*D1Bb(0,2,b) + Bm(1,0,a)*D1Bb(1,2,b) + Bm(2,0,a)*D1Bb(2,2,b);
+      BbDBm = Bb(0,0,a)*D1Bm(0,2,b) + Bb(1,0,a)*D1Bm(1,2,b) + Bb(2,0,a)*D1Bm(2,2,b);
+      BbDBb = Bb(0,0,a)*D2Bb(0,2,b) + Bb(1,0,a)*D2Bb(1,2,b) + Bb(2,0,a)*D2Bb(2,2,b);
+      lK(2,a,b) = lK(2,a,b) + afl*(BmDBm + BmDBb + BbDBm + BbDBb);
+
+      BmDBm = Bm(0,1,a)*D0Bm(0,0,b) + Bm(1,1,a)*D0Bm(1,0,b) + Bm(2,1,a)*D0Bm(2,0,b);
+      BmDBb = Bm(0,1,a)*D1Bb(0,0,b) + Bm(1,1,a)*D1Bb(1,0,b) + Bm(2,1,a)*D1Bb(2,0,b);
+      BbDBm = Bb(0,1,a)*D1Bm(0,0,b) + Bb(1,1,a)*D1Bm(1,0,b) + Bb(2,1,a)*D1Bm(2,0,b);
+      BbDBb = Bb(0,1,a)*D2Bb(0,0,b) + Bb(1,1,a)*D2Bb(1,0,b) + Bb(2,1,a)*D2Bb(2,0,b);
+      lK(dof+0,a,b) = lK(dof+0,a,b) + afl*(BmDBm + BmDBb + BbDBm + BbDBb);
+
+      BmDBm = Bm(0,1,a)*D0Bm(0,1,b) + Bm(1,1,a)*D0Bm(1,1,b) + Bm(2,1,a)*D0Bm(2,1,b);
+      BbDBm = Bb(0,1,a)*D1Bm(0,1,b) + Bb(1,1,a)*D1Bm(1,1,b) + Bb(2,1,a)*D1Bm(2,1,b);
+      BbDBb = Bb(0,1,a)*D2Bb(0,1,b) + Bb(1,1,a)*D2Bb(1,1,b) + Bb(2,1,a)*D2Bb(2,1,b);
+      lK(dof+1,a,b) = lK(dof+1,a,b) + afl*(BmDBm + BmDBb + BbDBm + BbDBb);
+
+      BmDBm = Bm(0,1,a)*D0Bm(0,2,b) + Bm(1,1,a)*D0Bm(1,2,b) + Bm(2,1,a)*D0Bm(2,2,b);
+      BmDBb = Bm(0,1,a)*D1Bb(0,2,b) + Bm(1,1,a)*D1Bb(1,2,b) + Bm(2,1,a)*D1Bb(2,2,b);
+      BbDBm = Bb(0,1,a)*D1Bm(0,2,b) + Bb(1,1,a)*D1Bm(1,2,b) + Bb(2,1,a)*D1Bm(2,2,b);
+      BbDBb = Bb(0,1,a)*D2Bb(0,2,b) + Bb(1,1,a)*D2Bb(1,2,b) + Bb(2,1,a)*D2Bb(2,2,b);
+      lK(dof+2,a,b) = lK(dof+2,a,b) + afl*(BmDBm + BmDBb + BbDBm + BbDBb);
+
+      BmDBm = Bm(0,2,a)*D0Bm(0,0,b) + Bm(1,2,a)*D0Bm(1,0,b) + Bm(2,2,a)*D0Bm(2,0,b);
+      BmDBb = Bm(0,2,a)*D1Bb(0,0,b) + Bm(1,2,a)*D1Bb(1,0,b) + Bm(2,2,a)*D1Bb(2,0,b);
+      BbDBm = Bb(0,2,a)*D1Bm(0,0,b) + Bb(1,2,a)*D1Bm(1,0,b) + Bb(2,2,a)*D1Bm(2,0,b);
+      BbDBb = Bb(0,2,a)*D2Bb(0,0,b) + Bb(1,2,a)*D2Bb(1,0,b) + Bb(2,2,a)*D2Bb(2,0,b);
+      lK(2*dof+0,a,b) = lK(2*dof+0,a,b) + afl*(BmDBm + BmDBb + BbDBm + BbDBb);
+
+      BmDBm = Bm(0,2,a)*D0Bm(0,1,b) + Bm(1,2,a)*D0Bm(1,1,b) + Bm(2,2,a)*D0Bm(2,1,b);
+      BmDBb = Bm(0,2,a)*D1Bb(0,1,b) + Bm(1,2,a)*D1Bb(1,1,b) + Bm(2,2,a)*D1Bb(2,1,b);
+      BbDBm = Bb(0,2,a)*D1Bm(0,1,b) + Bb(1,2,a)*D1Bm(1,1,b) + Bb(2,2,a)*D1Bm(2,1,b);
+      BbDBb = Bb(0,2,a)*D2Bb(0,1,b) + Bb(1,2,a)*D2Bb(1,1,b) + Bb(2,2,a)*D2Bb(2,1,b);
+      lK(2*dof+1,a,b) = lK(2*dof+1,a,b) + afl*(BmDBm + BmDBb + BbDBm + BbDBb);
+
+      BmDBm = Bm(0,2,a)*D0Bm(0,2,b) + Bm(1,2,a)*D0Bm(1,2,b) + Bm(2,2,a)*D0Bm(2,2,b);
+      BmDBb = Bm(0,2,a)*D1Bb(0,2,b) + Bm(1,2,a)*D1Bb(1,2,b) + Bm(2,2,a)*D1Bb(2,2,b);
+      BbDBm = Bb(0,2,a)*D1Bm(0,2,b) + Bb(1,2,a)*D1Bm(1,2,b) + Bb(2,2,a)*D1Bm(2,2,b);
+      BbDBb = Bb(0,2,a)*D2Bb(0,2,b) + Bb(1,2,a)*D2Bb(1,2,b) + Bb(2,2,a)*D2Bb(2,2,b);
+      lK(2*dof+2,a,b) = lK(2*dof+2,a,b) + afl*(BmDBm + BmDBb + BbDBm + BbDBb);
+    }
+  }
 }
 
 //----------------
@@ -692,6 +1058,83 @@ void shell_bend_cst(ComMod& com_mod, const mshType& lM, const int e, const Vecto
     }
   }
 }
+ 
+//----------
+// shell_bf
+//----------
+// Set follower pressure load/net traction on shells. The traction
+// on shells is treated as body force and the subroutine is called
+// from BF.f
+//
+// Reproduces Fortran SHELLBF.
+//
+void shell_bf(ComMod& com_mod, const int eNoN, const double w, const Vector<double>& N, const Array<double>& Nx, 
+    const Array<double>& dl, const Array<double>& xl, const Vector<double>& tfl, Array<double>& lR, Array3<double>& lK)
+{
+  using namespace consts;
+
+  const int nsd = com_mod.nsd;
+  const int dof = com_mod.dof;
+  int cEq = com_mod.cEq;
+  auto& eq = com_mod.eq[cEq];
+  auto cDmn = com_mod.cDmn;
+  auto& dmn = eq.dmn[cDmn];
+  const double dt = com_mod.dt;
+
+  double afl = eq.af * eq.beta * dt * dt;
+
+  int i = eq.s;
+  int j = i + 1;
+  int k = j + 1;
+
+  // Get the current configuration and traction vector
+  //
+  double tfn = 0.0;
+  Array<double> xc(3,eNoN);
+
+  for (int a = 0; a < eNoN; a++) {
+    xc(0,a) = xl(0,a) + dl(i,a);
+    xc(1,a) = xl(1,a) + dl(j,a);
+    xc(2,a) = xl(2,a) + dl(k,a);
+
+    tfn = tfn + N(a)*tfl(a);
+  }
+
+  double wl = w * tfn;
+
+  // Covariant and contravariant bases in current config
+  Array<double> gCov(3,2), gCnv(3,2);
+  Vector<double> nV(3);
+  nn::gnns(nsd, eNoN, Nx, xc, nV, gCov, gCnv);
+
+  //  Local residue
+  for (int a = 0; a < eNoN; a++) {
+    lR(0,a) = lR(0,a) - wl*N(a)*nV(0);
+    lR(1,a) = lR(1,a) - wl*N(a)*nV(1);
+    lR(2,a) = lR(2,a) - wl*N(a)*nV(2);
+  }
+
+  // Local stiffness: mass matrix and stiffness contribution due to
+  // follower traction load
+  //
+  double T1 = afl*wl*0.50;
+
+  for (int b = 0; b < eNoN; b++) {
+    for (int a = 0; a < eNoN; a++) {
+      auto lKp = gCov.rcol(0)*(N(b)*Nx(1,a) - N(a)*Nx(1,b)) - 
+          gCov.rcol(1)*(N(b)*Nx(0,a) - N(a)*Nx(0,b));
+
+      lK(1,a,b) = lK(1,a,b) - T1*lKp(2);
+      lK(2,a,b) = lK(2,a,b) + T1*lKp(1);
+
+      lK(dof+0,a,b) = lK(dof+0,a,b) + T1*lKp(2);
+      lK(dof+2,a,b) = lK(dof+2,a,b) - T1*lKp(0);
+
+      lK(2*dof+0,a,b) = lK(2*dof+0,a,b) - T1*lKp(1);
+      lK(2*dof+1,a,b) = lK(2*dof+1,a,b) + T1*lKp(0);
+    }
+  }
+}
 
 //-----------
 // shell_cst
@@ -699,6 +1142,8 @@ void shell_bend_cst(ComMod& com_mod, const mshType& lM, const int e, const Vecto
 // Construct shell mechanics for constant strain triangle elements
 //
 // Note that for triangular elements, eNoN=6 and lM.eNoN=3
+//
+// Reproduces Fortran SHELLCST.
 //
 void shell_cst(ComMod& com_mod, const mshType& lM, const int e, const int eNoN, const int nFn, const Array<double>& fN,  
     const Array<double>& al, const Array<double>& yl, const Array<double>& dl, const Array<double>& xl, 
