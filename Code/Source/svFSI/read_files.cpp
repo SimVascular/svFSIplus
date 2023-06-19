@@ -1166,8 +1166,12 @@ void read_domain(Simulation* simulation, EquationParameters* eq_params, eqType& 
         read_cep_domain(simulation, eq_params, domain_params, lEq.dmn[iDmn]);
      }
 
-     // Set parameters for a solid material model.
-     if ((lEq.dmn[iDmn].phys == EquationType::phys_struct)  || (lEq.dmn[iDmn].phys == EquationType::phys_ustruct)) { 
+     // Read material/constitutive model parameters for nonlinear
+     // elastodynamics simulations (both solids and shells)
+     //
+     if ( (lEq.dmn[iDmn].phys == EquationType::phys_shell) || 
+          (lEq.dmn[iDmn].phys == EquationType::phys_struct) || 
+          (lEq.dmn[iDmn].phys == EquationType::phys_ustruct)) { 
         read_mat_model(simulation, eq_params, domain_params, lEq.dmn[iDmn]);
         if (utils::is_zero(lEq.dmn[iDmn].stM.Kpen) && lEq.dmn[iDmn].phys == EquationType::phys_struct) { 
           //err = "Incompressible struct is not allowed. Use "//  "penalty method or ustruct"

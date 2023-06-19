@@ -125,4 +125,23 @@ SeMaterialPropertiesMapType set_material_props = {
   lDmn.stM.bfs = params.bfs.value();
 } },
 
+//---------------------------//
+//       stIso_LS            //
+//---------------------------//
+// Lee-Sacks material model.
+//
+{consts::ConstitutiveModelType::stIso_LS, [](DomainParameters* domain_params, double mu, double kap, double lam,
+    dmnType& lDmn) -> void
+{
+  lDmn.stM.isoType = consts::ConstitutiveModelType::stIso_LS;
+  auto& params = domain_params->constitutive_model.lee_sacks;
+
+  lDmn.stM.a = params.a.value();
+  lDmn.stM.a0 = params.a0.value();
+  lDmn.stM.b1 = params.b1.value();
+  lDmn.stM.b2 = params.b2.value();
+  lDmn.stM.mu0 = params.mu0.value();
+
+} },
+
 };

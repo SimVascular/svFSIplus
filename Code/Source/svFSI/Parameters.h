@@ -440,6 +440,25 @@ class ParameterLists
 // various constitutive models.
 
 //--------------------
+// LeeSacksParameters
+//--------------------
+//
+class LeeSacksParameters : public ParameterLists
+{
+  public:
+    LeeSacksParameters();
+    bool defined() const { return value_set; };
+    void set_values(tinyxml2::XMLElement* con_model_params);
+    void print_parameters();
+    Parameter<double> a;
+    Parameter<double> a0;
+    Parameter<double> b1;
+    Parameter<double> b2;
+    Parameter<double> mu0;
+    bool value_set = false;
+};
+
+//--------------------
 // GuccioneParameters  
 //--------------------
 class GuccioneParameters : public ParameterLists
@@ -548,6 +567,7 @@ class ConstitutiveModelParameters : public ParameterLists
     // Model types supported.
     static const std::string GUCCIONE_MODEL;
     static const std::string HGO_MODEL;
+    static const std::string LEE_SACKS;
     static const std::string NEOHOOKEAN_MODEL;
     static const std::string STVENANT_KIRCHHOFF_MODEL;
     static const std::map<std::string, std::string> constitutive_model_types;
@@ -558,6 +578,7 @@ class ConstitutiveModelParameters : public ParameterLists
     GuccioneParameters guccione;
     HolzapfelParameters holzapfel;
     HolzapfelGasserOgdenParameters holzapfel_gasser_ogden;
+    LeeSacksParameters lee_sacks;
     MooneyRivlinParameters mooney_rivlin;
     NeoHookeanParameters neo_hookean;
     StVenantKirchhoffParameters stvenant_kirchhoff;
