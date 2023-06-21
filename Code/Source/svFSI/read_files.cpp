@@ -1444,7 +1444,16 @@ void read_files(Simulation* simulation, const std::string& file_name)
 
   auto& com_mod = simulation->get_com_mod();
 
+  #define n_debug_read_files
+  #ifdef debug_read_files
+  DebugMsg dmsg(__func__, com_mod.cm.idcm());
+  dmsg.banner();
+  #endif
+
   // Read the solver XML file.
+  #ifdef debug_read_files
+  dmsg << "Read the solver XML file " << " ... ";
+  #endif
   if (!com_mod.resetSim) {
     simulation->read_parameters(std::string(file_name));
   }
@@ -1483,6 +1492,9 @@ void read_files(Simulation* simulation, const std::string& file_name)
   simulation->set_module_parameters();
 
   // Read mesh and BCs data.
+  #ifdef debug_read_files
+  dmsg << "Read mesh and BCs data " << " ... ";
+  #endif
   read_msh_ns::read_msh(simulation);
 
   // Reading immersed boundary mesh data.
@@ -1506,6 +1518,10 @@ void read_files(Simulation* simulation, const std::string& file_name)
   com_mod.nEq = nEq; 
   com_mod.eq.resize(nEq);
   std::for_each(com_mod.eq.begin(),com_mod.eq.end(),[&](eqType& eq){eq.roInf=simulation->roInf;});
+  #ifdef debug_read_files
+  dmsg << "Read equations " << " ... ";
+  dmsg << "nEq: " << nEq;
+  #endif
 
   for (int iEq = 0; iEq < nEq; iEq++) { 
     auto& eq = com_mod.eq[iEq];
@@ -1577,6 +1593,9 @@ void read_files(Simulation* simulation, const std::string& file_name)
       }     
     }     
   }
+  #ifdef debug_read_files
+  dmsg << "Done Read equations " << " ";
+  #endif
 
   auto& cep_mod = simulation->get_cep_mod();
 
@@ -1639,6 +1658,10 @@ void read_files(Simulation* simulation, const std::string& file_name)
     com_mod.cplBC.nX = 0;
     com_mod.cplBC.xo.clear();
   }
+
+  #ifdef debug_read_files
+  dmsg << "Done" << " ";
+  #endif
 }
 
 //--------------------------------

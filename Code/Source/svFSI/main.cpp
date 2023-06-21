@@ -648,15 +648,24 @@ int main(int argc, char *argv[])
 
     // Read in the solver commands .xml file.
     //
+    #ifdef debug_main
+    dmsg << "Read files " << " ... ";
+    #endif
     read_files(simulation, file_name);
 
     // Distribute data to processors.
+    #ifdef debug_main
+    dmsg << "Distribute data to processors " << " ... ";
+    #endif
     distribute(simulation);
 
     // Initialize simulation data.
     //
     Vector<double> init_time(3);
 
+    #ifdef debug_main
+    dmsg << "Initialize " << " ... ";
+    #endif
     initialize(simulation, init_time);
 
     #ifdef debug_main
