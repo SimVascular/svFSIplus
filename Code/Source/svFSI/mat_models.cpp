@@ -789,7 +789,9 @@ void get_pk2cc_dev(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& 
 void get_pk2cc_shlc(const ComMod& com_mod, const dmnType& lDmn, const int nfd, const Array<double>& fNa0,
     const Array<double>& gg_0, const Array<double>& gg_x, double& g33, Vector<double>& Sml, Array<double>& Dml)
 {
-  const double ATOL = 1E-10;
+  // [NOTE] The tolerance here is a bit larger than Fortran.
+  const double ATOL = 1.0e-9;
+  //const double ATOL = 1E-10;
   const int MAXITR = 20;
 
   using namespace consts;
@@ -822,7 +824,6 @@ void get_pk2cc_shlc(const ComMod& com_mod, const dmnType& lDmn, const int nfd, c
 
   // Inverse of metric coefficients in shell continuum
   auto gi_x = mat_inv(gg_x, 2);
-  //dmsg << "gi_x: " << gi_x; 
 
   Array<double> gi_0(3,3);
   auto gg_0_inv = mat_inv(gg_0, 2);
@@ -833,11 +834,15 @@ void get_pk2cc_shlc(const ComMod& com_mod, const dmnType& lDmn, const int nfd, c
   }
 
   gi_0(2,2) = 1.0;
-  //dmsg << "gi_0: " << gi_0; 
 
   // Ratio of inplane Jacobian determinant squared
   auto Jg2 = mat_det(gg_x, 2) / mat_det(gg_0, 2);
-  //dmsg << "Jg2: " << Jg2; 
+
+  #ifdef debug_get_pk2cc_shlc 
+  dmsg << "gi_0: " << gi_0; 
+  dmsg << "gi_x: " << gi_x; 
+  dmsg << "Jg2: " << Jg2; 
+  #endif
 
   // Begin Newton iterations to satisfy plane-stress condition.
   // The objective is to find C33 that satisfies S33 = 0.
@@ -853,7 +858,7 @@ void get_pk2cc_shlc(const ComMod& com_mod, const dmnType& lDmn, const int nfd, c
 
     // Trace (C)
     auto trC3 = (gg_x(0,0)*gi_0(0,0) + gg_x(0,1)*gi_0(0,1) +  gg_x(1,0)*gi_0(1,0) + 
-        gg_x(1,1)*gi_0(1,1) + C33)*f13;
+                 gg_x(1,1)*gi_0(1,1) + C33)*f13;
 
     // Jacobian-related quantities
     auto J2 = Jg2*C33;
@@ -861,6 +866,7 @@ void get_pk2cc_shlc(const ComMod& com_mod, const dmnType& lDmn, const int nfd, c
     //dmsg << "trC3: " << trC3;
     //dmsg << "J2: " << J2;
     //dmsg << "J23: " << J23;
+    //dmsg << "f13: " << f13;
 
     // Inverse of curvilinear Cauchy-Green deformation tensor
     //
@@ -872,26 +878,29 @@ void get_pk2cc_shlc(const ComMod& com_mod, const dmnType& lDmn, const int nfd, c
         Ci(i,j) = gi_x(i,j);
       }
     }
+    //dmsg << "Ci: " << Ci;
 
     // Contribution from dilational penalty terms to S and CC
     auto pJ  = 0.50 * kap * (J2 - 1.0);
     auto plJ = kap * J2;
-    //dmsg << "pJ: " << pJ;
-    //dmsg << "plJ: " << plJ;
-    //dmsg << "stM.isoType: " << stM.isoType;
+    #ifdef debug_get_pk2cc_shlc 
+    dmsg << "pJ: " << pJ;
+    dmsg << "plJ: " << plJ;
+    dmsg << "J23: " << J23;
+    dmsg << "mu: " << mu;
+    dmsg << "trC3: " << trC3;
+    dmsg << "stM.isoType: " << stM.isoType;
+    #endif
 
     switch (stM.isoType) {
 
       case ConstitutiveModelType::stIso_nHook: {
-        //dmsg << "stM.isoType: " << " stIso_nHook";
         // 2nd Piola Kirchhoff stress
         S = mu*J23*(gi_0 - trC3*Ci) + pJ*Ci;
-        //dmsg << "S: " << S;
 
         // Elasticity tensor
         CC = (mu*J23*f23*trC3 + plJ)*ten_dyad_prod(Ci, Ci, 3) + (mu*J23*trC3 - pJ)*2.0*ten_symm_prod(Ci, Ci, 3) - 
             f23*mu*J23*(ten_dyad_prod(gi_0, Ci, 3) + ten_dyad_prod(Ci, gi_0, 3));
-        //dmsg << "CC: " << CC;
       } break;
 
       case ConstitutiveModelType::stIso_MR: {
@@ -1081,11 +1090,15 @@ void get_pk2cc_shlc(const ComMod& com_mod, const dmnType& lDmn, const int nfd, c
      }
 
      if (itr > MAXITR) {
-        std::cerr << "Failed to converge plane-stress condition" << std::endl;
+        std::cerr << "[get_pk2cc_shlc] Failed to converge plane-stress condition." << std::endl;
+        //exit(0);
         break;
      }
 
      C33 = C33 - (2.0 * S(2,2) / CC(2,2,2,2));
+     //dmsg << "1: C33: " << C33;
+     //dmsg << "CC(3,3,3,3): " << CC(2,2,2,2);
+     //exit(0);
   }
 
   g33 = C33;
@@ -1105,6 +1118,9 @@ void get_pk2cc_shlc(const ComMod& com_mod, const dmnType& lDmn, const int nfd, c
 
   g33 = C33;
 
+  //dmsg << "2: C33: " << C33;
+  //exit(0);
+
   // Convert the in-plane components to Voigt notation
   Sml(0) = S(0,0);
   Sml(1) = S(1,1);
@@ -1122,10 +1138,6 @@ void get_pk2cc_shlc(const ComMod& com_mod, const dmnType& lDmn, const int nfd, c
   Dml(1,0) = Dml(0,1);
   Dml(2,0) = Dml(0,2);
   Dml(2,1) = Dml(1,2);
-
-  //dmsg << "Done " << " ";
-  //exit(0);
-
 }
 
 //----------------

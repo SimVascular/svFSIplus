@@ -74,11 +74,13 @@ void construct_shell(ComMod& com_mod, const mshType& lM, const Array<double>& Ag
       continue;
     }
 
-    //dmsg << " " << " ";
-    //dmsg << " " << " ";
-    //dmsg << "-------------------------------------" << " ";
-    //dmsg << "--------------- e: " << e+1;
-    //dmsg << "-------------------------------------" << " ";
+#if 0
+    dmsg << " " << " ";
+    dmsg << " " << " ";
+    dmsg << "-------------------------------------" << " ";
+    dmsg << "--------------- e: " << e+1;
+    dmsg << "-------------------------------------" << " ";
+#endif
 
     //  Create local copies
     xl  = 0.0;
@@ -1337,6 +1339,9 @@ void shell_cst(ComMod& com_mod, const mshType& lM, const int e, const int eNoN, 
      Bm(2,1,a) = Nx(1,a)*aCov(1,0) + Nx(0,a)*aCov(1,1);
      Bm(2,2,a) = Nx(1,a)*aCov(2,0) + Nx(0,a)*aCov(2,1);
   }
+  //dmsg << " " << " ";
+  //dmsg << "Bm: " << Bm;
+  //exit(0);
 
   // For the boundary elements, zero-out Bm for fixed/clamped BC.
   //
@@ -1344,9 +1349,12 @@ void shell_cst(ComMod& com_mod, const mshType& lM, const int e, const int eNoN, 
   int a = lM.eNoN;
 
   while (a < eNoN) {
+    //dmsg << "----- a: " << a+1;
     if (ptr(a) == -1) {
       int b = a - lM.eNoN;
+      //dmsg << "b: " << b+1;
       if (utils::btest(lM.sbc(b,e),enum_int(BoundaryConditionType::bType_fix))) {
+        //dmsg << "set to true " << b+1;
         setIt[b] = true;
       }
     }
@@ -1361,9 +1369,13 @@ void shell_cst(ComMod& com_mod, const mshType& lM, const int e, const int eNoN, 
           continue; 
         }
         Bm.rslice(b) = 0.0;
+        //dmsg << "Zero slice b: " << b;
       }
     }
   }
+  //dmsg << " " << " ";
+  //dmsg << "Bm: " << Bm;
+  //exit(0);
 
   // Compute curvature coefficients for bending strain and its
   // variation for CST elements
@@ -1392,8 +1404,17 @@ void shell_cst(ComMod& com_mod, const mshType& lM, const int e, const int eNoN, 
   Array<double> Sm(3,2);
   double lam3;
   shl_strs_res(com_mod, dmn, nFn, fNa0, aa_0, aa_x, bb_0, bb_x, lam3, Sm, Dm);
-  //dmsg << "Sm: " << Sm;
-  //dmsg << "Dm: " << Dm;
+
+  /*
+  dmsg << " " << " ";
+  dmsg << "Bm: " << Bm;
+  dmsg << "Bb: " << Bb;
+
+  dmsg << " " << " ";
+  dmsg << "Sm: " << Sm;
+  dmsg << "Dm: " << Dm;
+  exit(0);
+  */
 
   // Contribution to tangent matrices: Dm * Bm, Dm*Bb
   //
@@ -1448,6 +1469,9 @@ void shell_cst(ComMod& com_mod, const mshType& lM, const int e, const int eNoN, 
        }
      }
   }
+  //std::cout << "[shell_cst]  " << " " << std::endl;
+  //std::cout << "[shell_cst] lK: " << lK << std::endl;
+  //exit(0);
 
   // Contribution to residue from membrane strain
   //
@@ -1514,6 +1538,9 @@ void shell_cst(ComMod& com_mod, const mshType& lM, const int e, const int eNoN, 
       lK(2*dof+2,a,b) = lK(2*dof+2,a,b) + w*(BtDB + NxSNx);
     }
   }
+  //std::cout << "[shell_cst]  " << " " << std::endl;
+  //std::cout << "[shell_cst] lK: " << lK << std::endl;
+  //exit(0);
 
   //  Contribution to stiffness from membrane-bending interactions
   //
@@ -1619,6 +1646,7 @@ void shell_cst(ComMod& com_mod, const mshType& lM, const int e, const int eNoN, 
   //std::cout << "[shell_cst] " << std::endl;
   //std::cout << "[shell_cst] lR: " << lR << std::endl;
   //std::cout << "[shell_cst] lK: " << lK << std::endl;
+  //exit(0);
 
 #ifdef WITH_TRILINOS
   if (eq.assmTLS) { 
