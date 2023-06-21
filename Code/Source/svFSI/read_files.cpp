@@ -422,8 +422,8 @@ void read_bc(Simulation* simulation, EquationParameters* eq_params, eqType& lEq,
   // Read BCs for shells with triangular elements. Not necessary for
   // NURBS elements
   //
-  if (bc_params->shell_bc_type.defined()) { 
-    auto ctmp = bc_params->shell_bc_type.value(); 
+  if (bc_params->cst_shell_bc_type.defined()) { 
+    auto ctmp = bc_params->cst_shell_bc_type.value(); 
     if (std::set<std::string>{"Fixed", "fixed", "Clamped", "clamped"}.count(ctmp)) {
       lBc.bType = utils::ibset(lBc.bType, enum_int(BoundaryConditionType::bType_fix));
       if (!utils::btest(lBc.bType, enum_int(BoundaryConditionType::bType_Dir))) {
@@ -1937,19 +1937,23 @@ void read_mat_model(Simulation* simulation, EquationParameters* eq_params, Domai
   }
 
   // If no constitutive model was given use a NeoHookean model.
+  //
+  ConstitutiveModelType cmodel_type;
+  std::string cmodel_str;
+
   if (!domain_params->constitutive_model.defined()) { 
     lDmn.stM.isoType = ConstitutiveModelType::stIso_nHook;
-    lDmn.stM.C10 = mu * 0.5;
-    return;
-  }
+    cmodel_type = ConstitutiveModelType::stIso_nHook;
+    cmodel_str = "neoHookean";
 
   // Get the constitutive model type.
-  ConstitutiveModelType cmodel_type;
-  auto cmodel_str = domain_params->constitutive_model.type.value();
-  try {
-    cmodel_type = constitutive_model_name_to_type.at(cmodel_str);
-  } catch (const std::out_of_range& exception) {
-    throw std::runtime_error("Unknown constitutive model type '" + cmodel_str + ".");
+  } else {
+    cmodel_str = domain_params->constitutive_model.type.value();
+    try {
+      cmodel_type = constitutive_model_name_to_type.at(cmodel_str);
+    } catch (const std::out_of_range& exception) {
+      throw std::runtime_error("Unknown constitutive model type '" + cmodel_str + ".");
+    }
   }
 
   // Set material properties for the domain 'lDmn'.
@@ -1974,6 +1978,21 @@ void read_mat_model(Simulation* simulation, EquationParameters* eq_params, Domai
       lDmn.stM.Tf.gt.lrmp = fiber_params.ramp_function.defined();
       read_fiber_temporal_values_file(fiber_params, lDmn);
     }
+  }
+
+  // Check for shell model
+  //
+  // ST91 is the default and the only dilational penalty model for
+  // compressible shell elements. This is set to avoid any square-
+  // root evaulations of the Jacobian during Newton iterations for
+  // satisfying plane-stress condition.
+  //
+  if (lDmn.phys == EquationType::phys_shell) {
+    lDmn.stM.Kpen = kap;
+    if (!incompFlag) {
+      lDmn.stM.volType = ConstitutiveModelType::stVol_ST91;
+    }
+    return;
   }
 
   // Look for dilational penalty model. HGO uses quadratic penalty model.

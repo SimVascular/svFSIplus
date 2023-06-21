@@ -807,7 +807,7 @@ void set_shl_xien(Simulation* simulation, mshType& lM)
   lM.eIEN.resize(eNoN,nEl); 
   lM.sbc.resize(eNoN,nEl);
 
-  lM.eIEN = 0;
+  lM.eIEN = -1;
   lM.sbc = 0;
 
   for (int e = 0; e < nEl; e++) {
@@ -829,7 +829,7 @@ void set_shl_xien(Simulation* simulation, mshType& lM)
 
         if (incN.sum() == 2) {
           for (int b = 0; b < eNoN; b++) {
-            if (incN(b) ==  0) {
+            if (incN(b) == 0) {
               lM.eIEN(a,e) = lM.IEN(b,f);
               break;
             }
@@ -837,7 +837,7 @@ void set_shl_xien(Simulation* simulation, mshType& lM)
           break;
         }
 
-        if (lM.eIEN(a,e) == 0) {
+        if (lM.eIEN(a,e) == -1) {
           lM.sbc(a,e) = utils::ibset(lM.sbc(a,e), enum_int(BoundaryConditionType::bType_free)); 
         }
       }

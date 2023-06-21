@@ -27,12 +27,13 @@ void construct_shell(ComMod& com_mod, const mshType& lM, const Array<double>& Ag
 {
   using namespace consts;
 
-  #define debug_construct_shell
+  #define n_debug_construct_shell
   #ifdef debug_construct_shell
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
   dmsg << "lM.nFn: " << lM.nFn;
   dmsg << "lM.nFs: " << lM.nFs;
+  dmsg << "lM.eNoN: " << lM.eNoN;
   #endif
 
   const int nsd  = com_mod.nsd;
@@ -73,6 +74,12 @@ void construct_shell(ComMod& com_mod, const mshType& lM, const Array<double>& Ag
       continue;
     }
 
+    //dmsg << " " << " ";
+    //dmsg << " " << " ";
+    //dmsg << "-------------------------------------" << " ";
+    //dmsg << "--------------- e: " << e+1;
+    //dmsg << "-------------------------------------" << " ";
+
     //  Create local copies
     xl  = 0.0;
     al  = 0.0;
@@ -81,19 +88,24 @@ void construct_shell(ComMod& com_mod, const mshType& lM, const Array<double>& Ag
     bfl = 0.0;
 
     for (int a = 0; a < eNoN; a++) {
-      int Ac = 0;
+      //dmsg << "----- a: " << a;
+      int Ac = -1;
 
       if (a < lM.eNoN) {
         Ac = lM.IEN(a,e);
         ptr(a) = Ac;
       } else {
         int b = a - lM.eNoN;
+        //dmsg << "b: " << b;
         Ac = lM.eIEN(b,e);
         ptr(a) = Ac;
-        if (Ac == 0) {
+        //dmsg << "Ac: " << Ac;
+        if (Ac == -1) {
           continue;
         }
       } 
+
+      //dmsg << "Ac: " << Ac;
 
       for (int i = 0; i < nsd; i++) {
         xl(i,a) = com_mod.x(i,Ac);
@@ -105,44 +117,57 @@ void construct_shell(ComMod& com_mod, const mshType& lM, const Array<double>& Ag
         dl(i,a) = Dg(i,Ac);
         yl(i,a) = Yg(i,Ac);
       }
-
-      if (lM.fN.size() != 0) {
-        for (int iFn = 0; iFn < nFn; iFn++) {
-          for (int i = 0; i < nsd; i++) {
-            fN(i,iFn) = lM.fN(i+nsd*iFn,e);
-          }
-        }
-      }
-
-     //  Constant strain triangles, no numerical integration
-     //
-     if (lM.eType == ElementType::TRI3) {
-       shell_cst(com_mod, lM, e, eNoN, nFn, fN, al, yl, dl, xl, bfl, ptr);
-
-     } else {
-        lR = 0.0;
-        lK = 0.0;
-
-        // Update shape functions for NURBS elements
-        //if (lM.eType .EQ. eType_NRB) CALL NRBNNX(lM, e)
-
-        // Gauss integration
-        for (int g = 0; g < lM.nG; g++) {
-          shell_3d(com_mod, lM, g, eNoN, nFn, fN, al, yl, dl, xl, bfl, lR, lK);
-        }
-      }
-
-      //       Assembly
-#ifdef WITH_TRILINOS
-      if (eq.assmTLS) {
-        trilinos_doassem_(eNoN, ptr, lK, lR);
-      } else {
-#endif
-       lhsa_ns::do_assem(com_mod, eNoN, ptr, lK, lR);
-#ifdef WITH_TRILINOS
-      }
-#endif
     }
+
+    //dmsg << "lM.fN.size(): " << lM.fN.size();
+    if (lM.fN.size() != 0) {
+      for (int iFn = 0; iFn < nFn; iFn++) {
+        for (int i = 0; i < nsd; i++) {
+          fN(i,iFn) = lM.fN(i+nsd*iFn,e);
+        }
+      }
+    } else {
+      fN = 0.0;
+    }
+
+    #ifdef debug_construct_shell
+    dmsg << "-------------------" << "-------------------";
+    dmsg << "ptr: " << ptr;
+    dmsg << "-------------------" << "-------------------";
+    #endif
+
+    //  Constant strain triangles, no numerical integration
+    //
+    if (lM.eType == ElementType::TRI3) {
+      shell_cst(com_mod, lM, e, eNoN, nFn, fN, al, yl, dl, xl, bfl, ptr);
+
+    } else {
+      lR = 0.0;
+      lK = 0.0;
+
+      // Update shape functions for NURBS elements
+      //if (lM.eType .EQ. eType_NRB) CALL NRBNNX(lM, e)
+
+      // Gauss integration
+      for (int g = 0; g < lM.nG; g++) {
+        shell_3d(com_mod, lM, g, eNoN, nFn, fN, al, yl, dl, xl, bfl, lR, lK);
+      }
+    }
+
+    //if (e+1 == 19) {
+      //exit(0);
+    //}
+
+    // Assembly
+#ifdef WITH_TRILINOS
+    if (eq.assmTLS) {
+      trilinos_doassem_(eNoN, ptr, lK, lR);
+    } else {
+#endif
+     lhsa_ns::do_assem(com_mod, eNoN, ptr, lK, lR);
+#ifdef WITH_TRILINOS
+    }
+#endif
 
   } // e: loop
 
@@ -158,6 +183,9 @@ void shell_3d(ComMod& com_mod, const mshType& lM, const int g, const int eNoN,
     const Array<double>& al, const Array<double>& yl, const Array<double>& dl, const Array<double>& xl,
     const Array<double>& bfl, Array<double>& lR, Array3<double>& lK)
 {
+  std::cout << "========== shell_3d ==========" << std::endl;
+  std::cout << "[shell_3d] g: " << g << std::endl;
+
   using namespace consts;
   using namespace mat_fun;
 
@@ -530,6 +558,22 @@ void shell_bend_cst(ComMod& com_mod, const mshType& lM, const int e, const Vecto
   using namespace mat_fun;
   using namespace utils;
 
+  #define n_debug_shell_bend_cst
+  #ifdef debug_shell_bend_cst 
+  DebugMsg dmsg(__func__, com_mod.cm.idcm());
+  dmsg.banner();
+  dmsg << "e: " << e;
+  #endif
+
+  int cEq = com_mod.cEq;
+  auto& eq = com_mod.eq[cEq];
+  auto cDmn = com_mod.cDmn;
+  auto& dmn = eq.dmn[cDmn];
+
+  // Define parameters
+  double rho = eq.dmn[cDmn].prop.at(PhysicalProperyType::solid_density);
+  double dmp = dmn.prop.at(PhysicalProperyType::damping);
+
   int nsd = com_mod.nsd;
   int eNoN = 2 * lM.eNoN;
 
@@ -568,7 +612,7 @@ void shell_bend_cst(ComMod& com_mod, const mshType& lM, const int e, const Vecto
 
   for (int i = 0; i < 3; i++) {
     for (int j = 0; j < 3; j++) {
-      tmpA = x0(i,j);
+      tmpA(i,j) = x0(i,j);
     }
   }
 
@@ -635,9 +679,9 @@ void shell_bend_cst(ComMod& com_mod, const mshType& lM, const int e, const Vecto
 
       // nI = eI x n (currnt config)
       //
-      nI(1) = eI(2)*nV(3) - eI(3)*nV(2);
-      nI(2) = eI(3)*nV(1) - eI(1)*nV(3);
-      nI(3) = eI(1)*nV(2) - eI(2)*nV(1);
+      nI(0) = eI(1)*nV(2) - eI(2)*nV(1);
+      nI(1) = eI(2)*nV(0) - eI(0)*nV(2);
+      nI(2) = eI(0)*nV(1) - eI(1)*nV(0);
 
       // xJ = xI + 2(nI \ctimes nI)aP
       //
@@ -1069,7 +1113,7 @@ void shell_bend_cst(ComMod& com_mod, const mshType& lM, const int e, const Vecto
 // Reproduces Fortran SHELLBF.
 //
 void shell_bf(ComMod& com_mod, const int eNoN, const double w, const Vector<double>& N, const Array<double>& Nx, 
-    const Array<double>& dl, const Array<double>& xl, const Vector<double>& tfl, Array<double>& lR, Array3<double>& lK)
+    const Array<double>& dl, const Array<double>& xl, const Array<double>& tfl, Array<double>& lR, Array3<double>& lK)
 {
   using namespace consts;
 
@@ -1091,13 +1135,15 @@ void shell_bf(ComMod& com_mod, const int eNoN, const double w, const Vector<doub
   //
   double tfn = 0.0;
   Array<double> xc(3,eNoN);
+  // [NOTE] This is a hack for enabling 'tfl' to be used as a vector in the Fortran.
+  auto tfl_data = tfl.data();
 
   for (int a = 0; a < eNoN; a++) {
     xc(0,a) = xl(0,a) + dl(i,a);
     xc(1,a) = xl(1,a) + dl(j,a);
     xc(2,a) = xl(2,a) + dl(k,a);
 
-    tfn = tfn + N(a)*tfl(a);
+    tfn = tfn + N(a)*tfl_data[a];
   }
 
   double wl = w * tfn;
@@ -1158,18 +1204,39 @@ void shell_cst(ComMod& com_mod, const mshType& lM, const int e, const int eNoN, 
   auto cDmn = com_mod.cDmn;
   auto& dmn = eq.dmn[cDmn];
   const double dt = com_mod.dt;
-  
+
+  #define n_debug_shell_cst
+  #ifdef debug_shell_cst 
+  DebugMsg dmsg(__func__, com_mod.cm.idcm());
+  dmsg.banner();
+  dmsg << "lM.nFn: " << lM.nFn;
+  dmsg << "lM.nFs: " << lM.nFs;
+  dmsg << "dof: " << dof;
+  dmsg << "eNoN: " << eNoN;
+  #endif
+
   // Define parameters
   double rho = eq.dmn[cDmn].prop.at(PhysicalProperyType::solid_density);
   double dmp = dmn.prop.at(PhysicalProperyType::damping);
   double ht = eq.dmn[cDmn].prop.at(PhysicalProperyType::shell_thickness);
-  Vector<double> fb({dmn.prop.at(PhysicalProperyType::f_x), dmn.prop.at(PhysicalProperyType::f_y)});
+  Vector<double> fb({dmn.prop.at(PhysicalProperyType::f_x), 
+                     dmn.prop.at(PhysicalProperyType::f_y), 
+                     dmn.prop.at(PhysicalProperyType::f_z)});
   double amd = eq.am * rho  +  eq.af * eq.gam * dt * dmp;
   double afl = eq.af * eq.beta * dt * dt;
 
   int i = eq.s;
   int j = i + 1;
   int k = j + 1;
+
+  #ifdef debug_shell_cst 
+  dmsg << "rho: " << rho;
+  dmsg << "dmp: " << dmp;
+  dmsg << "ht: " << ht;
+  dmsg << "i: " << i;
+  dmsg << "j: " << j;
+  dmsg << "k: " << k;
+  #endif
 
   //  Get the reference configuration
   auto x0 = xl;
@@ -1180,8 +1247,8 @@ void shell_cst(ComMod& com_mod, const mshType& lM, const int e, const int eNoN, 
 
   for (int a = 0; a < eNoN; a++) {
     xc(0,a) = x0(0,a) + dl(i,a);
-    xc(0,a) = x0(0,a) + dl(j,a);
-    xc(1,a) = x0(1,a) + dl(k,a);
+    xc(1,a) = x0(1,a) + dl(j,a);
+    xc(2,a) = x0(2,a) + dl(k,a);
   }
 
   auto Nx = lM.Nx.slice(0);
@@ -1241,6 +1308,9 @@ void shell_cst(ComMod& com_mod, const mshType& lM, const int e, const int eNoN, 
   // Compute fiber orientation in curvature coordinates
   //
   Array<double> fNa0(2,nFn);
+  //dmsg << "nFn: " << nFn;
+  //dmsg << "fN: " << fN;
+  //dmsg << "aCnv0: " << aCnv0;
 
   for (int iFn = 0; iFn < nFn; iFn++) {
     for (int l = 0; l < 3; l++) {
@@ -1248,6 +1318,7 @@ void shell_cst(ComMod& com_mod, const mshType& lM, const int e, const int eNoN, 
       fNa0(1,iFn) = fNa0(1,iFn) + fN(l,iFn)*aCnv0(l,1);
     }
   }
+  //dmsg << "fNa0: " << fNa0;
 
   // Define variation in membrane strain only for the main element
   //
@@ -1301,15 +1372,28 @@ void shell_cst(ComMod& com_mod, const mshType& lM, const int e, const int eNoN, 
   Array3<double> Bb(3,3,eNoN);
   shell_bend_cst(com_mod, lM, e, ptr, x0, xc, bb_0, bb_x, Bb, true);
   //CALL SHELLBENDCST(lM, e, ptr, x0, xc, bb_0, bb_x, Bb, .TRUE.)
+  //dmsg << "Bb: " << Bb;
 
   // Compute stress resultants by integrating 2nd Piola Kirchhoff
   // stress and elasticity tensors through the shell thickness. These
   // resultants are computed in Voigt notation.
   //
+  /*
+  dmsg << "aa_0: " << aa_0[0][0];
+  dmsg << "    : " << aa_0[0][1];
+  dmsg << "    : " << aa_0[1][0];
+  dmsg << "    : " << aa_0[1][1];
+  dmsg << "aa_x: " << aa_x[0][0];
+  dmsg << "    : " << aa_x[0][1];
+  dmsg << "    : " << aa_x[1][0];
+  dmsg << "    : " << aa_x[1][1];
+  */
   Array3<double> Dm(3,3,3); 
   Array<double> Sm(3,2);
   double lam3;
   shl_strs_res(com_mod, dmn, nFn, fNa0, aa_0, aa_x, bb_0, bb_x, lam3, Sm, Dm);
+  //dmsg << "Sm: " << Sm;
+  //dmsg << "Dm: " << Dm;
 
   // Contribution to tangent matrices: Dm * Bm, Dm*Bb
   //
@@ -1394,7 +1478,8 @@ void shell_cst(ComMod& com_mod, const mshType& lM, const int e, const int eNoN, 
   }
 
   // Contribution to stiffness from membrane-membrane interactions
-  w = afl*Jac0*0.5;
+  w = afl * Jac0 * 0.5;
+  //dmsg << "w: " << w;
 
   for (int b = 0; b < lM.eNoN; b++) {
     for (int a = 0; a < lM.eNoN; a++) {
@@ -1453,13 +1538,13 @@ void shell_cst(ComMod& com_mod, const mshType& lM, const int e, const int eNoN, 
       lK(dof+2,a,b) = lK(dof+2,a,b) + w*BtDB;
 
       BtDB = Bm(0,2,a)*D1Bb(0,0,b) + Bm(1,2,a)*D1Bb(1,0,b) + Bm(2,2,a)*D1Bb(2,0,b);
-      lK(1*dof+0,a,b) = lK(1*dof+0,a,b) + w*BtDB;
+      lK(2*dof+0,a,b) = lK(2*dof+0,a,b) + w*BtDB;
 
       BtDB = Bm(0,2,a)*D1Bb(0,1,b) + Bm(1,2,a)*D1Bb(1,1,b) + Bm(2,2,a)*D1Bb(2,1,b);
-      lK(1*dof+1,a,b) = lK(1*dof+1,a,b) + w*BtDB;
+      lK(2*dof+1,a,b) = lK(2*dof+1,a,b) + w*BtDB;
 
       BtDB = Bm(0,2,a)*D1Bb(0,2,b) + Bm(1,2,a)*D1Bb(1,2,b) + Bm(2,2,a)*D1Bb(2,2,b);
-      lK(1*dof+2,a,b) = lK(1*dof+2,a,b) + w*BtDB;
+      lK(2*dof+2,a,b) = lK(2*dof+2,a,b) + w*BtDB;
     }
   }
 
@@ -1486,13 +1571,13 @@ void shell_cst(ComMod& com_mod, const mshType& lM, const int e, const int eNoN, 
       lK(dof+2,a,b) = lK(dof+2,a,b) + w*BtDB;
 
       BtDB = Bb(0,2,a)*D1Bm(0,0,b) + Bb(1,2,a)*D1Bm(1,0,b) + Bb(2,2,a)*D1Bm(2,0,b);
-      lK(1*dof+0,a,b) = lK(1*dof+1,a,b) + w*BtDB;
+      lK(2*dof+0,a,b) = lK(2*dof+0,a,b) + w*BtDB;
 
       BtDB = Bb(0,2,a)*D1Bm(0,1,b) + Bb(1,2,a)*D1Bm(1,1,b) + Bb(2,2,a)*D1Bm(2,1,b);
-      lK(1*dof+1,a,b) = lK(1*dof+2,a,b) + w*BtDB;
+      lK(2*dof+1,a,b) = lK(2*dof+1,a,b) + w*BtDB;
 
       BtDB = Bb(0,2,a)*D1Bm(0,2,b) + Bb(1,2,a)*D1Bm(1,2,b) + Bb(2,2,a)*D1Bm(2,2,b);
-      lK(1*dof+2,a,b) = lK(1*dof+3,a,b) + w*BtDB;
+      lK(2*dof+2,a,b) = lK(2*dof+2,a,b) + w*BtDB;
      }
   }
 
@@ -1519,17 +1604,21 @@ void shell_cst(ComMod& com_mod, const mshType& lM, const int e, const int eNoN, 
       lK(dof+2,a,b) = lK(dof+2,a,b) + w*BtDB;
 
       BtDB = Bb(0,2,a)*D2Bb(0,0,b) + Bb(1,2,a)*D2Bb(1,0,b) + Bb(2,2,a)*D2Bb(2,0,b);
-      lK(1*dof+0,a,b) = lK(0*dof+1,a,b) + w*BtDB;
+      lK(2*dof+0,a,b) = lK(2*dof+0,a,b) + w*BtDB;
 
       BtDB = Bb(0,2,a)*D2Bb(0,1,b) + Bb(1,2,a)*D2Bb(1,1,b) + Bb(2,2,a)*D2Bb(2,1,b);
-      lK(1*dof+1,a,b) = lK(1*dof+1,a,b) + w*BtDB;
+      lK(2*dof+1,a,b) = lK(2*dof+1,a,b) + w*BtDB;
 
       BtDB = Bb(0,2,a)*D2Bb(0,2,b) + Bb(1,2,a)*D2Bb(1,2,b) + Bb(2,2,a)*D2Bb(2,2,b);
-      lK(1*dof+2,a,b) = lK(1*dof+2,a,b) + w*BtDB;
+      lK(2*dof+2,a,b) = lK(2*dof+2,a,b) + w*BtDB;
     }
   }
 
   // Global assembly
+
+  //std::cout << "[shell_cst] " << std::endl;
+  //std::cout << "[shell_cst] lR: " << lR << std::endl;
+  //std::cout << "[shell_cst] lK: " << lK << std::endl;
 
 #ifdef WITH_TRILINOS
   if (eq.assmTLS) { 
@@ -1547,7 +1636,7 @@ void shell_cst(ComMod& com_mod, const mshType& lM, const int e, const int eNoN, 
 //----------
 //
 void shell_fp(ComMod& com_mod, const int eNoN, const double w, const Vector<double>& N, const Array<double>& Nx, 
-    const Array<double>& dl, const Array<double>& xl, const Vector<double>& tfl, Array<double>& lR, Array3<double>& lK)
+    const Array<double>& dl, const Array<double>& xl, const Array<double>& tfl, Array<double>& lR, Array3<double>& lK)
 {
   int nsd = com_mod.nsd;
   int dof = com_mod.dof;
@@ -1564,12 +1653,15 @@ void shell_fp(ComMod& com_mod, const int eNoN, const double w, const Vector<doub
   //
   Array<double> xc(3,eNoN);
   double tfn = 0.0;
+  // [NOTE] This is a hack enabling 'tfl' to be used
+  // like a vector in the Fortan.
+  auto tfl_data = tfl.data();
 
   for (int a = 0; a < eNoN; a++) {
     xc(0,a) = xl(0,a) + dl(i,a);
     xc(1,a) = xl(1,a) + dl(j,a);
     xc(2,a) = xl(2,a) + dl(k,a);
-    tfn = tfn + N(a)*tfl(a);
+    tfn = tfn + N(a)*tfl_data[a];
   }
 
   double wl = w * tfn;
@@ -1594,20 +1686,16 @@ void shell_fp(ComMod& com_mod, const int eNoN, const double w, const Vector<doub
 
   for (int b = 0; b < eNoN; b++) {
     for (int a = 0; a < eNoN; a++) {
-      auto lKp = gCov.col(0) * (N(b)*Nx(1,a) - N(a)*Nx(2,b)) - gCov.col(1)*(N(b)*Nx(0,a) - N(a)*Nx(0,b));
-      //lKp(:) = gCov(:,1)*(N(b)*Nx(2,a) - N(a)*Nx(2,b)) - gCov(:,2)*(N(b)*Nx(1,a) - N(a)*Nx(1,b))
+      auto lKp = gCov.col(0) * (N(b)*Nx(1,a) - N(a)*Nx(1,b)) - gCov.col(1)*(N(b)*Nx(0,a) - N(a)*Nx(0,b));
 
       lK(1,a,b) = lK(1,a,b) - T1*lKp(2);
       lK(2,a,b) = lK(2,a,b) + T1*lKp(1);
 
-      lK(dof+1,a,b) = lK(dof+1,a,b) + T1*lKp(3);
-      lK(dof+3,a,b) = lK(dof+3,a,b) - T1*lKp(1);
+      lK(dof+0,a,b) = lK(dof+0,a,b) + T1*lKp(2);
+      lK(dof+2,a,b) = lK(dof+2,a,b) - T1*lKp(0);
 
       lK(2*dof,a,b) = lK(2*dof,a,b) - T1*lKp(1);
-      //lK(2*dof+1,a,b) = lK(2*dof+1,a,b) - T1*lKp(2)
-
       lK(2*dof+1,a,b) = lK(2*dof+1,a,b) + T1*lKp(0);
-      //lK(2*dof+2,a,b) = lK(2*dof+2,a,b) + T1*lKp(1)
     }
   }
 }
@@ -1625,6 +1713,12 @@ void shl_strs_res(const ComMod& com_mod, const dmnType& lDmn, const int nFn, con
 {
   using namespace consts;
 
+  #define n_debug_shl_strs_res
+  #ifdef debug_shl_strs_res
+  DebugMsg dmsg(__func__, com_mod.cm.idcm());
+  dmsg.banner();
+  #endif
+
   // Set shell thickness
   double ht = lDmn.prop.at(PhysicalProperyType::shell_thickness); 
   double nu = lDmn.prop.at(PhysicalProperyType::poisson_ratio); 
@@ -1634,6 +1728,7 @@ void shl_strs_res(const ComMod& com_mod, const dmnType& lDmn, const int nFn, con
   if (utils::is_zero(nu-0.50)) {
     flag = true;
   }
+  //dmsg << "flag: " << flag;
 
   // Set integration parameters (Gauss coordinates and weights)
   double wh[3] = { 5.0/9.0, 5.0/9.0, 8.0/9.0 };
@@ -1654,6 +1749,7 @@ void shl_strs_res(const ComMod& com_mod, const dmnType& lDmn, const int nFn, con
   Array<double> gg_0(2,2), gg_x(2,2);
 
   for (int g = 0; g < 3; g++) { 
+    //dmsg << "---------- g: " << g+1;
     // Local shell thickness coordinate
     double xis = 0.50 * ht * xi[g];
 
@@ -1664,6 +1760,8 @@ void shl_strs_res(const ComMod& com_mod, const dmnType& lDmn, const int nFn, con
         gg_x(i,j) = aa_x[i][j] - 2.0*xis*bb_x[i][j];
       }
     }
+    //dmsg << "gg_0: " << gg_0;
+    //dmsg << "gg_x: " << gg_x;
 
     // Get 2nd Piola-Kirchhoff and elasticity tensors
     //
@@ -1677,6 +1775,11 @@ void shl_strs_res(const ComMod& com_mod, const dmnType& lDmn, const int nFn, con
     } else { 
       mat_models::get_pk2cc_shlc(com_mod, lDmn, nFn, fNa0, gg_0, gg_x, g33, Sml, Dml);
     }
+
+    //dmsg << "      " << " ";
+    //dmsg << "g33: " << g33;
+    //dmsg << "Sml: " << Sml;
+    //dmsg << "Dml: " << Dml;
 
     double wl[3];
     wl[0] = 0.50 * wh[g] * ht;
@@ -1699,6 +1802,9 @@ void shl_strs_res(const ComMod& com_mod, const dmnType& lDmn, const int nFn, con
 
   lam3 = lam3 / ht;
 
+  //dmsg << "Sm: " << Sm;
+  //dmsg << "Dm: " << Dm;
+  //dmsg << "lam3: " << lam3;
 }
 
 };

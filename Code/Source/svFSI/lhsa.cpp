@@ -177,6 +177,10 @@ void lhsa(Simulation* simulation, int& nnz)
       continue;
     }
 
+    if (msh.eType != ElementType::TRI3) {
+      continue;
+    }
+
     if (msh.eType == ElementType::NRB) {
       continue;
     }
@@ -185,7 +189,7 @@ void lhsa(Simulation* simulation, int& nnz)
       for (int a = 0; a < 2*msh.eNoN; a++) { 
         int rowN;
 
-        if (a <= msh.eNoN) {
+        if (a < msh.eNoN) {
           rowN = msh.IEN(a,e);
         } else { 
           rowN = msh.eIEN(a-msh.eNoN,e);
@@ -198,7 +202,7 @@ void lhsa(Simulation* simulation, int& nnz)
         int colN;
 
         for (int b = 0; b < 2*msh.eNoN; b++) {
-          if (b <= msh.eNoN) {
+          if (b < msh.eNoN) {
             colN = msh.IEN(b,e);
           } else { 
             colN = msh.eIEN(b-msh.eNoN,e);

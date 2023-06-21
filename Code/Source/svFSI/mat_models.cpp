@@ -815,9 +815,14 @@ void get_pk2cc_shlc(const ComMod& com_mod, const dmnType& lDmn, const int nfd, c
   auto mu = 2.0 * stM.C10;
   auto f13 = 1.0 / 3.0;
   auto f23 = 2.0 / 3.0;
+  #ifdef debug_get_pk2cc_shlc 
+  dmsg << "kap: " << kap;
+  dmsg << "mu: " << mu;
+  #endif
 
   // Inverse of metric coefficients in shell continuum
   auto gi_x = mat_inv(gg_x, 2);
+  //dmsg << "gi_x: " << gi_x; 
 
   Array<double> gi_0(3,3);
   auto gg_0_inv = mat_inv(gg_0, 2);
@@ -828,9 +833,11 @@ void get_pk2cc_shlc(const ComMod& com_mod, const dmnType& lDmn, const int nfd, c
   }
 
   gi_0(2,2) = 1.0;
+  //dmsg << "gi_0: " << gi_0; 
 
   // Ratio of inplane Jacobian determinant squared
   auto Jg2 = mat_det(gg_x, 2) / mat_det(gg_0, 2);
+  //dmsg << "Jg2: " << Jg2; 
 
   // Begin Newton iterations to satisfy plane-stress condition.
   // The objective is to find C33 that satisfies S33 = 0.
@@ -842,6 +849,7 @@ void get_pk2cc_shlc(const ComMod& com_mod, const dmnType& lDmn, const int nfd, c
 
   while (true) { 
     itr  = itr + 1;
+    //dmsg << "------- itr: " << itr;
 
     // Trace (C)
     auto trC3 = (gg_x(0,0)*gi_0(0,0) + gg_x(0,1)*gi_0(0,1) +  gg_x(1,0)*gi_0(1,0) + 
@@ -850,6 +858,9 @@ void get_pk2cc_shlc(const ComMod& com_mod, const dmnType& lDmn, const int nfd, c
     // Jacobian-related quantities
     auto J2 = Jg2*C33;
     auto J23 = pow(J2,-f13);
+    //dmsg << "trC3: " << trC3;
+    //dmsg << "J2: " << J2;
+    //dmsg << "J23: " << J23;
 
     // Inverse of curvilinear Cauchy-Green deformation tensor
     //
@@ -865,16 +876,22 @@ void get_pk2cc_shlc(const ComMod& com_mod, const dmnType& lDmn, const int nfd, c
     // Contribution from dilational penalty terms to S and CC
     auto pJ  = 0.50 * kap * (J2 - 1.0);
     auto plJ = kap * J2;
+    //dmsg << "pJ: " << pJ;
+    //dmsg << "plJ: " << plJ;
+    //dmsg << "stM.isoType: " << stM.isoType;
 
     switch (stM.isoType) {
 
       case ConstitutiveModelType::stIso_nHook: {
+        //dmsg << "stM.isoType: " << " stIso_nHook";
         // 2nd Piola Kirchhoff stress
         S = mu*J23*(gi_0 - trC3*Ci) + pJ*Ci;
+        //dmsg << "S: " << S;
 
         // Elasticity tensor
         CC = (mu*J23*f23*trC3 + plJ)*ten_dyad_prod(Ci, Ci, 3) + (mu*J23*trC3 - pJ)*2.0*ten_symm_prod(Ci, Ci, 3) - 
             f23*mu*J23*(ten_dyad_prod(gi_0, Ci, 3) + ten_dyad_prod(Ci, gi_0, 3));
+        //dmsg << "CC: " << CC;
       } break;
 
       case ConstitutiveModelType::stIso_MR: {
@@ -1079,7 +1096,7 @@ void get_pk2cc_shlc(const ComMod& com_mod, const dmnType& lDmn, const int nfd, c
     for (int j = 0; j < 2; j++) {
       for (int k = 0; k < 2; k++) {
         for (int l = 0; l < 2; l++) { 
-          double C33 = CC(i,j,2,2)*CC(2,2,k,l) / CC(2,2,2,2);
+          C33 = CC(i,j,2,2)*CC(2,2,k,l) / CC(2,2,2,2);
           CC(i,j,k,l) = CC(i,j,k,l) - C33;
         }
       }
@@ -1105,6 +1122,9 @@ void get_pk2cc_shlc(const ComMod& com_mod, const dmnType& lDmn, const int nfd, c
   Dml(1,0) = Dml(0,1);
   Dml(2,0) = Dml(0,2);
   Dml(2,1) = Dml(1,2);
+
+  //dmsg << "Done " << " ";
+  //exit(0);
 
 }
 

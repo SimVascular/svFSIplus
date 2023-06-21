@@ -737,7 +737,7 @@ class BoundaryConditionParameters : public ParameterLists
     Parameter<std::string> profile;
     Parameter<bool> ramp_function;
 
-    Parameter<std::string> shell_bc_type;
+    Parameter<std::string> cst_shell_bc_type;
     Parameter<std::string> spatial_profile_file_path;
     Parameter<std::string> spatial_values_file_path;
     Parameter<double> stiffness;

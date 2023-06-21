@@ -565,8 +565,8 @@ void gnnb(const ComMod& com_mod, const faceType& lFa, const int e, const int g, 
   dmsg << "iM: " << iM+1;
   dmsg << "Ec: " << Ec+1;
   dmsg << "eNoN: " << eNoN;
-  dmsg << "msh.IEN.nrows: " << msh.IEN.nrows_;
-  dmsg << "msh.IEN.ncols: " << msh.IEN.ncols_;
+  dmsg << "msh.IEN.nrows: " << msh.IEN.nrows();
+  dmsg << "msh.IEN.ncols: " << msh.IEN.ncols();
   #endif
 
   Array<double> lX(nsd,eNoN); 
@@ -637,7 +637,7 @@ void gnnb(const ComMod& com_mod, const faceType& lFa, const int e, const int g, 
 
     // Compute adjoining mesh element normal
     //
-    Array<double> xXi(nsd,insd);
+    Array<double> xXi(nsd,nsd-1);
 
     for (int a = 0; a < eNoN; a++) {
       for (int i = 0; i < insd; i++) {

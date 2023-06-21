@@ -1011,7 +1011,7 @@ class Array
       return sum;
     }
 
-    T* data() { 
+    T* data() const { 
       return data_;
     }
 

@@ -455,6 +455,7 @@ SetEquationPropertiesMapType set_equation_props = {
   using namespace consts;
   auto& com_mod = simulation->get_com_mod();
   lEq.phys = consts::EquationType::phys_shell;
+  com_mod.shlEq = true;
   
   propL[0][0] = PhysicalProperyType::solid_density;
   propL[1][0] = PhysicalProperyType::damping;
