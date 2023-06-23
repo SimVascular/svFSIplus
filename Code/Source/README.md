@@ -13,6 +13,9 @@ This document describes some of the implementation details of svFSIplus C++ code
 [Performance and Accuracy](#performance)<br>
 [Potential Problems](#problems)<br>
 [Implementation Details](#cpp_programming)<br>
+[Coding Standards](#coding_standards)<br>
+[Coding Guidelines](#coding_guidelines)<br>
+
 
 <!--- ====================================================================================================================== --->
 <!--- ===================================================== Introduction  ================================================== --->
@@ -790,7 +793,45 @@ which are used like this
 if ((eq.phys == Equation_CMM) && com_mod.cmmInit) { 
 ```
 
+<!--- ====================================================================================================================== --->
+<!--- =============================================== Coding Standards  ==================================================== --->
+<!--- ====================================================================================================================== --->
 
+<h1 id="coding_standards"> Coding Standards </h1>
+
+This section describes the coding standards and guidelines that must be followed when adding new code to svFSIplus. 
+
+Coding standards are important for producing good software
+
+- Gives a uniform appearance to the code written by different developers
+- Improves readability and maintainability 
+- Helps in code reuse and to detect errors 
+- Promotes sound programming practices and increases programmer efficiency
+
+Code that does not follow coding standards will be rejected during code review. However, program structures not mentioned in the 
+following sections are may be coded in any (non-hideous) manner favoured by the developer.
+
+<h2 id="indent"> Indentation </h2>
+
+Indentation refers to the spaces at the beginning of a code line. It is a fundamental aspect of code styling and improves 
+readability by showing the overall structure of the code. 
+
+Indentation is two spaces for all programming structures: functions, loops, if-then blocks, etc. Do not use tabs to indent.
+
+
+<!--- ====================================================================================================================== --->
+<!--- ================================================= Coding Guidelines  ================================================= --->
+<!--- ====================================================================================================================== --->
+
+<h1 id="coding_guidelines"> Coding Guidelines </h1>
+
+This section describes the coding guidelines that are recommend when adding new code to svFSIplus. 
+
+
+
+
+
+The following sections will discuss 
 
 
 
