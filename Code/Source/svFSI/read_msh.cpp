@@ -1237,6 +1237,7 @@ void read_msh(Simulation* simulation)
         if (mesh.eType != consts::ElementType::NRB && mesh.eType != consts::ElementType::TRI3) {
           throw std::runtime_error("Shell elements must be triangles or C1-NURBS.");
         }
+
         if (mesh.eType == consts::ElementType::NRB) {
           for (int i = 0; i < com_mod.nsd-1; i++) {
             if (mesh.bs[i].p <= 1) {
@@ -1244,6 +1245,13 @@ void read_msh(Simulation* simulation)
             } 
           } 
         } 
+
+        if (mesh.eType == consts::ElementType::TRI3) {
+          if (!com_mod.cm.seq()) { 
+            throw std::runtime_error("Shells with linear triangles should be run sequentially.");
+          } 
+        } 
+
       } 
     } 
 
