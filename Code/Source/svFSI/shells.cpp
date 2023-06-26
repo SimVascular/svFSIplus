@@ -124,7 +124,7 @@ void construct_shell(ComMod& com_mod, const mshType& lM, const Array<double>& Ag
     //dmsg << "lM.fN.size(): " << lM.fN.size();
     if (lM.fN.size() != 0) {
       for (int iFn = 0; iFn < nFn; iFn++) {
-        for (int i = 0; i < nsd; i++) {
+        for (int i = 0; i < 3; i++) {
           fN(i,iFn) = lM.fN(i+nsd*iFn,e);
         }
       }
@@ -281,7 +281,7 @@ void shell_3d(ComMod& com_mod, const mshType& lM, const int g, const int eNoN,
 
   //  Compute metric tensor and curvature coefficients (ref. config)
   //
-  double aa_0[2][2], bb_0[2][2];
+  double aa_0[2][2]{}, bb_0[2][2]{};
 
   for (int l = 0; l < nsd; l++) {
     aa_0[0][0] = aa_0[0][0] + aCov0(l,0)*aCov0(l,0);
@@ -332,7 +332,7 @@ void shell_3d(ComMod& com_mod, const mshType& lM, const int g, const int eNoN,
   //
   // [TODO] are these dimensions correct? is nsd = 3?
   //
-  double aa_x[2][2], bb_x[2][2];
+  double aa_x[2][2]{}, bb_x[2][2]{};
 
   for (int l = 0; l < nsd; l++) {
      aa_x[0][0] = aa_x[0][0] + aCov(l,0)*aCov(l,0);

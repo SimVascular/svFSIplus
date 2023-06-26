@@ -8,6 +8,7 @@
 #include "mat_fun.h"
 #include "mat_models.h"
 #include "nn.h"
+#include "shells.h"
 #include "utils.h"
 #include "vtk_xml.h"
 #include <math.h>
@@ -1195,6 +1196,441 @@ void ppbin2vtk(Simulation* simulation)
   finalize(simulation);
   
   MPI_Finalize();
+}
+
+//----------
+// shl_post
+//----------
+// Routine for post processing shell-based quantities
+//
+// Reproduces Fortran SHLPOST.
+//
+void shl_post(Simulation* simulation, const mshType& lM, const int m, Array<double>& res, 
+    Vector<double>& resE, const Array<double>& lD, const int iEq, consts::OutputType outGrp)
+{
+  using namespace consts;
+  using namespace mat_fun;
+  using namespace utils;
+
+  #define n_debug_shl_post
+  #ifdef debug_shl_post
+  DebugMsg dmsg(__func__, 0);
+  dmsg.banner();
+  #endif
+
+  auto& com_mod = simulation->com_mod;
+  auto& cm = com_mod.cm;
+  auto& cm_mod = simulation->cm_mod;
+  auto& eq = com_mod.eq[iEq];
+
+  const int nsd = com_mod.nsd;
+  const int tnNo = com_mod.tnNo;
+  const int tDof = com_mod.tDof;
+
+  // [NOTE] Setting gobal variable 'dof'.
+  com_mod.dof = eq.dof;
+
+  int i = eq.s;
+  int j = i + 1;
+  int k = j + 1;
+
+  int nFn = lM.nFn;
+  if (nFn == 0) {
+    nFn = 1;
+  }
+
+  // Set shell dimension := 2
+  int insd = nsd-1;
+
+  // Initialize tensor operations
+  ten_init(insd);
+
+  // Set eNoN (number of nodes per element)
+  //
+  int eNoN = lM.eNoN;
+
+  if (lM.eType == ElementType::TRI3) {
+    eNoN = 2*eNoN;
+  }
+
+  Vector<double> sA(tnNo), sE(lM.nEl), resl(m), N(lM.eNoN);
+  Vector<int> ptr(eNoN);
+  Array<double> sF(m,tnNo), dl(tDof,eNoN), x0(3,eNoN), xc(3,eNoN), 
+      fN(3,nFn), fNa0(2,eNoN), Nx(2,lM.eNoN);
+  Array3<double> Bb(3,3,6);
+
+  // Initialize arrays
+  sA = 0.0;
+  sF = 0.0;
+  sE = 0.0;
+  Bb = 0.0;
+
+  // Compute quantities at the element level and project them to nodes
+  //
+  for (int e = 0; e < lM.nEl; e++) {
+    int cDmn = all_fun::domain(com_mod, lM, iEq, e);
+    auto cPhys = eq.dmn[cDmn].phys;
+    //dmsg << "========== e: " << e+1;
+
+    if (cPhys != EquationType::phys_shell) {
+      continue;
+    }
+    //if (lM.eType .EQ. eType_NRB) CALL NRBNNX(lM, e)
+
+    // Get shell properties
+    double nu = eq.dmn[cDmn].prop.at(PhysicalProperyType::poisson_ratio);
+    double ht = eq.dmn[cDmn].prop.at(PhysicalProperyType::shell_thickness);
+
+    // Check for incompressibility
+    //
+    bool incompFlag = false;
+    if (is_zero(nu-0.50)) {
+      incompFlag = true;
+    }
+    //dmsg << "incompFlag: " << incompFlag;
+
+    // Get the reference configuration and displacement field
+    x0 = 0.0;
+    dl = 0.0;
+
+    for (int a = 0; a < eNoN; a++) {
+      int Ac;
+      if (a < lM.eNoN) {
+        Ac = lM.IEN(a,e);
+        ptr(a) = Ac;
+      } else {
+        int b  = a - lM.eNoN;
+        Ac = lM.eIEN(b,e);
+        ptr(a) = Ac;
+        if (Ac == -1) {
+          continue; 
+        }
+      }
+
+      for (int i = 0; i < 3; i++) {
+        x0(i,a) = com_mod.x(i,Ac);
+      }
+
+      for (int i = 0; i < tDof; i++) {
+        dl(i,a) = lD(i,Ac);
+      }
+    }
+
+    // Get the current configuration
+    xc = 0.0;
+
+    for (int a = 0; a < eNoN; a++) {
+      xc(0,a) = x0(0,a) + dl(i,a);
+      xc(1,a) = x0(1,a) + dl(j,a);
+      xc(2,a) = x0(2,a) + dl(k,a);
+    }
+
+    // Get fiber directions
+    //
+    fN = 0.0;
+
+    if (lM.fN.size() != 0) {
+      for (int iFn = 0; iFn < nFn; iFn++) {
+        for (int i = 0; i < 3; i++) {
+          fN(i,iFn) = lM.fN(i+nsd*iFn,e);
+        }
+      }
+    }
+    
+    // Set number of integration points.
+    // Note: Gauss integration performed for NURBS elements
+    // Not required for constant-strain triangle elements
+    //
+    int nwg;
+
+    if (lM.eType == ElementType::TRI3) {
+      nwg = 1;
+    } else {
+      nwg = lM.nG;
+    }
+
+    // Update shapefunctions for NURBS elements
+    //
+    //if (lM.eType .EQ. eType_NRB) CALL NRBNNX(lM, e)
+
+    double Je = 0.0;
+    resl = 0.0;
+    Vector<double> N;
+    Array<double> Nxx, Nx;
+
+    for (int g = 0; g < nwg; g++) {
+      double w = 0.0;
+      double lam3 = 0.0;
+      double aa_0[2][2]{}, bb_0[2][2]{};
+      double aa_x[2][2]{}, bb_x[2][2]{};
+
+      Array<double> aCov0(3,2), aCnv0(3,2), aCov(3,2), aCnv(3,2);
+      Vector<double> nV0(3), nV(3);
+      //dmsg << "---------- g: " << g;
+
+      // [TODO] This is not fully implemented
+      //
+      if (lM.eType != ElementType::TRI3) {
+        // Set element shape functions and their derivatives
+        if (lM.eType ==  ElementType::NRB) {
+          //N   = lM.N(:,g)
+          //Nx  = lM.Nx(:,:,g)
+          //Nxx = lM.Nxx(:,:,g)
+        } else {
+          N = lM.fs[0].N.rcol(g);
+          Nx = lM.fs[0].Nx.rslice(g);
+          Nxx = lM.fs[0].Nxx.rslice(g);
+        }
+
+        // Covariant and contravariant bases (ref. config.)
+        //
+        nn::gnns(nsd, eNoN, Nx, x0, nV0, aCov0, aCnv0);
+        auto Jac0 = sqrt(norm(nV0));
+        nV0 = nV0 / Jac0;
+
+        // Covariant and contravariant bases (spatial config.)
+        nn::gnns(nsd, eNoN, Nx, xc, nV, aCov, aCnv);
+        auto Jac = sqrt(norm(nV));
+        nV = nV/Jac;
+
+        // Second derivatives for curvature coeffs. (ref. config)
+#if  0
+        r0_xx(:,:,:) = 0.0
+        r_xx(:,:,:)  = 0.0
+
+        for (int a = 0; a < eNoN; a++) {
+          r0_xx(0,0,:) = r0_xx(0,0,:) + Nxx(0,a)*x0(:,a)
+          r0_xx(1,1,:) = r0_xx(1,1,:) + Nxx(1,a)*x0(:,a)
+          r0_xx(0,1,:) = r0_xx(0,1,:) + Nxx(2,a)*x0(:,a)
+
+          r_xx(0,0,:) = r_xx(0,0,:) + Nxx(0,a)*xc(:,a)
+          r_xx(1,1,:) = r_xx(1,1,:) + Nxx(1,a)*xc(:,a)
+          r_xx(0,1,:) = r_xx(0,1,:) + Nxx(2,a)*xc(:,a)
+        }
+
+        r0_xx(1,0,:) = r0_xx(0,1,:)
+        r_xx(1,0,:)  = r_xx(0,1,:)
+
+        // Compute metric tensor (aa) and curvature coefficients(bb)
+        //
+        double aa_0[2][2]{}, bb_0[2][2]{};
+        double aa_x[2][2]{}, bb_x[2][2]{};
+
+        for (int l = 0; l < nsd; l++) {
+          aa_0(0,0) = aa_0(0,0) + aCov0(l,0)*aCov0(l,0)
+          aa_0(0,1) = aa_0(0,1) + aCov0(l,0)*aCov0(l,1)
+          aa_0(1,0) = aa_0(1,0) + aCov0(l,1)*aCov0(l,0)
+          aa_0(1,1) = aa_0(1,1) + aCov0(l,1)*aCov0(l,1)
+
+          aa_x(0,0) = aa_x(0,0) + aCov(l,0)*aCov(l,0)
+          aa_x(0,1) = aa_x(0,1) + aCov(l,0)*aCov(l,1)
+          aa_x(1,0) = aa_x(1,0) + aCov(l,1)*aCov(l,0)
+          aa_x(1,1) = aa_x(1,1) + aCov(l,1)*aCov(l,1)
+
+          bb_0(0,0) = bb_0(0,0) + r0_xx(0,0,l)*nV0(l)
+          bb_0(0,1) = bb_0(0,1) + r0_xx(0,1,l)*nV0(l)
+          bb_0(1,0) = bb_0(1,0) + r0_xx(1,0,l)*nV0(l)
+          bb_0(1,1) = bb_0(1,1) + r0_xx(1,1,l)*nV0(l)
+
+          bb_x(0,0) = bb_x(0,0) + r_xx(0,0,l)*nV(l)
+          bb_x(0,1) = bb_x(0,1) + r_xx(0,1,l)*nV(l)
+          bb_x(1,0) = bb_x(1,0) + r_xx(1,0,l)*nV(l)
+          bb_x(1,1) = bb_x(1,1) + r_xx(1,1,l)*nV(l)
+        }
+
+        //  Set weight of the Gauss point
+        w  = lM.w(g)*Jac0
+
+#endif
+
+      // for constant strain triangles
+      } else {      
+
+        // Set element shape functions and their derivatives
+        N = lM.N.rcol(g);
+        Nx = lM.Nx.rslice(0);
+
+        // Covariant and contravariant bases (ref. config.)
+        //
+        Array<double> tmpX(nsd,lM.eNoN);
+
+        for (int i = 0; i < nsd; i++) {
+          for (int j = 0; j < lM.eNoN; j++) {
+            tmpX(i,j) = x0(i,j);
+          }
+        }
+
+        nn::gnns(nsd, lM.eNoN, Nx, tmpX, nV0, aCov0, aCnv0);
+        auto Jac0 = sqrt(norm(nV0));
+        nV0  = nV0 / Jac0;
+
+        // Covariant and contravariant bases (spatial config.)
+        //
+        for (int i = 0; i < nsd; i++) {
+          for (int j = 0; j < lM.eNoN; j++) {
+            tmpX(i,j) = xc(i,j);
+          }
+        }
+
+        nn::gnns(nsd, lM.eNoN, Nx, tmpX, nV, aCov, aCnv);
+        auto Jac = sqrt(norm(nV));
+        nV = nV / Jac;
+
+        // Compute metric tensor (aa)
+        //
+        for (int l = 0; l < nsd; l++) {
+          aa_0[0][0] = aa_0[0][0] + aCov0(l,0)*aCov0(l,0);
+          aa_0[0][1] = aa_0[0][1] + aCov0(l,0)*aCov0(l,1);
+          aa_0[1][0] = aa_0[1][0] + aCov0(l,1)*aCov0(l,0);
+          aa_0[1][1] = aa_0[1][1] + aCov0(l,1)*aCov0(l,1);
+
+          aa_x[0][0] = aa_x[0][0] + aCov(l,0)*aCov(l,0);
+          aa_x[0][1] = aa_x[0][1] + aCov(l,0)*aCov(l,1);
+          aa_x[1][0] = aa_x[1][0] + aCov(l,1)*aCov(l,0);
+          aa_x[1][1] = aa_x[1][1] + aCov(l,1)*aCov(l,1);
+        }
+
+        shells::shell_bend_cst(com_mod, lM, e, ptr, x0, xc, bb_0, bb_x, Bb, false);
+
+        // Set weight of the Gauss point
+        w = Jac0*0.50;
+      }
+
+      // Compute fiber direction in curvature coordinates
+      //
+      fNa0 = 0.0;
+
+      for (int iFn = 0; iFn < nFn; iFn++) {
+        for (int l = 0; l < nsd; l++) {
+          fNa0(0,iFn) = fNa0(0,iFn) + fN(l,iFn)*aCnv0(l,0);
+          fNa0(1,iFn) = fNa0(1,iFn) + fN(l,iFn)*aCnv0(l,1);
+        }
+      }
+
+      // Compute stress resultants and lambda3 (integrated through
+      //       the shell thickness)
+      //
+      Array<double> Sm(3,2);       
+      Array3<double> Dm(3,3,3);
+      shells::shl_strs_res(com_mod, eq.dmn[cDmn], nFn, fNa0, aa_0, aa_x, bb_0, bb_x, lam3, Sm, Dm);
+
+      // Shell in-plane deformation gradient tensor
+      //
+      auto F = mat_dyad_prod(aCov.rcol(0), aCnv0.rcol(0), 3) + 
+               mat_dyad_prod(aCov.rcol(1), aCnv0.rcol(1), 3);
+
+      // D deformation gradient tensor in shell continuum
+      auto F3d = F + lam3*mat_dyad_prod(nV, nV0, 3);
+      auto detF = mat_det(F3d, nsd);
+      Je = Je + w;
+      auto Im = mat_id(nsd);
+
+      switch (outGrp) {
+        //dmsg << "outGrp: " << outGrp;
+        case OutputType::outGrp_J: {
+          // Jacobian := determinant of deformation gradient tensor
+          resl(0) = detF;
+          sE(e) = sE(e) + w*detF;
+        } break;
+
+        case OutputType::outGrp_F:
+          // 3D deformation gradient tensor (F)
+          resl(0) = F3d(0,0);
+          resl(1) = F3d(0,1);
+          resl(2) = F3d(0,2);
+          resl(3) = F3d(1,0);
+          resl(4) = F3d(1,1);
+          resl(5) = F3d(1,2);
+          resl(6) = F3d(2,0);
+          resl(7) = F3d(2,1);
+          resl(8) = F3d(2,2);
+        break; 
+
+        case OutputType::outGrp_strain:
+        case OutputType::outGrp_C:
+        case OutputType::outGrp_I1: {
+          // In-plane Cauchy-Green deformation tensor
+          auto C = mat_mul(transpose(F), F);
+
+          // In-plane Green-Lagrange strain tensor
+          auto Eg = 0.50 * (C - Im);
+
+          if (outGrp == OutputType::outGrp_strain) {
+            // resl is used to remap Eg
+            resl(0) = Eg(0,0);
+            resl(1) = Eg(1,1);
+            resl(2) = Eg(2,2);
+            resl(3) = Eg(0,1);
+            resl(4) = Eg(1,2);
+            resl(5) = Eg(2,0);
+
+          } else if (outGrp == OutputType::outGrp_C) {
+            // resl is used to remap C
+            resl(0) = C(0,0);
+            resl(1) = C(1,1);
+            resl(2) = C(2,2);
+            resl(3) = C(0,1);
+            resl(4) = C(1,2);
+            resl(5) = C(2,0);
+
+          } else if (outGrp == OutputType::outGrp_I1) {
+            resl(0) = mat_trace(C, 3);
+            sE(e) = sE(e) + w*resl(0);
+          }
+        } break;
+
+        case OutputType::outGrp_stress: {
+          //dmsg << "outGrp: " << " outGrp_stress";
+          Array<double> S(3,3);
+
+          // 2nd Piola-Kirchhoff stress
+          S(0,0) = Sm(0,0);
+          S(1,1) = Sm(1,0);
+          S(0,1) = Sm(2,0);
+          S(1,0) = S(0,1);
+
+          //  Normalizing stress by thickness
+          S = S / ht;
+
+          // 2nd Piola-Kirchhoff stress tensor
+          resl(0) = S(0,0);
+          resl(1) = S(1,1);
+          resl(2) = S(2,2);
+          resl(3) = S(0,1);
+          resl(4) = S(1,2);
+          resl(5) = S(2,0);
+          //dmsg << "resl: " << resl;
+        } break;
+      }
+
+      for (int a = 0; a < lM.eNoN; a++) {
+        int Ac = lM.IEN(a,e);
+        sA(Ac)= sA(Ac) + w*N(a);
+        for (int i = 0; i < m; i++) {
+          sF(i,Ac) = sF(i,Ac) + w*N(a)*resl(i);
+        }
+      }
+    }
+
+    if (!is_zero(Je)) {
+      sE(e) = sE(e) / Je;
+    }
+  }
+
+  resE = sE;
+
+  // Exchange data at the shared nodes across processes
+  all_fun::commu(com_mod, sF);
+  all_fun::commu(com_mod, sA);
+
+  for (int a = 0; a < lM.nNo; a++) {
+    int Ac = lM.gN(a);
+    if (!is_zero(sA(Ac))) {
+      for (int i = 0; i < m; i++) {
+        res(i,a) = res(i,a) + sF(i,Ac) / sA(Ac);
+      }
+    }
+  }
 }
 
 //-------

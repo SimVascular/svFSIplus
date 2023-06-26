@@ -15,6 +15,10 @@ void shell_3d(ComMod& com_mod, const mshType& lM, const int g, const int eNoN,
     const Array<double>& dl, const Array<double>& xl, const Array<double>& bfl, 
     Array<double>& lR, Array3<double>& lK);
 
+void shell_bend_cst(ComMod& com_mod, const mshType& lM, const int e, const Vector<int>& ptr,
+    Array<double>& x0, Array<double>& xc, double bb_0[2][2], double bb_x[2][2],
+    Array3<double>& Bb, const bool vflag);
+
 void shell_bf(ComMod& com_mod, const int eNoN, const double w, const Vector<double>& N, const Array<double>& Nx,
     const Array<double>& dl, const Array<double>& xl, const Array<double>& tfl, Array<double>& lR, Array3<double>& lK);
 

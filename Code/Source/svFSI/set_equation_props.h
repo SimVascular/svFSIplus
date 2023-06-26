@@ -468,8 +468,18 @@ SetEquationPropertiesMapType set_equation_props = {
   
   read_domain(simulation, eq_params, lEq, propL);
   
-  nDOP = {3,1,1,0};
-  outPuts = {OutputType::out_displacement, OutputType::out_velocity, OutputType::out_integ};
+  nDOP = {9,1,0,0};
+  outPuts = {
+    OutputType::out_displacement, 
+    OutputType::out_stress, 
+    OutputType::out_strain, 
+    OutputType::out_jacobian, 
+    OutputType::out_defGrad, 
+    OutputType::out_velocity, 
+    OutputType::out_integ,
+    OutputType::out_CGstrain,
+    OutputType::out_CGInv1
+  };
 
   // Set solver parameters.
   read_ls(simulation, eq_params, SolverType::lSolver_CG, lEq);
