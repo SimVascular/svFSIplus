@@ -956,6 +956,42 @@ void b_ustruct_3d(const ComMod& com_mod);
 ```
 Data members of classes additionally have trailing underscores. 
 
+<h1 id="comments"> Comments </h1>
+
+Comments are absolutely vital to keeping code readable. While comments are very important, the best code is self-documenting. 
+Giving sensible names to types and variables is much better than using obscure names that you must then explain through comments.
+
+Don't literally describe what code does unless the behavior is nonobvious to a reader who understands C++ well. 
+Instead, provide higher level comments that describe why the code does what it does, or make the code self describing.
+
+<h2> File Comments </h2>
+
+Start each file with license boilerplate. Every file should contain license boilerplate.
+
+File comments describe the contents of a file. A .h file will contain comments describing any classes defined there. A .cpp file
+will contain comments describing the purpose of the functions or class methods defined there. 
+
+Do not duplicate comments in both the .h and the .cpp files. 
+
+<h2> Class Comments </h2>
+
+Every non-obvious class or struct declaration should have an accompanying comment that describes what it is for and how it should be used.
+
+Comments describing the use of the class should go together with its interface definition; comments about the class operation and 
+implementation should accompany the implementation of the class's methods.
+
+<h2> Function Comments </h2>
+
+Every function declaration should have comments immediately preceding it that describe what the function does and how to use it. If there 
+is anything tricky about how a function does its job, the function definition should have an explanatory comment. 
+
+Function input and output parameters should be described. 
+
+The function implementation should have comments describing tricky, non-obvious, interesting, or important parts of the code.
+
+
+
+
 
 
 <!--- ====================================================================================================================== --->
