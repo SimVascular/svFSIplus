@@ -809,7 +809,10 @@ Coding standards are important for producing good software
 - Promotes sound programming practices and increases programmer efficiency
 
 Code that does not follow coding standards will be rejected during code review. However, program structures not mentioned in the 
-following sections are may be coded in any (non-hideous) manner favoured by the developer.
+following sections may be coded in any (non-hideous) manner favoured by the developer.
+
+Note that svFSIplus maintained the program structure and naming conventions used by the svFSI Fortran code so some of the
+following coding standards may be violated. 
 
 <h2 id="indent"> Indentation </h2>
 
@@ -817,6 +820,142 @@ Indentation refers to the spaces at the beginning of a code line. It is a fundam
 readability by showing the overall structure of the code. 
 
 Indentation is two spaces for all programming structures: functions, loops, if-then blocks, etc. Do not use tabs to indent.
+
+The braces indicating a function body are placed in column 1, function body statements indented by two spaces.
+
+<h3> Examples  </h3>
+
+```
+for (int i = 0; i < n; i++) {
+  a += values[i];
+}
+```
+
+```
+if (n == 1) {
+  found = true;
+}
+```
+
+```
+void find_max(const int n, const double values[])
+{
+  int num_values{0};
+
+  for (int i = 0; i < n; i++) {
+    if (values[i] != 0.0) {
+      num_values += 1;
+    }
+  }  
+}
+```
+
+<h2 id="white_space"> White Space </h2>
+
+Whitespace is a term that refers to the spaces and newlines that are used to make code more readable. Add one or more spaces between all
+variable names and keywords in a program statement.
+
+```
+for (int i=0; i<n; i++) {           No!
+for (int i = 0; i < n; i++) {       Yes!
+```
+
+Some complex expressions may be better organized without single separating spaces. The following could be written using 
+spaces between sub-expressions only
+```
+double Inv2 = 0.50 * (Inv1*Inv1 - J4d*mat_trace(mat_mul(C,C), nsd));
+```
+or written using double spacing between sub-expressions
+```
+double Inv2 = 0.50 * (Inv1 * Inv1  -  J4d * mat_trace(mat_mul(C,C), nsd));
+```
+
+Use newlines often to separate  blocks of code: for-loops, if statements, related code blocks.
+```
+  for (int e = 0; e < lM.nEl; e++) {
+    int iDmn = all_fun::domain(com_mod, lM, cEq, e);
+    auto cPhys = com_mod.eq[cEq].dmn[iDmn].phys;
+
+    for (int a = 0; a < lM.eNoN; a++) {
+      int Ac = lM.IEN(a,e);
+      xl.set_col(a, com_mod.x.col(Ac));
+
+      if (com_mod.mvMsh) {
+        for (int i = 0; i < nsd; i++) {
+          dol(i,a) = com_mod.Do(i + nsd + 1, Ac);
+        }
+      }
+    }
+
+    if (com_mod.mvMsh) {
+      xl = xl + dol;
+    }
+```
+
+<h1 id="namespace"> Namespaces </h1>
+
+Refer to the elements in the std namespace by explicit qualification using std::.
+```
+std::cout << "Use std namespace." << std::endl;
+std::string file_name;
+std::vector<int> outS(nOut+1);
+```
+
+It is acceptable to use unqualified names for svFSIplus namespaces
+```
+using namespace consts;
+double dmp = dmn.prop.at(PhysicalProperyType::damping);
+```
+
+<h1 id="naming"> Naming Conventions </h1>
+
+Program readability is improved by using names that would be clear to any developer.
+
+- Use names that describe purpose or intent
+- There's no reason to be terse when naming things. It is more important to make code immediately 
+  understandable by a new reader
+- Minimize the use of specialized abbreviations (e.g., those from a paper or text book) that may like 
+  be unknown by others
+- Do not abbreviate by deleting letters within a word
+- Generally speaking, descriptiveness should be proportional to the name's scope of visibility. For example, n may be a fine
+  name within a 5-line function, but within the scope of a class, it's likely too vague.
+
+<h2> Styles </h2>
+
+Two naming styles are used svFSIplus
+
+- CamelCase 
+  
+- snake_case
+  
+CamelCase is a way to separate the words in a phrase by making the first letter of each word capitalized 
+and not using spaces. 
+
+
+<h2 id="file_naming"> File Names </h2>
+
+C++ files should end in .cpp and header files should end in .h. 
+
+File names for types should be in CamelCase. Other files in snake_case.
+
+<h2> Type Names </h2>
+
+Type names are in CamelCase. 
+
+```
+class Simulation { }
+CepMod cep_mod;
+```
+
+<h2> Variable and Functions Names </h2>
+
+Variable and function names use snake_case. 
+```
+std::string history_file_name;
+void b_ustruct_3d(const ComMod& com_mod);
+```
+Data members of classes additionally have trailing underscores. 
+
 
 
 <!--- ====================================================================================================================== --->
