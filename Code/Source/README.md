@@ -950,9 +950,9 @@ Program readability is improved by using names that would be clear to any develo
 - Do not abbreviate names especially for class methods/data members
   - <b>command</b> instead of <b>cmd</b>
   - <b>initialize</b> instead of <b>init</b>
-  - <b>compute_average()</b> instead of <b>com_avg()</b>
+  - <b>compute_average()</b> instead of <b>comp_avg()</b>
 - Local names may be abbreviated for local variables when context is clear
-  - <b>num_points<b> is OK instead of <b>number_of_points</b>
+  - <b>num_points</b> is OK instead of <b>number_of_points</b>
 - Variables with a large scope should have long names, variables with a small scope may have short names
 - Names for boolean variables and methods should be obviously boolean
   - use <b>is_valid</b> instead of <b>flag</b>
@@ -1071,6 +1071,7 @@ Global variable use should be minimized. In C++ there is no reason that global v
 Variables should be declared in the smallest scope possible. By keeping the operations on a variable within a small scope
 it is easier to control the effects and side effects of the variable.
 
+
 <h1> General Programming </h1>
 
 Use nullptr instead of 0 and NULL.
@@ -1087,8 +1088,6 @@ int const A_POWER_OF_TWO = 16;
 Avoid deeply nested code. Code that is too deeply nested is hard to both read and debug. 
 One should replace excessive nesting with function calls.
 
-T
-
 <!--- ====================================================================================================================== --->
 <!--- ================================================= Coding Guidelines  ================================================= --->
 <!--- ====================================================================================================================== --->
@@ -1097,19 +1096,37 @@ T
 
 This section describes the coding guidelines that are recommend when adding new code to svFSIplus. 
 
+<h2> Enums </h2>
 
-Where possible, put enums in appropriate classes, in which case the GRADE_* isn’t needed:
-
+Where possible, put enums in appropriate classes
+```
 class Grade {
     enum { HIGH, MIDDLE, LOW };
 
     Grade() {}
     ...
 };
-Type conversions SHOULD be avoided as far as possible
-When required, type conversions MUST always be done explicitly using C++ style casts. Never rely on implicit type conversion.
+```
 
- Arguments that are of non-primitive types and will not be modified SHOULD be passed by const reference.¶
+<h2> Type Conversions </h2>
+
+Type conversions should be avoided if possible.
+
+When required, type conversions must always be done explicitly using C++ style casts. Never rely on implicit type conversion.
+
+```
+double r = static_cast<double>(i) / 3.0;
+```
+
+<h2> Function Parameters  </h2>
+
+Arguments that are non-primitive types and will not be modified should be passed by const reference.
+```
+void calc_elem_ar(const ComMod& com_mod, const CmMod& cm_mod, mshType& lM, bool& rflag)
+```
+
+Output parameters should grouped at the end of the function's parameters.
+
 
 
 
