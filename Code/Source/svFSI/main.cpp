@@ -328,7 +328,7 @@ void iterate_solution(Simulation* simulation)
       // Apply contact model and add its contribution to residue
       //
       if (com_mod.iCntct) {
-        contact::contact_forces(com_mod, cm_mod, Dg);
+        contact::construct_contact_pnlty(com_mod, cm_mod, Dg);
       }
 
       // Synchronize R across processes. Note: that it is important

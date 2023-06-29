@@ -17,9 +17,9 @@ namespace contact {
 // contact_forces 
 //----------------
 //
-// [TODO:DaveP] this is not fully implemented. 
+// Reproduces Fortran CONSTRUCT_CONTACTPNLTY.
 //
-void contact_forces(ComMod& com_mod, CmMod& cm_mod, const Array<double>& Dg)
+void construct_contact_pnlty(ComMod& com_mod, CmMod& cm_mod, const Array<double>& Dg)
 {
   using namespace consts;
 
@@ -30,6 +30,12 @@ void contact_forces(ComMod& com_mod, CmMod& cm_mod, const Array<double>& Dg)
   const int cEq = com_mod.cEq;
   const auto& eq = com_mod.eq[cEq];
   const auto& cntctM = com_mod.cntctM;
+
+  #define n_debug_construct_contact_pnlty
+  #ifdef debug_construct_contact_pnlty
+  DebugMsg dmsg(__func__, com_mod.cm.idcm());
+  dmsg.banner();
+  #endif
 
   if (eq.phys != EquationType::phys_shell) {
     return;
@@ -120,14 +126,15 @@ void contact_forces(ComMod& com_mod, CmMod& cm_mod, const Array<double>& Dg)
   // is actually doing. Probably just move it to a subroutine.
   //
   int maxNnb = 15;
-// 101  maxNnb = maxNnb + 5
-//      IF (ALLOCATED(bBox)) DEALLOCATE(bBox)
-//      ALLOCATE(bBox(maxNnb,tnNo))
-//      bBox = 0
+  label_101: maxNnb = maxNnb + 5;
+  //dmsg << "maxNnb: " << maxNnb;
+
   Array<int> bBox(maxNnb,tnNo);
+  bBox = -1;
 
   for (int iM = 0; iM < com_mod.nMsh; iM++) {
     auto& msh = com_mod.msh[iM];
+
     if (!msh.lShl) {
       continue;
     }
@@ -138,7 +145,7 @@ void contact_forces(ComMod& com_mod, CmMod& cm_mod, const Array<double>& Dg)
       int Ac = msh.gN(a);
       x1(0) = com_mod.x(0,Ac) + Dg(i,Ac);
       x1(1) = com_mod.x(1,Ac) + Dg(j,Ac);
-      x1(1) = com_mod.x(2,Ac) + Dg(k,Ac);
+      x1(2) = com_mod.x(2,Ac) + Dg(k,Ac);
 
       // Box limits for each node
       xmin = x1 - cntctM.c;
@@ -162,8 +169,14 @@ void contact_forces(ComMod& com_mod, CmMod& cm_mod, const Array<double>& Dg)
 
           if ((x2(0) >= xmin(0)) && (x2(0) <= xmax(0)) && (x2(1) >= xmin(1)) && (x2(1) <= xmax(1)) && 
               (x2(2) >= xmin(2)) && (x2(2) <= xmax(2))) {
+
+            //dmsg << "          " << " ";
+            //dmsg << "------ b: " << b+1;
+            //dmsg << "Bc: " << Bc+1;
+
             for (int l = 0; l < maxNnb; l++) {
-              if (bBox(l,Ac) == 0) {
+              //dmsg << "bBox(l,Ac): " << bBox(l,Ac);
+              if (bBox(l,Ac) == -1) {
                 bBox(l,Ac) = Bc;
                 break; 
               }
@@ -174,15 +187,18 @@ void contact_forces(ComMod& com_mod, CmMod& cm_mod, const Array<double>& Dg)
               if (Bc == bBox(l,Ac)) {
                 break;
               } 
-              //if (bBox(maxNnb,Ac) .NE. 0) GOTO 101
 
-              for (int m = maxNnb; m >= l+1; m--) {
+              if (bBox(maxNnb-1,Ac) != -1) goto label_101;
+
+              for (int m = maxNnb-1; m >= l; m--) {
+                //dmsg << "m: " << m+1;
                 bBox(m,Ac) = bBox(m-1,Ac);
               }
               bBox(l,Ac) = Bc;
               break; 
             }
-            //if (l .GT. maxNnb) GOTO 101
+            // can't happen ?
+            // if (l > maxNnb-1) goto label_101;
           }
         } // b
       } // jM
@@ -197,24 +213,24 @@ void contact_forces(ComMod& com_mod, CmMod& cm_mod, const Array<double>& Dg)
   Vector<double> x1(nsd), x2(nsd);
 
   for (int Ac = 0; Ac < tnNo; Ac++) {
-    if (bBox(0,Ac) == 0) {
+    if (bBox(0,Ac) == -1) {
       continue; 
     }
     x1(0) = com_mod.x(0,Ac) + Dg(i,Ac);
     x1(1) = com_mod.x(1,Ac) + Dg(j,Ac);
     x1(2) = com_mod.x(2,Ac) + Dg(k,Ac);
-    auto nV1 = sF.col(Ac);
+    auto nV1 = sF.rcol(Ac);
     int nNb = 0;
 
     for (int a = 0; a < maxNnb; a++) {
       int Bc = bBox(a,Ac);
-      if (Bc == 0) {
+      if (Bc == -1) {
         continue; 
       }
       x2(0)  = com_mod.x(0,Bc) + Dg(i,Bc);
       x2(1)  = com_mod.x(1,Bc) + Dg(j,Bc);
       x2(2)  = com_mod.x(2,Bc) + Dg(k,Bc);
-      auto nV2 = sF.col(Bc);
+      auto nV2 = sF.rcol(Bc);
 
       auto x12 = x1 - x2;
       double c = sqrt(utils::norm(x12));
@@ -269,6 +285,9 @@ void contact_forces(ComMod& com_mod, CmMod& cm_mod, const Array<double>& Dg)
     }
     //R(:,Ac) = R(:,Ac) + lR(:,Ac)
   }
+
+  //std::cout << "com_mod.R: " << com_mod.R << std::endl;
+  //exit(0);
 }
 
 };

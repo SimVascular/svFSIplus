@@ -1107,6 +1107,34 @@ class RemesherParameters : public ParameterLists
     Parameter<int> frequency_for_copying_data;
 };
 
+//-------------------
+// ContactParameters
+//-------------------
+// The ContactParameters class stores parameters for the 'Contact''
+// XML element used to specify parameter values for contact
+// computations. 
+//
+class ContactParameters : public ParameterLists
+{
+  public:
+    ContactParameters();
+
+    static const std::string xml_element_name_;
+
+    void print_parameters();
+    void set_values(tinyxml2::XMLElement* xml_elem);
+
+    Parameter<double> closest_gap_to_activate_penalty;
+
+    Parameter<double> desired_separation;
+
+    Parameter<double> min_norm_of_face_normals;
+
+    Parameter<std::string> model;
+
+    Parameter<double> penalty_constant;
+};
+
 //--------------------
 // EquationParameters
 //--------------------
@@ -1312,11 +1340,13 @@ class Parameters {
     void print_parameters();
     void read_xml(std::string file_name);
 
+    void set_contact_values(tinyxml2::XMLElement* root_element);
     void set_equation_values(tinyxml2::XMLElement* root_element);
     void set_mesh_values(tinyxml2::XMLElement* root_element);
     void set_projection_values(tinyxml2::XMLElement* root_element);
 
     // Objects representing each parameter section of XML file.
+    ContactParameters contact_parameters;
     GeneralSimulationParameters general_simulation_parameters;
     std::vector<MeshParameters*> mesh_parameters;
     std::vector<EquationParameters*> equation_parameters;

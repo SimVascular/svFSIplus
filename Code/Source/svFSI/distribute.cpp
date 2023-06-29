@@ -312,7 +312,7 @@ void distribute(Simulation* simulation)
     cm.bcast(cm_mod, &com_mod.iCntct);
 
     if (com_mod.iCntct) {
-      cm.bcast(cm_mod, &com_mod.cntctM.cType);
+      cm.bcast_enum(cm_mod, &com_mod.cntctM.cType);
       cm.bcast(cm_mod, &com_mod.cntctM.k);
       cm.bcast(cm_mod, &com_mod.cntctM.c);
       cm.bcast(cm_mod, &com_mod.cntctM.h);

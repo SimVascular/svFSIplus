@@ -201,6 +201,20 @@ enum class ConstitutiveModelType
 // Map for constitutive_model string to ConstitutiveModelType. 
 extern const std::map<std::string,ConstitutiveModelType> constitutive_model_name_to_type;
 
+//------------------
+// ContactModelType
+//------------------
+//
+enum class ContactModelType
+{
+  cntctM_NA = 800,
+  cntctM_penalty = 801,
+  cntctM_potential = 802
+};
+
+// Map for model type string to ContactModelType. 
+extern const std::map<std::string,ContactModelType> contact_model_name_to_type;
+
 // Differenty type of coupling for cplBC. 
 //
 // INTEGER(KIND=IKIND), PARAMETER :: cplBC_NA = 400, cplBC_I = 401,

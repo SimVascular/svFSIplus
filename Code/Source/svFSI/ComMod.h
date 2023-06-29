@@ -675,7 +675,7 @@ class cntctModelType
 {
   public:
     // Contact model
-    int cType = 0;
+    consts::ContactModelType cType = consts::ContactModelType::cntctM_NA;
 
     // Penalty parameter
     double k = 0.0;

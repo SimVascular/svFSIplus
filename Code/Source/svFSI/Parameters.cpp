@@ -139,6 +139,9 @@ void Parameters::read_xml(std::string file_name)
   // Get general parameters.
   general_simulation_parameters.set_values(root_element);
 
+  // Set Contact values.
+  set_contact_values(root_element);
+
   // Set Add_mesh values.
   set_mesh_values(root_element);
 
@@ -147,6 +150,16 @@ void Parameters::read_xml(std::string file_name)
 
   // Set Add_equation values.
   set_equation_values(root_element);
+}
+
+//--------------------
+// set_contact_values
+//--------------------
+//
+void Parameters::set_contact_values(tinyxml2::XMLElement* root_element)
+{
+  auto item = root_element->FirstChildElement(ContactParameters::xml_element_name_.c_str());
+  contact_parameters.set_values(item);
 }
 
 //---------------------
@@ -1644,6 +1657,77 @@ void ECGLeadsParameters::print_parameters()
   for (auto& [ key, value ] : params_name_value) { 
     std::cout << key << ": " << value << std::endl;
   }
+}
+
+//////////////////////////////////////////////////////////
+//                  ContactParameters                   //
+//////////////////////////////////////////////////////////
+
+// Process parameters for the 'Contact' XML element
+// used to specify parameters for contact computation.
+
+// Define the XML element name for contact parameters.
+const std::string ContactParameters::xml_element_name_ = "Contact";
+
+//--------------------
+// EquationParameters
+//--------------------
+//
+ContactParameters::ContactParameters()
+{
+  set_xml_element_name(xml_element_name_);
+
+  // A parameter that must be defined.
+  bool required = true;
+
+  // Contact model.
+  model = Parameter<std::string>("model", "", required);
+
+  // Define contact parameters.
+  //
+  set_parameter("Closest_gap_to_activate_penalty", 1.0, !required, closest_gap_to_activate_penalty);
+  set_parameter("Desired_separation", 0.05, !required, desired_separation);
+  set_parameter("Min_norm_of_face_normals", 0.7, !required, min_norm_of_face_normals);
+  set_parameter("Penalty_constant", 1e5, !required, penalty_constant);
+}
+
+void ContactParameters::print_parameters()
+{
+  std::cout << std::endl;
+  std::cout << "-------------------" << std::endl;
+  std::cout << "Contact Parameters" << std::endl;
+  std::cout << "-------------------" << std::endl;
+  std::cout << model.name() << ": " << model.value() << std::endl;
+
+  auto params_name_value = get_parameter_list();
+  for (auto& [ key, value ] : params_name_value) {
+    std::cout << key << ": " << value << std::endl;
+  }
+}
+
+//------------
+// set_values
+//------------
+void ContactParameters::set_values(tinyxml2::XMLElement* xml_elem)
+{
+  using namespace tinyxml2;
+  std::string error_msg = "Unknown " + xml_element_name_ + " XML element '";
+
+  // Get the 'type' from the <Add_projection name=NAME> element.
+  const char* mname;
+  auto result = xml_elem->QueryStringAttribute("model", &mname);
+  if (mname == nullptr) {
+    throw std::runtime_error("No MODEL given in the XML <Contact model=MODEL> element.");
+  }
+  model.set(std::string(mname));
+
+  using std::placeholders::_1;
+  using std::placeholders::_2;
+
+  std::function<void(const std::string&, const std::string&)> ftpr =
+      std::bind( &ProjectionParameters::set_parameter_value, *this, _1, _2);
+
+  xml_util_set_parameters(ftpr, xml_elem, error_msg);
 }
 
 //////////////////////////////////////////////////////////
