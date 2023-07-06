@@ -13,6 +13,9 @@ This document describes some of the implementation details of svFSIplus C++ code
 [Performance and Accuracy](#performance)<br>
 [Potential Problems](#problems)<br>
 [Implementation Details](#cpp_programming)<br>
+[Coding Standards](#coding_standards)<br>
+[Coding Guidelines](#coding_guidelines)<br>
+
 
 <!--- ====================================================================================================================== --->
 <!--- ===================================================== Introduction  ================================================== --->
@@ -789,6 +792,341 @@ which are used like this
 ```
 if ((eq.phys == Equation_CMM) && com_mod.cmmInit) { 
 ```
+
+<!--- ====================================================================================================================== --->
+<!--- =============================================== Coding Standards  ==================================================== --->
+<!--- ====================================================================================================================== --->
+
+<h1 id="coding_standards"> Coding Standards </h1>
+
+This section describes the coding standards and guidelines that must be followed when adding new code to svFSIplus. 
+
+Coding standards are important for producing good software
+
+- Gives a uniform appearance to the code written by different developers
+- Improves readability and maintainability 
+- Helps in code reuse and to detect errors 
+- Promotes sound programming practices and increases programmer efficiency
+
+Code that does not follow coding standards will be rejected during code review. However, program structures not mentioned in the 
+following sections may be coded in any (non-hideous) manner favoured by the developer.
+
+Note that svFSIplus maintained the program structure and naming conventions used by the svFSI Fortran code so some of the
+following coding standards may be violated. 
+
+<h2 id="indent"> Indentation </h2>
+
+Indentation refers to the spaces at the beginning of a code line. It is a fundamental aspect of code styling and improves 
+readability by showing the overall structure of the code. 
+
+Indentation is two spaces for all programming structures: functions, loops, if-then blocks, etc. Do not use tabs to indent.
+
+The <b>if-else</b> class of statements should have the following form
+```
+if (condition) {
+  ...
+}
+
+if (condition) {
+  ...
+} else {
+  ...
+}
+```
+
+A <b>for</b> statement should have the following form
+```
+for (initialization; condition; update) {
+  statements;
+}
+```
+
+A <b>switch</b> statement should have the following form
+```
+switch (condition) {
+  case ABC:
+    statements;
+  break;
+
+  default:
+    statements;
+  break;
+}
+```
+
+The braces indicating a function body are placed in column 1, function body statements are indented by two spaces.
+```
+void find_max(const int n, const double values[])
+{
+  int num_values{0};
+
+  for (int i = 0; i < n; i++) {
+    if (values[i] != 0.0) {
+      num_values += 1;
+    }
+  }  
+}
+```
+
+<h2 id="white_space"> White Space </h2>
+
+Whitespace is a term that refers to the spaces and newlines that are used to make code more readable. 
+
+The following white space conventions should be followed
+- Assignment operators always have spaces around them.
+- Other binary operators usually have spaces around them, but it’s OK to remove spaces around *, / and %.
+- Parentheses should have no internal padding.
+- No spaces separating unary operators and their arguments.
+- C++ reserved words should be followed by a white space.
+- Commas should be followed by a white space.
+- Colons should be surrounded by white space.
+- Semicolons in for statements should be followed by a space character.
+
+```
+v = w * x + y / z;          // good
+v = w*x + y/z;              // also ok
+v = w * (x + z);            // good
+while (true) {              // bad   while(true) ...
+doSomething(a, b, c, d);    // bad   doSomething(a,b,c,d);
+for (i = 0; i < 10; i++) {  // bad   for (i=0;i<10;i++){
+```
+
+Some complex expressions may be better organized without single separating spaces. The following could be written using 
+spaces between sub-expressions only
+```
+double Inv2 = 0.50 * (Inv1*Inv1 - J4d*mat_trace(mat_mul(C,C), nsd));
+```
+or written using double spacing between sub-expressions
+```
+double Inv2 = 0.50 * (Inv1 * Inv1  -  J4d * mat_trace(mat_mul(C,C), nsd));
+```
+
+Use newlines often to separate logical blocks of code: for-loops, if statements, related code blocks.
+```
+  for (int e = 0; e < lM.nEl; e++) {
+    int iDmn = all_fun::domain(com_mod, lM, cEq, e);
+    auto cPhys = com_mod.eq[cEq].dmn[iDmn].phys;
+
+    for (int a = 0; a < lM.eNoN; a++) {
+      int Ac = lM.IEN(a,e);
+      xl.set_col(a, com_mod.x.col(Ac));
+
+      if (com_mod.mvMsh) {
+        for (int i = 0; i < nsd; i++) {
+          dol(i,a) = com_mod.Do(i + nsd + 1, Ac);
+        }
+      }
+    }
+
+    if (com_mod.mvMsh) {
+      xl = xl + dol;
+    }
+```
+
+<h1 id="namespace"> Namespaces </h1>
+
+Refer to the elements in the std namespace by explicit qualification using std::.
+```
+std::cout << "Use std namespace." << std::endl;
+std::string file_name;
+std::vector<int> outS(nOut+1);
+```
+
+It is acceptable to use unqualified names for svFSIplus namespaces
+```
+using namespace consts;
+double dmp = dmn.prop.at(PhysicalProperyType::damping);
+```
+
+<h1 id="naming"> Naming Conventions </h1>
+
+Program readability is improved by using names that would be clear to any developer.
+
+- Use names that describe purpose or intent
+- There's no reason to be terse when naming things. It is more important to make code immediately 
+  understandable by a new reader
+- Minimize the use of specialized abbreviations (e.g., those from a paper or text book) that may 
+  in general be unfamiliar to other developers
+- Do not abbreviate names especially for class methods/data members
+  - <b>command</b> instead of <b>cmd</b>
+  - <b>initialize</b> instead of <b>init</b>
+  - <b>compute_average()</b> instead of <b>comp_avg()</b>
+- Local names may be abbreviated for local variables when context is clear
+  - <b>num_points</b> is OK instead of <b>number_of_points</b>
+- Variables with a large scope should have long names, variables with a small scope may have short names
+- Names for boolean variables and methods should be obviously boolean
+  - use <b>is_valid</b> instead of <b>flag</b>
+
+
+
+<h2> Styles </h2>
+
+Two naming styles are used svFSIplus
+
+- CamelCase 
+  
+- snake_case
+  
+CamelCase is a way to separate the words in a phrase by making the first letter of each word capitalized 
+and not using spaces. 
+
+
+<h2 id="file_naming"> File Names </h2>
+
+C++ files should end in .cpp and header files should end in .h. 
+
+Files that contain a single class should have the name of the class, including capitalization.
+- MyClass.h, MyClass.cc
+
+
+<h2> Type Names </h2>
+
+Type names are in CamelCase. 
+
+```
+class Simulation { }
+CepMod cep_mod;
+```
+
+<h2> Variable and Functions Names </h2>
+
+Variable and function names use snake_case. 
+```
+std::string history_file_name;
+void b_ustruct_3d(const ComMod& com_mod);
+```
+Data members of classes additionally have trailing underscores. 
+
+<h1 id="comments"> Comments </h1>
+
+Comments are absolutely vital to keeping code readable. While comments are very important, the best code is self-documenting. 
+Giving sensible names to types and variables is much better than using obscure names that you must then explain through comments.
+
+Don't literally describe what code does unless the behavior is nonobvious to a reader who understands C++ well. 
+Instead, provide higher level comments that describe why the code does what it does, or make the code self describing.
+
+Comments should be included relative to their position in the code
+```
+// yes
+while (true) {
+    // Do something
+    something();
+}
+
+// no
+while (true) {
+// Do something now
+    something();
+}
+```
+
+<h2> File Comments </h2>
+
+Start each file with license boilerplate. Every file should contain license boilerplate.
+
+File comments describe the contents of a file. A .h file will contain comments describing any classes defined there. A .cpp file
+will contain comments describing the purpose of the functions or class methods defined there. 
+
+Do not duplicate comments in both the .h and the .cpp files. 
+
+<h2> Class Comments </h2>
+
+Every non-obvious class or struct declaration should have an accompanying comment that describes what it is for and how it should be used.
+
+Comments describing the use of the class should go together with its interface definition; comments about the class operation and 
+implementation should accompany the implementation of the class's methods.
+
+<h2> Function Comments </h2>
+
+Every function declaration should have comments immediately preceding it that describe what the function does and how to use it. If there 
+is anything tricky about how a function does its job, the function definition should have an explanatory comment. 
+
+The function implementation should have comments describing tricky, non-obvious, interesting, or important parts of the code.
+
+Function comments should follow Doxygen format for API functions.
+
+Non API functions should have the form
+```
+Parameters
+  param1[in] Description
+  param1[out] Description
+
+Returns
+```
+
+
+
+<h1 id="variables"> Variables </h1>
+
+Variables should be initialized where they are declared when possible. This ensures that variables are valid at any time.
+```
+double average{0.0};
+int num_points = 0;
+```
+
+Variables must never have dual meaning. This ensures that all concepts are represented uniquely.
+
+Global variable use should be minimized. In C++ there is no reason that global variables need to be used at all.
+
+Variables should be declared in the smallest scope possible. By keeping the operations on a variable within a small scope
+it is easier to control the effects and side effects of the variable.
+
+
+<h1> General Programming </h1>
+
+Use nullptr instead of 0 and NULL.
+
+Use const rather than #define statements.
+```
+// Replace 
+#define A_POWER_OF_TWO 16
+
+// with
+int const A_POWER_OF_TWO = 16;
+```
+
+Avoid deeply nested code. Code that is too deeply nested is hard to both read and debug. 
+One should replace excessive nesting with function calls.
+
+<!--- ====================================================================================================================== --->
+<!--- ================================================= Coding Guidelines  ================================================= --->
+<!--- ====================================================================================================================== --->
+
+<h1 id="coding_guidelines"> Coding Guidelines </h1>
+
+This section describes the coding guidelines that are recommend when adding new code to svFSIplus. 
+
+<h2> Enums </h2>
+
+Where possible, put enums in appropriate classes
+```
+class Grade {
+    enum { HIGH, MIDDLE, LOW };
+
+    Grade() {}
+    ...
+};
+```
+
+<h2> Type Conversions </h2>
+
+Type conversions should be avoided if possible.
+
+When required, type conversions must always be done explicitly using C++ style casts. Never rely on implicit type conversion.
+
+```
+double r = static_cast<double>(i) / 3.0;
+```
+
+<h2> Function Parameters  </h2>
+
+Arguments that are non-primitive types and will not be modified should be passed by const reference.
+```
+void calc_elem_ar(const ComMod& com_mod, const CmMod& cm_mod, mshType& lM, bool& rflag)
+```
+
+Output parameters should grouped at the end of the function's parameters.
+
 
 
 
