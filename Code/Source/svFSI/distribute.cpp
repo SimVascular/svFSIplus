@@ -312,7 +312,7 @@ void distribute(Simulation* simulation)
     cm.bcast(cm_mod, &com_mod.iCntct);
 
     if (com_mod.iCntct) {
-      cm.bcast(cm_mod, &com_mod.cntctM.cType);
+      cm.bcast_enum(cm_mod, &com_mod.cntctM.cType);
       cm.bcast(cm_mod, &com_mod.cntctM.k);
       cm.bcast(cm_mod, &com_mod.cntctM.c);
       cm.bcast(cm_mod, &com_mod.cntctM.h);
@@ -1151,6 +1151,11 @@ void dist_mat_consts(const ComMod& com_mod, const CmMod& cm_mod, const cmType& c
   cm.bcast(cm_mod, &lStM.afs);
   cm.bcast(cm_mod, &lStM.bfs);
   cm.bcast(cm_mod, &lStM.kap);
+  cm.bcast(cm_mod, &lStM.khs);
+  cm.bcast(cm_mod, &lStM.a0);
+  cm.bcast(cm_mod, &lStM.b1);
+  cm.bcast(cm_mod, &lStM.b2);
+  cm.bcast(cm_mod, &lStM.mu0);
 
   // Distribute fiber stress
   cm.bcast(cm_mod, &lStM.Tf.fType);

@@ -1237,6 +1237,7 @@ void read_msh(Simulation* simulation)
         if (mesh.eType != consts::ElementType::NRB && mesh.eType != consts::ElementType::TRI3) {
           throw std::runtime_error("Shell elements must be triangles or C1-NURBS.");
         }
+
         if (mesh.eType == consts::ElementType::NRB) {
           for (int i = 0; i < com_mod.nsd-1; i++) {
             if (mesh.bs[i].p <= 1) {
@@ -1244,6 +1245,13 @@ void read_msh(Simulation* simulation)
             } 
           } 
         } 
+
+        if (mesh.eType == consts::ElementType::TRI3) {
+          if (!com_mod.cm.seq()) { 
+            throw std::runtime_error("Shells with linear triangles should be run sequentially.");
+          } 
+        } 
+
       } 
     } 
 
@@ -1675,33 +1683,41 @@ void read_msh(Simulation* simulation)
 
   // Read contact model parameters.
   //
-  // [NOTE] Implement this, no tests yet.
-  //
   if (!com_mod.resetSim) {
     com_mod.iCntct = false;
-    //lPM => list%get(ctmp, "Contact model")
-    /*
-    IF (ASSOCIATED(lPM)) THEN
-      iCntct = .TRUE.
-      SELECT CASE (TRIM(ctmp))
-      CASE ("penalty")
-        cntctM%cType = cntctM_penalty
-        lPtr => lPM%get(cntctM%k,
-     2            "Penalty constant (k)", 1, ll=0._RKIND)
-        lPtr => lPM%get(cntctM%h,
-     2            "Desired separation (h)", 1, lb=0._RKIND)
-        lPtr => lPM%get(cntctM%c,
-     2            "Closest gap to activate penalty (c)", 1, lb=0._RKIND)
-        IF (cntctM%c .LT. cntctM%h) err =
-     2            "Choose c > h for proper contact penalization"
-        lPtr => lPM%get(cntctM%al,
-     2            "Min norm of face normals (alpha)",1,lb=0._RKIND,
-     3  ub=1._RKIND)
-      CASE DEFAULT
-        err = "Undefined contact model"
-      END SELECT
-    END IF
-    */
+    auto& cntctM = com_mod.cntctM;
+    auto& contact_params = simulation->parameters.contact_parameters;
+
+    if (contact_params.model.defined()) {
+      auto contact_model = contact_params.model.value();
+      com_mod.iCntct = true;
+
+      try {
+        cntctM.cType = consts::contact_model_name_to_type.at(contact_model);
+      } catch (const std::out_of_range& exception) {
+        throw std::runtime_error("Unknown contact model '" + contact_model + "'.");
+      }
+
+      switch (cntctM.cType) {
+
+        case consts::ContactModelType::cntctM_penalty:
+          cntctM.k = contact_params.penalty_constant.value();
+	  cntctM.h = contact_params.desired_separation.value();
+	  cntctM.c = contact_params.closest_gap_to_activate_penalty.value();
+	  cntctM.al = contact_params.min_norm_of_face_normals.value();
+
+          if (cntctM.c < cntctM.h) {
+            throw std::runtime_error("The contact Closest_gap_to_activate_penalty " + std::to_string(cntctM.c)  + 
+              " must be > the desired separation " + std::to_string(cntctM.h) + "."); 
+          }
+        break;
+
+        default:
+          throw std::runtime_error("Contact model '" + contact_model + "' is not implemented.");
+        break;
+      }
+
+    }
   }
 }
 

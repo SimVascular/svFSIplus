@@ -16,6 +16,7 @@ using OutputProps = std::tuple<consts::OutputType, int, int, std::string>;
 //------------------
 // output_props_map
 //------------------
+// Reproduces Fortran READOUTPUTS.
 //
 std::map<consts::OutputType, OutputProps> output_props_map = 
 {
@@ -25,12 +26,19 @@ std::map<consts::OutputType, OutputProps> output_props_map =
   {OutputType::out_absVelocity,  std::make_tuple(OutputType::outGrp_absV,   0, nsd,           "Absolute_velocity") },
   {OutputType::out_acceleration, std::make_tuple(OutputType::outGrp_A,      0, nsd,           "Acceleration") },
   {OutputType::out_cauchy,       std::make_tuple(OutputType::outGrp_cauchy, 0, com_mod.nsymd, "Cauchy_stress") },
+
+  {OutputType::out_CGInv1,       std::make_tuple(OutputType::out_CGInv1,   0,  1,             "CG_Strain_Trace") },
+  {OutputType::out_CGstrain,     std::make_tuple(OutputType::outGrp_C,     0,  com_mod.nsymd, "CG_Strain") },
+
   {OutputType::out_defGrad,      std::make_tuple(OutputType::outGrp_F,      0, nsd*nsd,       "Def_grad") },
   {OutputType::out_displacement, std::make_tuple(OutputType::outGrp_D,      0, nsd,           "Displacement") },
-  {OutputType::out_divergence,   std::make_tuple(OutputType::outGrp_divV,   0,   1,             "Divergence") },
+  {OutputType::out_divergence,   std::make_tuple(OutputType::outGrp_divV,   0, 1,             "Divergence") },
   {OutputType::out_energyFlux,   std::make_tuple(OutputType::outGrp_eFlx,   0, nsd,           "Energy_flux") },
-  {OutputType::out_fibAlign,     std::make_tuple(OutputType::outGrp_fA,     0,   1,             "Fiber_alignment") },
+
+  {OutputType::out_fibAlign,     std::make_tuple(OutputType::outGrp_fA,     0, 1,             "Fiber_alignment") },
   {OutputType::out_fibDir,       std::make_tuple(OutputType::outGrp_fN,     0, nsd,           "Fiber_direction") },
+  {OutputType::out_fibStrn,      std::make_tuple(OutputType::outGrp_fS,     0, 1,             "Fiber_shortening") },
+
   {OutputType::out_heatFlux,     std::make_tuple(OutputType::outGrp_hFlx,   0, nsd,           "Heat_flux") },
   {OutputType::out_integ,        std::make_tuple(OutputType::outGrp_I,      0,   1, nsd == 2 ?  "Area" : "Volume") },
   {OutputType::out_jacobian,     std::make_tuple(OutputType::outGrp_J,      0,   1,             "Jacobian") },
