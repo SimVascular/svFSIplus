@@ -46,6 +46,11 @@ void construct_contact_pnlty(ComMod& com_mod, CmMod& cm_mod, const Array<double>
   int k = j + 1;
   double kl = cntctM.k;
   double hl = cntctM.h;
+  #ifdef debug_construct_contact_pnlty
+  //dmsg << "kl: " << kl;
+  //dmsg << "hl: " << hl;
+  //dmsg << "cntctM.c: " << cntctM.c;
+  #endif
 
   // Compute normal vectors at each node in the current configuration
   //
@@ -75,7 +80,6 @@ void construct_contact_pnlty(ComMod& com_mod, CmMod& cm_mod, const Array<double>
 
       Vector<double> nV1(nsd);
       nn::gnns(nsd, eNoN, Nx, xl, nV1, gCov, gCnv);
-      //CALL GNNS(eNoN, Nx, xl, nV1, gCov, gCnv)
       double Jac = sqrt(utils::norm(nV1));
       nV1 = nV1 / Jac;
 
@@ -89,7 +93,6 @@ void construct_contact_pnlty(ComMod& com_mod, CmMod& cm_mod, const Array<double>
           for (int i = 0; i < nsd; i++) {
             sF(i,Ac) = sF(i,Ac) + w*N(a)*nV1(i);
           }
-          //sF(:,Ac) = sF(:,Ac) + w*N(a)*nV1(:)
         }
       }
     }
@@ -97,37 +100,28 @@ void construct_contact_pnlty(ComMod& com_mod, CmMod& cm_mod, const Array<double>
 
   all_fun::commu(com_mod, sF);
   all_fun::commu(com_mod, sA);
-  //CALL COMMU(sF)
-  //CALL COMMU(sA)
 
   for (int Ac = 0; Ac < tnNo; Ac++) {
     if (!utils::is_zero(sA(Ac))) {
       for (int i = 0; i < nsd; i++) {
         sF(i,Ac) = sF(i,Ac) / sA(Ac);
       }
-      //sF(:,Ac) = sF(:,Ac)/sA(Ac)
     }
 
     double Jac = sqrt(sF.col(Ac) * sF.col(Ac));
-    //Jac = sqrt(SUM(sF(:,Ac)**2))
 
     if (!utils::is_zero(Jac)) {
       for (int i = 0; i < nsd; i++) {
         sF(i,Ac) = sF(i,Ac) / Jac;
       }
-      //sF(:,Ac) = sF(:,Ac) / Jac
     }
   }
 
   // Create a bounding box around possible region of contact and bin
   // the box with neighboring nodes
   //
-  // [TODO:DaveP] I'm not sure what to do here, what this code
-  // is actually doing. Probably just move it to a subroutine.
-  //
   int maxNnb = 15;
   label_101: maxNnb = maxNnb + 5;
-  //dmsg << "maxNnb: " << maxNnb;
 
   Array<int> bBox(maxNnb,tnNo);
   bBox = -1;
@@ -170,12 +164,9 @@ void construct_contact_pnlty(ComMod& com_mod, CmMod& cm_mod, const Array<double>
           if ((x2(0) >= xmin(0)) && (x2(0) <= xmax(0)) && (x2(1) >= xmin(1)) && (x2(1) <= xmax(1)) && 
               (x2(2) >= xmin(2)) && (x2(2) <= xmax(2))) {
 
-            //dmsg << "          " << " ";
-            //dmsg << "------ b: " << b+1;
-            //dmsg << "Bc: " << Bc+1;
+            int l = 0;
 
-            for (int l = 0; l < maxNnb; l++) {
-              //dmsg << "bBox(l,Ac): " << bBox(l,Ac);
+            for (int i = 0; i < maxNnb; i++, l++) {
               if (bBox(l,Ac) == -1) {
                 bBox(l,Ac) = Bc;
                 break; 
@@ -191,14 +182,12 @@ void construct_contact_pnlty(ComMod& com_mod, CmMod& cm_mod, const Array<double>
               if (bBox(maxNnb-1,Ac) != -1) goto label_101;
 
               for (int m = maxNnb-1; m >= l; m--) {
-                //dmsg << "m: " << m+1;
                 bBox(m,Ac) = bBox(m-1,Ac);
               }
               bBox(l,Ac) = Bc;
               break; 
             }
-            // can't happen ?
-            // if (l > maxNnb-1) goto label_101;
+            if (l > maxNnb-1) goto label_101;
           }
         } // b
       } // jM
@@ -209,7 +198,7 @@ void construct_contact_pnlty(ComMod& com_mod, CmMod& cm_mod, const Array<double>
   // corresponding penalty forces assembled to the residue
   //
   Array<double> lR(dof,tnNo); 
-  Vector<double> incNd(tnNo);
+  Vector<int> incNd(tnNo);
   Vector<double> x1(nsd), x2(nsd);
 
   for (int Ac = 0; Ac < tnNo; Ac++) {
@@ -227,9 +216,9 @@ void construct_contact_pnlty(ComMod& com_mod, CmMod& cm_mod, const Array<double>
       if (Bc == -1) {
         continue; 
       }
-      x2(0)  = com_mod.x(0,Bc) + Dg(i,Bc);
-      x2(1)  = com_mod.x(1,Bc) + Dg(j,Bc);
-      x2(2)  = com_mod.x(2,Bc) + Dg(k,Bc);
+      x2(0) = com_mod.x(0,Bc) + Dg(i,Bc);
+      x2(1) = com_mod.x(1,Bc) + Dg(j,Bc);
+      x2(2) = com_mod.x(2,Bc) + Dg(k,Bc);
       auto nV2 = sF.rcol(Bc);
 
       auto x12 = x1 - x2;
@@ -240,12 +229,12 @@ void construct_contact_pnlty(ComMod& com_mod, CmMod& cm_mod, const Array<double>
         double d = utils::norm(x12, nV2);
         bool flag = false;
         double pk{0.0};
-
+   
         if (d >= -cntctM.h && d < 0.0) {
-          pk = 0.5*kl/hl * pow(d + hl,2.0);
+          pk = 0.5 * (kl / hl) * pow(d+hl, 2.0);
           flag = true;
         } else if (d >= 0.0) {
-          pk = 0.5*kl * (hl + d);
+          pk = 0.5 * kl * (hl + d);
           flag = true;
         } else {
           pk = 0.0;
@@ -257,17 +246,26 @@ void construct_contact_pnlty(ComMod& com_mod, CmMod& cm_mod, const Array<double>
           for (int i = 0; i < nsd; i++) {
             lR(i,Ac) = lR(i,Ac) - pk*nV1(i);
           }
-          //lR(1:nsd,Ac) = lR(1:nsd,Ac) - pk*nV1(:)
+          #ifdef debug_construct_contact_pnlty
+          dmsg << "          " << " ";
+          dmsg << "Ac: " << Ac+1;
+          dmsg << "Bc: " << Bc+1;
+          dmsg << "nV1: " << nV1;
+          dmsg << "nV2: " << nV2;
+          dmsg << "pk: " << pk;
+          dmsg << "x12: " << x12;
+          dmsg << "d: " << d;
+          #endif
         }
       }
     }
 
-   if (nNb != 0) {
-     for (int i = 0; i < dof; i++) {
-       lR(i,Ac) = lR(i,Ac) / static_cast<double>(nNb);
-     }
-     //lR(:,Ac) = lR(:,Ac) / REAL(nNb, KIND=RKIND)
+    if (nNb != 0) {
+      for (int i = 0; i < dof; i++) {
+        lR(i,Ac) = lR(i,Ac) / static_cast<double>(nNb);
+      }
     }
+
   }
 
   // Return if no penalty forces are to be added
@@ -276,6 +274,7 @@ void construct_contact_pnlty(ComMod& com_mod, CmMod& cm_mod, const Array<double>
   }
 
   // Global assembly
+  //
   for (int Ac = 0; Ac < tnNo; Ac++) {
     if (incNd(Ac) == 0) {
       continue;
@@ -283,11 +282,8 @@ void construct_contact_pnlty(ComMod& com_mod, CmMod& cm_mod, const Array<double>
     for (int i = 0; i < dof; i++) {
       com_mod.R(i,Ac) = com_mod.R(i,Ac) + lR(i,Ac);
     }
-    //R(:,Ac) = R(:,Ac) + lR(:,Ac)
   }
 
-  //std::cout << "com_mod.R: " << com_mod.R << std::endl;
-  //exit(0);
 }
 
 };

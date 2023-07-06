@@ -159,6 +159,11 @@ void Parameters::read_xml(std::string file_name)
 void Parameters::set_contact_values(tinyxml2::XMLElement* root_element)
 {
   auto item = root_element->FirstChildElement(ContactParameters::xml_element_name_.c_str());
+  
+  if (item == nullptr) {
+    return;
+  }
+
   contact_parameters.set_values(item);
 }
 

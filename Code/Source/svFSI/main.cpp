@@ -329,6 +329,14 @@ void iterate_solution(Simulation* simulation)
       //
       if (com_mod.iCntct) {
         contact::construct_contact_pnlty(com_mod, cm_mod, Dg);
+
+#if 0
+        if (cTS <= 2050) {
+          Array<double>::write_enabled = true;
+          com_mod.R.write("R_"+ std::to_string(cTS));
+          //exit(0);
+        }
+#endif
       }
 
       // Synchronize R across processes. Note: that it is important
