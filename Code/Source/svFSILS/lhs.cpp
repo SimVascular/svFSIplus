@@ -3,6 +3,7 @@
 
 #include "lhs.h"
 #include "CmMod.h"
+#include "DebugMsg.h"
 
 #include "mpi.h"
 

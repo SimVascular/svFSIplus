@@ -75,6 +75,14 @@ const std::map<std::string,ConstitutiveModelType> constitutive_model_name_to_typ
 
 };
 
+// Map for contact model string name to ContacteModelType.
+const std::map<std::string,ContactModelType> contact_model_name_to_type =
+{
+  {"penalty", ContactModelType::cntctM_penalty},
+  {"potential", ContactModelType::cntctM_potential},
+};
+
+
 //------------------------------------
 // fluid_viscosity_model_name_to_type
 //------------------------------------

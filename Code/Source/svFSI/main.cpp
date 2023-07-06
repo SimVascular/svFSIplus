@@ -328,7 +328,15 @@ void iterate_solution(Simulation* simulation)
       // Apply contact model and add its contribution to residue
       //
       if (com_mod.iCntct) {
-        contact::contact_forces(com_mod, cm_mod, Dg);
+        contact::construct_contact_pnlty(com_mod, cm_mod, Dg);
+
+#if 0
+        if (cTS <= 2050) {
+          Array<double>::write_enabled = true;
+          com_mod.R.write("R_"+ std::to_string(cTS));
+          //exit(0);
+        }
+#endif
       }
 
       // Synchronize R across processes. Note: that it is important
@@ -648,15 +656,24 @@ int main(int argc, char *argv[])
 
     // Read in the solver commands .xml file.
     //
+    #ifdef debug_main
+    dmsg << "Read files " << " ... ";
+    #endif
     read_files(simulation, file_name);
 
     // Distribute data to processors.
+    #ifdef debug_main
+    dmsg << "Distribute data to processors " << " ... ";
+    #endif
     distribute(simulation);
 
     // Initialize simulation data.
     //
     Vector<double> init_time(3);
 
+    #ifdef debug_main
+    dmsg << "Initialize " << " ... ";
+    #endif
     initialize(simulation, init_time);
 
     #ifdef debug_main
