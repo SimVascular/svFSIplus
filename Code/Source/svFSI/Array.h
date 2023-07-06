@@ -907,6 +907,21 @@ class Array
       return *this;
     }
 
+    //--------
+    // negate 
+    //--------
+    //
+    Array<T> operator-() const 
+    {
+      Array<T> result(nrows_, ncols_);
+      for (int j = 0; j < ncols_; j++) {
+        for (int i = 0; i < nrows_; i++) {
+          result(i,j) = -(data_[i + j*nrows_]);
+        }
+      }
+      return result;
+    }
+
     // Compound subtract assignment. 
     //
     Array<T> operator-=(const T value) const
@@ -996,7 +1011,7 @@ class Array
       return sum;
     }
 
-    T* data() { 
+    T* data() const { 
       return data_;
     }
 

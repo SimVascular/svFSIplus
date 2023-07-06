@@ -649,6 +649,32 @@ double mat_trace(const Array<double>& A, const int nd)
   return result;
 }
 
+//-----------------
+// ten_asym_prod12
+//-----------------
+// Create a 4th order tensor from antisymmetric outer product of
+// two matrices
+//
+//   Cijkl = Aij*Bkl-Ail*Bjk
+//
+Tensor4<double> 
+ten_asym_prod12(const Array<double>& A, const Array<double>& B, const int nd)
+{
+  Tensor4<double> C(nd,nd,nd,nd);
+
+  int nn = pow(nd,4);
+
+  for (int ii = 0; ii < nn; ii) { 
+    int i = t_ind(0,ii);
+    int j = t_ind(1,ii);
+    int k = t_ind(2,ii);
+    int l = t_ind(3,ii);
+    C(i,j,k,l) = 0.5 * ( A(i,j)*B(k,l) - A(i,l)*B(j,k) );
+  }
+
+  return C;
+}
+
 //----------
 // ten_ddot
 //----------
@@ -863,6 +889,39 @@ ten_ids(const int nd)
 
   return A;
 }
+
+//-----------
+// ten_mddot
+//-----------
+// Double dot product of a 4th order tensor and a 2nd order tensor
+//
+//   C_ij = (A_ijkl * B_kl)
+//
+Array<double> 
+ten_mddot(const Tensor4<double>& A, const Array<double>& B, const int nd) 
+{
+  Array<double> C(nd,nd);
+
+  if (nd == 2) {
+    for (int i = 0; i < nd; i++) {
+      for (int j = 0; j < nd; j++) {
+        C(i,j) = A(i,j,0,0)*B(0,0) + A(i,j,0,1)*B(0,1) + A(i,j,1,0)*B(1,0) + A(i,j,1,1)*B(1,1);
+      }
+    }
+
+  } else { 
+    for (int i = 0; i < nd; i++) {
+      for (int j = 0; j < nd; j++) {
+        C(i,j) = A(i,j,0,0)*B(0,0) + A(i,j,0,1)*B(0,1) + A(i,j,0,2)*B(0,2) + A(i,j,1,0)*B(1,0) + 
+            A(i,j,1,1)*B(1,1) + A(i,j,1,2)*B(1,2) + A(i,j,2,0)*B(2,0) + A(i,j,2,1)*B(2,1) + 
+            A(i,j,2,2)*B(2,2);
+        }
+     }
+  }
+
+  return C;
+}
+
 
 //---------------
 // ten_symm_prod

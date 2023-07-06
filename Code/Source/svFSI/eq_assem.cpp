@@ -16,6 +16,7 @@
 #include "heats.h"
 #include "l_elas.h"
 #include "mesh.h"
+#include "shells.h"
 #include "stokes.h"
 #include "sv_struct.h"
 #include "ustruct.h"
@@ -352,7 +353,7 @@ void global_eq_assem(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const 
     break;
 
     case EquationType::phys_shell:
-      throw std::runtime_error("[global_eq_assem] phys_shell not implemented.");
+      shells::construct_shell(com_mod, lM, Ag, Yg, Dg);
     break;
 
     case EquationType::phys_FSI:
