@@ -13,7 +13,8 @@ void fluid_3d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
   double start_time = utils::cput();
   #endif
 
-  const int MAX_SIZE = 10;
+  // Maximum size of arrays sized by (3,eNoNw) -> (3,MAX_SIZE).
+  const int MAX_SIZE = 8;
 
   using namespace consts;
 

@@ -1188,12 +1188,14 @@ void fluid_2d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
   }
 }
 
+#include "fluid_3d_c.cpp"
+
 //-----------
 // fluid_3d_c
 //-----------
 // Element continuity residue.
 //
-void fluid_3d_c(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int eNoNq, const double w, 
+void fluid_3d_c_orig(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int eNoNq, const double w, 
     const Array<double>& Kxi, const Vector<double>& Nw, const Vector<double>& Nq, const Array<double>& Nwx, 
     const Array<double>& Nqx, const Array<double>& Nwxx, const Array<double>& al, const Array<double>& yl, 
     const Array<double>& bfl, Array<double>& lR, Array3<double>& lK)
@@ -1486,7 +1488,7 @@ void fluid_3d_c(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
   }
 }
 
-#include "flud.cpp"
+#include "fluid_3d_m.cpp"
 
 //------------
 // fluid_3d_m
