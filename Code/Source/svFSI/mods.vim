@@ -1,14 +1,12 @@
 #!/usr/bin/vim -s
-:%s/rM(0,0)/rM[0][0]/g
-:%s/rM(0,1)/rM[0][1]/g
-:%s/rM(0,2)/rM[0][2]/g
+:%s/updu(0,0,b)/updu[0][0][b]/g
+:%s/updu(1,0,b)/updu[1][0][b]/g
+:%s/updu(2,0,b)/updu[2][0][b]/g
 
-:%s/rM(1,0)/rM[1][0]/g
-:%s/rM(1,1)/rM[1][1]/g
-:%s/rM(1,2)/rM[1][2]/g
+:%s/updu(0,1,b)/updu[0][1][b]/g
+:%s/updu(1,1,b)/updu[1][1][b]/g
+:%s/updu(2,1,b)/updu[2][1][b]/g
 
-:%s/rM(2,0)/rM[2][0]/g
-:%s/rM(2,1)/rM[2][1]/g
-:%s/rM(2,2)/rM[2][2]/g
-
-
+:%s/updu(0,2,b)/updu[0][2][b]/g
+:%s/updu(1,2,b)/updu[1][2][b]/g
+:%s/updu(2,2,b)/updu[2][2][b]/g
