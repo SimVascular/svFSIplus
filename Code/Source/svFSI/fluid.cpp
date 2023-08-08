@@ -1568,7 +1568,7 @@ void fluid_3d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
     ux(1,2) = ux(1,2) + Nwx(1,a)*yl(2,a);
     ux(2,2) = ux(2,2) + Nwx(2,a)*yl(2,a);
 
-    uxx(0,0,1) = uxx(0,0,0) + Nwxx(0,a)*yl(0,a);
+    uxx(0,0,0) = uxx(0,0,0) + Nwxx(0,a)*yl(0,a);
     uxx(1,0,1) = uxx(1,0,1) + Nwxx(1,a)*yl(0,a);
     uxx(2,0,2) = uxx(2,0,2) + Nwxx(2,a)*yl(0,a);
     uxx(1,0,0) = uxx(1,0,0) + Nwxx(3,a)*yl(0,a);
