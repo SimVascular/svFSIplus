@@ -1486,6 +1486,8 @@ void fluid_3d_c(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
   }
 }
 
+#include "flud.cpp"
+
 //------------
 // fluid_3d_m
 //------------
@@ -1495,7 +1497,7 @@ void fluid_3d_c(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
 //    lR(dof,eNoN)  - Residue
 //    lK(dof*dof,eNoN,eNoN) - Stiffness matrix
 //
-void fluid_3d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int eNoNq, const double w, 
+void fluid_3d_m_orig(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int eNoNq, const double w, 
     const Array<double>& Kxi, const Vector<double>& Nw, const Vector<double>& Nq, const Array<double>& Nwx, 
     const Array<double>& Nqx, const Array<double>& Nwxx, const Array<double>& al, const Array<double>& yl, 
     const Array<double>& bfl, Array<double>& lR, Array3<double>& lK)
@@ -1710,7 +1712,7 @@ void fluid_3d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
   // The returned mu_g := (d\mu / d\gamma)
   //
   double mu, mu_s, mu_g;
-  get_viscosity(com_mod, dmn, gam, mu, mu_s, mu_g);
+  fluid::get_viscosity(com_mod, dmn, gam, mu, mu_s, mu_g);
 
   if (utils::is_zero(gam)) {
      mu_g = 0.0;

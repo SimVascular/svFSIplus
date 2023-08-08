@@ -65,13 +65,29 @@ void fsils_spar_mul_sv(FSILS_lhsType& lhs, const Array<int>& rowPtr, const Vecto
     } break; 
 
     case 3: {
+      auto KU_data = KU.data();
+      auto nr_ku = KU.nrows();
+      auto nc_ku = KU.ncols();
+      //data_[row + col*nr_ku]
+
+      auto K_data = K.data();
+      auto nr_k = K.nrows();
+      auto nc_k = K.ncols();
+      //K_data[row + col*nr_k]
+
+      auto U_data = U.data();
+
       for (int i = 0; i < nNo; i++) {
         for (int j = rowPtr(0,i); j <= rowPtr(1,i); j++) {
           int col = colPtr(j);
-          KU(0,i) += K(0,j) * U(col);
-          KU(1,i) += K(1,j) * U(col);
-          KU(2,i) += K(2,j) * U(col);
+          KU_data[0] += K_data[0+j*nr_k] * U_data[col];
+          KU_data[1] += K_data[1+j*nr_k] * U_data[col];
+          KU_data[2] += K_data[2+j*nr_k] * U_data[col];
+          //KU(0,i) += K(0,j) * U_data[col];
+          //KU(1,i) += K(1,j) * U_data[col];
+          //KU(2,i) += K(2,j) * U_data[col];
         }
+        KU_data += nr_ku;
       }
     } break; 
 
