@@ -12,6 +12,10 @@
 #include "nn.h"
 #include "utils.h"
 
+#ifdef WITH_TRILINOS
+#include "trilinos_linear_solver.h"
+#endif
+
 namespace shells {
 
 //-----------------
@@ -163,7 +167,7 @@ void construct_shell(ComMod& com_mod, const mshType& lM, const Array<double>& Ag
     // Assembly
 #ifdef WITH_TRILINOS
     if (eq.assmTLS) {
-      trilinos_doassem_(eNoN, ptr, lK, lR);
+      trilinos_doassem_(const_cast<int&>(eNoN), const_cast<int*>(ptr.data()), lK.data(), lR.data());
     } else {
 #endif
      lhsa_ns::do_assem(com_mod, eNoN, ptr, lK, lR);
@@ -1650,7 +1654,7 @@ void shell_cst(ComMod& com_mod, const mshType& lM, const int e, const int eNoN, 
 
 #ifdef WITH_TRILINOS
   if (eq.assmTLS) { 
-    trilinos_doassem_(eNoN, ptr, lK, lR);
+    trilinos_doassem_(const_cast<int&>(eNoN), const_cast<int*>(ptr.data()), lK.data(), lR.data());
   } else { 
 #endif
     lhsa_ns::do_assem(com_mod, eNoN, ptr, lK, lR);
