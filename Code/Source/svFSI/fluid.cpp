@@ -577,7 +577,7 @@ void construct_fluid(ComMod& com_mod, const mshType& lM, const Array<double>& Ag
 
     for (int g = 0; g < fs[0].nG; g++) {
       if (g == 0 || !fs[1].lShpF) {
-        auto Nx = fs[1].Nx.slice(g);
+        auto Nx = fs[1].Nx.rslice(g);
         nn::gnn(fs[1].eNoN, nsd, nsd, Nx, xql, Nqx, Jac, ksix);
         if (utils::is_zero(Jac)) {
            throw std::runtime_error("[construct_fluid] Jacobian for element " + std::to_string(e) + " is < 0.");
@@ -585,15 +585,15 @@ void construct_fluid(ComMod& com_mod, const mshType& lM, const Array<double>& Ag
       }
 
       if (g == 0 || !fs[0].lShpF) {
-        auto Nx = fs[0].Nx.slice(g);
+        auto Nx = fs[0].Nx.rslice(g);
         nn::gnn(fs[0].eNoN, nsd, nsd, Nx, xwl, Nwx, Jac, ksix);
         if (utils::is_zero(Jac)) {
            throw std::runtime_error("[construct_fluid] Jacobian for element " + std::to_string(e) + " is < 0.");
         }
 
         if (!vmsStab) {
-          auto Nx = fs[0].Nx.slice(g);
-          auto Nxx = fs[0].Nxx.slice(g);
+          auto Nx = fs[0].Nx.rslice(g);
+          auto Nxx = fs[0].Nxx.rslice(g);
           nn::gn_nxx(l, fs[0].eNoN, nsd, nsd, Nx, Nxx, xwl, Nwx, Nwxx); 
         }
       }
@@ -603,13 +603,13 @@ void construct_fluid(ComMod& com_mod, const mshType& lM, const Array<double>& Ag
       // Compute momentum residual and tangent matrix.
       //
       if (nsd == 3) {
-        auto N0 = fs[0].N.col(g); 
-        auto N1 = fs[1].N.col(g); 
+        auto N0 = fs[0].N.rcol(g); 
+        auto N1 = fs[1].N.rcol(g); 
         fluid_3d_m(com_mod, vmsStab, fs[0].eNoN, fs[1].eNoN, w, ksix, N0, N1, Nwx, Nqx, Nwxx, al, yl, bfl, lR, lK);
 
       } else if (nsd == 2) {
-        auto N0 = fs[0].N.col(g); 
-        auto N1 = fs[1].N.col(g); 
+        auto N0 = fs[0].N.rcol(g); 
+        auto N1 = fs[1].N.rcol(g); 
         fluid_2d_m(com_mod, vmsStab, fs[0].eNoN, fs[1].eNoN, w, ksix, N0, N1, Nwx, Nqx, Nwxx, al, yl, bfl, lR, lK);
       }
     } // g: loop
@@ -622,7 +622,7 @@ void construct_fluid(ComMod& com_mod, const mshType& lM, const Array<double>& Ag
     //
     for (int g = 0; g < fs[1].nG; g++) {
       if (g == 0 || !fs[0].lShpF) {
-        auto Nx = fs[0].Nx.slice(g);
+        auto Nx = fs[0].Nx.rslice(g);
         nn::gnn(fs[0].eNoN, nsd, nsd, Nx, xwl, Nwx, Jac, ksix);
 
         if (utils::is_zero(Jac)) {
@@ -631,7 +631,7 @@ void construct_fluid(ComMod& com_mod, const mshType& lM, const Array<double>& Ag
       }
 
       if (g == 0 || !fs[1].lShpF) {
-        auto Nx = fs[1].Nx.slice(g);
+        auto Nx = fs[1].Nx.rslice(g);
         nn::gnn(fs[1].eNoN, nsd, nsd, Nx, xql, Nqx, Jac, ksix);
 
         if (utils::is_zero(Jac)) {
@@ -643,13 +643,13 @@ void construct_fluid(ComMod& com_mod, const mshType& lM, const Array<double>& Ag
       // Compute continuity residual and tangent matrix.
       //
       if (nsd == 3) {
-        auto N0 = fs[0].N.col(g); 
-        auto N1 = fs[1].N.col(g); 
+        auto N0 = fs[0].N.rcol(g); 
+        auto N1 = fs[1].N.rcol(g); 
         fluid_3d_c(com_mod, vmsStab, fs[0].eNoN, fs[1].eNoN, w, ksix, N0, N1, Nwx, Nqx, Nwxx, al, yl, bfl, lR, lK);
 
       } else if (nsd == 2) {
-        auto N0 = fs[0].N.col(g); 
-        auto N1 = fs[1].N.col(g); 
+        auto N0 = fs[0].N.rcol(g); 
+        auto N1 = fs[1].N.rcol(g); 
         fluid_2d_c(com_mod, vmsStab, fs[0].eNoN, fs[1].eNoN, w, ksix, N0, N1, Nwx, Nqx, Nwxx, al, yl, bfl, lR, lK);
       }
 
