@@ -33,7 +33,7 @@ void fsils_spar_mul_ss(FSILS_lhsType& lhs, const Array<int>& rowPtr, const Vecto
 }
 
 // If definded then use raw data for array operations.
-#define n_fsils_spar_mul_sv_use_raw_data
+#define fsils_spar_mul_sv_use_raw_data
 
 //-------------------
 // fsils_spar_mul_sv
