@@ -66,7 +66,7 @@ void bc_pre(fsi_linear_solver::FSILS_lhsType& lhs, fsi_linear_solver::FSILS_subL
 //
 // Reproduces the Fortran 'GMRES' subroutine.
 //
-void gmres(fsi_linear_solver::FSILS_lhsType& lhs, fsi_linear_solver::FSILS_subLsType& ls, const int dof, 
+void gmres_new(fsi_linear_solver::FSILS_lhsType& lhs, fsi_linear_solver::FSILS_subLsType& ls, const int dof, 
     const Array<double>& Val, const Array<double>& R, Array<double>& X)
 {
   #define n_debug_gmres
@@ -151,10 +151,10 @@ void gmres(fsi_linear_solver::FSILS_lhsType& lhs, fsi_linear_solver::FSILS_subLs
     #endif
 
     ls.dB = ls.fNorm;
-    auto u_slice = u.rslice(0);
-    u_slice = u_slice / err(0);
-    //auto u_slice = u.slice(0) / err(0);
-    //u.set_slice(0, u_slice);
+    //auto u_slice = u.rslice(0);
+    //u_slice = u_slice / err(0);
+    auto u_slice = u.slice(0) / err(0);
+    u.set_slice(0, u_slice);
 
     for (int i = 0; i < ls.sD; i++) {
       #ifdef debug_gmres
@@ -201,6 +201,204 @@ void gmres(fsi_linear_solver::FSILS_lhsType& lhs, fsi_linear_solver::FSILS_subLs
       u_slice_1 = u.rslice(i+1);
       omp_la::omp_mul_v(dof, nNo, 1.0/h(i+1,i), u_slice_1);
       //u.set_slice(i+1, u_slice_1);
+
+      for (int j = 0; j <= i-1; j++) {
+        double tmp = c(j)*h(j,i) + s(j)*h(j+1,i);
+        h(j+1,i) = -s(j)*h(j,i) + c(j)*h(j+1,i);
+        h(j,i) = tmp;
+      }
+
+      double tmp = sqrt(h(i,i)*h(i,i) + h(i+1,i)*h(i+1,i));
+      c(i) = h(i,i) / tmp;
+      s(i) = h(i+1,i) / tmp;
+      h(i,i) = tmp;
+      h(i+1,i) = 0.0;
+      err(i+1) = -s(i)*err(i);
+      err(i) = c(i)*err(i);
+      #ifdef debug_gmres
+      dmsg;
+      dmsg << "tmp: " << tmp;
+      dmsg << "err(i): " << err(i);
+      dmsg << "err(i+1): " << err(i+1);
+      dmsg << "eps: " << eps;
+      #endif
+
+      if (fabs(err(i+1)) < eps) {
+        ls.suc = true;
+        break;
+      }
+    } // for int i = 0; i < ls.sD
+
+    if (last_i >= ls.sD) {
+      last_i = ls.sD - 1;
+    }
+
+    for (int i = 0; i <= last_i; i++) {
+      y(i) = err(i);
+    }
+
+    for (int j = last_i; j >= 0; j--) { 
+      for (int k = j+1; k <= last_i; k++) {
+        y(j) = y(j) - h(j,k)*y(k);
+      }
+      y(j) = y(j) / h(j,j);
+    }
+
+    for (int j = 0; j <= last_i; j++) {
+      omp_la::omp_sum_v(dof, nNo, y(j), X, u.rslice(j));
+    }
+
+    ls.fNorm = fabs(err(last_i+1));
+    if (ls.suc) {
+      break;
+    }
+
+  } // for l = 0; l < ls.mItr
+
+  ls.callD = fsi_linear_solver::fsils_cpu_t() - time + ls.callD;
+  ls.dB  = 10.0 * log(ls.fNorm / ls.dB);
+
+  #ifdef debug_gmres
+  dmsg << "Done";
+  #endif
+}
+
+//-------
+// gmres
+//-------
+// Solver the system Val * X = R.
+//
+// Reproduces the Fortran 'GMRES' subroutine.
+//
+void gmres(fsi_linear_solver::FSILS_lhsType& lhs, fsi_linear_solver::FSILS_subLsType& ls, const int dof, 
+    const Array<double>& Val, const Array<double>& R, Array<double>& X)
+{
+  #define n_debug_gmres
+  #ifdef debug_gmres
+  DebugMsg dmsg(__func__,  lhs.commu.task);
+  dmsg.banner();
+  #endif
+
+  using namespace fsi_linear_solver;
+
+  int nNo = lhs.nNo;
+  int mynNo = lhs.mynNo;
+  #ifdef debug_gmres
+  dmsg << "dof: " << dof;
+  dmsg << "nNo: " << nNo;
+  dmsg << "mynNo: " << mynNo;
+  dmsg << "ls.sD: " << ls.sD;
+  dmsg << "ls.mItr: " << ls.mItr;
+  dmsg << "ls.absTol: " << ls.absTol;
+  dmsg << "ls.relTol: " << ls.relTol;
+  #endif
+
+  Array<double> h(ls.sD+1,ls.sD); 
+  Array3<double> u(dof,nNo,ls.sD+1); 
+  Array<double> unCondU(dof,nNo);
+  Vector<double> y(ls.sD), c(ls.sD), s(ls.sD), err(ls.sD+1);
+
+  double time = fsi_linear_solver::fsils_cpu_t(); 
+  ls.suc = false;
+  double eps = 0.0;
+  int last_i = 0;
+  X = 0.0;
+
+  for (int l = 0; l < ls.mItr; l++) {
+    #ifdef debug_gmres
+    dmsg;
+    dmsg << "---------- l " << l+1 << " ----------";
+    #endif
+
+    if (l == 0) {
+      u.set_slice(0, R);
+    } else {
+      auto u_slice = u.rslice(0);
+      spar_mul::fsils_spar_mul_vv(lhs, lhs.rowPtr, lhs.colPtr, dof,  Val, X, u_slice);
+
+      add_bc_mul::add_bc_mul(lhs, BcopType::BCOP_TYPE_ADD, dof, X, u_slice);
+
+      ls.itr = ls.itr + 1;
+      u.set_slice(0, R - u_slice);
+    }
+
+    for (auto& face : lhs.face) {
+      if (face.coupledFlag) {
+        auto u_slice = u.rslice(0);
+        auto unCondU = u.rslice(0);
+        add_bc_mul::add_bc_mul(lhs, BcopType::BCOP_TYPE_PRE, dof, unCondU, u_slice);
+        break; 
+      }
+    }
+
+    err[0] = norm::fsi_ls_normv(dof, mynNo, lhs.commu, u.rslice(0));
+    #ifdef debug_gmres
+    dmsg << "err(1): " << err[0];
+    #endif
+
+    if (l == 0) {
+      eps = err[0];
+
+      if (eps <= ls.absTol) {
+        ls.callD = std::numeric_limits<double>::epsilon();
+        ls.dB = 0.0;
+        return; 
+      }
+
+      ls.iNorm = eps;
+      ls.fNorm = eps;
+      eps = std::max(ls.absTol, ls.relTol*eps);
+    }
+    #ifdef debug_gmres
+    dmsg << "eps: " << eps;
+    #endif
+
+    ls.dB = ls.fNorm;
+    auto u_slice = u.rslice(0);
+    u_slice = u_slice / err(0);
+
+    for (int i = 0; i < ls.sD; i++) {
+      #ifdef debug_gmres
+      dmsg;
+      dmsg << "----- i " << i+1 << " -----";
+      #endif
+      last_i = i;
+      auto u_slice = u.rslice(i);
+      auto u_slice_1 = u.rslice(i+1);
+      spar_mul::fsils_spar_mul_vv(lhs, lhs.rowPtr, lhs.colPtr, dof,  Val, u_slice, u_slice_1);
+
+      add_bc_mul::add_bc_mul(lhs, BcopType::BCOP_TYPE_ADD, dof, u_slice, u_slice_1);
+
+      ls.itr = ls.itr + 1;
+
+      for (auto& face : lhs.face) {
+        if (face.coupledFlag) {
+          auto u_slice_1 = u.rslice(i+1);
+          auto unCondU = u.rslice(i+1);
+          add_bc_mul::add_bc_mul(lhs, BcopType::BCOP_TYPE_PRE, dof, unCondU, u_slice_1);
+          break;
+        }
+      }
+
+      for (int j = 0; j <= i+1; j++) {
+        h(j,i) = dot::fsils_nc_dot_v(dof, mynNo, u.rslice(j), u.rslice(i+1));
+      }
+
+      // h_col is modofied here so don't use 'rcol() method'.
+      auto h_col = h.col(i);
+      bcast::fsils_bcast_v(i+2, h_col, lhs.commu);
+      h.set_col(i, h_col);
+
+      for (int j = 0; j <= i; j++) {
+        auto u_slice_1 = u.rslice(i+1);
+        omp_la::omp_sum_v(dof, nNo, -h(j,i), u_slice_1, u.rslice(j));
+        h(i+1,i) = h(i+1,i) - h(j,i)*h(j,i);
+      }
+
+      h(i+1,i) = sqrt(fabs(h(i+1,i)));
+
+      u_slice_1 = u.rslice(i+1);
+      omp_la::omp_mul_v(dof, nNo, 1.0/h(i+1,i), u_slice_1);
 
       for (int j = 0; j <= i-1; j++) {
         double tmp = c(j)*h(j,i) + s(j)*h(j+1,i);
