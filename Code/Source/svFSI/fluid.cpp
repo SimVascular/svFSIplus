@@ -605,12 +605,14 @@ void construct_fluid(ComMod& com_mod, const mshType& lM, const Array<double>& Ag
       if (nsd == 3) {
         auto N0 = fs[0].N.rcol(g); 
         auto N1 = fs[1].N.rcol(g); 
-        fluid_3d_m(com_mod, vmsStab, fs[0].eNoN, fs[1].eNoN, w, ksix, N0, N1, Nwx, Nqx, Nwxx, al, yl, bfl, lR, lK);
+        fluid_3d_m(com_mod, vmsStab, fs[0].eNoN, fs[1].eNoN, w, ksix, N0, N1, 
+            Nwx, Nqx, Nwxx, al, yl, bfl, lR, lK);
 
       } else if (nsd == 2) {
         auto N0 = fs[0].N.rcol(g); 
         auto N1 = fs[1].N.rcol(g); 
-        fluid_2d_m(com_mod, vmsStab, fs[0].eNoN, fs[1].eNoN, w, ksix, N0, N1, Nwx, Nqx, Nwxx, al, yl, bfl, lR, lK);
+        fluid_2d_m(com_mod, vmsStab, fs[0].eNoN, fs[1].eNoN, w, ksix, N0, N1, 
+            Nwx, Nqx, Nwxx, al, yl, bfl, lR, lK);
       }
     } // g: loop
 
@@ -1188,14 +1190,12 @@ void fluid_2d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
   }
 }
 
-#include "fluid_3d_c.cpp"
-
 //-----------
 // fluid_3d_c
 //-----------
 // Element continuity residue.
 //
-void fluid_3d_c_orig(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int eNoNq, const double w, 
+void fluid_3d_c(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int eNoNq, const double w, 
     const Array<double>& Kxi, const Vector<double>& Nw, const Vector<double>& Nq, const Array<double>& Nwx, 
     const Array<double>& Nqx, const Array<double>& Nwxx, const Array<double>& al, const Array<double>& yl, 
     const Array<double>& bfl, Array<double>& lR, Array3<double>& lK)
@@ -1209,6 +1209,9 @@ void fluid_3d_c_orig(ComMod& com_mod, const int vmsFlag, const int eNoNw, const 
   dmsg << "eNoNq: " << eNoNq;
   double start_time = utils::cput();
   #endif
+  
+  // Maximum size of arrays sized by (3,eNoNw) -> (3,MAX_SIZE).
+  const int MAX_SIZE = 8;
 
   using namespace consts;
 
@@ -1222,7 +1225,7 @@ void fluid_3d_c_orig(ComMod& com_mod, const int vmsFlag, const int eNoNw, const 
   const double ctC  = 36.0;
 
   double rho = dmn.prop[PhysicalProperyType::fluid_density];
-  std::array<double,3> f;
+  double f[3];
   f[0] = dmn.prop[PhysicalProperyType::f_x];
   f[1] = dmn.prop[PhysicalProperyType::f_y];
   f[2] = dmn.prop[PhysicalProperyType::f_z];
@@ -1236,10 +1239,10 @@ void fluid_3d_c_orig(ComMod& com_mod, const int vmsFlag, const int eNoNw, const 
   // fluid equation always come first
   // Velocity and its gradients, inertia (acceleration & body force)
   //
-  Vector<double> ud({-f[0], -f[1], -f[2]});
-  Vector<double> u(3);
-  Array<double> ux(3,3);
-  Array3<double> uxx(3,3,3);
+  double ud[3] = {-f[0], -f[1], -f[2]};
+  double u[3] = {0.0};
+  double ux[3][3] = {0.0};
+  double uxx[3][3][3] = {0.0};
 
   for (int a = 0; a < eNoNw; a++) {
     ud[0] = ud[0] + Nw(a)*(al(0,a)-bfl(0,a));
@@ -1250,60 +1253,60 @@ void fluid_3d_c_orig(ComMod& com_mod, const int vmsFlag, const int eNoNw, const 
     u[1] = u[1] + Nw(a)*yl(1,a);
     u[2] = u[2] + Nw(a)*yl(2,a);
 
-    ux(0,0) = ux(0,0) + Nwx(0,a)*yl(0,a);
-    ux(1,0) = ux(1,0) + Nwx(1,a)*yl(0,a);
-    ux(2,0) = ux(2,0) + Nwx(2,a)*yl(0,a);
-    ux(0,1) = ux(0,1) + Nwx(0,a)*yl(1,a);
-    ux(1,1) = ux(1,1) + Nwx(1,a)*yl(1,a);
-    ux(2,1) = ux(2,1) + Nwx(2,a)*yl(1,a);
-    ux(0,2) = ux(0,2) + Nwx(0,a)*yl(2,a);
-    ux(1,2) = ux(1,2) + Nwx(1,a)*yl(2,a);
-    ux(2,2) = ux(2,2) + Nwx(2,a)*yl(2,a);
+    ux[0][0] = ux[0][0] + Nwx(0,a)*yl(0,a);
+    ux[1][0] = ux[1][0] + Nwx(1,a)*yl(0,a);
+    ux[2][0] = ux[2][0] + Nwx(2,a)*yl(0,a);
+    ux[0][1] = ux[0][1] + Nwx(0,a)*yl(1,a);
+    ux[1][1] = ux[1][1] + Nwx(1,a)*yl(1,a);
+    ux[2][1] = ux[2][1] + Nwx(2,a)*yl(1,a);
+    ux[0][2] = ux[0][2] + Nwx(0,a)*yl(2,a);
+    ux[1][2] = ux[1][2] + Nwx(1,a)*yl(2,a);
+    ux[2][2] = ux[2][2] + Nwx(2,a)*yl(2,a);
 
-    uxx(0,0,1) = uxx(0,0,0) + Nwxx(0,a)*yl(0,a);
-    uxx(1,0,1) = uxx(1,0,1) + Nwxx(1,a)*yl(0,a);
-    uxx(2,0,2) = uxx(2,0,2) + Nwxx(2,a)*yl(0,a);
-    uxx(1,0,0) = uxx(1,0,0) + Nwxx(3,a)*yl(0,a);
-    uxx(2,0,1) = uxx(2,0,1) + Nwxx(4,a)*yl(0,a);
-    uxx(0,0,2) = uxx(0,0,2) + Nwxx(5,a)*yl(0,a);
+    uxx[0][0][1] += Nwxx(0,a)*yl(0,a);
+    uxx[1][0][1] += Nwxx(1,a)*yl(0,a);
+    uxx[2][0][2] += Nwxx(2,a)*yl(0,a);
+    uxx[1][0][0] += Nwxx(3,a)*yl(0,a);
+    uxx[2][0][1] += Nwxx(4,a)*yl(0,a);
+    uxx[0][0][2] += Nwxx(5,a)*yl(0,a);
 
-    uxx(0,1,0) = uxx(0,1,0) + Nwxx(0,a)*yl(1,a);
-    uxx(1,1,1) = uxx(1,1,1) + Nwxx(1,a)*yl(1,a);
-    uxx(2,1,2) = uxx(2,1,2) + Nwxx(2,a)*yl(1,a);
-    uxx(1,1,0) = uxx(1,1,0) + Nwxx(3,a)*yl(1,a);
-    uxx(2,1,1) = uxx(2,1,1) + Nwxx(4,a)*yl(1,a);
-    uxx(0,1,2) = uxx(0,1,2) + Nwxx(5,a)*yl(1,a);
+    uxx[0][1][0] += Nwxx(0,a)*yl(1,a);
+    uxx[1][1][1] += Nwxx(1,a)*yl(1,a);
+    uxx[2][1][2] += Nwxx(2,a)*yl(1,a);
+    uxx[1][1][0] += Nwxx(3,a)*yl(1,a);
+    uxx[2][1][1] += Nwxx(4,a)*yl(1,a);
+    uxx[0][1][2] += Nwxx(5,a)*yl(1,a);
 
-    uxx(0,2,0) = uxx(0,2,0) + Nwxx(0,a)*yl(2,a);
-    uxx(1,2,1) = uxx(1,2,1) + Nwxx(1,a)*yl(2,a);
-    uxx(2,2,2) = uxx(2,2,2) + Nwxx(2,a)*yl(2,a);
-    uxx(1,2,0) = uxx(1,2,0) + Nwxx(3,a)*yl(2,a);
-    uxx(2,2,1) = uxx(2,2,1) + Nwxx(4,a)*yl(2,a);
-    uxx(0,2,2) = uxx(0,2,2) + Nwxx(5,a)*yl(2,a);
+    uxx[0][2][0] += Nwxx(0,a)*yl(2,a);
+    uxx[1][2][1] += Nwxx(1,a)*yl(2,a);
+    uxx[2][2][2] += Nwxx(2,a)*yl(2,a);
+    uxx[1][2][0] += Nwxx(3,a)*yl(2,a);
+    uxx[2][2][1] += Nwxx(4,a)*yl(2,a);
+    uxx[0][2][2] += Nwxx(5,a)*yl(2,a);
   }
 
-  double divU = ux(0,0) + ux(1,1) + ux(2,2);
+  double divU = ux[0][0] + ux[1][1] + ux[2][2];
 
-  uxx(0,0,1) = uxx(1,0,0);
-  uxx(1,0,2) = uxx(2,0,1);
-  uxx(2,0,0) = uxx(0,0,2);
+  uxx[0][0][1] = uxx[1][0][0];
+  uxx[1][0][2] = uxx[2][0][1];
+  uxx[2][0][0] = uxx[0][0][2];
 
-  uxx(0,1,1) = uxx(1,1,0);
-  uxx(1,1,2) = uxx(2,1,1);
-  uxx(2,1,0) = uxx(0,1,2);
+  uxx[0][1][1] = uxx[1][1][0];
+  uxx[1][1][2] = uxx[2][1][1];
+  uxx[2][1][0] = uxx[0][1][2];
 
-  uxx(0,2,1) = uxx(1,2,0);
-  uxx(1,2,2) = uxx(2,2,1);
-  uxx(2,2,0) = uxx(0,2,2);
+  uxx[0][2][1] = uxx[1][2][0];
+  uxx[1][2][2] = uxx[2][2][1];
+  uxx[2][2][0] = uxx[0][2][2];
 
-  Vector<double> d2u2(3);
-  d2u2[0] = uxx(0,0,0) + uxx(1,0,1) + uxx(2,0,2);
-  d2u2[1] = uxx(0,1,0) + uxx(1,1,1) + uxx(2,1,2);
-  d2u2[2] = uxx(0,2,0) + uxx(1,2,1) + uxx(2,2,2);
+  double d2u2[3] = {0.0};
+  d2u2[0] = uxx[0][0][0] + uxx[1][0][1] + uxx[2][0][2];
+  d2u2[1] = uxx[0][1][0] + uxx[1][1][1] + uxx[2][1][2];
+  d2u2[2] = uxx[0][2][0] + uxx[1][2][1] + uxx[2][2][2];
 
   // Pressure and its gradient
   //
-  std::array<double,3> px{0.0};
+  double px[3] = {0.0};
 
   for (int a = 0; a < eNoNq; a++) {
     px[0] = px[0] + Nqx(0,a)*yl(3,a);
@@ -1323,61 +1326,61 @@ void fluid_3d_c_orig(ComMod& com_mod, const int vmsFlag, const int eNoNw, const 
 
   // Strain rate tensor 2*e_ij := (u_i,j + u_j,i)
   //
-  Array<double> es(3,3);
-  es(0,0) = ux(0,0) + ux(0,0);
-  es(1,1) = ux(1,1) + ux(1,1);
-  es(2,2) = ux(2,2) + ux(2,2);
-  es(1,0) = ux(1,0) + ux(0,1);
-  es(2,1) = ux(2,1) + ux(1,2);
-  es(0,2) = ux(0,2) + ux(2,0);
-  es(0,1) = es(1,0);
-  es(1,2) = es(2,1);
-  es(2,0) = es(0,2);
+  double es[3][3] = {0.0};
+  es[0][0] = ux[0][0] + ux[0][0];
+  es[1][1] = ux[1][1] + ux[1][1];
+  es[2][2] = ux[2][2] + ux[2][2];
+  es[1][0] = ux[1][0] + ux[0][1];
+  es[2][1] = ux[2][1] + ux[1][2];
+  es[0][2] = ux[0][2] + ux[2][0];
+  es[0][1] = es[1][0];
+  es[1][2] = es[2][1];
+  es[2][0] = es[0][2];
 
-  Array<double> esNx(3,eNoNw);
+  double esNx[3][MAX_SIZE];
 
   for (int a = 0; a < eNoNw; a++) {
-    esNx(0,a) = es(0,0)*Nwx(0,a) + es(1,0)*Nwx(1,a) + es(2,0)*Nwx(2,a);
-    esNx(1,a) = es(0,1)*Nwx(0,a) + es(1,1)*Nwx(1,a) + es(2,1)*Nwx(2,a);
-    esNx(2,a) = es(0,2)*Nwx(0,a) + es(1,2)*Nwx(1,a) + es(2,2)*Nwx(2,a);
+    esNx[0][a] = es[0][0]*Nwx(0,a) + es[1][0]*Nwx(1,a) + es[2][0]*Nwx(2,a);
+    esNx[1][a] = es[0][1]*Nwx(0,a) + es[1][1]*Nwx(1,a) + es[2][1]*Nwx(2,a);
+    esNx[2][a] = es[0][2]*Nwx(0,a) + es[1][2]*Nwx(1,a) + es[2][2]*Nwx(2,a);
   }
 
-  Array3<double> es_x(3,3,3);
+  double es_x[3][3][3] = {0.0};
 
   for (int k = 0; k < 3; k++) { 
-     es_x(0,0,k) = uxx(0,0,k) + uxx(0,0,k);
-     es_x(1,1,k) = uxx(1,1,k) + uxx(1,1,k);
-     es_x(2,2,k) = uxx(2,2,k) + uxx(2,2,k);
-     es_x(1,0,k) = uxx(1,0,k) + uxx(0,1,k);
-     es_x(2,1,k) = uxx(2,1,k) + uxx(1,2,k);
-     es_x(0,2,k) = uxx(0,2,k) + uxx(2,0,k);
+     es_x[0][0][k] = uxx[0][0][k] + uxx[0][0][k];
+     es_x[1][1][k] = uxx[1][1][k] + uxx[1][1][k];
+     es_x[2][2][k] = uxx[2][2][k] + uxx[2][2][k];
+     es_x[1][0][k] = uxx[1][0][k] + uxx[0][1][k];
+     es_x[2][1][k] = uxx[2][1][k] + uxx[1][2][k];
+     es_x[0][2][k] = uxx[0][2][k] + uxx[2][0][k];
 
-     es_x(0,1,k) = es_x(1,0,k);
-     es_x(1,2,k) = es_x(2,1,k);
-     es_x(2,0,k) = es_x(0,2,k);
+     es_x[0][1][k] = es_x[1][0][k];
+     es_x[1][2][k] = es_x[2][1][k];
+     es_x[2][0][k] = es_x[0][2][k];
   }
 
-  Vector<double> mu_x(3);
+  double mu_x[3];
 
-  mu_x[0] = (es_x(0,0,0)*es(0,0) + es_x(1,1,0)*es(1,1)
-          +  es_x(2,2,0)*es(2,2))*0.5
-          +  es_x(1,0,0)*es(1,0) + es_x(2,1,0)*es(2,1)
-          +  es_x(0,2,0)*es(0,2);
+  mu_x[0] = (es_x[0][0][0]*es[0][0] + es_x[1][1][0]*es[1][1]
+          +  es_x[2][2][0]*es[2][2])*0.5
+          +  es_x[1][0][0]*es[1][0] + es_x[2][1][0]*es[2][1]
+          +  es_x[0][2][0]*es[0][2];
 
-  mu_x[1] = (es_x(0,0,1)*es(0,0) + es_x(1,1,1)*es(1,1)
-          +  es_x(2,2,1)*es(2,2))*0.5
-          +  es_x(1,0,1)*es(1,0) + es_x(2,1,1)*es(2,1)
-          +  es_x(0,2,1)*es(0,2);
+  mu_x[1] = (es_x[0][0][1]*es[0][0] + es_x[1][1][1]*es[1][1]
+          +  es_x[2][2][1]*es[2][2])*0.5
+          +  es_x[1][0][1]*es[1][0] + es_x[2][1][1]*es[2][1]
+          +  es_x[0][2][1]*es[0][2];
 
-  mu_x[2] = (es_x(0,0,2)*es(0,0) + es_x(1,1,2)*es(1,1)
-          +  es_x(2,2,2)*es(2,2))*0.5
-          +  es_x(1,0,2)*es(1,0) + es_x(2,1,2)*es(2,1)
-          +  es_x(0,2,2)*es(0,2);
+  mu_x[2] = (es_x[0][0][2]*es[0][0] + es_x[1][1][2]*es[1][1]
+          +  es_x[2][2][2]*es[2][2])*0.5
+          +  es_x[1][0][2]*es[1][0] + es_x[2][1][2]*es[2][1]
+          +  es_x[0][2][2]*es[0][2];
 
   // Shear-rate := (2*e_ij*e_ij)^.5
-  double gam = es(0,0)*es(0,0) + es(1,0)*es(1,0) + es(2,0)*es(2,0)
-             + es(0,1)*es(0,1) + es(1,1)*es(1,1) + es(2,1)*es(2,1)
-             + es(0,2)*es(0,2) + es(1,2)*es(1,2) + es(2,2)*es(2,2);
+  double gam = es[0][0]*es[0][0] + es[1][0]*es[1][0] + es[2][0]*es[2][0]
+             + es[0][1]*es[0][1] + es[1][1]*es[1][1] + es[2][1]*es[2][1]
+             + es[0][2]*es[0][2] + es[1][2]*es[1][2] + es[2][2]*es[2][2];
   gam = sqrt(0.5*gam);
 
   // Compute viscosity based on shear-rate and chosen viscosity model
@@ -1390,13 +1393,17 @@ void fluid_3d_c_orig(ComMod& com_mod, const int vmsFlag, const int eNoNw, const 
   } else {
      mu_g = mu_g / gam;
   }
-  std::transform(mu_x.begin(), mu_x.end(), mu_x.begin(), [mu_g](double &v){return mu_g*v;});
+
+  for (int i = 0; i < 3; i++) {
+    mu_x[i] = mu_g * mu_x[i];
+  }
+  //std::transform(mu_x.begin(), mu_x.end(), mu_x.begin(), [mu_g](double &v){return mu_g*v;});
   //mu_x(:) = mu_g * mu_x(:)
 
   // Stabilization parameters
   //
-  Vector<double> up(3);
-  Array3<double> updu(3,3,eNoNw);
+  double up[3] = {0.0};
+  double updu[3][3][MAX_SIZE] = {0.0};
   double tauM = 0.0;
 
   if (vmsFlag) {
@@ -1413,47 +1420,47 @@ void fluid_3d_c_orig(ComMod& com_mod, const int vmsFlag, const int eNoNw, const 
     kS = ctC * kS * pow(mu/rho,2.0);
     tauM = 1.0 / (rho * sqrt( kT + kU + kS ));
 
-    Vector<double> rV(3);
-    rV[0] = ud[0] + u[0]*ux(0,0) + u[1]*ux(1,0) + u[2]*ux(2,0);
-    rV[1] = ud[1] + u[0]*ux(0,1) + u[1]*ux(1,1) + u[2]*ux(2,1);
-    rV[2] = ud[2] + u[0]*ux(0,2) + u[1]*ux(1,2) + u[2]*ux(2,2);
+    double rV[3];
+    rV[0] = ud[0] + u[0]*ux[0][0] + u[1]*ux[1][0] + u[2]*ux[2][0];
+    rV[1] = ud[1] + u[0]*ux[0][1] + u[1]*ux[1][1] + u[2]*ux[2][1];
+    rV[2] = ud[2] + u[0]*ux[0][2] + u[1]*ux[1][2] + u[2]*ux[2][2];
 
-    Vector<double> rS(3);
-    rS[0] = mu_x[0]*es(0,0) + mu_x[1]*es(1,0) + mu_x[2]*es(2,0) + mu*d2u2[0];
-    rS[1] = mu_x[0]*es(0,1) + mu_x[1]*es(1,1) + mu_x[2]*es(2,1) + mu*d2u2[1];
-    rS[2] = mu_x[0]*es(0,2) + mu_x[1]*es(1,2) + mu_x[2]*es(2,2) + mu*d2u2[2];
+    double rS[3];
+    rS[0] = mu_x[0]*es[0][0] + mu_x[1]*es[1][0] + mu_x[2]*es[2][0] + mu*d2u2[0];
+    rS[1] = mu_x[0]*es[0][1] + mu_x[1]*es[1][1] + mu_x[2]*es[2][1] + mu*d2u2[1];
+    rS[2] = mu_x[0]*es[0][2] + mu_x[1]*es[1][2] + mu_x[2]*es[2][2] + mu*d2u2[2];
 
     up[0] = -tauM*(rho*rV[0] + px[0] - rS[0]);
     up[1] = -tauM*(rho*rV[1] + px[1] - rS[1]);
     up[2] = -tauM*(rho*rV[2] + px[2] - rS[2]);
 
     for (int a = 0; a < eNoNw; a++) {
-      double uNx = u(0)*Nwx(0,a) + u(1)*Nwx(1,a) + u(2)*Nwx(2,a);
-      T1 = -rho*uNx + mu*(Nwxx(0,a) + Nwxx(1,a) + Nwxx(2,a)) + mu_x(0)*Nwx(0,a) + mu_x(1)*Nwx(1,a) + mu_x(2)*Nwx(2,a);
+      double uNx = u[0]*Nwx(0,a) + u[1]*Nwx(1,a) + u[2]*Nwx(2,a);
+      T1 = -rho*uNx + mu*(Nwxx(0,a) + Nwxx(1,a) + Nwxx(2,a)) + mu_x[0]*Nwx(0,a) + mu_x[1]*Nwx(1,a) + mu_x[2]*Nwx(2,a);
 
-      updu(0,0,a) = mu_x(0)*Nwx(0,a) + d2u2(0)*mu_g*esNx(0,a) + T1;
-      updu(1,0,a) = mu_x(1)*Nwx(0,a) + d2u2(0)*mu_g*esNx(1,a);
-      updu(2,0,a) = mu_x(2)*Nwx(0,a) + d2u2(0)*mu_g*esNx(2,a);
+      updu[0][0][a] = mu_x[0]*Nwx(0,a) + d2u2[0]*mu_g*esNx[0][a] + T1;
+      updu[1][0][a] = mu_x[1]*Nwx(0,a) + d2u2[0]*mu_g*esNx[1][a];
+      updu[2][0][a] = mu_x[2]*Nwx(0,a) + d2u2[0]*mu_g*esNx[2][a];
   
-      updu(0,1,a) = mu_x(0)*Nwx(1,a) + d2u2(1)*mu_g*esNx(0,a);
-      updu(1,1,a) = mu_x(1)*Nwx(1,a) + d2u2(1)*mu_g*esNx(1,a) + T1;
-      updu(2,1,a) = mu_x(2)*Nwx(1,a) + d2u2(1)*mu_g*esNx(2,a);
+      updu[0][1][a] = mu_x[0]*Nwx(1,a) + d2u2[1]*mu_g*esNx[0][a];
+      updu[1][1][a] = mu_x[1]*Nwx(1,a) + d2u2[1]*mu_g*esNx[1][a] + T1;
+      updu[2][1][a] = mu_x[2]*Nwx(1,a) + d2u2[1]*mu_g*esNx[2][a];
   
-      updu(0,2,a) = mu_x(0)*Nwx(2,a) + d2u2(2)*mu_g*esNx(0,a);
-      updu(1,2,a) = mu_x(1)*Nwx(2,a) + d2u2(2)*mu_g*esNx(1,a);
-      updu(2,2,a) = mu_x(2)*Nwx(2,a) + d2u2(2)*mu_g*esNx(2,a) + T1;
+      updu[0][2][a] = mu_x[0]*Nwx(2,a) + d2u2[2]*mu_g*esNx[0][a];
+      updu[1][2][a] = mu_x[1]*Nwx(2,a) + d2u2[2]*mu_g*esNx[1][a];
+      updu[2][2][a] = mu_x[2]*Nwx(2,a) + d2u2[2]*mu_g*esNx[2][a] + T1;
     }
 
   } else {
     tauM = 0.0;
-    up = 0.0;
-    updu = 0.0;
+    std::memset(up, 0, sizeof up);
+    std::memset(updu, 0, sizeof updu);
   }
 
   //  Local residue
   //
   for (int a = 0; a < eNoNq; a++) {
-    double upNx = up(0)*Nqx(0,a) + up(1)*Nqx(1,a) + up(2)*Nqx(2,a);
+    double upNx = up[0]*Nqx(0,a) + up[1]*Nqx(1,a) + up[2]*Nqx(2,a);
     lR(3,a) = lR(3,a) + w*(Nq(a)*divU - upNx);
   }
 
@@ -1464,15 +1471,15 @@ void fluid_3d_c_orig(ComMod& com_mod, const int vmsFlag, const int eNoNw, const 
 
     for (int a = 0; a < eNoNq; a++) {
       // dRc_a/dU_b1
-      double T2 = Nqx(0,a)*(updu(0,0,b) - T1) + Nqx(1,a)*updu(0,1,b) + Nqx(2,a)*updu(0,2,b);
+      double T2 = Nqx(0,a)*(updu[0][0][b] - T1) + Nqx(1,a)*updu[0][1][b] + Nqx(2,a)*updu[0][2][b];
       lK(12,a,b) = lK(12,a,b) + wl*(Nq(a)*Nwx(0,b) - tauM*T2);
 
       // dRc_a/dU_b2
-      T2 = Nqx(0,a)*updu(1,0,b) + Nqx(1,a)*(updu(1,1,b) - T1) + Nqx(2,a)*updu(1,2,b);
+      T2 = Nqx(0,a)*updu[1][0][b] + Nqx(1,a)*(updu[1][1][b] - T1) + Nqx(2,a)*updu[1][2][b];
       lK(13,a,b) = lK(13,a,b) + wl*(Nq(a)*Nwx(1,b) - tauM*T2);
 
       // dRc_a/dU_b3
-      T2 = Nqx(0,a)*updu(2,0,b) + Nqx(1,a)*updu(2,1,b) + Nqx(2,a)*(updu(2,2,b) - T1);
+      T2 = Nqx(0,a)*updu[2][0][b] + Nqx(1,a)*updu[2][1][b] + Nqx(2,a)*(updu[2][2][b] - T1);
       lK(14,a,b) = lK(14,a,b) + wl*(Nq(a)*Nwx(2,b) - tauM*T2);
     }
   }
@@ -1488,8 +1495,6 @@ void fluid_3d_c_orig(ComMod& com_mod, const int vmsFlag, const int eNoNw, const 
   }
 }
 
-#include "fluid_3d_m.cpp"
-
 //------------
 // fluid_3d_m
 //------------
@@ -1499,9 +1504,9 @@ void fluid_3d_c_orig(ComMod& com_mod, const int vmsFlag, const int eNoNw, const 
 //    lR(dof,eNoN)  - Residue
 //    lK(dof*dof,eNoN,eNoN) - Stiffness matrix
 //
-void fluid_3d_m_orig(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int eNoNq, const double w, 
-    const Array<double>& Kxi, const Vector<double>& Nw, const Vector<double>& Nq, const Array<double>& Nwx, 
-    const Array<double>& Nqx, const Array<double>& Nwxx, const Array<double>& al, const Array<double>& yl, 
+void fluid_3d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int eNoNq, const double w,
+    const Array<double>& Kxi, const Vector<double>& Nw, const Vector<double>& Nq, const Array<double>& Nwx,
+    const Array<double>& Nqx, const Array<double>& Nwxx, const Array<double>& al, const Array<double>& yl,
     const Array<double>& bfl, Array<double>& lR, Array3<double>& lK)
 {
   #define n_debug_fluid_3d_m
@@ -1513,6 +1518,9 @@ void fluid_3d_m_orig(ComMod& com_mod, const int vmsFlag, const int eNoNw, const 
   dmsg << "eNoNq: " << eNoNq;
   double start_time = utils::cput();
   #endif
+
+  // Maximum size of arrays sized by (3,eNoNw) -> (3,MAX_SIZE).
+  const int MAX_SIZE = 8;
 
   using namespace consts;
 
@@ -1549,9 +1557,9 @@ void fluid_3d_m_orig(ComMod& com_mod, const int vmsFlag, const int eNoNw, const 
   //
   std::array<double,3> ud{-f[0], -f[1], -f[2]};
   //ud  = -f
-  std::array<double,3> u{0.0};
-  Array<double> ux(3,3);
-  Array3<double> uxx(3,3,3);
+  double u[3] = {0.0};
+  double ux[3][3] = {0.0};
+  double uxx[3][3][3] = {0.0};
 
   for (int a = 0; a < eNoNw; a++) {
     ud[0] = ud[0] + Nw(a)*(al(0,a)-bfl(0,a));
@@ -1562,64 +1570,64 @@ void fluid_3d_m_orig(ComMod& com_mod, const int vmsFlag, const int eNoNw, const 
     u[1] = u[1] + Nw(a)*yl(1,a);
     u[2] = u[2] + Nw(a)*yl(2,a);
 
-    ux(0,0) = ux(0,0) + Nwx(0,a)*yl(0,a);
-    ux(1,0) = ux(1,0) + Nwx(1,a)*yl(0,a);
-    ux(2,0) = ux(2,0) + Nwx(2,a)*yl(0,a);
-    ux(0,1) = ux(0,1) + Nwx(0,a)*yl(1,a);
-    ux(1,1) = ux(1,1) + Nwx(1,a)*yl(1,a);
-    ux(2,1) = ux(2,1) + Nwx(2,a)*yl(1,a);
-    ux(0,2) = ux(0,2) + Nwx(0,a)*yl(2,a);
-    ux(1,2) = ux(1,2) + Nwx(1,a)*yl(2,a);
-    ux(2,2) = ux(2,2) + Nwx(2,a)*yl(2,a);
+    ux[0][0] += Nwx(0,a)*yl(0,a);
+    ux[1][0] += Nwx(1,a)*yl(0,a);
+    ux[2][0] += Nwx(2,a)*yl(0,a);
+    ux[0][1] += Nwx(0,a)*yl(1,a);
+    ux[1][1] += Nwx(1,a)*yl(1,a);
+    ux[2][1] += Nwx(2,a)*yl(1,a);
+    ux[0][2] += Nwx(0,a)*yl(2,a);
+    ux[1][2] += Nwx(1,a)*yl(2,a);
+    ux[2][2] += Nwx(2,a)*yl(2,a);
 
-    uxx(0,0,1) = uxx(0,0,0) + Nwxx(0,a)*yl(0,a);
-    uxx(1,0,1) = uxx(1,0,1) + Nwxx(1,a)*yl(0,a);
-    uxx(2,0,2) = uxx(2,0,2) + Nwxx(2,a)*yl(0,a);
-    uxx(1,0,0) = uxx(1,0,0) + Nwxx(3,a)*yl(0,a);
-    uxx(2,0,1) = uxx(2,0,1) + Nwxx(4,a)*yl(0,a);
-    uxx(0,0,2) = uxx(0,0,2) + Nwxx(5,a)*yl(0,a);
+    uxx[0][0][0] += Nwxx(0,a)*yl(0,a);
+    uxx[1][0][1] += Nwxx(1,a)*yl(0,a);
+    uxx[2][0][2] += Nwxx(2,a)*yl(0,a);
+    uxx[1][0][0] += Nwxx(3,a)*yl(0,a);
+    uxx[2][0][1] += Nwxx(4,a)*yl(0,a);
+    uxx[0][0][2] += Nwxx(5,a)*yl(0,a);
 
-    uxx(0,1,0) = uxx(0,1,0) + Nwxx(0,a)*yl(1,a);
-    uxx(1,1,1) = uxx(1,1,1) + Nwxx(1,a)*yl(1,a);
-    uxx(2,1,2) = uxx(2,1,2) + Nwxx(2,a)*yl(1,a);
-    uxx(1,1,0) = uxx(1,1,0) + Nwxx(3,a)*yl(1,a);
-    uxx(2,1,1) = uxx(2,1,1) + Nwxx(4,a)*yl(1,a);
-    uxx(0,1,2) = uxx(0,1,2) + Nwxx(5,a)*yl(1,a);
+    uxx[0][1][0] += Nwxx(0,a)*yl(1,a);
+    uxx[1][1][1] += Nwxx(1,a)*yl(1,a);
+    uxx[2][1][2] += Nwxx(2,a)*yl(1,a);
+    uxx[1][1][0] += Nwxx(3,a)*yl(1,a);
+    uxx[2][1][1] += Nwxx(4,a)*yl(1,a);
+    uxx[0][1][2] += Nwxx(5,a)*yl(1,a);
 
-    uxx(0,2,0) = uxx(0,2,0) + Nwxx(0,a)*yl(2,a);
-    uxx(1,2,1) = uxx(1,2,1) + Nwxx(1,a)*yl(2,a);
-    uxx(2,2,2) = uxx(2,2,2) + Nwxx(2,a)*yl(2,a);
-    uxx(1,2,0) = uxx(1,2,0) + Nwxx(3,a)*yl(2,a);
-    uxx(2,2,1) = uxx(2,2,1) + Nwxx(4,a)*yl(2,a);
-    uxx(0,2,2) = uxx(0,2,2) + Nwxx(5,a)*yl(2,a);
+    uxx[0][2][0] += Nwxx(0,a)*yl(2,a);
+    uxx[1][2][1] += Nwxx(1,a)*yl(2,a);
+    uxx[2][2][2] += Nwxx(2,a)*yl(2,a);
+    uxx[1][2][0] += Nwxx(3,a)*yl(2,a);
+    uxx[2][2][1] += Nwxx(4,a)*yl(2,a);
+    uxx[0][2][2] += Nwxx(5,a)*yl(2,a);
   }
 
-  double divU = ux(0,0) + ux(1,1) + ux(2,2);
+  double divU = ux[0][0] + ux[1][1] + ux[2][2];
   #ifdef debug_fluid_3d_m
   dmsg << "divU: " << divU;
   #endif
 
-  uxx(0,0,1) = uxx(1,0,0);
-  uxx(1,0,2) = uxx(2,0,1);
-  uxx(2,0,0) = uxx(0,0,2);
+  uxx[0][0][1] = uxx[1][0][0];
+  uxx[1][0][2] = uxx[2][0][1];
+  uxx[2][0][0] = uxx[0][0][2];
 
-  uxx(0,1,1) = uxx(1,1,0);
-  uxx(1,1,2) = uxx(2,1,1);
-  uxx(2,1,0) = uxx(0,1,2);
+  uxx[0][1][1] = uxx[1][1][0];
+  uxx[1][1][2] = uxx[2][1][1];
+  uxx[2][1][0] = uxx[0][1][2];
 
-  uxx(0,2,1) = uxx(1,2,0);
-  uxx(1,2,2) = uxx(2,2,1);
-  uxx(2,2,0) = uxx(0,2,2);
+  uxx[0][2][1] = uxx[1][2][0];
+  uxx[1][2][2] = uxx[2][2][1];
+  uxx[2][2][0] = uxx[0][2][2];
 
   std::array<double,3> d2u2{0.0};
-  d2u2[0] = uxx(0,0,0) + uxx(1,0,1) + uxx(2,0,2);
-  d2u2[1] = uxx(0,1,0) + uxx(1,1,1) + uxx(2,1,2);
-  d2u2[2] = uxx(0,2,0) + uxx(1,2,1) + uxx(2,2,2);
+  d2u2[0] = uxx[0][0][0] + uxx[1][0][1] + uxx[2][0][2];
+  d2u2[1] = uxx[0][1][0] + uxx[1][1][1] + uxx[2][1][2];
+  d2u2[2] = uxx[0][2][0] + uxx[1][2][1] + uxx[2][2][2];
 
   // Pressure and its gradient
   //
   double p = 0.0;
-  std::array<double,3> px{0.0};
+  double px[3] = {0.0};
 
   for (int a = 0; a < eNoNq; a++) {
     p  = p + Nq(a)*yl(3,a);
@@ -1644,56 +1652,56 @@ void fluid_3d_m_orig(ComMod& com_mod, const int vmsFlag, const int eNoNw, const 
 
   // Strain rate tensor 2*e_ij := (u_i,j + u_j,i)
   //
-  Array<double> es(3,3);
-  es(0,0) = ux(0,0) + ux(0,0);
-  es(1,1) = ux(1,1) + ux(1,1);
-  es(2,2) = ux(2,2) + ux(2,2);
-  es(1,0) = ux(1,0) + ux(0,1);
-  es(2,1) = ux(2,1) + ux(1,2);
-  es(0,2) = ux(0,2) + ux(2,0);
-  es(0,1) = es(1,0);
-  es(1,2) = es(2,1);
-  es(2,0) = es(0,2);
+  double es[3][3] = {0.0};
+  es[0][0] = ux[0][0] + ux[0][0];
+  es[1][1] = ux[1][1] + ux[1][1];
+  es[2][2] = ux[2][2] + ux[2][2];
+  es[1][0] = ux[1][0] + ux[0][1];
+  es[2][1] = ux[2][1] + ux[1][2];
+  es[0][2] = ux[0][2] + ux[2][0];
+  es[0][1] = es[1][0];
+  es[1][2] = es[2][1];
+  es[2][0] = es[0][2];
 
-  Array<double> esNx(3,eNoNw);
+  double esNx[3][MAX_SIZE];
 
   for (int a = 0; a < eNoNw; a++) {
-    esNx(0,a) = es(0,0)*Nwx(0,a) + es(1,0)*Nwx(1,a) + es(2,0)*Nwx(2,a);
-    esNx(1,a) = es(0,1)*Nwx(0,a) + es(1,1)*Nwx(1,a) + es(2,1)*Nwx(2,a);
-    esNx(2,a) = es(0,2)*Nwx(0,a) + es(1,2)*Nwx(1,a) + es(2,2)*Nwx(2,a);
+    esNx[0][a] = es[0][0]*Nwx(0,a) + es[1][0]*Nwx(1,a) + es[2][0]*Nwx(2,a);
+    esNx[1][a] = es[0][1]*Nwx(0,a) + es[1][1]*Nwx(1,a) + es[2][1]*Nwx(2,a);
+    esNx[2][a] = es[0][2]*Nwx(0,a) + es[1][2]*Nwx(1,a) + es[2][2]*Nwx(2,a);
   }
 
-  Array3<double> es_x(3,3,3);
+  double es_x[3][3][3];
 
   for (int k = 0; k < 3; k++) { 
-     es_x(0,0,k) = uxx(0,0,k) + uxx(0,0,k);
-     es_x(1,1,k) = uxx(1,1,k) + uxx(1,1,k);
-     es_x(2,2,k) = uxx(2,2,k) + uxx(2,2,k);
-     es_x(1,0,k) = uxx(1,0,k) + uxx(0,1,k);
-     es_x(2,1,k) = uxx(2,1,k) + uxx(1,2,k);
-     es_x(0,2,k) = uxx(0,2,k) + uxx(2,0,k);
+     es_x[0][0][k] = uxx[0][0][k] + uxx[0][0][k];
+     es_x[1][1][k] = uxx[1][1][k] + uxx[1][1][k];
+     es_x[2][2][k] = uxx[2][2][k] + uxx[2][2][k];
+     es_x[1][0][k] = uxx[1][0][k] + uxx[0][1][k];
+     es_x[2][1][k] = uxx[2][1][k] + uxx[1][2][k];
+     es_x[0][2][k] = uxx[0][2][k] + uxx[2][0][k];
 
-     es_x(0,1,k) = es_x(1,0,k);
-     es_x(1,2,k) = es_x(2,1,k);
-     es_x(2,0,k) = es_x(0,2,k);
+     es_x[0][1][k] = es_x[1][0][k];
+     es_x[1][2][k] = es_x[2][1][k];
+     es_x[2][0][k] = es_x[0][2][k];
   }
 
   std::array<double,3> mu_x{0.0};
 
-  mu_x[0] = (es_x(0,0,0)*es(0,0) + es_x(1,1,0)*es(1,1)
-          +  es_x(2,2,0)*es(2,2))*0.5
-          +  es_x(1,0,0)*es(1,0) + es_x(2,1,0)*es(2,1)
-          +  es_x(0,2,0)*es(0,2);
+  mu_x[0] = (es_x[0][0][0]*es[0][0] + es_x[1][1][0]*es[1][1]
+          +  es_x[2][2][0]*es[2][2])*0.5
+          +  es_x[1][0][0]*es[1][0] + es_x[2][1][0]*es[2][1]
+          +  es_x[0][2][0]*es[0][2];
 
-  mu_x[1] = (es_x(0,0,1)*es(0,0) + es_x(1,1,1)*es(1,1)
-          +  es_x(2,2,1)*es(2,2))*0.5
-          +  es_x(1,0,1)*es(1,0) + es_x(2,1,1)*es(2,1)
-          +  es_x(0,2,1)*es(0,2);
+  mu_x[1] = (es_x[0][0][1]*es[0][0] + es_x[1][1][1]*es[1][1]
+          +  es_x[2][2][1]*es[2][2])*0.5
+          +  es_x[1][0][1]*es[1][0] + es_x[2][1][1]*es[2][1]
+          +  es_x[0][2][1]*es[0][2];
 
-  mu_x[2] = (es_x(0,0,2)*es(0,0) + es_x(1,1,2)*es(1,1)
-          +  es_x(2,2,2)*es(2,2))*0.5
-          +  es_x(1,0,2)*es(1,0) + es_x(2,1,2)*es(2,1)
-          +  es_x(0,2,2)*es(0,2);
+  mu_x[2] = (es_x[0][0][2]*es[0][0] + es_x[1][1][2]*es[1][1]
+          +  es_x[2][2][2]*es[2][2])*0.5
+          +  es_x[1][0][2]*es[1][0] + es_x[2][1][2]*es[2][1]
+          +  es_x[0][2][2]*es[0][2];
 
   #ifdef debug_fluid_3d_m
   dmsg << "mu_x: " << mu_x[0] << " " << mu_x[1] << " " << mu_x[2];
@@ -1702,9 +1710,9 @@ void fluid_3d_m_orig(ComMod& com_mod, const int vmsFlag, const int eNoNw, const 
   // Shear-rate := (2*e_ij*e_ij)^.5
   //
   //dmsg << "Compute shear rate ... ";
-  double gam = es(0,0)*es(0,0) + es(1,0)*es(1,0) + es(2,0)*es(2,0)
-             + es(0,1)*es(0,1) + es(1,1)*es(1,1) + es(2,1)*es(2,1)
-             + es(0,2)*es(0,2) + es(1,2)*es(1,2) + es(2,2)*es(2,2);
+  double gam = es[0][0]*es[0][0] + es[1][0]*es[1][0] + es[2][0]*es[2][0]
+             + es[0][1]*es[0][1] + es[1][1]*es[1][1] + es[2][1]*es[2][1]
+             + es[0][2]*es[0][2] + es[1][2]*es[1][2] + es[2][2]*es[2][2];
   gam = sqrt(0.5*gam);
   #ifdef debug_fluid_3d_m
   dmsg << "gam: " << gam;
@@ -1745,24 +1753,24 @@ void fluid_3d_m_orig(ComMod& com_mod, const int vmsFlag, const int eNoNw, const 
   dmsg << "tauM: " << tauM;
   #endif
 
-  std::array<double,3> rV{0.0};
-  rV[0] = ud[0] + u[0]*ux(0,0) + u[1]*ux(1,0) + u[2]*ux(2,0);
-  rV[1] = ud[1] + u[0]*ux(0,1) + u[1]*ux(1,1) + u[2]*ux(2,1);
-  rV[2] = ud[2] + u[0]*ux(0,2) + u[1]*ux(1,2) + u[2]*ux(2,2);
+  double rV[3] = {0.0};
+  rV[0] = ud[0] + u[0]*ux[0][0] + u[1]*ux[1][0] + u[2]*ux[2][0];
+  rV[1] = ud[1] + u[0]*ux[0][1] + u[1]*ux[1][1] + u[2]*ux[2][1];
+  rV[2] = ud[2] + u[0]*ux[0][2] + u[1]*ux[1][2] + u[2]*ux[2][2];
 
-  std::array<double,3> rS{0.0};
-  rS[0] = mu_x[0]*es(0,0) + mu_x[1]*es(1,0) + mu_x[2]*es(2,0) + mu*d2u2[0];
-  rS[1] = mu_x[0]*es(0,1) + mu_x[1]*es(1,1) + mu_x[2]*es(2,1) + mu*d2u2[1];
-  rS[2] = mu_x[0]*es(0,2) + mu_x[1]*es(1,2) + mu_x[2]*es(2,2) + mu*d2u2[2];
+  double rS[3] = {0.0};
+  rS[0] = mu_x[0]*es[0][0] + mu_x[1]*es[1][0] + mu_x[2]*es[2][0] + mu*d2u2[0];
+  rS[1] = mu_x[0]*es[0][1] + mu_x[1]*es[1][1] + mu_x[2]*es[2][1] + mu*d2u2[1];
+  rS[2] = mu_x[0]*es[0][2] + mu_x[1]*es[1][2] + mu_x[2]*es[2][2] + mu*d2u2[2];
 
-  std::array<double,3> up{0.0};
+  double up[3] = {0.0};
   up[0] = -tauM*(rho*rV[0] + px[0] - rS[0]);
   up[1] = -tauM*(rho*rV[1] + px[1] - rS[1]);
   up[2] = -tauM*(rho*rV[2] + px[2] - rS[2]);
 
   double tauC, tauB, pa;
   double eps = std::numeric_limits<double>::epsilon();
-  std::array<double,3> ua{0.0};
+  double ua[3] = {0.0};
 
   if (vmsFlag) {
     tauC = 1.0 / (tauM * (Kxi(0,0) + Kxi(1,1) + Kxi(2,2)));
@@ -1785,117 +1793,121 @@ void fluid_3d_m_orig(ComMod& com_mod, const int vmsFlag, const int eNoNw, const 
   } else {
     tauC = 0.0;
     tauB = 0.0;
-    ua = u;
+    for (int i = 0; i < 3; i++) {
+      ua[i] = u[i];
+    }
     pa = p;
   }
 
-  rV[0] = tauB*(up[0]*ux(0,0) + up[1]*ux(1,0) + up[2]*ux(2,0));
-  rV[1] = tauB*(up[0]*ux(0,1) + up[1]*ux(1,1) + up[2]*ux(2,1));
-  rV[2] = tauB*(up[0]*ux(0,2) + up[1]*ux(1,2) + up[2]*ux(2,2));
+  rV[0] = tauB*(up[0]*ux[0][0] + up[1]*ux[1][0] + up[2]*ux[2][0]);
+  rV[1] = tauB*(up[0]*ux[0][1] + up[1]*ux[1][1] + up[2]*ux[2][1]);
+  rV[2] = tauB*(up[0]*ux[0][2] + up[1]*ux[1][2] + up[2]*ux[2][2]);
 
-  Array<double> rM(3,3);
-  rM(0,0) = mu*es(0,0) - rho*up[0]*ua[0] + rV[0]*up[0] - pa;
-  rM(1,0) = mu*es(1,0) - rho*up[0]*ua[1] + rV[0]*up[1];
-  rM(2,0) = mu*es(2,0) - rho*up[0]*ua[2] + rV[0]*up[2];
+  double rM[3][3];
+  rM[0][0] = mu*es[0][0] - rho*up[0]*ua[0] + rV[0]*up[0] - pa;
+  rM[1][0] = mu*es[1][0] - rho*up[0]*ua[1] + rV[0]*up[1];
+  rM[2][0] = mu*es[2][0] - rho*up[0]*ua[2] + rV[0]*up[2];
 
-  rM(0,1) = mu*es(0,1) - rho*up[1]*ua[0] + rV[1]*up[0];
-  rM(1,1) = mu*es(1,1) - rho*up[1]*ua[1] + rV[1]*up[1] - pa;
-  rM(2,1) = mu*es(2,1) - rho*up[1]*ua[2] + rV[1]*up[2];
+  rM[0][1] = mu*es[0][1] - rho*up[1]*ua[0] + rV[1]*up[0];
+  rM[1][1] = mu*es[1][1] - rho*up[1]*ua[1] + rV[1]*up[1] - pa;
+  rM[2][1] = mu*es[2][1] - rho*up[1]*ua[2] + rV[1]*up[2];
 
-  rM(0,2) = mu*es(0,2) - rho*up[2]*ua[0] + rV[2]*up[0];
-  rM(1,2) = mu*es(1,2) - rho*up[2]*ua[1] + rV[2]*up[1];
-  rM(2,2) = mu*es(2,2) - rho*up[2]*ua[2] + rV[2]*up[2] - pa;
+  rM[0][2] = mu*es[0][2] - rho*up[2]*ua[0] + rV[2]*up[0];
+  rM[1][2] = mu*es[1][2] - rho*up[2]*ua[1] + rV[2]*up[1];
+  rM[2][2] = mu*es[2][2] - rho*up[2]*ua[2] + rV[2]*up[2] - pa;
 
-  rV[0] = ud[0] + ua[0]*ux(0,0) + ua[1]*ux(1,0) + ua[2]*ux(2,0);
-  rV[1] = ud[1] + ua[0]*ux(0,1) + ua[1]*ux(1,1) + ua[2]*ux(2,1);
-  rV[2] = ud[2] + ua[0]*ux(0,2) + ua[1]*ux(1,2) + ua[2]*ux(2,2);
+  rV[0] = ud[0] + ua[0]*ux[0][0] + ua[1]*ux[1][0] + ua[2]*ux[2][0];
+  rV[1] = ud[1] + ua[0]*ux[0][1] + ua[1]*ux[1][1] + ua[2]*ux[2][1];
+  rV[2] = ud[2] + ua[0]*ux[0][2] + ua[1]*ux[1][2] + ua[2]*ux[2][2];
 
   //  Local residue
   //
-  Array3<double> updu(3,3,eNoNw);
-  Vector<double> uNx(eNoNw), upNx(eNoNw), uaNx(eNoNw); 
+  double updu[3][3][MAX_SIZE] = {0.0};
+  double uNx[MAX_SIZE] = {0.0};
+  double upNx[MAX_SIZE] = {0.0}; 
+  double uaNx[MAX_SIZE] = {0.0}; 
 
   for (int a = 0; a < eNoNw; a++) {
-    lR(0,a) = lR(0,a) + wr*Nw(a)*rV[0] + w*(Nwx(0,a)*rM(0,0) + Nwx(1,a)*rM(1,0) + Nwx(2,a)*rM(2,0));
-    lR(1,a) = lR(1,a) + wr*Nw(a)*rV[1] + w*(Nwx(0,a)*rM(0,1) + Nwx(1,a)*rM(1,1) + Nwx(2,a)*rM(2,1));
-    lR(2,a) = lR(2,a) + wr*Nw(a)*rV[2] + w*(Nwx(0,a)*rM(0,2) + Nwx(1,a)*rM(1,2) + Nwx(2,a)*rM(2,2));
+    lR(0,a) = lR(0,a) + wr*Nw(a)*rV[0] + w*(Nwx(0,a)*rM[0][0] + Nwx(1,a)*rM[1][0] + Nwx(2,a)*rM[2][0]);
+    lR(1,a) = lR(1,a) + wr*Nw(a)*rV[1] + w*(Nwx(0,a)*rM[0][1] + Nwx(1,a)*rM[1][1] + Nwx(2,a)*rM[2][1]);
+    lR(2,a) = lR(2,a) + wr*Nw(a)*rV[2] + w*(Nwx(0,a)*rM[0][2] + Nwx(1,a)*rM[1][2] + Nwx(2,a)*rM[2][2]);
 
     // Quantities used for stiffness matrix
-    uNx(a)  = u[0]*Nwx(0,a)  + u[1]*Nwx(1,a)  + u[2]*Nwx(2,a);
-    upNx(a) = up[0]*Nwx(0,a) + up[1]*Nwx(1,a) + up[2]*Nwx(2,a);
+    uNx[a]  = u[0]*Nwx(0,a)  + u[1]*Nwx(1,a)  + u[2]*Nwx(2,a);
+    upNx[a] = up[0]*Nwx(0,a) + up[1]*Nwx(1,a) + up[2]*Nwx(2,a);
 
     if (vmsFlag) {
-       uaNx(a) = uNx(a) + upNx(a);
+       uaNx[a] = uNx[a] + upNx[a];
     } else {
-       uaNx(a) = uNx(a);
+       uaNx[a] = uNx[a];
     }
 
-    T1 = -rho*uNx(a) + mu*(Nwxx(0,a) + Nwxx(1,a) + Nwxx(2,a)) + mu_x[0]*Nwx(0,a) + mu_x[1]*Nwx(1,a) + mu_x[2]*Nwx(2,a);
+    T1 = -rho*uNx[a] + mu*(Nwxx(0,a) + Nwxx(1,a) + Nwxx(2,a)) + mu_x[0]*Nwx(0,a) + mu_x[1]*Nwx(1,a) + mu_x[2]*Nwx(2,a);
 
-    updu(0,0,a) = mu_x[0]*Nwx(0,a) + d2u2[0]*mu_g*esNx(0,a) + T1;
-    updu(1,0,a) = mu_x[1]*Nwx(0,a) + d2u2[0]*mu_g*esNx(1,a);
-    updu(2,0,a) = mu_x[2]*Nwx(0,a) + d2u2[0]*mu_g*esNx(2,a);
+    updu[0][0][a] = mu_x[0]*Nwx(0,a) + d2u2[0]*mu_g*esNx[0][a] + T1;
+    updu[1][0][a] = mu_x[1]*Nwx(0,a) + d2u2[0]*mu_g*esNx[1][a];
+    updu[2][0][a] = mu_x[2]*Nwx(0,a) + d2u2[0]*mu_g*esNx[2][a];
 
-    updu(0,1,a) = mu_x[0]*Nwx(1,a) + d2u2[1]*mu_g*esNx(0,a);
-    updu(1,1,a) = mu_x[1]*Nwx(1,a) + d2u2[1]*mu_g*esNx(1,a) + T1;
-    updu(2,1,a) = mu_x[2]*Nwx(1,a) + d2u2[1]*mu_g*esNx(2,a);
+    updu[0][1][a] = mu_x[0]*Nwx(1,a) + d2u2[1]*mu_g*esNx[0][a];
+    updu[1][1][a] = mu_x[1]*Nwx(1,a) + d2u2[1]*mu_g*esNx[1][a] + T1;
+    updu[2][1][a] = mu_x[2]*Nwx(1,a) + d2u2[1]*mu_g*esNx[2][a];
 
-    updu(0,2,a) = mu_x[0]*Nwx(2,a) + d2u2[2]*mu_g*esNx(0,a);
-    updu(1,2,a) = mu_x[1]*Nwx(2,a) + d2u2[2]*mu_g*esNx(1,a);
-    updu(2,2,a) = mu_x[2]*Nwx(2,a) + d2u2[2]*mu_g*esNx(2,a) + T1;
+    updu[0][2][a] = mu_x[0]*Nwx(2,a) + d2u2[2]*mu_g*esNx[0][a];
+    updu[1][2][a] = mu_x[1]*Nwx(2,a) + d2u2[2]*mu_g*esNx[1][a];
+    updu[2][2][a] = mu_x[2]*Nwx(2,a) + d2u2[2]*mu_g*esNx[2][a] + T1;
   }
 
   // Tangent (stiffness) matrices
   //
   for (int b = 0; b < eNoNw; b++) {
     for (int a = 0; a < eNoNw; a++) {
-      rM(0,0) = Nwx(0,a)*Nwx(0,b);
-      rM(1,0) = Nwx(1,a)*Nwx(0,b);
-      rM(2,0) = Nwx(2,a)*Nwx(0,b);
-      rM(0,1) = Nwx(0,a)*Nwx(1,b);
-      rM(1,1) = Nwx(1,a)*Nwx(1,b);
-      rM(2,1) = Nwx(2,a)*Nwx(1,b);
-      rM(0,2) = Nwx(0,a)*Nwx(2,b);
-      rM(1,2) = Nwx(1,a)*Nwx(2,b);
-      rM(2,2) = Nwx(2,a)*Nwx(2,b);
+      rM[0][0] = Nwx(0,a)*Nwx(0,b);
+      rM[1][0] = Nwx(1,a)*Nwx(0,b);
+      rM[2][0] = Nwx(2,a)*Nwx(0,b);
+      rM[0][1] = Nwx(0,a)*Nwx(1,b);
+      rM[1][1] = Nwx(1,a)*Nwx(1,b);
+      rM[2][1] = Nwx(2,a)*Nwx(1,b);
+      rM[0][2] = Nwx(0,a)*Nwx(2,b);
+      rM[1][2] = Nwx(1,a)*Nwx(2,b);
+      rM[2][2] = Nwx(2,a)*Nwx(2,b);
 
       double NxNx = Nwx(0,a)*Nwx(0,b) + Nwx(1,a)*Nwx(1,b) + Nwx(2,a)*Nwx(2,b);
-      T1 = mu*NxNx + rho*amd*Nw(b)*(Nw(a) + rho*tauM*uaNx(a)) + rho*Nw(a)*(uNx(b)+upNx(b)) + tauB*upNx(a)*upNx(b);
+      T1 = mu*NxNx + rho*amd*Nw(b)*(Nw(a) + rho*tauM*uaNx[a]) + rho*Nw(a)*(uNx[b]+upNx[b]) + tauB*upNx[a]*upNx[b];
 
       // dRm_a1/du_b1
-      double T2 = (mu + tauC)*rM(0,0) + esNx(0,a)*mu_g*esNx(0,b) - rho*tauM*uaNx(a)*updu(0,0,b);
+      double T2 = (mu + tauC)*rM[0][0] + esNx[0][a]*mu_g*esNx[0][b] - rho*tauM*uaNx[a]*updu[0][0][b];
       lK(0,a,b)  = lK(0,a,b)  + wl*(T2 + T1);
 
       // dRm_a1/du_b2
-      T2 = mu*rM(1,0) + tauC*rM(0,1) + esNx(0,a)*mu_g*esNx(1,b) - rho*tauM*uaNx(a)*updu(1,0,b);
+      T2 = mu*rM[1][0] + tauC*rM[0][1] + esNx[0][a]*mu_g*esNx[1][b] - rho*tauM*uaNx[a]*updu[1][0][b];
       lK(1,a,b)  = lK(1,a,b)  + wl*(T2);
 
       // dRm_a1/du_b3
-      T2 = mu*rM(2,0) + tauC*rM(0,2) + esNx(0,a)*mu_g*esNx(2,b) - rho*tauM*uaNx(a)*updu(2,0,b);
+      T2 = mu*rM[2][0] + tauC*rM[0][2] + esNx[0][a]*mu_g*esNx[2][b] - rho*tauM*uaNx[a]*updu[2][0][b];
       lK(2,a,b)  = lK(2,a,b)  + wl*(T2);
 
       // dRm_a2/du_b1
-      T2 = mu*rM(0,1) + tauC*rM(1,0) + esNx(1,a)*mu_g*esNx(0,b) - rho*tauM*uaNx(a)*updu(0,1,b);
+      T2 = mu*rM[0][1] + tauC*rM[1][0] + esNx[1][a]*mu_g*esNx[0][b] - rho*tauM*uaNx[a]*updu[0][1][b];
       lK(4,a,b) = lK(4,a,b)  + wl*(T2);
 
       // dRm_a2/du_b2
-      T2 = (mu + tauC)*rM(1,1) + esNx(1,a)*mu_g*esNx(1,b) - rho*tauM*uaNx(a)*updu(1,1,b);
+      T2 = (mu + tauC)*rM[1][1] + esNx[1][a]*mu_g*esNx[1][b] - rho*tauM*uaNx[a]*updu[1][1][b];
       lK(5,a,b)  = lK(5,a,b)  + wl*(T2 + T1);
 
       // dRm_a2/du_b3
-      T2 = mu*rM(2,1) + tauC*rM(1,2) + esNx(1,a)*mu_g*esNx(2,b) - rho*tauM*uaNx(a)*updu(2,1,b);
+      T2 = mu*rM[2][1] + tauC*rM[1][2] + esNx[1][a]*mu_g*esNx[2][b] - rho*tauM*uaNx[a]*updu[2][1][b];
       lK(6,a,b)  = lK(6,a,b)  + wl*(T2);
 
       // dRm_a3/du_b1
-      T2 = mu*rM(0,2) + tauC*rM(2,0) + esNx(2,a)*mu_g*esNx(0,b) - rho*tauM*uaNx(a)*updu(0,2,b);
+      T2 = mu*rM[0][2] + tauC*rM[2][0] + esNx[2][a]*mu_g*esNx[0][b] - rho*tauM*uaNx[a]*updu[0][2][b];
       lK(8,a,b)  = lK(8,a,b)  + wl*(T2);
 
       // dRm_a3/du_b2
-      T2 = mu*rM(1,2) + tauC*rM(2,1) + esNx(2,a)*mu_g*esNx(1,b) - rho*tauM*uaNx(a)*updu(1,2,b);
+      T2 = mu*rM[1][2] + tauC*rM[2][1] + esNx[2][a]*mu_g*esNx[1][b] - rho*tauM*uaNx[a]*updu[1][2][b];
       lK(9,a,b) = lK(9,a,b) + wl*(T2);
 
       // dRm_a3/du_b3;
-      T2 = (mu + tauC)*rM(2,2) + esNx(2,a)*mu_g*esNx(2,b) - rho*tauM*uaNx(a)*updu(2,2,b);
+      T2 = (mu + tauC)*rM[2][2] + esNx[2][a]*mu_g*esNx[2][b] - rho*tauM*uaNx[a]*updu[2][2][b];
       lK(10,a,b) = lK(10,a,b) + wl*(T2 + T1);
       //dmsg << "lK(10,a,b): " << lK(10,a,b);
     }
@@ -1903,7 +1915,7 @@ void fluid_3d_m_orig(ComMod& com_mod, const int vmsFlag, const int eNoNw, const 
 
   for (int b = 0; b < eNoNq; b++) {
     for (int a = 0; a < eNoNw; a++) {
-      T1 = rho*tauM*uaNx(a);
+      T1 = rho*tauM*uaNx[a];
 
       // dRm_a1/dp_b
       lK(3,a,b)  = lK(3,a,b)  - wl*(Nwx(0,a)*Nq(b) - Nqx(0,b)*T1);
@@ -1916,7 +1928,6 @@ void fluid_3d_m_orig(ComMod& com_mod, const int vmsFlag, const int eNoNw, const 
     }
   }
 }
-
 //---------------
 // get_viscosity
 //---------------
