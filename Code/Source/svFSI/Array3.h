@@ -296,6 +296,30 @@ class Array3
       allocate(num_rows, num_cols, num_slices);
     }
 
+    //------------
+    // set_values 
+    //------------
+    // Set the array values from an Array with the equivalent
+    // number of values.
+    //
+    // This sort of replicates the Fortan reshape function.
+    //
+    void set_values(Array<T>& rhs)
+    {
+      int rhs_size = rhs.size();
+
+      if (size_ != rhs_size) {
+        throw std::runtime_error("The RHS size " + std::to_string(rhs_size) + " does not have the same size " +
+            std::to_string(size_) + " of this array.");
+      }
+
+      auto rhs_data = rhs.data();
+
+      for (int i = 0; i < size_; i++) {
+        data_[i] = rhs_data[i];
+      }
+    }
+
    //------
     // read
     //------

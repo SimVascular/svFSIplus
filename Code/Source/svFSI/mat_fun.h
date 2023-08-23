@@ -34,12 +34,15 @@ namespace mat_fun {
     Array<double> mat_symm_prod(const Vector<double>& u, const Vector<double>& v, const int nd);
     double mat_trace(const Array<double>& A, const int nd);
 
+    Tensor4<double> ten_asym_prod12(const Array<double>& A, const Array<double>& B, const int nd);
     Tensor4<double> ten_ddot(const Tensor4<double>& A, const Tensor4<double>& B, const int nd);
     Tensor4<double> ten_ddot_2412(const Tensor4<double>& A, const Tensor4<double>& B, const int nd);
     Tensor4<double> ten_ddot_3424(const Tensor4<double>& A, const Tensor4<double>& B, const int nd);
 
     Tensor4<double> ten_dyad_prod(const Array<double>& A, const Array<double>& B, const int nd);
     Tensor4<double> ten_ids(const int nd);
+    Array<double> ten_mddot(const Tensor4<double>& A, const Array<double>& B, const int nd);
+
     Tensor4<double> ten_symm_prod(const Array<double>& A, const Array<double>& B, const int nd);
     Tensor4<double> ten_transpose(const Tensor4<double>& A, const int nd);
 

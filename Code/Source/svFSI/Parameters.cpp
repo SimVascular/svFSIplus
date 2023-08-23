@@ -139,6 +139,9 @@ void Parameters::read_xml(std::string file_name)
   // Get general parameters.
   general_simulation_parameters.set_values(root_element);
 
+  // Set Contact values.
+  set_contact_values(root_element);
+
   // Set Add_mesh values.
   set_mesh_values(root_element);
 
@@ -147,6 +150,21 @@ void Parameters::read_xml(std::string file_name)
 
   // Set Add_equation values.
   set_equation_values(root_element);
+}
+
+//--------------------
+// set_contact_values
+//--------------------
+//
+void Parameters::set_contact_values(tinyxml2::XMLElement* root_element)
+{
+  auto item = root_element->FirstChildElement(ContactParameters::xml_element_name_.c_str());
+  
+  if (item == nullptr) {
+    return;
+  }
+
+  contact_parameters.set_values(item);
 }
 
 //---------------------
@@ -385,7 +403,7 @@ BoundaryConditionParameters::BoundaryConditionParameters()
 
   set_parameter("Ramp_function", false, !required, ramp_function);
 
-  set_parameter("Shell_bc_type", "", !required, shell_bc_type);
+  set_parameter("CST_shell_bc_type", "", !required, cst_shell_bc_type);
   set_parameter("Spatial_profile_file_path", "", !required, spatial_profile_file_path);
   set_parameter("Spatial_values_file_path", "", !required, spatial_values_file_path);
   set_parameter("Stiffness", 1.0, !required, stiffness);
@@ -473,6 +491,7 @@ const std::string ConstitutiveModelParameters::xml_element_name_ = "Constitutive
 // [TODO] Should use the types defined in consts.h.
 const std::string ConstitutiveModelParameters::GUCCIONE_MODEL = "Guccione";
 const std::string ConstitutiveModelParameters::HGO_MODEL = "HGO";
+const std::string ConstitutiveModelParameters::LEE_SACKS = "Lee-Sacks";
 const std::string ConstitutiveModelParameters::NEOHOOKEAN_MODEL = "neoHookean";
 const std::string ConstitutiveModelParameters::STVENANT_KIRCHHOFF_MODEL = "stVenantKirchhoff";
 
@@ -486,6 +505,8 @@ const std::map<std::string, std::string> ConstitutiveModelParameters::constituti
   { "Gucci",                                     ConstitutiveModelParameters::GUCCIONE_MODEL},
 
   {ConstitutiveModelParameters::HGO_MODEL, ConstitutiveModelParameters::HGO_MODEL},
+
+  {ConstitutiveModelParameters::LEE_SACKS, ConstitutiveModelParameters::LEE_SACKS},
 
   {ConstitutiveModelParameters::NEOHOOKEAN_MODEL, ConstitutiveModelParameters::NEOHOOKEAN_MODEL},
   {"nHK", ConstitutiveModelParameters::NEOHOOKEAN_MODEL},
@@ -503,6 +524,7 @@ using SetConstitutiveModelParamMapType = std::map<std::string, std::function<voi
 SetConstitutiveModelParamMapType SetConstitutiveModelParamMap = {
   {ConstitutiveModelParameters::GUCCIONE_MODEL, [](CmpType cp, CmpXmlType params) -> void {cp->guccione.set_values(params);}},
   {ConstitutiveModelParameters::HGO_MODEL, [](CmpType cp, CmpXmlType params) -> void {cp->holzapfel_gasser_ogden.set_values(params);}},
+  {ConstitutiveModelParameters::LEE_SACKS, [](CmpType cp, CmpXmlType params) -> void {cp->lee_sacks.set_values(params);}},
   {ConstitutiveModelParameters::NEOHOOKEAN_MODEL, [](CmpType cp, CmpXmlType params) -> void {cp->neo_hookean.set_values(params);}},
   {ConstitutiveModelParameters::STVENANT_KIRCHHOFF_MODEL, [](CmpType cp, CmpXmlType params) -> void {cp->stvenant_kirchhoff.set_values(params);}},
 };
@@ -514,9 +536,11 @@ using PrintConstitutiveModelParamMapType = std::map<std::string, std::function<v
 PrintConstitutiveModelParamMapType PrintConstitutiveModelParamMap = {
   {ConstitutiveModelParameters::GUCCIONE_MODEL, [](CmpType cp) -> void {cp->guccione.print_parameters();}},
   {ConstitutiveModelParameters::HGO_MODEL, [](CmpType cp) -> void {cp->holzapfel_gasser_ogden.print_parameters();}},
+  {ConstitutiveModelParameters::LEE_SACKS, [](CmpType cp) -> void {cp->lee_sacks.print_parameters();}},
   {ConstitutiveModelParameters::NEOHOOKEAN_MODEL, [](CmpType cp) -> void {cp->neo_hookean.print_parameters();}},
   {ConstitutiveModelParameters::STVENANT_KIRCHHOFF_MODEL, [](CmpType cp) -> void {cp->stvenant_kirchhoff.print_parameters();}},
 };
+
 
 //-------------------------------------
 // ConstitutiveModelGuccioneParameters
@@ -636,6 +660,47 @@ void HolzapfelGasserOgdenParameters::set_values(tinyxml2::XMLElement* xml_elem)
 
 void HolzapfelGasserOgdenParameters::print_parameters()
 {
+  auto params_name_value = get_parameter_list();
+  for (auto& [ key, value ] : params_name_value) {
+    std::cout << key << ": " << value << std::endl;
+  }
+}
+
+//--------------------
+// LeeSacksParameters 
+//--------------------
+//
+LeeSacksParameters::LeeSacksParameters()
+{
+  // A parameter that must be defined.
+  bool required = true;
+
+  set_parameter("a", 0.0, required, a);
+  set_parameter("a0", 0.0, required, a);
+  set_parameter("b1", 0.0, required, b1);
+  set_parameter("b2", 0.0, required, b2);
+  set_parameter("mu0", 0.0, required, mu0);
+
+  set_xml_element_name("Constitutive_model type=Lee-Sacks");
+}
+
+void LeeSacksParameters::set_values(tinyxml2::XMLElement* xml_elem)
+{
+  std::string error_msg = "Unknown Constitutive_model type=Lee-Sacks XML element '";
+
+  using std::placeholders::_1;
+  using std::placeholders::_2;
+  std::function<void(const std::string&, const std::string&)> ftpr =
+      std::bind( &LeeSacksParameters::set_parameter_value, *this, _1, _2);
+
+  xml_util_set_parameters(ftpr, xml_elem, error_msg);
+
+  value_set = true;
+}
+
+void LeeSacksParameters::print_parameters()
+{
+  std::cout << "Lee-Sacks: " << std::endl;
   auto params_name_value = get_parameter_list();
   for (auto& [ key, value ] : params_name_value) {
     std::cout << key << ": " << value << std::endl;
@@ -1304,7 +1369,7 @@ DomainParameters::DomainParameters()
   set_parameter("Poisson_ratio", 0.3, !required, poisson_ratio);
 
   set_parameter("Relative_tolerance", 1e-4, !required, relative_tolerance);
-  set_parameter("Shell_thicknes", 0.0, !required, shell_thickness);
+  set_parameter("Shell_thickness", 0.0, !required, shell_thickness);
   set_parameter("Solid_density", 0.5, !required, solid_density);
   set_parameter("Solid_viscosity", 0.9, !required, solid_viscosity);
   set_parameter("Source_term", 0.0, !required, source_term);
@@ -1597,6 +1662,77 @@ void ECGLeadsParameters::print_parameters()
   for (auto& [ key, value ] : params_name_value) { 
     std::cout << key << ": " << value << std::endl;
   }
+}
+
+//////////////////////////////////////////////////////////
+//                  ContactParameters                   //
+//////////////////////////////////////////////////////////
+
+// Process parameters for the 'Contact' XML element
+// used to specify parameters for contact computation.
+
+// Define the XML element name for contact parameters.
+const std::string ContactParameters::xml_element_name_ = "Contact";
+
+//--------------------
+// EquationParameters
+//--------------------
+//
+ContactParameters::ContactParameters()
+{
+  set_xml_element_name(xml_element_name_);
+
+  // A parameter that must be defined.
+  bool required = true;
+
+  // Contact model.
+  model = Parameter<std::string>("model", "", required);
+
+  // Define contact parameters.
+  //
+  set_parameter("Closest_gap_to_activate_penalty", 1.0, !required, closest_gap_to_activate_penalty);
+  set_parameter("Desired_separation", 0.05, !required, desired_separation);
+  set_parameter("Min_norm_of_face_normals", 0.7, !required, min_norm_of_face_normals);
+  set_parameter("Penalty_constant", 1e5, !required, penalty_constant);
+}
+
+void ContactParameters::print_parameters()
+{
+  std::cout << std::endl;
+  std::cout << "-------------------" << std::endl;
+  std::cout << "Contact Parameters" << std::endl;
+  std::cout << "-------------------" << std::endl;
+  std::cout << model.name() << ": " << model.value() << std::endl;
+
+  auto params_name_value = get_parameter_list();
+  for (auto& [ key, value ] : params_name_value) {
+    std::cout << key << ": " << value << std::endl;
+  }
+}
+
+//------------
+// set_values
+//------------
+void ContactParameters::set_values(tinyxml2::XMLElement* xml_elem)
+{
+  using namespace tinyxml2;
+  std::string error_msg = "Unknown " + xml_element_name_ + " XML element '";
+
+  // Get the 'type' from the <Add_projection name=NAME> element.
+  const char* mname;
+  auto result = xml_elem->QueryStringAttribute("model", &mname);
+  if (mname == nullptr) {
+    throw std::runtime_error("No MODEL given in the XML <Contact model=MODEL> element.");
+  }
+  model.set(std::string(mname));
+
+  using std::placeholders::_1;
+  using std::placeholders::_2;
+
+  std::function<void(const std::string&, const std::string&)> ftpr =
+      std::bind( &ProjectionParameters::set_parameter_value, *this, _1, _2);
+
+  xml_util_set_parameters(ftpr, xml_elem, error_msg);
 }
 
 //////////////////////////////////////////////////////////

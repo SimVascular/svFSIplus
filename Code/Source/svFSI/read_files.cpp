@@ -422,8 +422,8 @@ void read_bc(Simulation* simulation, EquationParameters* eq_params, eqType& lEq,
   // Read BCs for shells with triangular elements. Not necessary for
   // NURBS elements
   //
-  if (bc_params->shell_bc_type.defined()) { 
-    auto ctmp = bc_params->shell_bc_type.value(); 
+  if (bc_params->cst_shell_bc_type.defined()) { 
+    auto ctmp = bc_params->cst_shell_bc_type.value(); 
     if (std::set<std::string>{"Fixed", "fixed", "Clamped", "clamped"}.count(ctmp)) {
       lBc.bType = utils::ibset(lBc.bType, enum_int(BoundaryConditionType::bType_fix));
       if (!utils::btest(lBc.bType, enum_int(BoundaryConditionType::bType_Dir))) {
@@ -1166,8 +1166,12 @@ void read_domain(Simulation* simulation, EquationParameters* eq_params, eqType& 
         read_cep_domain(simulation, eq_params, domain_params, lEq.dmn[iDmn]);
      }
 
-     // Set parameters for a solid material model.
-     if ((lEq.dmn[iDmn].phys == EquationType::phys_struct)  || (lEq.dmn[iDmn].phys == EquationType::phys_ustruct)) { 
+     // Read material/constitutive model parameters for nonlinear
+     // elastodynamics simulations (both solids and shells)
+     //
+     if ( (lEq.dmn[iDmn].phys == EquationType::phys_shell) || 
+          (lEq.dmn[iDmn].phys == EquationType::phys_struct) || 
+          (lEq.dmn[iDmn].phys == EquationType::phys_ustruct)) { 
         read_mat_model(simulation, eq_params, domain_params, lEq.dmn[iDmn]);
         if (utils::is_zero(lEq.dmn[iDmn].stM.Kpen) && lEq.dmn[iDmn].phys == EquationType::phys_struct) { 
           //err = "Incompressible struct is not allowed. Use "//  "penalty method or ustruct"
@@ -1440,7 +1444,16 @@ void read_files(Simulation* simulation, const std::string& file_name)
 
   auto& com_mod = simulation->get_com_mod();
 
+  #define n_debug_read_files
+  #ifdef debug_read_files
+  DebugMsg dmsg(__func__, com_mod.cm.idcm());
+  dmsg.banner();
+  #endif
+
   // Read the solver XML file.
+  #ifdef debug_read_files
+  dmsg << "Read the solver XML file " << " ... ";
+  #endif
   if (!com_mod.resetSim) {
     simulation->read_parameters(std::string(file_name));
   }
@@ -1479,6 +1492,9 @@ void read_files(Simulation* simulation, const std::string& file_name)
   simulation->set_module_parameters();
 
   // Read mesh and BCs data.
+  #ifdef debug_read_files
+  dmsg << "Read mesh and BCs data " << " ... ";
+  #endif
   read_msh_ns::read_msh(simulation);
 
   // Reading immersed boundary mesh data.
@@ -1502,6 +1518,10 @@ void read_files(Simulation* simulation, const std::string& file_name)
   com_mod.nEq = nEq; 
   com_mod.eq.resize(nEq);
   std::for_each(com_mod.eq.begin(),com_mod.eq.end(),[&](eqType& eq){eq.roInf=simulation->roInf;});
+  #ifdef debug_read_files
+  dmsg << "Read equations " << " ... ";
+  dmsg << "nEq: " << nEq;
+  #endif
 
   for (int iEq = 0; iEq < nEq; iEq++) { 
     auto& eq = com_mod.eq[iEq];
@@ -1573,6 +1593,9 @@ void read_files(Simulation* simulation, const std::string& file_name)
       }     
     }     
   }
+  #ifdef debug_read_files
+  dmsg << "Done Read equations " << " ";
+  #endif
 
   auto& cep_mod = simulation->get_cep_mod();
 
@@ -1635,6 +1658,10 @@ void read_files(Simulation* simulation, const std::string& file_name)
     com_mod.cplBC.nX = 0;
     com_mod.cplBC.xo.clear();
   }
+
+  #ifdef debug_read_files
+  dmsg << "Done" << " ";
+  #endif
 }
 
 //--------------------------------
@@ -1933,19 +1960,23 @@ void read_mat_model(Simulation* simulation, EquationParameters* eq_params, Domai
   }
 
   // If no constitutive model was given use a NeoHookean model.
+  //
+  ConstitutiveModelType cmodel_type;
+  std::string cmodel_str;
+
   if (!domain_params->constitutive_model.defined()) { 
     lDmn.stM.isoType = ConstitutiveModelType::stIso_nHook;
-    lDmn.stM.C10 = mu * 0.5;
-    return;
-  }
+    cmodel_type = ConstitutiveModelType::stIso_nHook;
+    cmodel_str = "neoHookean";
 
   // Get the constitutive model type.
-  ConstitutiveModelType cmodel_type;
-  auto cmodel_str = domain_params->constitutive_model.type.value();
-  try {
-    cmodel_type = constitutive_model_name_to_type.at(cmodel_str);
-  } catch (const std::out_of_range& exception) {
-    throw std::runtime_error("Unknown constitutive model type '" + cmodel_str + ".");
+  } else {
+    cmodel_str = domain_params->constitutive_model.type.value();
+    try {
+      cmodel_type = constitutive_model_name_to_type.at(cmodel_str);
+    } catch (const std::out_of_range& exception) {
+      throw std::runtime_error("Unknown constitutive model type '" + cmodel_str + ".");
+    }
   }
 
   // Set material properties for the domain 'lDmn'.
@@ -1970,6 +2001,21 @@ void read_mat_model(Simulation* simulation, EquationParameters* eq_params, Domai
       lDmn.stM.Tf.gt.lrmp = fiber_params.ramp_function.defined();
       read_fiber_temporal_values_file(fiber_params, lDmn);
     }
+  }
+
+  // Check for shell model
+  //
+  // ST91 is the default and the only dilational penalty model for
+  // compressible shell elements. This is set to avoid any square-
+  // root evaulations of the Jacobian during Newton iterations for
+  // satisfying plane-stress condition.
+  //
+  if (lDmn.phys == EquationType::phys_shell) {
+    lDmn.stM.Kpen = kap;
+    if (!incompFlag) {
+      lDmn.stM.volType = ConstitutiveModelType::stVol_ST91;
+    }
+    return;
   }
 
   // Look for dilational penalty model. HGO uses quadratic penalty model.
