@@ -1569,7 +1569,7 @@ void fluid_3d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
     u[0] = u[0] + Nw(a)*yl(0,a);
     u[1] = u[1] + Nw(a)*yl(1,a);
     u[2] = u[2] + Nw(a)*yl(2,a);
-
+    
     ux[0][0] += Nwx(0,a)*yl(0,a);
     ux[1][0] += Nwx(1,a)*yl(0,a);
     ux[2][0] += Nwx(2,a)*yl(0,a);
