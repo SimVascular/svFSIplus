@@ -22,6 +22,7 @@ jobs:
         run: | 
           brew install cmake vtk openblas lapack mesa open-mpi qt5
           brew link --force qt5
+          brew link --overwrite qt@5
           brew install lcov
           sudo ln -s /usr/local/opt/qt5/mkspecs /usr/local/mkspecs
           sudo ln -s /usr/local/opt/qt5/plugins /usr/local/plugins
