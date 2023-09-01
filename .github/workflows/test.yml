@@ -20,8 +20,7 @@ jobs:
       - name: Install MacOS dependencies
         if: startsWith(matrix.os, 'macos')
         run: | 
-          brew install qt5
-          brew install cmake vtk openblas lapack mesa open-mpi
+          brew install cmake vtk openblas lapack mesa open-mpi qt
           #brew link --force qt5
           #brew link --overwrite qt@5
           brew install lcov
