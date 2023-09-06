@@ -20,33 +20,33 @@
 </GeneralSimulationParameters>
 
 <Add_mesh name="lumen" > 
-  <Mesh_file_path> mesh/lumen/mesh-complete.mesh.vtu  </Mesh_file_path>
+  <Mesh_file_path> mesh/fluid/mesh-complete.mesh.vtu  </Mesh_file_path>
   <Add_face name="lumen_inlet">
-      <Face_file_path> mesh/lumen/mesh-surfaces/lumen_inlet.vtp </Face_file_path>
+      <Face_file_path> mesh/fluid/mesh-surfaces/start.vtp </Face_file_path>
   </Add_face>
   <Add_face name="lumen_outlet">
-      <Face_file_path> mesh/lumen/mesh-surfaces/lumen_outlet.vtp </Face_file_path>
+      <Face_file_path> mesh/fluid/mesh-surfaces/end.vtp </Face_file_path>
   </Add_face>
   <Add_face name="lumen_wall">
-      <Face_file_path> mesh/lumen/mesh-surfaces/lumen_wall.vtp </Face_file_path>
+      <Face_file_path> mesh/fluid/mesh-surfaces/interface.vtp </Face_file_path>
   </Add_face>
   <Domain> 0 </Domain>
 
 </Add_mesh>
 
 <Add_mesh name="wall" >
-  <Mesh_file_path> mesh/wall/mesh-complete.mesh.vtu  </Mesh_file_path>
+  <Mesh_file_path> mesh/solid/mesh-complete.mesh.vtu  </Mesh_file_path>
   <Add_face name="wall_inlet">
-      <Face_file_path> mesh/wall/mesh-surfaces/wall_inlet.vtp </Face_file_path>
+      <Face_file_path> mesh/solid/mesh-surfaces/start.vtp </Face_file_path>
   </Add_face>
   <Add_face name="wall_outlet">
-      <Face_file_path> mesh/wall/mesh-surfaces/wall_outlet.vtp </Face_file_path>
+      <Face_file_path> mesh/solid/mesh-surfaces/end.vtp </Face_file_path>
   </Add_face>
   <Add_face name="wall_inner">
-      <Face_file_path> mesh/wall/mesh-surfaces/wall_inner.vtp </Face_file_path>
+      <Face_file_path> mesh/solid/mesh-surfaces/interface.vtp </Face_file_path>
   </Add_face>
   <Add_face name="wall_outer">
-      <Face_file_path> mesh/wall/mesh-surfaces/wall_outer.vtp </Face_file_path>
+      <Face_file_path> mesh/solid/mesh-surfaces/outside.vtp </Face_file_path>
   </Add_face>
   <Domain> 1 </Domain>
 </Add_mesh>
