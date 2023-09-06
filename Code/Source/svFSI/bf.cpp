@@ -72,9 +72,9 @@ void bf_construct(ComMod& com_mod, const mshType& lM, const int e, const int eNo
     switch (cPhys) {
       case EquationType::phys_shell:
         // [NOTE] passing Array 'bfl' to Vector 'tfl' arg in shell_fp does not work.
-        //shells::shell_fp(com_mod, eNoN, w, N, Nx, dl, xl, bfl, lR, lK);
+        shells::shell_fp(com_mod, eNoN, w, N, Nx, dl, xl, bfl, lR, lK);
         //CALL SHELLFP(eNoN, w, N, Nx, dl, xl, bfl, lR, lK)
-        throw std::runtime_error("[bf_construct] Shell follower pressure loads not implemented.");
+        //throw std::runtime_error("[bf_construct] Shell follower pressure loads not implemented.");
       break;
 
       case EquationType::phys_CMM:
@@ -143,7 +143,7 @@ void set_bf(ComMod& com_mod, const Array<double>& Dg)
 //
 void set_bf_l(ComMod& com_mod, bfType& lBf, mshType& lM, const Array<double>& Dg)
 {
-  #define debug_set_bf_l 
+  #define n_debug_set_bf_l 
   auto& cm = com_mod.cm;
   #ifdef debug_set_bf_l 
   DebugMsg dmsg(__func__, com_mod.cm.idcm());

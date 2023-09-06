@@ -25,6 +25,9 @@ void post(Simulation* simulation, const mshType& lM, Array<double>& res, const A
 
 void ppbin2vtk(Simulation* simulation);
 
+void shl_post(Simulation* simulation, const mshType& lM, const int m, Array<double>& res, 
+    Vector<double>& resE, const Array<double>& lD, const int iEq, consts::OutputType outGrp);
+
 void tpost(Simulation* simulation, const mshType& lM, const int m, Array<double>& res, Vector<double>& resE, const Array<double>& lD, 
     const Array<double>& lY, const int iEq, consts::OutputType outGrp);
 

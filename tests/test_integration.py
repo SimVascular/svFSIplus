@@ -110,7 +110,27 @@ def test_diffusion_line_source(n_proc):
     name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
     run_with_reference(folder, name_inp, name_ref, field, t_max, n_proc)
 
+
+@pytest.mark.parametrize("n_proc", procs)
+def test_pipe3D_RCR(n_proc):
+    folder = os.path.join("cases", "pipe3D_RCR")
+    fields = ["Pressure", "Velocity"]
+    t_max = 2
+    name_inp = "svFSI.xml"
+    name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
+    run_with_reference(folder, name_inp, name_ref, fields, t_max, n_proc)
+
     
+@pytest.mark.parametrize("n_proc", procs)
+def test_cavity_2d(n_proc):
+    folder = os.path.join("cases", "driven_cavity_2D")
+    fields = ["Pressure", "Velocity"]
+    t_max = 2
+    name_inp = "svFSI.xml"
+    name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
+    run_with_reference(folder, name_inp, name_ref, fields, t_max, n_proc)
+
+
 @pytest.mark.parametrize("n_proc", procs)
 def test_ale_3d_pipe(n_proc):
     folder = os.path.join("cases", "ale_3d_pipe")

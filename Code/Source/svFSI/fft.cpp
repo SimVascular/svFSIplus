@@ -20,8 +20,9 @@ void fft(const int np, const std::vector<std::vector<double>>& temporal_values, 
 
   #define n_debug_fft
   #ifdef debug_fft
-  DebugMsg dmsg(__func__, com_mod.cm.idcm());
+  DebugMsg dmsg(__func__, 0);
   dmsg.banner();
+  dmsg << "np: " << np;
   #endif
 
   Vector<double> t(np);
@@ -62,11 +63,6 @@ void fft(const int np, const std::vector<std::vector<double>>& temporal_values, 
   int ns = 0;
   Vector<double> ns_array(512);
 
-  double r[1][16];
-  for (int n = 0; n < gt.n; n++) {
-    r[0][n] = 0.0;
-  }
-
   for (int n = 0; n < gt.n; n++) {
     double tmp = static_cast<double>(n);
     gt.r.set_col(n, 0.0);
@@ -80,9 +76,7 @@ void fft(const int np, const std::vector<std::vector<double>>& temporal_values, 
         double s = (q(j,i+1) - q(j,i)) / (t[i+1] - t[i]);
         if (n == 0) {
           gt.r(j,n) = gt.r(j,n) + 0.5*(t[i+1] - t[i]) * (q(j,i+1) + q(j,i));
-          r[j][n] = r[j][n] + 0.5*(t[i+1] - t[i]) * (q(j,i+1) + q(j,i));
         } else {
-          r[j][n] = r[j][n] + s*(cos(kn) - cos(ko));
           gt.r(j,n) = gt.r(j,n) + s*(cos(kn) - cos(ko));
           gt.i(j,n) = gt.i(j,n) - s*(sin(kn) - sin(ko));
         }

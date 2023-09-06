@@ -291,27 +291,49 @@ void VtkVtuData::VtkVtuDataImpl::set_connectivity(const int nsd, const Array<int
   int np_elem = conn.nrows();
   int num_coords = vtk_ugrid->GetPoints()->GetNumberOfPoints();
   unsigned char vtk_cell_type;
-  //std::cout << "[VtkVtuData.set_connectivity] " << std::endl;
-  //std::cout << "[VtkVtuData.set_connectivity] num_elems: " << num_elems << std::endl;
-  //std::cout << "[VtkVtuData.set_connectivity] np_elem: " << np_elem << std::endl;
-  //std::cout << "[VtkVtuData.set_connectivity] num_coords: " << num_coords << std::endl;
+  /*
+  std::cout << "[VtkVtuData.set_connectivity] " << std::endl;
+  std::cout << "[VtkVtuData.set_connectivity] nsd: " << nsd << std::endl;
+  std::cout << "[VtkVtuData.set_connectivity] num_elems: " << num_elems << std::endl;
+  std::cout << "[VtkVtuData.set_connectivity] np_elem: " << np_elem << std::endl;
+  std::cout << "[VtkVtuData.set_connectivity] num_coords: " << num_coords << std::endl;
+  */
 
   if (nsd == 2) {
-    if (np_elem == 4) {
+
+    if (np_elem == 3) {
+      vtk_cell_type = VTK_TRIANGLE;
+
+    } else if (np_elem == 4) {
       vtk_cell_type = VTK_QUAD;
 
-    } else if (np_elem == 3) {
-      vtk_cell_type = VTK_TRIANGLE;
+    } else if (np_elem == 6) {
+      vtk_cell_type = VTK_QUADRATIC_TRIANGLE;
+
+    } else if (np_elem == 8) {
+      vtk_cell_type = VTK_QUADRATIC_QUAD;
+
     }
 
   } else if (nsd == 3) {
-    if (np_elem == 4) {
+
+    if (np_elem == 3) {
+      vtk_cell_type = VTK_TRIANGLE;
+
+    } else if (np_elem == 4) {
       vtk_cell_type = VTK_TETRA;
+
     } else if (np_elem == 8) {
       vtk_cell_type = VTK_HEXAHEDRON;
+
     } else if (np_elem == 10) {
-      vtk_cell_type = VTK_HEXAHEDRON;
+      vtk_cell_type = VTK_QUADRATIC_TETRA;
+
+    } else if (np_elem == 20) {
+      vtk_cell_type = VTK_QUADRATIC_HEXAHEDRON;
+
     }
+
   }
   
   if (np_elem == 2) {
