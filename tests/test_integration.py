@@ -32,7 +32,7 @@ def run_by_name(folder, name, t_max, n_proc=1):
     Simulation results
     """
     # run simulation
-    cmd = " ".join(["mpirun", "--oversubscribe", "-np", str(n_proc), cpp_exec, name])
+    cmd = " ".join(["mpirun", "--oversubscribe" if n_proc>1 else "", "-np", str(n_proc), cpp_exec, name])
     subprocess.call(cmd, cwd=folder, shell=True)
 
     # read results
@@ -71,7 +71,15 @@ def run_with_reference(folder, name_inp, name_ref, fields, t_max, n_proc=1):
                 b = b[:, :2]
 
         # compare solution to reference
-        assert np.all(np.isclose(a, b, rtol=RTOL[f]))
+        close = np.isclose(a, b, rtol=RTOL[f])
+        if np.all(close):
+            return
+        else:
+            msg = "Test failed!"
+            msg += "\nResults in field " + f + " differ by more than rtol=" + str(RTOL[f])
+            msg += " in " + str(np.sum(close)) + " out of " + str(close.size) + " results."
+            msg += " Max. abs. difference is " + "{:.1e}".format(np.max(np.abs(a-b)))
+            raise ValueError(msg)
 
 
 @pytest.mark.parametrize("mesh", ["N" + str(2**i).zfill(3) for i in range(2, 3)])
@@ -136,6 +144,16 @@ def test_cavity_2d(n_proc):
     folder = os.path.join("cases", "driven_cavity_2D")
     fields = ["Pressure", "Velocity"]
     t_max = 2
+    name_inp = "svFSI.xml"
+    name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
+    run_with_reference(folder, name_inp, name_ref, fields, t_max, n_proc)
+
+
+@pytest.mark.parametrize("n_proc", procs)
+def test_ale_3d_pipe(n_proc):
+    folder = os.path.join("cases", "ale_3d_pipe")
+    fields = ["Displacement", "Pressure", "Velocity"]
+    t_max = 5
     name_inp = "svFSI.xml"
     name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
     run_with_reference(folder, name_inp, name_ref, fields, t_max, n_proc)
