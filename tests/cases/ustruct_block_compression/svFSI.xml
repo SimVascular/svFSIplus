@@ -66,7 +66,7 @@
    <Coupled> true </Coupled>
    <Min_iterations> 4 </Min_iterations>  
    <Max_iterations> 10 </Max_iterations> 
-   <Tolerance> 1e-8 </Tolerance> 
+   <Tolerance> 1e-16 </Tolerance> 
 
    <Constitutive_model type="nHK"> </Constitutive_model>
    <Density> 1e-3 </Density> 
