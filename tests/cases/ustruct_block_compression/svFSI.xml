@@ -66,7 +66,7 @@
    <Coupled> true </Coupled>
    <Min_iterations> 4 </Min_iterations>  
    <Max_iterations> 10 </Max_iterations> 
-   <Tolerance> 1e-16 </Tolerance> 
+   <Tolerance> 1e-13 </Tolerance> 
 
    <Constitutive_model type="nHK"> </Constitutive_model>
    <Density> 1e-3 </Density> 
@@ -95,8 +95,8 @@
    <LS type="GMRES" >
       <Preconditioner> svfsi </Preconditioner> 
       <!--Preconditioner> Trilinos-ILU </Preconditioner--> 
-      <Tolerance> 1e-8 </Tolerance>
-      <Max_iterations> 100 </Max_iterations> 
+      <Tolerance> 1e-16 </Tolerance>
+      <Max_iterations> 200 </Max_iterations> 
       <Krylov_space_dimension> 50 </Krylov_space_dimension> 
    </LS>
 
