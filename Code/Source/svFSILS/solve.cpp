@@ -129,8 +129,11 @@ void fsils_solve(FSILS_lhsType& lhs, FSILS_lsType& ls, const int dof, Array<doub
 
     case LinearSolverType::LS_TYPE_CG:
       if (dof == 1) {
-         throw std::runtime_error("FSILS: CGRADS is not implemented");
-        //CALL CGRADS(lhs, ls.RI, Val, R)
+        auto Valv = Val.row(0);
+        auto Rv = R.row(0);
+        cgrad::cgrad_s(lhs, ls.RI, Valv, Rv);
+        Val.set_row(0,Valv);
+        R.set_row(0,Rv);
       } else {
         cgrad::cgrad_v(lhs, ls.RI, dof, Val, R);
       }
