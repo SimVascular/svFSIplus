@@ -968,6 +968,7 @@ void dist_eq(ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, const std::
   cm.bcast(cm_mod, &lEq.ls.absTol);
   cm.bcast(cm_mod, &lEq.ls.mItr);
   cm.bcast(cm_mod, &lEq.ls.sD);
+  cm.bcast(cm_mod, lEq.ls.config);
 
   #ifdef dist_eq
   dmsg << "lEq.phys: " << lEq.phys;

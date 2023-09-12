@@ -63,6 +63,40 @@ if(WITH_TRILINOS)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif()
 
+# Find PETSC package if requested
+if(SV_USE_PETSC)
+  # PETSC_DIR is the path to installed PETSC folder.
+  # In linux, it should be defined as an environment variable
+  # in bash shell.
+  IF(DEFINED ENV{PETSC_DIR})
+    set(PETSC_FOUND 1)
+  ELSE()
+    set(PETSC_FOUND 0)
+  ENDIF()
+
+  IF(PETSC_FOUND)
+    SET(PETSC_DIR $ENV{PETSC_DIR})
+    SET(PETSC_INCLUDE_DIRS "${PETSC_DIR}/include;${PETSC_DIR}/../include")
+    SET(PETSC_LIBRARY_DIRS "-L${PETSC_DIR}/lib -lpetsc")
+    MESSAGE("\nFound PETSC!  Here are the details: ")
+    MESSAGE("   PETSC_DIR = ${PETSC_DIR}")
+    MESSAGE("   PETSC_LIBRARY_DIRS = ${PETSC_LIBRARY_DIRS}")
+    MESSAGE("   PETSC_INCLUDE_DIRS = ${PETSC_INCLUDE_DIRS}")
+    MESSAGE("End of PETSC details\n")
+    MESSAGE("Setting WITH_PETSC to true\n")
+    set(WITH_PETSC 1)
+  ELSE()
+    MESSAGE(WARNING "Could not find PETSC. Compiling svFSI without PETSC.")
+  ENDIF()
+
+endif()
+
+# add PETSC flags and defines
+if(WITH_PETSC)
+  ADD_DEFINITIONS(-DWITH_PETSC)
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pedantic -std=c99")
+endif()
+
 # svFSI requires LAPACK
 find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
@@ -156,6 +190,14 @@ if(WITH_TRILINOS)
   link_directories(${Trilinos_TPL_LIBRARY_DIRS})
 endif()
 
+if(WITH_PETSC)
+  set(CSRCS ${CSRCS} petsc_linear_solver.c)
+
+  # PETSC directories and libraries
+  include_directories(${PETSC_INCLUDE_DIRS})
+  link_directories(${PETSC_LIBRARY_DIRS})
+endif()
+
 simvascular_add_executable(${SV_SVFSI_EXE}
   SRCS ${CSRCS}
   DEV_SCRIPT_NAME "mysvfsi"
@@ -187,6 +229,10 @@ endif()
 
 if(WITH_TRILINOS)
   target_link_libraries(${SV_SVFSI_EXE} ${Trilinos_LIBRARIES} ${Trilinos_TPL_LIBRARIES})
+endif()
+
+if(WITH_PETSC)
+  target_link_libraries(${SV_SVFSI_EXE} ${PETSC_LIBRARY_DIRS})
 endif()
 
 # coverage

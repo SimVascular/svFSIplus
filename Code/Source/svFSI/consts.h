@@ -430,7 +430,9 @@ enum class PreconditionerType
   PREC_TRILINOS_IC = 706,
   PREC_TRILINOS_ICT = 707, 
   PREC_TRILINOS_ML = 708,
-  PREC_RCS = 709
+  PREC_RCS = 709, PREC_TRILINOS_GR = 710,
+  PREC_TRILINOS_DIRECT = 711, PREC_TRILINOS_ML_XML = 712,
+  PREC_PETSC = 713
 };
 
 // Map for preconditioner type string to pair (PreconditionerType enum, bool(true if Trilinos precondition)). 

@@ -667,6 +667,9 @@ class lsType
 
     // Calling duration              (OUT)
     double callD = 0.0;
+
+    //Configuration file for linear solvers (Trilinos, PETSc)
+    std::string config;
 };
 
 
@@ -1315,6 +1318,25 @@ class tlsType
     Array<double> R;
 };
 
+// Data type for PETSc Linear Solver related arrays
+//
+class plsType
+{
+  public:
+
+    //  Local to global mapping
+    Vector<int> ltg;
+
+    //  Factor for Dirichlet BCs
+    Array<double> W;
+
+    //  Residue
+    Array<double> R;
+
+    // Something
+    Array<double> V;
+};
+
 
 //--------
 // ComMod 
@@ -1601,6 +1623,9 @@ class ComMod {
 
     // Trilinos Linear Solver data type
     tlsType  tls;
+
+    // PETSc Liear Solver data type
+    plsType pls;
 
     bool debug_active = false;
 

@@ -30,6 +30,10 @@
 
 #include "mpi.h"
 
+#ifdef WITH_PETSC
+  #include "petsc_linear_solver.h"
+#endif
+
 #include <fstream>
 #include <iostream>
 #include <math.h>
@@ -43,6 +47,10 @@
 //
 void finalize(Simulation* simulation)
 {
+  auto& com_mod = simulation->com_mod;
+  #ifdef WITH_PETSC
+    petsc_destroy_all_(&com_mod.nEq);
+  #endif
 }
 
 //---------------
@@ -524,6 +532,11 @@ void initialize(Simulation* simulation, Vector<double>& timeP)
     if (com_mod.lhs.foC) {
       fsils_lhs_free(com_mod.lhs);
     }
+
+    #ifdef with_petsc
+      petsc_destroy_all_();   // no argument passed in INITIALIZE.f
+    #endif
+
   }
 
   fsi_linear_solver::fsils_commu_create(communicator, cm.com());
@@ -539,6 +552,17 @@ void initialize(Simulation* simulation, Vector<double>& timeP)
       com_mod.tls.ltg(com_mod.lhs.map(a)) = com_mod.ltg(a);
     }
   } 
+
+  // Initialize PETSc
+  #ifdef with_petsc
+    petsc_initialize_(com_mod.lhs.nNo, com_mod.lhs.mynNo, nnz, com_mod.nEq, com_mod.ltg, com_mod.lhs.map, 
+    com_mod.lhs.rowPtr, com_mod.lhs.colPtr, com_mod.eq(1).ls.config);
+    for (int a = 0; a < com_mod.nEq; a++){
+      petsc_create_linearsolver_(com_mod.eq(a).ls.LS_type, com_mod.eq(a).ls.PREC_Type, com_mod.eq(a).ls.sD,
+      com_mod.eq(a).ls.mItr, com_mod.eq(a).ls.relTol, com_mod.eq(a).ls.absTol, com_mod.eq(a).phys, com_mod.eq(a).dof, 
+      a, com_mod.nEq);
+    }
+  #endif
 
   // Variable allocation and initialization
   int tnNo = com_mod.tnNo; 
