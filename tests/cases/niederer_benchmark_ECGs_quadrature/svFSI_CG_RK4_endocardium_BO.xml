@@ -9,6 +9,7 @@
   <Spectral_radius_of_infinite_time_step> 0.50 </Spectral_radius_of_infinite_time_step> 
   <Searched_file_name_to_trigger_stop> STOP_SIM </Searched_file_name_to_trigger_stop> 
 
+  <!-- <Save_results_in_folder> CG_RK4_endocardium_BO </Save_results_in_folder> -->
   <Save_results_to_VTK_format> true </Save_results_to_VTK_format> 
   <Name_prefix_of_saved_VTK_files> result </Name_prefix_of_saved_VTK_files> 
   <Increment_in_saving_VTK_files> 1 </Increment_in_saving_VTK_files> 
@@ -24,7 +25,7 @@
 
 <Add_mesh name="msh" > 
 
-  <Mesh_file_path> mesh/h0.1/mesh-complete.mesh.vtu   </Mesh_file_path>
+  <Mesh_file_path> mesh/h0.1/mesh-complete.mesh.vtu </Mesh_file_path>
 
   <Add_face name="X0">
       <Face_file_path> mesh/h0.1/mesh-surfaces/X0.vtp </Face_file_path>
@@ -70,35 +71,23 @@
    <Tolerance> 1e-6 </Tolerance> 
 
    <Domain id="1" >
-       <Electrophysiology_model> TTP </Electrophysiology_model>
-
-       <G_Na> 14.838 </G_Na>
-       <G_CaL> 3.98E-5 </G_CaL>
-       <G_Kr> 0.153 </G_Kr>
-       <G_Ks> 0.392 </G_Ks> 
-       <G_to> 0.294 </G_to>
+       <Electrophysiology_model> BO </Electrophysiology_model>
 
        <Isotropic_conductivity> 0.012571 </Isotropic_conductivity>
        <Anisotropic_conductivity> 0.082715 </Anisotropic_conductivity>
 
-       <Myocardial_zone> epicardium </Myocardial_zone>
+       <Myocardial_zone> endocardium </Myocardial_zone>
 
-       <ODE_solver> FE </ODE_solver>
+       <ODE_solver> RK4 </ODE_solver>
    </Domain>
   
    <Domain id="2" >
-       <Electrophysiology_model> TTP </Electrophysiology_model>
-
-       <G_Na> 14.838 </G_Na>
-       <G_CaL> 3.98E-5 </G_CaL>
-       <G_Kr> 0.153 </G_Kr>
-       <G_Ks> 0.392 </G_Ks> 
-       <G_to> 0.294 </G_to>
+       <Electrophysiology_model> BO </Electrophysiology_model>
 
        <Isotropic_conductivity> 0.012571 </Isotropic_conductivity>
        <Anisotropic_conductivity> 0.082715 </Anisotropic_conductivity>
 
-       <Myocardial_zone> epicardium </Myocardial_zone>
+       <Myocardial_zone> endocardium </Myocardial_zone>
 
        <Stimulus type="Istim" >
            <Amplitude> -35.714 </Amplitude>
@@ -107,17 +96,16 @@
            <Cycle_length> 10000.0 </Cycle_length>
        </Stimulus>
 
-       <ODE_solver> FE </ODE_solver>      
+       <ODE_solver> RK4 </ODE_solver>      
    </Domain>
 
    <Output type="Spatial" >
       <Action_potential> true </Action_potential>
    </Output>
 
-   <LS type="GMRES" >
-      <Max_iterations> 100 </Max_iterations>
+   <LS type="CG" >
+      <Preconditioner> svfsi </Preconditioner> 
       <Tolerance> 1e-6 </Tolerance>
-      <Krylov_space_dimension> 50 </Krylov_space_dimension>
    </LS>
 
   <ECGLeads>
