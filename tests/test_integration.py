@@ -107,9 +107,9 @@ def test_niederer_benchmark_ECGs_quadrature(confs_ecgs, n_proc):
     run_with_reference(folder, name_inp, name_ref, field, t_max, n_proc)
 
     for jj in range(0, 3):
-        ecg_trace = pd.read_csv(folder + '/' + str(n_proc) + '-procs/ecglead_' + str(jj + 1) + '.txt', header = None)
-        print(ecg_trace)
-        assert abs(ecg_trace.iloc[-1, 1] - confs_ecgs[jj + 1]) < RTOL['ECG']
+        ecg_trace = pd.read_csv(folder + "/" + str(n_proc) + "-procs/ecglead_" + str(jj + 1) + ".txt", header = None)
+        assert abs((ecg_trace.iloc[-1, 1] - confs_ecgs[jj + 1]) / confs_ecgs[jj + 1]) < RTOL['ECG'], \
+               "Results in field ecglead_" + str(jj + 1) + ".txt differ by more than rtol=" + str(RTOL['ECG']) + " for test case " + confs_ecgs[0] 
 
 
 @pytest.mark.parametrize("n_proc", procs)
