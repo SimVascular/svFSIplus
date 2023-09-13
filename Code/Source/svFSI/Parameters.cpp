@@ -2430,6 +2430,8 @@ LinearSolverParameters::LinearSolverParameters()
 
   set_parameter("Preconditioner", "", !required, preconditioner);
 
+  set_parameter("PETSc_file_path", "", !required, PETSc_file_path);
+
   set_parameter("Tolerance", 0.5, !required, tolerance);
 
   set_parameter("Use_trilinos_for_assembly", false, !required, use_trilinos_for_assembly);
