@@ -1333,7 +1333,7 @@ class plsType
     //  Residue
     Array<double> R;
 
-    // Something
+    // Factor for Lumped Parameter BCs
     Array<double> V;
 };
 
