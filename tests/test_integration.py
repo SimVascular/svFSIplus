@@ -81,6 +81,41 @@ def run_with_reference(folder, name_inp, name_ref, fields, t_max, n_proc=1):
             msg += " Max. abs. difference is " + "{:.1e}".format(np.max(np.abs(a-b)))
             raise ValueError(msg)
 
+@pytest.mark.parametrize("n_proc", procs)
+def test_1Dcable_TTP(n_proc):
+    folder = os.path.join("cases", "1Dcable_TTP")
+    field = ["Action_potential"]
+    t_max = 1
+    name_inp = "svFSI.xml"
+    name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
+    run_with_reference(folder, name_inp, name_ref, field, t_max, n_proc)
+
+@pytest.mark.parametrize("n_proc", procs)
+def test_2Dspiral_BO(n_proc):
+    folder = os.path.join("cases", "2Dspiral_BO")
+    field = ["Action_potential"]
+    t_max = 1
+    name_inp = "svFSI.xml"
+    name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
+    run_with_reference(folder, name_inp, name_ref, field, t_max, n_proc)
+
+@pytest.mark.parametrize("n_proc", procs)
+def test_2Dsquare_AP(n_proc):
+    folder = os.path.join("cases", "2Dsquare_AP")
+    field = ["Action_potential"]
+    t_max = 1
+    name_inp = "svFSI.xml"
+    name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
+    run_with_reference(folder, name_inp, name_ref, field, t_max, n_proc)
+
+@pytest.mark.parametrize("n_proc", procs)
+def test_purkinje(n_proc):
+    folder = os.path.join("cases", "purkinje")
+    field = ["Action_potential"]
+    t_max = 1
+    name_inp = "svFSI.xml"
+    name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
+    run_with_reference(folder, name_inp, name_ref, field, t_max, n_proc)
 
 @pytest.mark.parametrize("mesh", ["N" + str(2**i).zfill(3) for i in range(2, 3)])
 @pytest.mark.parametrize("ele", ["P1P1"])
