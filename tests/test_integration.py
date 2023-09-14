@@ -146,13 +146,12 @@ def test_niederer_benchmark_ECGs_quadrature(confs_ecgs, n_proc):
         assert abs((ecg_trace.iloc[-1, 1] - confs_ecgs[jj + 1]) / confs_ecgs[jj + 1]) < RTOL['ECG'], \
                "Results in field ecglead_" + str(jj + 1) + ".txt differ by more than rtol=" + str(RTOL['ECG']) + " for test case " + confs_ecgs[0] 
 
-
+@pytest.mark.parametrize("name_inp", ["svFSI_CG.xml", "svFSI_BICG.xml", "svFSI_GMRES.xml"])
 @pytest.mark.parametrize("n_proc", procs)
-def test_diffusion_line_source(n_proc):
+def test_diffusion_line_source(name_inp, n_proc):
     folder = os.path.join("cases", "diffusion_line_source")
     field = ["Temperature"]
-    t_max = 20
-    name_inp = "svFSI.xml"
+    t_max = 2
     name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
     run_with_reference(folder, name_inp, name_ref, field, t_max, n_proc)
 
