@@ -8,12 +8,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Build doxygen documentation
-        continue-on-error: true
-        uses: mattnotmitt/doxygen-action@v1.9.5
-        with:
-          working-directory: '.'
-          doxyfile-path: './Documentation/Doxyfile'
-          enable-latex: true
+        run: |
+          sudo apt-get install -y doxygen
+          doxygen Documentation/Doxyfile
       - name: Save documentation
         uses: actions/upload-artifact@v3
         with:
