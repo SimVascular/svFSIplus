@@ -21,12 +21,9 @@ int split_(int *nElptr, int *eNoNptr, int *eNoNbptr, int *IEN, int *nPartsPtr, i
 
 };
  
-//------------
-// distribute
-//------------
-// Partition and distribute data across processors.
-//
-// This function replicates the Fortran 'SUBROUTINE DISTRIBUTE' in DISTRIBUTE.f.
+/// @brief Partition and distribute data across processors.
+///
+/// This function replicates the Fortran 'SUBROUTINE DISTRIBUTE' in DISTRIBUTE.f.
 //
 void distribute(Simulation* simulation)
 {
@@ -516,10 +513,7 @@ void distribute(Simulation* simulation)
   cm.bcast(cm_mod, &cplBC.initRCR);
 }
 
-//---------
-// dist_bc
-//---------
-//
+
 void dist_bc(ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, bcType& lBc, const std::vector<mshType>& tMs,
              const Vector<int>& gmtl)
 {
@@ -903,10 +897,8 @@ void dist_bf(ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, bfType& lBf
   }
 }
 
-//---------
-// dist_eq
-//---------
-//
+
+
 void dist_eq(ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, const std::vector<mshType>& tMs,
              const Vector<int>& gmtl, CepMod& cep_mod, eqType& lEq)
 {
@@ -1122,10 +1114,8 @@ void dist_eq(ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, const std::
   }
 } 
 
-//-----------------
-// dist_mat_consts
-//-----------------
-// Distribute material properties to all processors.
+
+/// @brief Distribute material properties to all processors.
 //
 void dist_mat_consts(const ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, stModelType& lStM)
 {
@@ -1188,10 +1178,7 @@ void dist_mat_consts(const ComMod& com_mod, const CmMod& cm_mod, const cmType& c
 
 }
 
-//-----------------
-// dist_visc_model
-//-----------------
-//
+
 void dist_visc_model(const ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, viscModelType& lVis)
 {
   using namespace consts;
@@ -1204,10 +1191,7 @@ void dist_visc_model(const ComMod& com_mod, const CmMod& cm_mod, const cmType& c
   cm.bcast(cm_mod, &lVis.n);
 }
 
-//-----------
-// part_face
-//-----------
-//
+
 void part_face(Simulation* simulation, mshType& lM, faceType& lFa, faceType& gFa, Vector<int>& gmtl)
 {
   #ifdef debug_part_face
@@ -1405,10 +1389,8 @@ void part_face(Simulation* simulation, mshType& lM, faceType& lFa, faceType& gFa
   }
 }
 
-//----------
-// part_msh
-//----------
-// Reproduces the Fortran 'PARTMSH' subroutine.
+
+/// @brief Reproduces the Fortran 'PARTMSH' subroutine.
 //
 void part_msh(Simulation* simulation, int iM, mshType& lM, Vector<int>& gmtl, int nP, Vector<float>& wgt)
 {

@@ -29,10 +29,6 @@
 
 namespace eq_assem {
 
-//----------------
-// b_assem_neu_bc
-//----------------
-//
 void b_assem_neu_bc(ComMod& com_mod, const faceType& lFa, const Vector<double>& hg, const Array<double>& Yg) 
 {
   #define n_debug_b_assem_neu_bc
@@ -159,15 +155,14 @@ void b_assem_neu_bc(ComMod& com_mod, const faceType& lFa, const Vector<double>& 
   }
 }
 
-//--------------
-// b_neu_folw_p
-//--------------
-// For struct/ustruct - construct follower pressure load.
-// We use Nanson's formula to take change in normal direction with
-// deformation into account. Additional calculations based on mesh
-// need to be performed.
-//
-// Reproduces 'SUBROUTINE BNEUFOLWP(lFa, hg, Dg)'
+
+/// @brief For struct/ustruct - construct follower pressure load.
+///
+/// We use Nanson's formula to take change in normal direction with
+/// deformation into account. Additional calculations based on mesh
+/// need to be performed.
+///
+/// Reproduces 'SUBROUTINE BNEUFOLWP(lFa, hg, Dg)'
 //
 void b_neu_folw_p(ComMod& com_mod, const faceType& lFa, const Vector<double>& hg, const Array<double>& Dg) 
 {
@@ -295,12 +290,10 @@ void b_neu_folw_p(ComMod& com_mod, const faceType& lFa, const Vector<double>& hg
   }
 }
 
-//-----------------
-// global_eq_assem 
-//-----------------
-// This routine assembles the equation on a given mesh.
-//
-// Ag(tDof,tnNo), Yg(tDof,tnNo), Dg(tDof,tnNo)
+
+/// @brief This routine assembles the equation on a given mesh.
+///
+/// Ag(tDof,tnNo), Yg(tDof,tnNo), Dg(tDof,tnNo)
 //
 void global_eq_assem(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Array<double>& Ag, const Array<double>& Yg, const Array<double>& Dg)
 {

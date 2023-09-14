@@ -15,10 +15,6 @@
 
 namespace post {
 
-//----------
-// all_post
-//----------
-//
 void all_post(Simulation* simulation, Array<double>& res, const Array<double>& lY, const Array<double>& lD, 
     consts::OutputType outGrp, const int iEq) 
 {
@@ -85,12 +81,9 @@ void all_post(Simulation* simulation, Array<double>& res, const Array<double>& l
   }
 }
 
-//-------
-// bpost
-//-------
-// General purpose routine for post processing outputs at the
-// faces. Currently this calculates WSS, which is t.n - (n.t.n)n
-// Here t is stress tensor: t = \mu (grad(u) + grad(u)^T)
+/// @brief General purpose routine for post processing outputs at the
+/// faces. Currently this calculates WSS, which is t.n - (n.t.n)n
+/// Here t is stress tensor: t = \mu (grad(u) + grad(u)^T)
 //
 void bpost(Simulation* simulation, const mshType& lM, Array<double>& res, const Array<double>& lY, const Array<double>& lD, 
     consts::OutputType outGrp)
@@ -341,10 +334,6 @@ void bpost(Simulation* simulation, const mshType& lM, Array<double>& res, const 
   }
 }
 
-//----------
-// div_post
-//----------
-//
 void div_post(Simulation* simulation, const mshType& lM, Array<double>& res, const Array<double>& lY, const Array<double>& lD,
     const int iEq)
 {
@@ -506,10 +495,7 @@ void div_post(Simulation* simulation, const mshType& lM, Array<double>& res, con
   }
 }
 
-//---------------
-// fib_algn_post
-//---------------
-// Routine for post processing fiber alignment
+/// @brief Routine for post processing fiber alignment
 //
 void fib_algn_post(Simulation* simulation, const mshType& lM, Array<double>& res, const Array<double>& lD, const int iEq)
 {
@@ -623,10 +609,7 @@ void fib_algn_post(Simulation* simulation, const mshType& lM, Array<double>& res
   }
 }
 
-//--------------
-// fib_dir_post
-//--------------
-// Routine for post processing fiber directions.
+/// @brief Routine for post processing fiber directions.
 //
 void fib_dir_post(Simulation* simulation, const mshType& lM, const int nFn, Array<double>& res, const Array<double>& lD, const int iEq)
 {
@@ -744,10 +727,7 @@ void fib_dir_post(Simulation* simulation, const mshType& lM, const int nFn, Arra
   }
 }
 
-//------------
-// fib_strech
-//------------
-// Compute fiber stretch based on 4th invariant: I_{4,f}
+/// @brief Compute fiber stretch based on 4th invariant: I_{4,f}
 //
 void fib_strech(Simulation* simulation, const int iEq, const mshType& lM, const Array<double>& lD, Vector<double>& res)
 {
@@ -846,10 +826,6 @@ void fib_strech(Simulation* simulation, const int iEq, const mshType& lM, const 
 
 }
 
-//------
-// post
-//------
-//
 void post(Simulation* simulation, const mshType& lM, Array<double>& res, const Array<double>& lY, const Array<double>& lD, 
     consts::OutputType outGrp, const int iEq)
 {
@@ -1124,15 +1100,12 @@ void post(Simulation* simulation, const mshType& lM, Array<double>& res, const A
   }
 }
 
-//-----------
-// ppbin2vtk
-//-----------
-// Postprocessing function - used to convert restart bin files into VTK format.
-//
-// Reproducces 'SUBROUTINE PPBIN2VTK()' defined in POST.f.
-//
-// [NOTE] This is not fully implemeted and is not tested, there are
-// no tests in 'svFSI-Tests' for this.
+/// @brief Postprocessing function - used to convert restart bin files into VTK format.
+///
+/// Reproducces 'SUBROUTINE PPBIN2VTK()' defined in POST.f.
+///
+/// \todo [NOTE] This is not fully implemeted and is not tested, there are
+/// no tests in 'svFSI-Tests' for this.
 //
 void ppbin2vtk(Simulation* simulation)
 {

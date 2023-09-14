@@ -19,10 +19,7 @@
 
 namespace utils {
 
-//-----------
-// CountBits
-//-----------
-// Count the number of bits in an int.
+/// @brief Count the number of bits in an int.
 //
 int CountBits(int n)
 {
@@ -34,10 +31,6 @@ int CountBits(int n)
   return count;
 }
 
-//------
-// cput
-//------
-//
 double cput()
 {
   auto now = std::chrono::system_clock::now();
@@ -48,10 +41,6 @@ double cput()
   return static_cast<double>(duration);
 }
 
-//-------
-// cross
-//-------
-//
 Vector<double> 
 cross(const Array<double>& V) 
 {
@@ -70,19 +59,11 @@ cross(const Array<double>& V)
   return U;
 }
 
-//-------
-// btest
-//-------
-//
 bool btest(int value, int pos)
 {
   return value & (1 << pos); 
 }
 
-//---------
-// dequeue
-//---------
-//
 bool dequeue(queueType& que, int& iVal) 
 {
   int i;
@@ -103,10 +84,6 @@ bool dequeue(queueType& que, int& iVal)
   return flag;
 }
 
-//---------
-// enqueue 
-//---------
-//
 void enqueue(queueType& que, int iVal) 
 {
   if (que.maxN == 0) {
@@ -147,30 +124,20 @@ void enqueue(queueType& que, int iVal)
   }
 }
 
-//-------
-// ibclr
-//-------
-// Clear a bit. 
+/// @brief Clear a bit. 
 //
 int ibclr(int value, int pos)
 {
   return value & ~(1UL << pos);
 }
 
-//-------
-// ibset 
-//-------
-// Returns 'value' with the bit at position 'pos' set to one.
+/// @brief Returns 'value' with the bit at position 'pos' set to one.
 //
 int ibset(int value, int pos)
 {
   return value | 1UL << pos;
 }
 
-//---------
-// is_zero
-//---------
-//
 bool is_zero(double value1, double value2)
 {
   double a = std::abs(value1);
@@ -192,10 +159,6 @@ bool is_zero(double value1, double value2)
   return false;
 }
 
-//-----------
-// mem_usage
-//-----------
-//
 double mem_usage(const bool print_usage, const std::string& prefix) 
 {
   int who = RUSAGE_SELF;
@@ -239,12 +202,9 @@ double mem_usage(const bool print_usage, const std::string& prefix)
   return resident_set;
 }
 
-//------
-// norm
-//------
-// This function will compute second NORM of a vector.
-//
-// Replicates 'PURE FUNCTION NORMS(U, V)' defined in UTIL.f.
+/// @brief This function will compute second NORM of a vector.
+///
+/// Replicates 'PURE FUNCTION NORMS(U, V)' defined in UTIL.f.
 //
 double norm(const Vector<double>& U)
 {
@@ -307,10 +267,6 @@ double norm(const Array<double>& U)
   return norm;
 }
 
-//-----------
-// print_mem
-//-----------
-//
 void print_mem(const std::string& type, const std::string& prefix, const double memory_in_use, const double memory_returned)
 {
   double s = (1024.0);
@@ -337,10 +293,6 @@ void print_mem(const std::string& type, const std::string& prefix, const double 
   std::cout << std::endl;
 }
 
-//-------------
-// print_stats
-//-------------
-//
 void print_stats(const std::string& type, const std::string& prefix, const int allocated, const int active)
 {
   std::string pr_prefix = "[" + type + "] ";
@@ -356,10 +308,6 @@ void print_stats(const std::string& type, const std::string& prefix, const int a
   std::cout << pr_prefix << "#########################################################" << std::endl;
 }
 
-//------------
-// pull_stack
-//------------
-//
 bool pull_stack(stackType& stk, int& iVal)
 {
   bool flag;
@@ -376,10 +324,7 @@ bool pull_stack(stackType& stk, int& iVal)
   return flag;
 }
 
-//------------
-// push_stack
-//------------
-// Push a list of values onto the stack.
+/// @brief Push a list of values onto the stack.
 //
 void push_stack(stackType& stk, std::initializer_list<int> values)
 {
@@ -388,10 +333,7 @@ void push_stack(stackType& stk, std::initializer_list<int> values)
   }
 }
 
-//------------
-// push_stack
-//------------
-// Push a single value onto the stack.
+/// @brief Push a single value onto the stack.
 //
 void push_stack(stackType& stk, int iVal)
 {
@@ -410,9 +352,6 @@ void push_stack(stackType& stk, int iVal)
   }
 }
 
-//------
-// sign
-//------
 int sign(double value)
 {
   int result = -1;
@@ -426,10 +365,6 @@ int sign(double value)
   return result; 
 }
 
-//------
-// swap
-//------
-//
 void swap(int& value1, int& value2)
 {
   std::swap(value1, value2);

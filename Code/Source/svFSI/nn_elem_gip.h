@@ -1,13 +1,9 @@
-
-// Define a map type used to set element Gauss integration data.
-
+/// brief Define a map type used to set element Gauss integration data.
+//
 using GetElementGausIntMapType = std::map<ElementType, std::function<void(const int, const int,
     Vector<double>&, Array<double>&)>>;
 
-//----------------------------
-// get_element_gauss_int_data
-//----------------------------
-// Replicates 'SUBROUTINE GETGIP(insd, eType, nG, w, xi)' defined in NN.f.
+/// @brief Replicates 'SUBROUTINE GETGIP(insd, eType, nG, w, xi)' defined in NN.f.
 //
 GetElementGausIntMapType get_element_gauss_int_data = {
 
@@ -243,16 +239,12 @@ GetElementGausIntMapType get_element_gauss_int_data = {
 };
 
 
-// Define a map type used to set element Gauss integration data.
-
+/// @brief Define a map type used to set element Gauss integration data.
 using SetElementGausIntMapType = std::map<ElementType, std::function<void(mshType&)>>;
 
-//----------------------------
-// set_element_gauss_int_data
-//----------------------------
-// Replicates 'SUBROUTINE GETGIP(insd, eType, nG, w, xi)' defined in NN.f.
-//
-// [TODO:DaveP] I screwed up here, should just have a single map for mesh and face types.
+/// @brief Replicates 'SUBROUTINE GETGIP(insd, eType, nG, w, xi)' defined in NN.f.
+///
+/// \todo [TODO:DaveP] I screwed up here, should just have a single map for mesh and face types.
 //
 SetElementGausIntMapType set_element_gauss_int_data = {
 
@@ -584,14 +576,11 @@ SetElementGausIntMapType set_element_gauss_int_data = {
 
 };
 
-// Define a map type used to set face Gauss integration data.
-
+/// @brief Define a map type used to set face Gauss integration data.
+//
 using SetFaceGausIntMapType = std::map<ElementType, std::function<void(faceType&)>>;
 
-//------------------------
-//set_face_gauss_int_data  
-//------------------------
-// [TODO:DaveP] I screwed up here, should just have a single map for mesh and face types.
+/// \todo [TODO:DaveP] I screwed up here, should just have a single map for mesh and face types.
 //
 SetFaceGausIntMapType set_face_gauss_int_data = {
 

@@ -11,14 +11,12 @@
 
 //#define Array3_check_enabled
 
-//--------
-// Array3 
-//--------
-// The Array3 template class implements a simple interface to 3D arrays.
-//
-// A 3D array is defined by (num_rows * num_cols) * num_slices values.
-//
 template<typename T>
+
+/*! @brief The Array3 template class implements a simple interface to 3D arrays.
+*
+* A 3D array is defined by (num_rows * num_cols) * num_slices values.
+*/
 class Array3 
 {
   public:
@@ -60,7 +58,7 @@ class Array3
       active += 1;
     }
 
-    // Array copy
+    /// @brief Array copy
     Array3(const Array3 &rhs)
     {
       if ((rhs.nrows_ <= 0) || (rhs.ncols_ <= 0) || (rhs.nslices_ <= 0)) {
@@ -88,10 +86,6 @@ class Array3
     int nrows() const { return nrows_; }
     int nslices() const { return nslices_; }
 
-    //----------
-    // allocate
-    //----------
-    //
     void allocate(const int num_rows, const int num_cols, const int num_slices, const bool row_major=true)
     {
       nrows_ = num_rows;
@@ -104,10 +98,6 @@ class Array3
       memory_in_use += sizeof(T) * size_;;
     }
 
-    //-------------
-    // check_index
-    //-------------
-    //
     void check_index(const int i, const int j, const int k) const
     {
       if (data_ == nullptr) {
@@ -139,13 +129,9 @@ class Array3
        return out;
     }
 
-    //-------
-    // clear 
-    //-------
-    // Free the array data. 
-    //
-    // This is to replicate the Fortran DEALLOCATE().
-    //
+    /// @brief Free the array data 
+    ///
+    /// This is to replicate the Fortran DEALLOCATE().
     void clear()
     {
       if (data_ != nullptr) {
@@ -162,11 +148,9 @@ class Array3
       data_ = nullptr;
     }
 
-    //--------
-    // rslice
-    //--------
-    // Return an Array with data pointing into the Array3 internal data.
-    //
+    /// @brief rslice
+    ///
+    /// Return an Array with data pointing into the Array3 internal data.
     Array<T> rslice(const int slice) const
     { 
       #ifdef Array3_check_enabled
@@ -178,18 +162,10 @@ class Array3
       return array_slice;
     }
 
-    //-------------
-    // slice_data
-    //-------------
-    //
     T* slice_data(const int slice) { 
       return &data_[slice*slice_size_];
     }
 
-    //-------
-    // Print
-    //-------
-    //
     void print(const std::string& label)
     {
       printf("%s (%d): \n", label.c_str(), size_);
@@ -200,11 +176,7 @@ class Array3
       }
     }
 
-    //-------
-    // slice
-    //-------
-    // Get a slice.
-    //
+    /// @brief Get a slice.
     Array<T> slice(const int slice) const
     {
       #ifdef Array3_check_enabled
@@ -243,19 +215,14 @@ class Array3
       }
     }
 
-    //------
-    // size
-    //------
     int size() const
     {
       return size_;
     }
 
-    // Test if an array has rows or columns or slices set
-    // but no data.
-    //
-    // [NOTE] This is tfu but need to mimic fortran.
-    //
+    /// @brief  Test if an array has rows or columns or slices set but no data.
+    ///
+    /// [NOTE] This is tfu but need to mimic fortran.
     bool allocated()
     {
       if ((nrows_ > 0) || (ncols_ > 0) || nslices_ > 0) {
@@ -270,11 +237,7 @@ class Array3
       return size_ * sizeof(T);
     }
 
-    //--------
-    // resize
-    //--------
-    // Resize the array.
-    //
+    /// @brief Resize the array.
     void resize(const int num_rows, const int num_cols, const int num_slices)
     {
       // [NOTE] This is tfu but need to mimic fortran.
@@ -296,14 +259,9 @@ class Array3
       allocate(num_rows, num_cols, num_slices);
     }
 
-    //------------
-    // set_values 
-    //------------
-    // Set the array values from an Array with the equivalent
-    // number of values.
-    //
-    // This sort of replicates the Fortan reshape function.
-    //
+    /// @brief Set the array values from an Array with the equivalent number of values.
+    ///
+    /// This sort of replicates the Fortan reshape function.
     void set_values(Array<T>& rhs)
     {
       int rhs_size = rhs.size();
@@ -320,9 +278,6 @@ class Array3
       }
     }
 
-   //------
-    // read
-    //------
     void read(const std::string& file_name) 
     { 
       auto fp = fopen(file_name.c_str(), "rb");
@@ -331,10 +286,6 @@ class Array3
       fclose(fp);
     }
 
-    //-------
-    // write
-    //-------
-    //
     void write(const std::string& label, bool memory=true)
     {
       if (!write_enabled) {
@@ -370,10 +321,9 @@ class Array3
     //  O p e r a t o r s  //
     /////////////////////////
 
-    // Array assignment 
-    //
-    // Copy data to replicate Fortran behavior.
-    //
+    /// @brief Array assignment 
+    ///
+    /// Copy data to replicate Fortran behavior.
     Array3& operator = (const Array3& rhs)
     {
       if ((rhs.nrows_ <= 0) || (rhs.ncols_ <= 0) || (rhs.nslices_ <= 0)) { 
@@ -398,7 +348,7 @@ class Array3
       return *this;
     }
 
-    // Get the array value at (row,col).
+    /// @brief Get the array value at (row,col).
     const T& operator()(const int row, const int col, const int slice) const
     {
       #ifdef Array3_check_enabled
@@ -407,7 +357,7 @@ class Array3
       return data_[row + col*nrows_ + slice*slice_size_];
     }
 
-    // Set the array value at (row,col).
+    /// @brief Set the array value at (row,col).
     T& operator()(const int row, const int col, const int slice)
     {
       #ifdef Array3_check_enabled
@@ -428,8 +378,7 @@ class Array3
     //  M a t h e m a t i c a l   o p e r a t o r s  //
     ///////////////////////////////////////////////////
 
-    // Multiply by a scalar.
-    //
+    /// @brief Multiply by a scalar.
     Array3<T> operator * (const T value) const
     {
       Array3<T> result(nrows_, ncols_, nslices_);

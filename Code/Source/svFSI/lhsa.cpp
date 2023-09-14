@@ -8,10 +8,6 @@
 
 namespace lhsa_ns {
 
-//---------
-// add_col
-//---------
-//
 void add_col(const int tnNo, const int row, const int col, int& mnnzeic, Array<int>& uInd)
 {
   int i = -1;
@@ -55,21 +51,18 @@ void add_col(const int tnNo, const int row, const int col, int& mnnzeic, Array<i
   } 
 }
 
-//----------
-// do_assem
-//----------
-// This subroutine assembels the element stiffness matrix into the 
-// global stiffness matrix (Val sparse matrix formatted as a vector)
-//
-// Paramters:
-//   d - Number of nodes? (eNoN)
-//
-//
-// Modifies
-//   com_mod.R - Residue 
-//   com_mod.Val - LHS matrix
-//
-// Replicates 'SUBROUTINE DOASSEM (d, eqN, lK, lR)'.
+/// @brief This subroutine assembels the element stiffness matrix into the 
+/// global stiffness matrix (Val sparse matrix formatted as a vector)
+///
+/// Paramters:
+///   d - Number of nodes? (eNoN)
+///
+///
+/// Modifies
+///   com_mod.R - Residual
+///   com_mod.Val - LHS matrix
+///
+/// Replicates 'SUBROUTINE DOASSEM (d, eqN, lK, lR)'.
 //
 void do_assem(ComMod& com_mod, const int d, const Vector<int>& eqN, const Array3<double>& lK, const Array<double>& lR)
 {

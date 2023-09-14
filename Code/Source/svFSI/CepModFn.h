@@ -1,16 +1,15 @@
 
-// The classes defined here duplicate the data structures in the Fortran FNMOD module defined in CEPMOD_FN.f 
-// and PARAMS_FN.f files. 
-
-// This module defines data structures for Fitzhugh-Nagumo cellular
-// activation model for cardiac electrophysiology.
-
 #ifndef CEP_MOD_FN_H 
 #define CEP_MOD_FN_H 
 
 #include "Array.h"
 #include "Vector.h"
 
+/// @brief This module defines data structures for Fitzhugh-Nagumo cellular
+/// activation model for cardiac electrophysiology.
+///
+/// The classes defined here duplicate the data structures in the Fortran FNMOD module defined in CEPMOD_FN.f 
+/// and PARAMS_FN.f files. 
 class CepModFn
 {
   public:
@@ -18,14 +17,14 @@ class CepModFn
     ~CepModFn();
 
     // Scaling factors
-    // Voltage scaling
+    /// Voltage scaling
     double Vscale  = 1.0;
-    // Time scaling
+    /// Time scaling
     double Tscale  = 1.0;
-    // Voltage offset parameter
+    /// Voltage offset parameter
     double Voffset = 0.0;
 
-    // Model parameters
+    /// Model parameters
     double alpha = -0.50;
     double a = 0.0;
     double b = -0.60;

@@ -12,7 +12,7 @@
 #ifndef CHNL_MOD_H 
 #define CHNL_MOD_H 
 
-//!     Channel type, used in I/O
+/// @brief Channel type, used in I/O
 class chnlType
 {
   // Whether it is open to the screen
@@ -42,9 +42,8 @@ class chnlType
       //     GENERIC :: ASSIGNMENT(=) => chnlAssign
 };
 
-//     Only to group four channels, in case I rather have them as one
-//     variable
-//
+/// @brief Only to group four channels, in case I rather have them as one
+/// variable
 class ioType
 {
   // Standard output
@@ -69,12 +68,6 @@ class ioType
            //PROCEDURE :: close => closeIO
 };
 
-
-
-//--------
-// ChnlMod
-//--------
-//
 class ChnlMod
 {
   public:

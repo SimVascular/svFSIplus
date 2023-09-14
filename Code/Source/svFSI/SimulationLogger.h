@@ -5,11 +5,8 @@
 #include <fstream>
 #include <string>
 
-//------------------
-// SimulationLogger
-//------------------
-// The SimulationLogger class is used to write information 
-// to a text file and optionally to cout.
+/// @brief The SimulationLogger class is used to write information 
+/// to a text file and optionally to cout.
 //
 class SimulationLogger {
 

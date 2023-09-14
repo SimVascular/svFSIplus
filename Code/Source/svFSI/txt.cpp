@@ -13,10 +13,7 @@
 
 namespace txt_ns {
 
-//-------
-// cctxt
-//-------
-// This is to check/create the txt file
+/// @brief This is to check/create the txt file
 //
 void cctxt(const ComMod& com_mod, CmMod& cm_mod, const eqType& lEq, const std::array<std::string,2>& fName, const std::vector<bool>& wtn)
 {
@@ -89,10 +86,7 @@ void cctxt(const ComMod& com_mod, CmMod& cm_mod, const eqType& lEq, const std::a
 
 }
 
-//-----
-// txt
-//-----
-// [NOTE] This is not fully implemented.
+/// \todo [NOTE] This is not fully implemented.
 //
 void txt(Simulation* simulation, const bool flag) 
 {
@@ -405,14 +399,11 @@ void txt(Simulation* simulation, const bool flag)
   #endif
 }
 
-//-----
-// wtx
-//-----
-// This is to write to txt file
-//
-// TODO:DaveP] not fully implemented.
-//
-// WARNING: There is an indexing problem here because 'm' is a length and not an index.
+/// @brief This is to write to txt file
+///
+/// \todo TODO:DaveP] not fully implemented.
+///
+/// WARNING: There is an indexing problem here because 'm' is a length and not an index.
 //
 void wtxt(const ComMod& com_mod, CmMod& cm_mod, const eqType& lEq, const int m, const std::array<std::string,2>& fName, 
     const Array<double>& tmpV, const std::vector<bool>& wtn, const bool div, const bool pFlag)

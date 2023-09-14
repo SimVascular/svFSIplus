@@ -17,10 +17,7 @@
 //
 //#define Array_check_enabled
 
-//-------
-// Array 
-//-------
-// The Array template class implements a simple interface to 2D arrays.
+/// @brief The Array template class implements a simple interface to 2D arrays.
 //
 template<typename T>
 class Array 
@@ -101,9 +98,7 @@ class Array
       active += 1;
     }
 
-    //-------------
-    // Array copy
-    //-------------
+    /// @brief Array copy
     //
     Array(const Array &rhs)
     {
@@ -118,7 +113,7 @@ class Array
       active += 1;
     }
 
-    // Array assignment 
+    /// @brief Array assignment 
     //
     Array& operator=(const Array& rhs)
     {
@@ -177,12 +172,9 @@ class Array
        return out;
     }
 
-    //-------
-    // clear 
-    //-------
-    // Free the array data. 
-    //
-    // This is to replicate the Fortran DEALLOCATE().
+    /// @brief Free the array data. 
+    ///
+    /// This is to replicate the Fortran DEALLOCATE().
     //
     void clear()
     {
@@ -202,26 +194,17 @@ class Array
       data_ = nullptr;
     }
 
-    //----------
-    // ncols
-    //----------
     int ncols() const
     {
       return ncols_;
     }
 
-    //----------
-    // nrows
-    //----------
     int nrows() const
     {
       return nrows_;
     }
 
-    //-------
-    // Print
-    //-------
-    // Print by rows and columns.
+    /// @brief Print by rows and columns.
     //
     void print(const std::string& label)
     {
@@ -240,10 +223,7 @@ class Array
       }
     }
 
-    //--------
-    // resize
-    //--------
-    // Resize the array.
+    /// @brief Resize the array.
     //
     void resize(const int num_rows, const int num_cols) 
     {
@@ -273,9 +253,6 @@ class Array
       allocate(num_rows, num_cols);
     }
 
-    //------
-    // size
-    //------
     int size() const
     {
       return size_;
@@ -286,10 +263,10 @@ class Array
       return size_ * sizeof(T);
     }
 
-    // Test if an array has rows or columns set
-    // but no data.
-    //
-    // [NOTE] This is tfu but need to mimic fortran.
+    /// @brief Test if an array has rows or columns set
+    /// but no data.
+    ///
+    /// [NOTE] This is tfu but need to mimic fortran.
     //
     bool allocated()
     {
@@ -300,9 +277,6 @@ class Array
       return false;
     }
 
-    //------
-    // read
-    //------
     void read(const std::string& file_name) 
     {
       auto fp = fopen(file_name.c_str(), "rb");
@@ -312,10 +286,6 @@ class Array
       fclose(fp);
     }
 
-    //-------
-    // write
-    //-------
-    //
     void write(const std::string& label, bool memory=true, T offset={}) const
     {
       if (!write_enabled) {
@@ -333,10 +303,7 @@ class Array
       fclose(fp);
     }
 
-    //--------
-    // append
-    //--------
-    // Append data to a file.
+    /// @brief Append data to a file.
     //
     void append(const std::string& label, bool memory=true, T offset={}) const
     {
@@ -347,7 +314,7 @@ class Array
       auto file_prefix = build_file_prefix(label);
       auto file_name = file_prefix + "_cm.bin";
 
-      // Append binary file.
+      /// @brief Append binary file.
       //
       auto fp = fopen(file_name.c_str(), "ab");
       fwrite(data_, sizeof(T), size_, fp);
@@ -370,9 +337,7 @@ class Array
       return data_[i];
     }
 
-    //-----------------
-    // (i,j) operators
-    //-----------------
+    /// @brief (i,j) operators
     //
     const T& operator()(const int row, const int col) const
     {
@@ -390,10 +355,7 @@ class Array
       return data_[row + col*nrows_];
     }
 
-    //------
-    // col 
-    //------
-    // Get a column from the array as a Vector.
+    /// @brief Get a column from the array as a Vector.
     //
     Vector<T> col(const int col, const std::array<int,2>& range={-1,-1}) const
     {
@@ -421,28 +383,19 @@ class Array
       return values;
     }
 
-    //------
-    // rcol
-    //------
     Vector<T> rcol(const int col) const
     {
       Vector<T> vector_col(nrows_, &data_[col*nrows_]);
       return vector_col;
     }
 
-    //----------
-    // col_data
-    //----------
-    // Return a pointer to the internal data for the given column.
+    /// @brief Return a pointer to the internal data for the given column.
     //
     T* col_data(const int col) { 
       return &data_[col*nrows_];
     }
 
-    //------
-    // cols
-    //------
-    // Get one or more columns from the array as Vectors.
+    /// @brief Get one or more columns from the array as Vectors.
     //
     Vector<Vector<T>> cols(const Vector<int>& columns) const
     {
@@ -459,10 +412,7 @@ class Array
       return values;
     }
 
-    //-----
-    // row 
-    //-----
-    // Get a row from the array as a Vector.
+    /// @brief Get a row from the array as a Vector.
     //
     Vector<T> row(const int row, const std::array<int,2>& range={-1,-1})
     {
@@ -479,10 +429,7 @@ class Array
       return values;
     }
 
-    //------
-    // rows
-    //------
-    // Get row values from the array using an index of columns.
+    /// @brief Get row values from the array using an index of columns.
     //
     Vector<T> rows(const int row, const Vector<int>& indexes) const
     {
@@ -503,10 +450,7 @@ class Array
       return values;
     }
 
-    //------
-    // rows
-    //------
-    // Get a set of rows using a start and end row index.
+    /// @brief Get a set of rows using a start and end row index.
     //
     Array<T> rows(const int start_row, const int end_row) const
     {
@@ -525,10 +469,7 @@ class Array
       return values;
     }
 
-    //------
-    // rows
-    //------
-    // Get a range of rows for the given column.
+    /// @brief Get a range of rows for the given column.
     //
     Vector<T> rows(const int start_row, const int end_row, const int col) const
     {
@@ -545,10 +486,7 @@ class Array
       return values;
     }
 
-    //-------
-    // values
-    //--------
-    // Return a vector of values for a range of rows and columns.
+    /// @brief Return a vector of values for a range of rows and columns.
     //
     std::vector<T> values(const std::array<int,2>& rows, const std::array<int,2>& cols, const int stride=1) const
     {
@@ -562,11 +500,8 @@ class Array
     
       return values;
     }
-
-    //---------
-    // set_col
-    //---------
-    // Set column values from a vector of values.
+-
+    /// @brief Set column values from a vector of values.
     //
     void set_col(const int col, const Vector<T>& values, const std::array<int,2>& range={-1,-1}) 
     {
@@ -592,10 +527,7 @@ class Array
       }
     }
 
-    //---------
-    // set_row
-    //---------
-    // Set row values from a vector of values.
+    /// @brief Set row values from a vector of values.
     //
     void set_row(const int row, const Vector<T>& values) const
     {
@@ -607,10 +539,7 @@ class Array
       }
     }
 
-    //---------
-    // set_row
-    //---------
-    // Set row values from an initializer list {}..
+    /// @brief Set row values from an initializer list {}..
     //
     void set_row(const int row, std::initializer_list<T> row_data) const
     {
@@ -620,10 +549,7 @@ class Array
       }
     }
 
-    //---------
-    // set_row
-    //---------
-    // Set row values from a scalar. 
+    /// @brief Set row values from a scalar. 
     //
     void set_row(const int row, const T value) const
     {
@@ -635,10 +561,7 @@ class Array
       }
     }
 
-    //---------
-    // set_row
-    //---------
-    // Set row values from a vector of values at the given column offset.
+    /// @brief Set row values from a vector of values at the given column offset.
     //
     void set_row(const int row, int offset, const Vector<T>& values) const
     {
@@ -655,10 +578,7 @@ class Array
       }
     }
 
-    //----------
-    // set_rows
-    //----------
-    // Set a set of rows using a start and end row index.
+    /// @brief Set a set of rows using a start and end row index.
     //
     void set_rows(const int start_row, const int end_row, const Array<T>& values) const
     { 
@@ -683,9 +603,6 @@ class Array
     //  M a t h e m a t i c a l   o p e r a t o r s  //
     ///////////////////////////////////////////////////
 
-    //-----
-    // max
-    //-----
     T max() const
     {
       T max_v = data_[0];
@@ -697,9 +614,6 @@ class Array
       return max_v;
     }
 
-    //-----
-    // min
-    //-----
     T min() const
     {
       T min_v = data_[0];
@@ -711,7 +625,7 @@ class Array
       return min_v;
     }
 
-    // Add arrays.
+    /// @brief Add arrays.
     //
     Array<T> operator+(const Array<T>& array) const
     {
@@ -727,7 +641,7 @@ class Array
       return result;
     }
 
-    // Subtract arrays.
+    /// @brief Subtract arrays.
     //
     Array<T> operator-(const Array<T>& array) const
     {
@@ -743,10 +657,8 @@ class Array
       return result;
     }
 
-    //-----------
-    // C = A * B
-    //-----------
-    // Multiply two arrays component-wise to reproduce Fortran.
+    /// @brief Multiply two arrays component-wise to reproduce Fortran.
+    /// C = A * B
     //
     Array<T> operator*(const Array<T>& array) const
     {
@@ -765,10 +677,8 @@ class Array
       return result;
     }
 
-    //-----------
-    // C = A / B
-    //-----------
-    // Divide one array by another component-wise.
+    /// @brief Divide one array by another component-wise.
+    /// C = A / B
     //
     Array<T> operator / (const Array<T>& array) const
     {
@@ -785,7 +695,7 @@ class Array
       return result;
     }
 
-    // Compound add assignment. 
+    /// @brief Compound add assignment. 
     //
     Array<T> operator+=(const Array<T>& array) const
     {
@@ -797,7 +707,7 @@ class Array
       return *this;
     }
 
-    // Compound subtract assignment. 
+    /// @brief Compound subtract assignment. 
     //
     Array<T> operator-=(const Array<T>& array) const
     {
@@ -809,7 +719,7 @@ class Array
       return *this;
     }
 
-    // Compound multiply assignment. 
+    /// @brief Compound multiply assignment. 
     //
     Array<T> operator*=(const Array<T>& array) const
     {
@@ -821,7 +731,7 @@ class Array
       return *this;
     }
 
-    // Multiply by a scalar.
+    /// @brief Multiply by a scalar.
     //
     Array<T> operator*(const T value) const
     {
@@ -845,9 +755,8 @@ class Array
       return result;
     }
 
-    // A / s
-    //
-    // Divide by a scalar.
+    /// @brief Divide by a scalar.
+    /// A / s
     //
     Array<T> operator / (const T value) const
     {
@@ -863,10 +772,8 @@ class Array
       return result;
     }
 
-    //-------
-    // s / A 
-    //-------
-    // Divide scalar by array.
+    /// @brief Divide scalar by array.
+    /// s / A 
     //
     friend const Array<T> operator / (const T value, const Array& rhs)
     {
@@ -879,10 +786,8 @@ class Array
       return result;
     }
 
-    //-------
-    // A - s
-    //-------
-    // Subtract a scalar.
+    /// @brief Subtract a scalar.
+    /// A - s
     //
     Array<T> operator-(const T value) const
     { 
@@ -895,7 +800,7 @@ class Array
       return result;
     }
 
-    // Compound add assignment. 
+    /// @brief Compound add assignment. 
     //
     Array<T> operator+=(const T value) const
     {
@@ -907,9 +812,7 @@ class Array
       return *this;
     }
 
-    //--------
-    // negate 
-    //--------
+    /// @brief negate 
     //
     Array<T> operator-() const 
     {
@@ -922,7 +825,7 @@ class Array
       return result;
     }
 
-    // Compound subtract assignment. 
+    /// @brief Compound subtract assignment. 
     //
     Array<T> operator-=(const T value) const
     {
@@ -934,10 +837,8 @@ class Array
       return *this;
     }
 
-    //-------
-    // s - A
-    //-------
-    // Subtract a scalar.
+    /// @brief Subtract a scalar.
+    /// s - A
     //
     friend const Array<T> operator-(const T value, const Array& rhs)
     { 
@@ -950,9 +851,7 @@ class Array
       return result;
     }
 
-    //------
-    // abs
-    //------
+    /// @brief absolute value
     //
     friend Array<T> abs(const Array& rhs)
     {
@@ -965,9 +864,8 @@ class Array
       return result;
     }
 
-    //-----
-    // max
-    //-----
+    /// @brief maximum
+    //
     friend T max(const Array& arg) 
     {
       T max_v = arg.data_[0];
@@ -979,9 +877,7 @@ class Array
       return max_v;
     }
 
-    //------
-    // sqrt
-    //------
+    /// @brief square root
     //
     friend Array<T> sqrt(const Array& arg)
     {
@@ -994,10 +890,7 @@ class Array
       return result;
     }
 
-    //---------
-    // sum_row
-    //---------
-    // Compute the sum of a row of valuesr
+    /// @brief Compute the sum of a row of valuesr
     //
     T sum_row(const int row) const
     {
@@ -1017,10 +910,7 @@ class Array
 
   private:
 
-    //----------
-    // allocate
-    //----------
-    // Allocate memory for array data.
+    /// @brief Allocate memory for array data.
     //
     void allocate(const int num_rows, const int num_cols)
     {
@@ -1042,20 +932,13 @@ class Array
       }
     }
 
-    //-------
-    // value
-    //-------
-    // Get a value from data_[].
+    /// @brief Get a value from data_[].
     //
     inline T value(const int row, const int col) const
     {
       return data_[row + col*nrows_];
     }
 
-    //-------------
-    // check_index
-    //-------------
-    //
     void check_index(const int row, const int col) const
     { 
       if (data_ == nullptr) { 

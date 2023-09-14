@@ -29,12 +29,9 @@ namespace read_files_ns {
 //#include "set_output_props.h"
 #include "set_viscosity_props.h"
 
-//------------
-// face_match
-//------------
-// Match two faces?
-//
-// [TODO:DaveP] this has not been tested.
+/// @brief Match two faces?
+///
+/// \todo [TODO:DaveP] this has not been tested.
 //
 void face_match(ComMod& com_mod, faceType& lFa, faceType& gFa, Vector<int>& ptr)
 {

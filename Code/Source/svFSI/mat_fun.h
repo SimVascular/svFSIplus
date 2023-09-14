@@ -1,11 +1,3 @@
-
-// The classes defined here duplicate the data structures in the 
-// Fortran MATFUN module defined in MATFUN.f. 
-//
-// This module defines data structures for generally performed matrix and tensor operations.
-//
-// [TODO:DaveP] this should just be a namespace?
-
 #ifndef MAT_FUN_H 
 #define MAT_FUN_H 
 
@@ -15,6 +7,14 @@
 
 #include "mat_fun_fixed.h"
 
+
+/// @brief The classes defined here duplicate the data structures in the 
+/// Fortran MATFUN module defined in MATFUN.f. 
+///
+/// This module defines data structures for generally performed matrix and tensor operations.
+///
+/// \todo [TODO:DaveP] this should just be a namespace?
+//
 namespace mat_fun {
     double mat_ddot(const Array<double>& A, const Array<double>& B, const int nd);
     double mat_det(const Array<double>& A, const int nd);
