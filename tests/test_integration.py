@@ -93,6 +93,42 @@ def test_stokes_manufactured_solution(ele, mesh, n_proc):
     name_ref = "result_" + str(t_max[ele]).zfill(3) + ".vtu"
     run_with_reference(folder, name_inp, name_ref, fields, t_max[ele], n_proc)
 
+@pytest.mark.parametrize("n_proc", procs)
+def test_1Dcable_TTP(n_proc):
+    folder = os.path.join("cases", "1Dcable_TTP")
+    field = ["Action_potential"]
+    t_max = 1
+    name_inp = "svFSI.xml"
+    name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
+    run_with_reference(folder, name_inp, name_ref, field, t_max, n_proc)
+
+@pytest.mark.parametrize("n_proc", procs)
+def test_2Dspiral_BO(n_proc):
+    folder = os.path.join("cases", "2Dspiral_BO")
+    field = ["Action_potential"]
+    t_max = 1
+    name_inp = "svFSI.xml"
+    name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
+    run_with_reference(folder, name_inp, name_ref, field, t_max, n_proc)
+
+@pytest.mark.parametrize("n_proc", procs)
+def test_2Dsquare_AP(n_proc):
+    folder = os.path.join("cases", "2Dsquare_AP")
+    field = ["Action_potential"]
+    t_max = 1
+    name_inp = "svFSI.xml"
+    name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
+    run_with_reference(folder, name_inp, name_ref, field, t_max, n_proc)
+
+@pytest.mark.parametrize("n_proc", procs)
+def test_purkinje(n_proc):
+    folder = os.path.join("cases", "purkinje")
+    field = ["Action_potential"]
+    t_max = 1
+    name_inp = "svFSI.xml"
+    name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
+    run_with_reference(folder, name_inp, name_ref, field, t_max, n_proc)
+
 @pytest.mark.parametrize("confs_ecgs", [["BICG_CN_myocardium_BO"  , -0.0781125,  0.0781125,  0.00885273],
                                         ["CG_RK4_endocardium_BO"  , -0.0780188,  0.0780188,  0.00884210],
                                         ["GMRES_FE_epicardium_TTP", -0.0786707,  0.0786707,  0.00891599],
