@@ -500,7 +500,7 @@ class Array
     
       return values;
     }
--
+
     /// @brief Set column values from a vector of values.
     //
     void set_col(const int col, const Vector<T>& values, const std::array<int,2>& range={-1,-1}) 
