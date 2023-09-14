@@ -4,12 +4,9 @@
 
 namespace fsi_linear_solver {
 
-//-----------------
-// fsils_ls_create
-//-----------------
-// Set solver parameters.
-//
-// Reproduces 'SUBROUTINE FSILS_LS_CREATE(ls, LS_type, relTol, absTol, maxItr, dimKry, relTolIn, absTolIn, maxItrIn)'.
+/// @brief Set solver parameters.
+///
+/// Reproduces 'SUBROUTINE FSILS_LS_CREATE(ls, LS_type, relTol, absTol, maxItr, dimKry, relTolIn, absTolIn, maxItrIn)'.
 //
 void fsils_ls_create(FSILS_lsType& ls, LinearSolverType LS_type, double relTol, double absTol, int maxItr, int dimKry, 
   std::array<double,2> relTolIn, std::array<double,2> absTolIn, std::array<int,2> maxItrIn)

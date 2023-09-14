@@ -1,7 +1,3 @@
-
-// In this routine, the appropriate LS algorithm is called and
-// the solution is returned.
-
 #include "lhs.h"
 #include "CmMod.h"
 #include "bicgs.h"
@@ -12,16 +8,14 @@
 
 namespace fsi_linear_solver {
 
-//-------------
-// fsils_solve
-//-------------
-//
-// Modifies: Val, Ri
-//
-// Ri(dof,lhs.nNo): Residual
-// Val(dof*dof,lhs.nnz): LHS
-//
-// Reproduces 'SUBROUTINE FSILS_SOLVE (lhs, ls, dof, Ri, Val, prec, incL, res)'.
+/// @brief In this routine, the appropriate LS algorithm is called and
+/// the solution is returned.
+/// Modifies: Val, Ri
+///
+/// Ri(dof,lhs.nNo): Residual
+/// Val(dof*dof,lhs.nnz): LHS
+///
+/// Reproduces 'SUBROUTINE FSILS_SOLVE (lhs, ls, dof, Ri, Val, prec, incL, res)'.
 //
 void fsils_solve(FSILS_lhsType& lhs, FSILS_lsType& ls, const int dof, Array<double>& Ri, Array<double>& Val, 
     const consts::PreconditionerType prec, const Vector<int>& incL, const Vector<double>& res)
