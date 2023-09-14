@@ -218,6 +218,91 @@ void cgrad_v(FSILS_lhsType& lhs, FSILS_subLsType& ls, const int dof, const Array
   #endif
 }
 
+//---------
+// cgrad_s
+//---------
+//
+void cgrad_s(FSILS_lhsType& lhs, FSILS_subLsType& ls, const Vector<double>& K, Vector<double>& R)
+{
+  #define n_debug_cgrad_s 
+  #ifdef debug_cgrad_s
+  DebugMsg dmsg(__func__,  lhs.commu.task);
+  dmsg.banner();
+  double time = fsi_linear_solver::fsils_cpu_t();
+  #endif
+
+  int nNo = lhs.nNo;
+  int mynNo = lhs.mynNo;
+  #ifdef debug_cgrad_s
+  dmsg << "nNo: " << nNo;
+  dmsg << "mynNo: " << mynNo;
+  dmsg << "ls.mItr: " << ls.mItr;
+  #endif
+
+  Vector<double> P(nNo), KP(nNo), X(nNo);
+
+  ls.callD = fsi_linear_solver::fsils_cpu_t();
+  ls.suc = false;
+  ls.iNorm = norm::fsi_ls_norms(mynNo, lhs.commu, R);
+  double eps = pow(std::max(ls.absTol, ls.relTol* ls.iNorm), 2.0);
+  double errO = ls.iNorm * ls.iNorm;
+  double err  = errO;
+  X = 0.0;
+  P = R;
+  int last_i = 0;
+  #ifdef debug_cgrad_s
+  dmsg << "ls.iNorm: " << ls.iNorm;
+  dmsg << "eps: " << eps;
+  dmsg << "err: " << eps;
+  #endif
+
+  for (int i = 0; i < ls.mItr; i++) {
+    #ifdef debug_cgrad_s
+    dmsg;
+    dmsg << "----- i " << i+1 << " -----";
+    dmsg << "err: " << err;
+    auto istr = "_" + std::to_string(i+1);
+    #endif
+    last_i = i;
+
+    if (err < eps) {
+      ls.suc = true;
+      break;
+    }
+
+    errO = err;
+
+    spar_mul::fsils_spar_mul_ss(lhs, lhs.rowPtr, lhs.colPtr, K, P, KP);
+
+    double alpha = errO / dot::fsils_dot_s(mynNo, lhs.commu, P, KP);
+    omp_la::omp_sum_s(nNo, alpha, X, P);
+    omp_la::omp_sum_s(nNo, -alpha, R, KP);
+
+    err = norm::fsi_ls_norms(mynNo, lhs.commu, R);
+    err = err * err;
+
+    omp_la::omp_sum_s(nNo, errO/err, P, R);
+    omp_la::omp_mul_s(nNo, err/errO, P);
+  }
+
+  R = X;
+  ls.itr = last_i;
+  ls.fNorm = sqrt(err);
+  ls.callD = fsi_linear_solver::fsils_cpu_t() - ls.callD;
+
+  if (errO < std::numeric_limits<double>::epsilon()) {
+    ls.dB = 0.0;
+  } else {
+    ls.dB = 5.0 * log(err/errO);
+  }
+
+  #ifdef debug_cgrad_s
+  double exec_time = fsi_linear_solver::fsils_cpu_t() - time;
+  dmsg << "Execution time: " << exec_time;
+  dmsg << "Done";
+  #endif
+}
+
 };
 
 
