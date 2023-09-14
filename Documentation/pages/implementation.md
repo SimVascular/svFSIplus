@@ -1,28 +1,11 @@
-@page developer_guide 
-# svFSIplus Implementation 
+@page implementation Implementation
+
+[TOC]
 
 This document describes some of the implementation details of svFSIplus C++ code.
 
 
-## Table of Contents
-[Introduction](#introduction)<br>
-[Code Organization](#organization)<br>
-[Translating Fortran into C++](#translate)<br>
-[Simulation Class](#simulation_class)<br>
-[Array and Vector Classes](#array_vector_class)<br>
-[Solver Parameter Input XML File ](#xml_file)<br>
-[Performance and Accuracy](#performance)<br>
-[Potential Problems](#problems)<br>
-[Implementation Details](#cpp_programming)<br>
-[Coding Standards](#coding_standards)<br>
-[Coding Guidelines](#coding_guidelines)<br>
-
-
-<!--- ====================================================================================================================== --->
-<!--- ===================================================== Introduction  ================================================== --->
-<!--- ====================================================================================================================== --->
-
-<h1 id="introduction"> Introduction </h1>
+# Introduction
 
 svFSIplus is essentially a direct line-by-line translation of the [svFSI](https://github.com/SimVascular/svFSI) Fortran code into C++. 
 This provides a simple mapping between the code of the original Fortran and C++ versions and aided in debugging the C++ code. 
@@ -40,18 +23,15 @@ What was not converted
 
 The following sections describe how the C++ implementation is organized and how it replicates the data structures and flow of control of the Fortran implementation. Some important details of the C++ implementation will also be discussed.
 
-<!--- ====================================================================================================================== --->
-<!--- ===================================================== Code Organization  ============================================= --->
-<!--- ====================================================================================================================== --->
 
-<h1 id="organization"> Code Organization </h1>
+# Code Organization
 
 The C++ implementation attempts to replicate the data structures and flow of control of the Fortran implementation and to maintains its organization. 
 The svFSI Fortran is about 58K lines of code spread over about 100 files.
 
 Most of the Fortran code is replicated in C++ using the same file and procedure names converted to lower case with underscores to improve readability. 
 For example
-```
+```cpp
    ================================================================================================
                 Fortran                       |                      C++ 
    ================================================================================================
@@ -74,26 +54,20 @@ C++ functions are defined within a `namespace` defined for each Fortran file. Fo
 
 All simulation data is stored in the [Simulation](#simulation_class) class.
 
-<!--- ====================================================================================================================== --->
-<!--- =============================================== Translating Fortran into C++ ========================================= --->
-<!--- ====================================================================================================================== --->
 
-<h1 id="translate"> Translating Fortran into C++ </h1>
+# Translating Fortran into C++
 
 This section provides some details about how the svFSI Fortran code was translated into C++ code. This will help to convert any new 
 Fortran code developed in the Fortan svFSI code not included in svFSIplus. 
 
-<!--- ------------------------------- ---> 
-<!--- -------  Variable Names ------- --->  
-<!--- ------------------------------- --->  
     
-<h2 id="translate_vars"> Variable Names </h2>
+## Variable Names
 
 svFSIplus is essentially a direct line-by-line translation of the [svFSI](https://github.com/SimVascular/svFSI) Fortran code. The original Fortran variable names are typically small, contain no underscores for readability and are often ambiguous. However, the **same variable names** are used 
 in both the C++ and Fortran codes in order to maintain a clear relationship between them.
 
 For example, the following section of Fortran code
-```
+```fortrtan
       p = 0._RKIND
       DO a=1, eNoNq
          p = p + Nq(a)*yl(4,a)
@@ -114,7 +88,7 @@ For example, the following section of Fortran code
       ubn  = u(1)*nV(1) + u(2)*nV(2) + u(3)*nV(3)
 ```
 is replaced by the following section of C++ code
-```
+```cpp
   double p = 0.0;
   for (int a = 0; a < eNoNq; a++) {
     p = p + Nq(a)*yl(3,a);
@@ -141,11 +115,8 @@ is replaced by the following section of C++ code
 In this example the Fortran `DO` loops are replaced by C++ `for` loops using C++ 0-based indexing. 
 Array indexing is discussed in the [Fortran Dynamic Arrays](#translate_arrays) section below.
 
-<!--- -------------------------------- ---> 
-<!--- -------  Fortran Modules ------- --->  
-<!--- -------------------------------- --->  
 
-<h2 id="translate_modules"> Fortran Modules </h2>
+## Fortran Modules
 
 Modules were introduced in Fortran to moralize a large code by splitting it into separate files containing procedures and 
 data specific to a certain application. A module is like a C++ class because it can encapsulate both data and procedures. 
@@ -155,7 +126,7 @@ C++ classes are used to implement Fortran modules. Fortran variable names are re
 A C++ module name uses the same Fortan name converted to camel case. For example, several of the Fortan module names and the 
 files that implements them are given below with the corresponding C++ class name and implementation files.
 
-```
+```cpp
    ================================================================================================
                 Fortran Module Name (file)        |                C++ Class Name (file)
    ================================================================================================
@@ -170,7 +141,7 @@ files that implements them are given below with the corresponding C++ class name
              
 The Fortan `USE` command provides access to all the variables defined in a module. Almost all of the svFSI Fortran procedures have 
 a `USE COMMOD` command that provides access to all of the global variables (about 90) defined in the `COMMOD` module. For example
-```
+```fortran
       SUBROUTINE CONSTRUCT_uSOLID(lM, Ag, Yg, Dg)
 
       USE COMMOD
@@ -179,18 +150,14 @@ a `USE COMMOD` command that provides access to all of the global variables (abou
 
 **svFSIplus does not use any global variables.**  A C++ module object is passed to each procedure that needs to access its variables. 
 For example, in C++ the `ComMod` object `com_mod` is explicitly passed to the `construct_usolid` function. 
-```
+```cpp
 void construct_usolid(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Array<double>& Ag,
     const Array<double>& Yg, const Array<double>& Dg)
 ```
 All C++ modules are stored as member data in the [Simulation Class](#simulation_class).
 
 
-<!--- -------------------------------- ---> 
-<!---      Fortran Dynamic Arrays      --->  
-<!--- -------------------------------- --->  
-
-<h2 id="translate_arrays"> Fortran Dynamic Arrays </h2>
+## Fortran Dynamic Arrays
 
 Fortran dynamic arrays have been reproduced using custom [Vector](#array_vector_class), [Array](array_vector_class) and
 [Array3](array_vector_class) C++ class templates. Note that these user-defined classes will most likely be replaced by a 
@@ -209,7 +176,7 @@ C++ multidimensional arrays are referenced using 0-based indexing and are traver
 indexes use parenthesis `A(i,j)` not brackets `A[i][j]` to access array elements. 
 
 For example, the following sections of Fortran code that declare and use dynamics arrays
-```
+```fortran
       INTEGER(KIND=IKIND), ALLOCATABLE :: ptr(:)
 
       REAL(KIND=RKIND), ALLOCATABLE :: xl(:,:), al(:,:), yl(:,:),
@@ -229,7 +196,7 @@ For example, the following sections of Fortran code that declare and use dynamic
       END DO
 ```
 are replaced by the following section of C++ code
-```
+```cpp
   Vector<int> ptr(eNoN);
   Array<double> xl(nsd,eNoN), al(tDof,eNoN), yl(tDof,eNoN), bfl(nsd,eNoN), lR(dof,eNoN);
   Array3<double> lK(dof*dof,eNoN,eNoN);
@@ -256,11 +223,7 @@ always possible to efficiently (i.e. memory-to-memory copy) and cleanly replace 
 template methods. In the above example the Fortran `:` operator was replaced in C++ by an explicit `for` loop. 
 
 
-<!--- ====================================================================================================================== --->
-<!--- =============================================== Simulation Class  ==================================================== --->
-<!--- ====================================================================================================================== --->
-
-<h1 id="simulation_class"> Simulation Class </h1>
+# Simulation Class
 
 The C++ [Simulation](https://github.com/SimVascular/svFSIplus/blob/main/Code/Source/svFSI/Simulation.h) class encapsulates 
 all of the objects (Fortran modules) used to store simulation data. It also contains a `Parameters` object used to store 
@@ -270,17 +233,13 @@ The `Simulation` class does not contain any methods used in the core simulation 
 used to pass data to procedures to carry out a series of computational steps.
 
 
-<!--- ====================================================================================================================== --->
-<!--- ========================================== Array and Vector Class Templates  ========================================= --->
-<!--- ====================================================================================================================== --->
-
-<h1 id="array_vector_class"> Array and Vector Class Templates </h1>
+# Array and Vector Class Templates
 
 Fortran dynamic arrays have been reproduced using custom `Vector`, `Array` and `Array3` C++ class templates. Note that these custom class templates will most likely be replaced by a more sophisticated matrix package such as `Eigen`.
 
 The class templates are able to reproduce much of the functionality of Fortran arrays and array intrinsic functions (e.g. sum). The challenge is to  create class methods that are as efficient as the Fortan array operators. Because the operators are part of the Fortran language the compiler can
 optimize them as a efficient memory-to-memory copies. For example
-```
+```fortran
 A(:,n) = B(:,n)
 A = B
 ```
@@ -289,25 +248,21 @@ The objects created from class templates are not part of the C++ language like a
 
 The `Vector`, `Array` and `Array3` class templates have a `data()` method that returns a point to the object's internal memory. This is need for
 MPI calls that take raw C pointers as arguments. For example
-```
+```cpp
 MPI_Allreduce(part.data(), tmpI.data(), gnNo, cm_mod::mpint, MPI_MAX, cm.com());
 ```
 
 The class templates are defined in the [Vector.h](https://github.com/SimVascular/svFSIplus/blob/main/Code/Source/svFSI/Vector.h), [Array.h](https://github.com/SimVascular/svFSIplus/blob/main/Code/Source/svFSI/Array.h) and [Array3.h](https://github.com/SimVascular/svFSIplus/blob/main/Code/Source/svFSI/Array3.h) files.
 
 
-<!--- -------------------------------- ---> 
-<!---  Allocating and Freeing Memoory  --->  
-<!--- -------------------------------- --->  
-
-<h2 id="array_vector_class"> Allocating and Freeing Memory </h2>
+## Allocating and Freeing Memory
 
 Objects can be created using its constructor
-```
+```cpp
 Array<double> A(2,2);
 ```
 or defined and later resized
-```
+```cpp
 Array<double> A;
 
 A.resize(2,2);
@@ -316,21 +271,18 @@ A.resize(2,2);
 Object memory is initialized to 0.
 
 An object's memory is freed using its `clear()` method
-```
+```cpp
 Array<double> A(2,2)
 
 A.clear();
 ```
 or when it goes out of scope.
 
-<!--- -------------------------------- ---> 
-<!---               Indexing           --->  
-<!--- -------------------------------- --->  
 
-<h2 id="array_vector_class"> Indexing and Memory Layout </h2>
+## Indexing and Memory Layout
 
 C++ multidimensional arrays are referenced using 0-based indexing and are traversed in column-major order like Fortran. Array indexes use parenthesis `A(i,j)` not brackets `A[i][j]` to access array elements. This was done to make C++ code look more like Fortran and to simplify the conversion process. 
-```
+```cpp
   Vector<double> u(2);
   Array<double> ux(2,2);
   Array3<double> uxx(2,2,2);
@@ -360,18 +312,14 @@ C++ multidimensional arrays are referenced using 0-based indexing and are traver
 Indexes can be checked by defining the `_check_enabled` directive within each template include file. An index out of bounds will throw an `std::runtime_error` exception. Note that index checking will substantially slow down a simulation so it should be disabled when not testing.
 
 
-<!--- -------------------------------- ---> 
-<!---             Operators            --->  
-<!--- -------------------------------- --->  
-
-<h2 id="array_vector_class"> Operators </h2>
+## Operators
 
 Class templates support most mathematical operators: =,+,-,*,/,+=
 
 Some Fortran array intrinsic (e.g. abs, sqrt) are also supported. 
 
 Example
-```
+```cpp
   Array<double> Wr(dof,nNo), Wc(dof,nNo);
   
   Wr = 1.0;
@@ -391,14 +339,11 @@ The Array `*` operator performs an element-by-element multiplication, not a matr
 
 It is more efficient to use the `+=` operator `A += B` than `A = A + B` which performs a copy.
 
-<!--- -------------------------------- ---> 
-<!---     Getting an Array Column      --->  
-<!--- -------------------------------- --->  
 
-<h2 id="array_vector_class"> Getting an Array Column </h2>
+## Getting an Array Column
 
 A lot of Fortran code in svFSI operates on a column of a 2D array. For example
-```
+```fortran
 CALL FLUID3D_M(vmsStab, fs(1)%eNoN, fs(2)%eNoN, w, ksix,
      2            fs(1)%N(:,g), fs(2)%N(:,g), Nwx, Nqx, Nwxx, al, yl,
      3            bfl, lR, lK)
@@ -407,14 +352,14 @@ where `fs(1)%N(:,g)` gets the column `g` of the `fs(2)%N` array.
 
 
 The operation of getting a column of data from an Array object is supported using two different methods
-```
+```cpp
 Vector<T> col(const int col, const std::array<int,2>& range={-1,-1}) const - Returns a new Vector<T> object containing a copy of the column data.
 
 Vector<T> rcol(const int col) const - Returns a new Vector<T> object containing an address pointing into the Array internal data. Modifying the Vector<T> object's data modifies the orginal Array data.
 ```
 
 Use the `col` method if the column data is not going to be modified
-```
+```cpp
 auto N0 = fs[0].N.col(g);
 auto N1 = fs[1].N.col(g);
 fluid_3d_m(com_mod, vmsStab, fs[0].eNoN, fs[1].eNoN, w, ksix, N0, N1, Nwx, Nqx, Nwxx, al, yl, bfl, lR, lK);
@@ -423,20 +368,17 @@ fluid_3d_m(com_mod, vmsStab, fs[0].eNoN, fs[1].eNoN, w, ksix, N0, N1, Nwx, Nqx, 
 Use the `rcol` method if the column data is going to be modified; it might also help to speed up a procedure that 
 is called a lot (e.g. in material models).
 
-<!--- -------------------------------- ---> 
-<!---    Getting an Array3 Slice       --->  
-<!--- -------------------------------- --->  
 
-<h2 id="array_vector_class"> Getting an Array3 Slice </h2>
+## Getting an Array3 Slice
 
 A lot of Fortran code in svFSI operates on a slice (a 2D sub-array) of a 3D array. For example
-```
+```fortran
 CALL GNN(fs(1)%eNoN, nsd, fs(1)%Nx(:,:,g), xwl, Nwx, Jac, ksix)
 ```
 where `fs(1)%Nx(:,:,g)` gets a slice (2D sub-array) `g` of the `fs(1)%Nx` array.
 
 The operation of getting a slice of data from an Array3 object is supported using two different methods
-```
+```cpp
 Array<T> slice(const int slice) const - Returns a new Array<T> object containing a copy of the slice data.
 Array<T> rslice(const int slice) const - Return an Array<T> object with data pointing into the Array3 internal data.
 ```
@@ -446,11 +388,8 @@ This was done to reduce the overhead of copying sub-arrays in some sections of t
 object will not free its data if it is a reference to the data of a `Array3` object. Use the `rslice` method if the slice data
 is going to be modified. It can also speed up code that repeatedly extracts sub-arrays used in computations but are not modified.
 
-<!--- -------------------------------- ---> 
-<!---    Fortran 0-size Arrays         --->  
-<!--- -------------------------------- ---> 
 
-<h2 id="array_vector_class"> Fortran 0-size Arrays </h2>
+## Fortran 0-size Arrays
 
 The Fortran code made use of 0-size arrays in several places, using `ALLOCATE` with a zero size. For some reason Fortran is OK
 with using these 0-size arrays. 
@@ -459,11 +398,7 @@ The C++ code reproduces this by allowing `Array` objects to be allocated with 0 
 it allowed to get the C++ code working without having to rewrite a lot of code.
 
 
-<!--- ====================================================================================================================== --->
-<!--- ============================================== Solver Parameter Input XML File  ====================================== --->
-<!--- ====================================================================================================================== --->
-
-<h1 id="xml_file"> Solver Parameter Input XML File  </h1>
+# Solver Parameter Input XML File
 
 The Fortan svFSI solver read in simulation parameters in a custom text format. All parameters were read in at startup and stored as 
 an array of characters (string) using custom code. Parameter values were then retrieved during various stages of the computation. 
@@ -478,7 +413,7 @@ svFSIplus solver simulation parameters are stored in the Extensible Markup Langu
 XML _tags_ represent data structures and contain metadata. An XML _element_ is a logical component that either begins with a start-tag and ends with a matching end-tag or consists only of an empty-element tag. The characters between the start-tag and end-tag, if any, are the element's _content_, and may contain markup, including other elements, which are called child elements. An _attribute_ is a markup construct consisting of a name–value pair that exists within a start-tag or empty-element tag.
 
 Example: 
-```
+```cpp
  <svFSIFile> |--------------------------------------------- root element
    <Add_equation type="FSI" >   |-------------------------- start-tag with an attribute named type
    <Coupled> true </Coupled>    |--------------------------- Coupled element with data true
@@ -501,25 +436,22 @@ Example:
 
 The elements in the svFSIplus simulation file are represented by _sections_ of related parameters. Sub-elements are referred to as _sub-sections_. 
 The svFSIplus simulation file has four top-level sections
-```
+```cpp
 1) General
 2) Mesh
 3) Equation
 4) Projection
 ```
 
-<!--- -------------------------------- ---> 
-<!---          Parameters Class        --->  
-<!--- -------------------------------- --->  
 
-<h2 id="xml_file"> Parameters class </h2>
+## Parameters class
 
 The [Parameters](https://github.com/SimVascular/svFSIplus/blob/main/Code/Source/svFSI/Parameters.h) class is used to read and store simulation 
 parameters parsed from an XML file using using [tinyxml2](https://github.com/leethomason/tinyxml2). Parameter types are checked as they are read so errors in parameter values are immediately detected.
 
 
 The `Parameters` class contains objects for each of the top-level sections in the parameters file
-```
+```cpp
     GeneralSimulationParameters general_simulation_parameters;
     std::vector<MeshParameters*> mesh_parameters;
     std::vector<EquationParameters*> equation_parameters;
@@ -532,7 +464,7 @@ lower case first character. Each parameter has a name and a value with as a basi
 `Parameter` template class. 
 
 Example: MeshParameters class parameter objects
-```
+```cpp
 class MeshParameters : public ParameterLists
 {
     Parameter<std::string> name;                       // <Add_mesh name=NAME >
@@ -552,7 +484,7 @@ Parameter names and default values are set in each section object constructor us
 sets the name and default value for a parameter, and if a value for it is required to be given in the XML file.
 
 Example: Setting parameter names and values in the MeshParameters constructor
-```
+```cpp
 MeshParameters::MeshParameters()
 {
   bool required = true;
@@ -581,7 +513,7 @@ will need to be checked and processed. The 'ParameterLists::set_parameter_value(
 parameter from a string. 
 
 Example: Parsing XML and setting parameter values in MeshParameters::set_values()
-```
+```cpp
 void MeshParameters::set_values(tinyxml2::XMLElement* mesh_elem)
 {
   using namespace tinyxml2;
@@ -626,7 +558,7 @@ void MeshParameters::set_values(tinyxml2::XMLElement* mesh_elem)
 Sections that contain simple elements (i.e., no sub-sections or special data processing) can be automatically parsed. 
 
 Example: Automatically parsing XML and setting parameter values in `LinearSolverParameters::set_values(tinyxml2::XMLElement* xml_elem)`
-```
+```cpp
     std::string error_msg = "Unknown " + xml_element_name + " XML element '";
 
   // Get the 'type' from the <LS type=TYPE> element.
@@ -648,44 +580,35 @@ Example: Automatically parsing XML and setting parameter values in `LinearSolver
   xml_util_set_parameters(ftpr, xml_elem, error_msg);
 ```
 
-<!--- -------------------------------- ---> 
-<!---      Accessing Parameters        --->  
-<!--- -------------------------------- --->  
 
-<h2 id="xml_file"> Accessing Parameters </h2>
+## Accessing Parameters
 
 Parameter values are accessed from the core simulation code using the `Simulation` object's `Parameters` object. 
 The `Parameter` template class `()` operator or `value()` method is used to access the parameter's value, the `defined()` 
 method is used to check if a parameter's value has been set.
 
 Example: Accessing parameter values
-```
-auto& general_params = simulation->parameters.general_simulation_parameters'
+```cpp
+auto& general_params = simulation->parameters.general_simulation_parameters
 const int nsd = general_params.number_of_spatial_dimensions();
 auto file_path = simulation.parameters.mesh_parameters[0].mesh_file_path();
 
 if (eq_params->variable_wall_properties.defined()) { }
 ```
 
-<!--- ====================================================================================================================== --->
-<!--- ==================================================== Performance ===================================================== --->
-<!--- ====================================================================================================================== --->
 
-<h1 id="performance"> Performance and Accuracy </h1>
+# Performance and Accuracy
 
 Performance
 
 
 
-<!--- ====================================================================================================================== --->
-<!--- ================================================= Potential Problems ================================================= --->
-<!--- ====================================================================================================================== --->
-
-<h1 id="problems"> Potential Problems </h1>
+# Potential Problems
 
 The following sections briefly outline some problems that might cause simulation failures or incorrect results.
 
-<h2 id="problems_1"> Indexing Mistakes </h2>
+
+## Indexing Mistakes
 
 There may still be indexing mistakes
 - Numeric index is off by one
@@ -693,27 +616,24 @@ There may still be indexing mistakes
 
 There are a lot places in the code that uses indexes to offset into arrays.
 
-<h2 id="problems_2"> Fortran 0-size Arrays </h2>
+
+## Fortran 0-size Arrays
 
 The Fortran code uses of 0-size arrays in several places. The C++ code reproduced this kind of functionality using tests
 of array size and adding the allocation of 0-sized `Array` objects. This hack might could fail under certain circumstances.
 
 
-<!--- ====================================================================================================================== --->
-<!--- ============================================= Implementation Details  ================================================ --->
-<!--- ====================================================================================================================== --->
-
-<h1 id="cpp_programming"> Implementation Details </h1>
+# Implementation Details
 
 This section covers some of the C++ implementation details that may be useful to developers adding new capabilities to svFSIplus.
 
 
-<h2 id="cpp_programming_1"> References vs. Pointers </h2>
+## References vs. Pointers
 
 svFSIPlus does not dynamically allocated objects except in `Array` and `Vector` classes and C++ containers. All objects defined in module classes 
 are allocated statically and are referenced using a dot. This provided a much cleaner translation from Fortran to C++ by replacing
 `%` with `.`.
-```
+```cpp
 msh%fa(iFa)  ->  msh.fa[iFa]
 ```
 
@@ -724,10 +644,10 @@ auto& cm = com_mod.cm;
 ```
 
 
-<h2 id="cpp_programming_1"> Constants </h2>
+## Constants
 
 In  svFSI constants are defined in the `CONSTS.f` file using the Fortan `PARAMETER` statement
-```
+```fortran
 !     Types of equations that are included in this solver
 !     Fluid equation (Navier-Stokes), nonlinear structure (pure d), heat
 !     equation, linear elasticity, heat in fluid (advection-diffusion),
@@ -743,7 +663,7 @@ In  svFSI constants are defined in the `CONSTS.f` file using the Fortan `PARAMET
 ```
 
 svFSIplus uses `enum class` types defined in `consts.h`
-```
+```cpp
 enum class EquationType
 { 
   phys_NA = 200, 
@@ -763,7 +683,7 @@ enum class EquationType
 ```
 
 Constants are accessed using
-```
+```cpp
   using namespace consts;
   
   if ((dmn.phys == EquationType::phys_fluid) ||
@@ -774,7 +694,7 @@ Constants are accessed using
 ```
 
 Some constants have a short-hand representation 
-```
+```cpp
 constexpr auto Equation_CMM = EquationType::phys_CMM;
 constexpr auto Equation_CEP = EquationType::phys_CEP;
 constexpr auto Equation_fluid = EquationType::phys_fluid;
@@ -790,15 +710,12 @@ constexpr auto Equation_ustruct = EquationType::phys_ustruct;
 ```
 
 which are used like this
-```
+```cpp
 if ((eq.phys == Equation_CMM) && com_mod.cmmInit) { 
 ```
 
-<!--- ====================================================================================================================== --->
-<!--- =============================================== Coding Standards  ==================================================== --->
-<!--- ====================================================================================================================== --->
 
-<h1 id="coding_standards"> Coding Standards </h1>
+# Coding Standards
 
 This section describes the coding standards and guidelines that must be followed when adding new code to svFSIplus. 
 
@@ -815,7 +732,7 @@ following sections may be coded in any (non-hideous) manner favoured by the deve
 Note that svFSIplus maintained the program structure and naming conventions used by the svFSI Fortran code so some of the
 following coding standards may be violated. 
 
-<h2 id="indent"> Indentation </h2>
+## Indentation
 
 Indentation refers to the spaces at the beginning of a code line. It is a fundamental aspect of code styling and improves 
 readability by showing the overall structure of the code. 
@@ -823,7 +740,7 @@ readability by showing the overall structure of the code.
 Indentation is two spaces for all programming structures: functions, loops, if-then blocks, etc. Do not use tabs to indent.
 
 The <b>if-else</b> class of statements should have the following form
-```
+```cpp
 if (condition) {
   ...
 }
@@ -836,14 +753,14 @@ if (condition) {
 ```
 
 A <b>for</b> statement should have the following form
-```
+```cpp
 for (initialization; condition; update) {
   statements;
 }
 ```
 
 A <b>switch</b> statement should have the following form
-```
+```cpp
 switch (condition) {
   case ABC:
     statements;
@@ -856,7 +773,7 @@ switch (condition) {
 ```
 
 The braces indicating a function body are placed in column 1, function body statements are indented by two spaces.
-```
+```cpp
 void find_max(const int n, const double values[])
 {
   int num_values{0};
@@ -869,7 +786,7 @@ void find_max(const int n, const double values[])
 }
 ```
 
-<h2 id="white_space"> White Space </h2>
+## White Space
 
 Whitespace is a term that refers to the spaces and newlines that are used to make code more readable. 
 
@@ -883,7 +800,7 @@ The following white space conventions should be followed
 - Colons should be surrounded by white space.
 - Semicolons in for statements should be followed by a space character.
 
-```
+```cpp
 v = w * x + y / z;          // good
 v = w*x + y/z;              // also ok
 v = w * (x + z);            // good
@@ -894,16 +811,16 @@ for (i = 0; i < 10; i++) {  // bad   for (i=0;i<10;i++){
 
 Some complex expressions may be better organized without single separating spaces. The following could be written using 
 spaces between sub-expressions only
-```
+```cpp
 double Inv2 = 0.50 * (Inv1*Inv1 - J4d*mat_trace(mat_mul(C,C), nsd));
 ```
 or written using double spacing between sub-expressions
-```
+```cpp
 double Inv2 = 0.50 * (Inv1 * Inv1  -  J4d * mat_trace(mat_mul(C,C), nsd));
 ```
 
 Use newlines often to separate logical blocks of code: for-loops, if statements, related code blocks.
-```
+```cpp
   for (int e = 0; e < lM.nEl; e++) {
     int iDmn = all_fun::domain(com_mod, lM, cEq, e);
     auto cPhys = com_mod.eq[cEq].dmn[iDmn].phys;
@@ -924,7 +841,7 @@ Use newlines often to separate logical blocks of code: for-loops, if statements,
     }
 ```
 
-<h1 id="namespace"> Namespaces </h1>
+## Namespaces
 
 Refer to the elements in the std namespace by explicit qualification using std::.
 ```
@@ -939,7 +856,7 @@ using namespace consts;
 double dmp = dmn.prop.at(PhysicalProperyType::damping);
 ```
 
-<h1 id="naming"> Naming Conventions </h1>
+## Naming Conventions
 
 Program readability is improved by using names that would be clear to any developer.
 
@@ -959,8 +876,7 @@ Program readability is improved by using names that would be clear to any develo
   - use <b>is_valid</b> instead of <b>flag</b>
 
 
-
-<h2> Styles </h2>
+## Styles
 
 Two naming styles are used svFSIplus
 
@@ -972,7 +888,7 @@ CamelCase is a way to separate the words in a phrase by making the first letter 
 and not using spaces. 
 
 
-<h2 id="file_naming"> File Names </h2>
+## File Names
 
 C++ files should end in .cpp and header files should end in .h. 
 
@@ -980,25 +896,25 @@ Files that contain a single class should have the name of the class, including c
 - MyClass.h, MyClass.cc
 
 
-<h2> Type Names </h2>
+## Type Names
 
 Type names are in CamelCase. 
 
-```
+```cpp
 class Simulation { }
 CepMod cep_mod;
 ```
 
-<h2> Variable and Functions Names </h2>
+## Variable and Functions Names
 
 Variable and function names use snake_case. 
-```
+```cpp
 std::string history_file_name;
 void b_ustruct_3d(const ComMod& com_mod);
 ```
 Data members of classes additionally have trailing underscores. 
 
-<h1 id="comments"> Comments </h1>
+## Comments
 
 Comments are absolutely vital to keeping code readable. While comments are very important, the best code is self-documenting. 
 Giving sensible names to types and variables is much better than using obscure names that you must then explain through comments.
@@ -1007,7 +923,7 @@ Don't literally describe what code does unless the behavior is nonobvious to a r
 Instead, provide higher level comments that describe why the code does what it does, or make the code self describing.
 
 Comments should be included relative to their position in the code
-```
+```cpp
 // yes
 while (true) {
     // Do something
@@ -1021,7 +937,7 @@ while (true) {
 }
 ```
 
-<h2> File Comments </h2>
+## File Comments
 
 Start each file with license boilerplate. Every file should contain license boilerplate.
 
@@ -1030,14 +946,14 @@ will contain comments describing the purpose of the functions or class methods d
 
 Do not duplicate comments in both the .h and the .cpp files. 
 
-<h2> Class Comments </h2>
+## Class Comments
 
 Every non-obvious class or struct declaration should have an accompanying comment that describes what it is for and how it should be used.
 
 Comments describing the use of the class should go together with its interface definition; comments about the class operation and 
 implementation should accompany the implementation of the class's methods.
 
-<h2> Function Comments </h2>
+## Function Comments
 
 Every function declaration should have comments immediately preceding it that describe what the function does and how to use it. If there 
 is anything tricky about how a function does its job, the function definition should have an explanatory comment. 
@@ -1057,10 +973,10 @@ Returns
 
 
 
-<h1 id="variables"> Variables </h1>
+## Variables
 
 Variables should be initialized where they are declared when possible. This ensures that variables are valid at any time.
-```
+```cpp
 double average{0.0};
 int num_points = 0;
 ```
@@ -1073,12 +989,12 @@ Variables should be declared in the smallest scope possible. By keeping the oper
 it is easier to control the effects and side effects of the variable.
 
 
-<h1> General Programming </h1>
+## General Programming
 
 Use nullptr instead of 0 and NULL.
 
 Use const rather than #define statements.
-```
+```cpp
 // Replace 
 #define A_POWER_OF_TWO 16
 
@@ -1089,18 +1005,15 @@ int const A_POWER_OF_TWO = 16;
 Avoid deeply nested code. Code that is too deeply nested is hard to both read and debug. 
 One should replace excessive nesting with function calls.
 
-<!--- ====================================================================================================================== --->
-<!--- ================================================= Coding Guidelines  ================================================= --->
-<!--- ====================================================================================================================== --->
 
-<h1 id="coding_guidelines"> Coding Guidelines </h1>
+# Coding Guidelines
 
 This section describes the coding guidelines that are recommend when adding new code to svFSIplus. 
 
-<h2> Enums </h2>
+## Enums
 
 Where possible, put enums in appropriate classes
-```
+```cpp
 class Grade {
     enum { HIGH, MIDDLE, LOW };
 
@@ -1109,7 +1022,7 @@ class Grade {
 };
 ```
 
-<h2> Type Conversions </h2>
+## Type Conversions
 
 Type conversions should be avoided if possible.
 
@@ -1119,10 +1032,10 @@ When required, type conversions must always be done explicitly using C++ style c
 double r = static_cast<double>(i) / 3.0;
 ```
 
-<h2> Function Parameters  </h2>
+## Function Parameters
 
 Arguments that are non-primitive types and will not be modified should be passed by const reference.
-```
+```cpp
 void calc_elem_ar(const ComMod& com_mod, const CmMod& cm_mod, mshType& lM, bool& rflag)
 ```
 
