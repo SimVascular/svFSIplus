@@ -8,10 +8,6 @@
 
 namespace ge {
 
-//----
-// ge
-//----
-//
 bool ge(const int nV, const int N, const Array<double>& A, Vector<double>& B)
 {
   // Constructing a preconditioner. This is to prevent latter problem

@@ -1,6 +1,5 @@
 
-// Conjugate-gradient algorithm for scaler, vector and Schur
-// complement cases.
+
 
 #include "cgrad.h"
 #include "DebugMsg.h"
@@ -16,10 +15,10 @@
 
 namespace cgrad {
 
-//-------
-// schur
-//-------
-// Reproduces 'SUBROUTINE CGRAD_SCHUR(lhs, ls, dof, D, G, L, R)'
+/// @brief Conjugate-gradient algorithm for scaler, vector and Schur
+/// complement cases.
+///
+/// Reproduces 'SUBROUTINE CGRAD_SCHUR(lhs, ls, dof, D, G, L, R)'
 //
 void schur(FSILS_lhsType& lhs, FSILS_subLsType& ls, const int dof, const Array<double>& D, 
     const Array<double>& G, const Vector<double>& L, Vector<double>& R)

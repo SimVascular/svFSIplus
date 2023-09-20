@@ -12,20 +12,12 @@ CepModFn::~CepModFn()
 {
 }
 
-//------
-// getf
-//------
-//
 void CepModFn::getf(const int n, const Vector<double>& X, Vector<double>& f, const double fext)
 {
   f(0) = c * ( X(0)*(X(0)-alpha)*(1.0-X(0)) - X(1) ) + fext;
   f(1) = X(0) - b*X(1) + a;
 }
 
-//------
-// getj
-//------
-//
 void CepModFn::getj(const int n, const Vector<double>& X, Array<double>& JAC)
 {
   JAC = 0.0;
@@ -39,36 +31,25 @@ void CepModFn::getj(const int n, const Vector<double>& X, Array<double>& JAC)
   JAC(1,1) = -b;
 }
 
-//------
-// init
-//------
-//
-// SUBROUTINE FN_INIT0(nX, X)
-//
+/// @brief SUBROUTINE FN_INIT0(nX, X)
 void CepModFn::init(const int nX, Vector<double> &X)
 {
   X = 1.e-3;
 }
 
-// SUBROUTINE FN_INITS(nX, X, X0)
-//
+/// @brief SUBROUTINE FN_INITS(nX, X, X0)
 void CepModFn::init(const int nX, Vector<double> &X, double X0)
 {
   X = X0;
 }
 
-// SUBROUTINE FN_INITV(nX, X, X0)
-//
+/// @brief SUBROUTINE FN_INITV(nX, X, X0)
 void CepModFn::init(const int nX, Vector<double> &X, Vector<double>& X0)
 {
   X = X0;
 }
 
-//-----------
-// integ_cn2
-//-----------
-// Time integration performed using Crank-Nicholson method
-//
+/// @brief Time integration performed using Crank-Nicholson method
 void CepModFn::integ_cn2(const int nX, Vector<double>& Xn, const double Ts, const double Ti, const double Istim, 
     Vector<int>& IPAR, Vector<double>& RPAR)
 {
@@ -127,11 +108,7 @@ void CepModFn::integ_cn2(const int nX, Vector<double>& Xn, const double Ts, cons
   }
 }
 
-//----------
-// integ_fe
-//----------
-// Time integration performed using Forward Euler method
-//
+/// @brief Time integration performed using Forward Euler method
 void CepModFn::integ_fe(const int nX, Vector<double>& X, const double Ts, const double Ti, const double Istim)
 {
   double t = Ts / Tscale;
@@ -146,13 +123,9 @@ void CepModFn::integ_fe(const int nX, Vector<double>& X, const double Ts, const 
   X(0) = X(0)*Vscale + Voffset;
 }
 
-//----------
-// integ_rk
-//----------
-// Time integration performed using 4th order Runge-Kutta method
-//
-// Replicates 'SUBROUTINE AP_INTEGRK(nX, X, Ts, Ti, Istim, Ksac)' defined in 'CEPMOD_AP.f'.
-//
+/// @brief Time integration performed using 4th order Runge-Kutta method
+///
+/// Replicates 'SUBROUTINE AP_INTEGRK(nX, X, Ts, Ti, Istim, Ksac)' defined in 'CEPMOD_AP.f'.
 void CepModFn::integ_rk(const int nX, Vector<double>& X, const double Ts, const double Ti, const double Istim)
 {
   double t = Ts / Tscale;

@@ -115,27 +115,24 @@ void do_test()
   //exit(0);
 }
 
-//--------------
-// int_msh_data
-//--------------
-// This routine prepares data array of a regular mesh
-//
-// Parameters:
-//
-//   d - Stores data for writing to VTK files.
-//   outDof - Data dof (i.e. nsd).
-//   nOute - Number of element data outputs.
-//
-// Modifies:
-//
-//  d.nNo 
-//  d.eNoN 
-//  d.IEN 
-//  d.xe - Element based variables to be written
-//  d.gx - variables after transformation to global format ? 
-//  d.x - clears this but may contain nodal coords?
-//
-// Reproduces 'SUBROUTINE INTMSHDATA(lM, d, outDof, nOute)'
+/// @brief This routine prepares data array of a regular mesh
+///
+/// Parameters:
+///
+///   d - Stores data for writing to VTK files.
+///   outDof - Data dof (i.e. nsd).
+///   nOute - Number of element data outputs.
+///
+/// Modifies:
+///
+///  d.nNo 
+///  d.eNoN 
+///  d.IEN 
+///  d.xe - Element based variables to be written
+///  d.gx - variables after transformation to global format ? 
+///  d.x - clears this but may contain nodal coords?
+///
+/// Reproduces 'SUBROUTINE INTMSHDATA(lM, d, outDof, nOute)'
 //
 void int_msh_data(const ComMod& com_mod, const CmMod& cm_mod, const mshType& lM, dataType& d, const int outDof, const int nOute)
 {

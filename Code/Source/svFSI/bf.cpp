@@ -1,5 +1,5 @@
 
-// This routine computes body force for the current equation and assembles it to the residue
+// This routine computes body force for the current equation and assembles it to the residual
 
 #include "bf.h"
 
@@ -17,14 +17,11 @@
 
 namespace bf {
 
-//--------------
-// bf_construct
-//--------------
-// This subroutine is reached only for shell follower pressre loads
-// or applying initialization pressure for CMM method. nsd must be
-// equal to 3.
-//
-// Reproduces 'SUBROUTINE BFCONSTRUCT(lM, e, eNoN, idof, xl, dl, bfl, ptr)'.
+/// @brief This subroutine is reached only for shell follower pressre loads
+/// or applying initialization pressure for CMM method. nsd must be
+/// equal to 3.
+///
+/// Reproduces 'SUBROUTINE BFCONSTRUCT(lM, e, eNoN, idof, xl, dl, bfl, ptr)'.
 //
 void bf_construct(ComMod& com_mod, const mshType& lM, const int e, const int eNoN, const int idof, Array<double>& xl, 
     const Array<double>& dl, const Array<double>& bfl, const Vector<int>& ptr)
@@ -102,12 +99,8 @@ void bf_construct(ComMod& com_mod, const mshType& lM, const int e, const int eNo
   }
 #endif
 }
-  
-//--------
-// set_bf
-//--------
-//
-// Modifes: com_mod.Bf, Dg
+
+/// @brief Modifes: com_mod.Bf, Dg
 //
 void set_bf(ComMod& com_mod, const Array<double>& Dg)
 {
@@ -132,14 +125,12 @@ void set_bf(ComMod& com_mod, const Array<double>& Dg)
   }
 }
 
-//----------
-// set_bf_l 
-//----------
-//
-// Modifies
-//  com_mod.Bf
-//
-// Reproduces 'SUBROUTINE SETBFL(lBf, lM, Dg)'.
+/// @brief Modifies
+/// \code {.cpp}
+///  com_mod.Bf
+/// \endcode
+///
+/// Reproduces 'SUBROUTINE SETBFL(lBf, lM, Dg)'.
 //
 void set_bf_l(ComMod& com_mod, bfType& lBf, mshType& lM, const Array<double>& Dg)
 {
@@ -204,7 +195,7 @@ void set_bf_l(ComMod& com_mod, bfType& lBf, mshType& lM, const Array<double>& Dg
   }
 
   // Assemble pressure/traction load (shells/CMM initialization) to
-  // residue. For general body force (vector), assemble later with
+  // residual. For general body force (vector), assemble later with
   // other volumetric forces
   //
   if (utils::btest(lBf.bType, enum_int(BodyForceType::bfType_vol))) {

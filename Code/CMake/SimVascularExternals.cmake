@@ -6,10 +6,10 @@ find_package(Doxygen)
 if(DOXYGEN_FOUND)
   file(TO_NATIVE_PATH "${SV_BINARY_DIR}/Doxygen/" SV_DOCS_DIR_WORK)
   set(SV_DOCS_DIR ${SV_DOCS_DIR_WORK} CACHE PATH "Location to place docs")
-  configure_file(${SV_SOURCE_DIR}/../Documentation/simvascular.Doxyfile.in
-    ${SV_BINARY_DIR}/simvascular.Doxyfile @ONLY)
+  configure_file(${SV_SOURCE_DIR}/../Documentation/Doxyfile
+    ${SV_BINARY_DIR}/Doxyfile @ONLY)
   add_custom_target(doc
-    ${DOXYGEN_EXECUTABLE} ${SV_BINARY_DIR}/simvascular.Doxyfile
+    ${DOXYGEN_EXECUTABLE} ${SV_BINARY_DIR}/Doxyfile
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     COMMENT "Generating API documentation with Doxygen" VERBATIM
     )

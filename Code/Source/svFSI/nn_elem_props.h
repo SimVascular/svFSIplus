@@ -1,14 +1,11 @@
 
-// Define a map type used to set element properties.
+/// @brief Define a map type used to set element properties.
 using SetElementPropsMapType = std::map<int, std::function<void(int, mshType&)>>;
 
-//---------------------
-// set_3d_element_props
-//---------------------
-// Map used to set 3D element properties.
-//
-// This replicates the case statement in the Fortran 'SUBROUTINE SELECTELE(lM)' 
-// defined in NN.f. 
+/// @brief Map used to set 3D element properties.
+///
+/// This replicates the case statement in the Fortran 'SUBROUTINE SELECTELE(lM)' 
+/// defined in NN.f. 
 //
 SetElementPropsMapType set_3d_element_props = {
 
@@ -147,10 +144,7 @@ SetElementPropsMapType set_2d_element_props = {
   },
 };
 
-//----------------------
-// set_1d_element_props
-//----------------------
-// Map used to set 1D element properties.
+/// @brief Map used to set 1D element properties.
 //
 SetElementPropsMapType set_1d_element_props = {
 
@@ -173,17 +167,14 @@ SetElementPropsMapType set_1d_element_props = {
   },
 };
 
-// Define a map type used to set face properties.
+/// @brief Define a map type used to set face properties.
 using SetFacePropsMapType = std::map<int, std::function<void(int, faceType&)>>;
 
-//------------------------
-// set_face_element_props
-//------------------------
-// Map used to set face properties.
-//
-// set_face_element_props[eNoN].
-//
-// Replaces the Fortan 'select' statemnt in 'SELECTELEB'.
+/// @brief Map used to set face properties.
+///
+/// set_face_element_props[eNoN].
+///
+/// Replaces the Fortan 'select' statemnt in 'SELECTELEB'.
 //
 SetFacePropsMapType set_face_element_props = {
 

@@ -21,10 +21,6 @@
 
 namespace gmres {
 
-//--------
-// bc_pre
-//--------
-//
 void bc_pre(fsi_linear_solver::FSILS_lhsType& lhs, fsi_linear_solver::FSILS_subLsType& ls, const int dof, 
     const int mynNo, const int nNo)
 {
@@ -59,12 +55,9 @@ void bc_pre(fsi_linear_solver::FSILS_lhsType& lhs, fsi_linear_solver::FSILS_subL
   }
 }
 
-//-------
-// gmres
-//-------
-// Solver the system Val * X = R.
-//
-// Reproduces the Fortran 'GMRES' subroutine.
+/// @brief Solver the system Val * X = R.
+///
+/// Reproduces the Fortran 'GMRES' subroutine.
 //
 void gmres(fsi_linear_solver::FSILS_lhsType& lhs, fsi_linear_solver::FSILS_subLsType& ls, const int dof, 
     const Array<double>& Val, const Array<double>& R, Array<double>& X)

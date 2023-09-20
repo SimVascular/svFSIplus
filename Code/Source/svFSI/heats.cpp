@@ -13,10 +13,6 @@
 
 namespace heats {
 
-//---------
-// b_heats 
-//---------
-//
 void b_heats(ComMod& com_mod, const int eNoN, const double w, const Vector<double>& N, const double h, Array<double>& lR)
 {
   for (int a = 0; a < eNoN; a++) {
@@ -24,10 +20,7 @@ void b_heats(ComMod& com_mod, const int eNoN, const double w, const Vector<doubl
   } 
 }
 
-//-----------------
-// construct_heats
-//-----------------
-//
+
 void construct_heats(ComMod& com_mod, const mshType& lM, const Array<double>& Ag, const Array<double>& Yg)
 {
   #define n_debug_construct_heats 
@@ -124,10 +117,7 @@ void construct_heats(ComMod& com_mod, const mshType& lM, const Array<double>& Ag
   }
 }
 
-//----------
-// heats_2d
-//----------
-//
+
 void heats_2d(ComMod& com_mod, const int eNoN, const double w, const Vector<double>& N, const Array<double>& Nx, 
     const Array<double>& al, const Array<double>& yl, Array<double>& lR, Array3<double>& lK)
 {
@@ -191,10 +181,7 @@ void heats_2d(ComMod& com_mod, const int eNoN, const double w, const Vector<doub
   }
 }
 
-//----------
-// heats_3d
-//----------
-//
+
 void heats_3d(ComMod& com_mod, const int eNoN, const double w, const Vector<double>& N, const Array<double>& Nx,
     const Array<double>& al, const Array<double>& yl, Array<double>& lR, Array3<double>& lK)
 {

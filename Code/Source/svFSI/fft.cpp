@@ -4,15 +4,10 @@
 #include "fft.h"
 #include <math.h>
 
-//-----
-// fft
-//-----
-// Replicates Fortran 'SUBROUTINE FFT(fid, np, gt)'.
-//
-// temporal_values contains all of the values read in from
-// the temporal values file.
-//
-// Data modified:
+/// @brief Replicates Fortran 'SUBROUTINE FFT(fid, np, gt)'.
+///
+/// temporal_values contains all of the values read in from
+/// the temporal values file.
 //
 void fft(const int np, const std::vector<std::vector<double>>& temporal_values, fcType& gt)
 {
@@ -96,10 +91,7 @@ void fft(const int np, const std::vector<std::vector<double>>& temporal_values, 
   }
 }
 
-//------
-// ifft
-//------
-// This is to calculate flow rate and flow acceleration (IFFT)
+/// @brief This is to calculate flow rate and flow acceleration (IFFT)
 //
 void ifft(const ComMod& com_mod, const fcType& gt, Vector<double>& Y, Vector<double>& dY) 
 {
@@ -165,10 +157,7 @@ void ifft(const ComMod& com_mod, const fcType& gt, Vector<double>& Y, Vector<dou
   }
 }
 
-//------
-// igbc
-//------
-// This routine is for calculating values by the inverse of general BC
+/// @brief This routine is for calculating values by the inverse of general BC
 //
 void igbc(const ComMod& com_mod, const MBType& gm, Array<double>& Y, Array<double>& dY)
 {

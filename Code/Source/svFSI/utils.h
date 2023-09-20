@@ -8,13 +8,13 @@ namespace utils {
 class stackType
 {
   public:
-    // Maximum length of the stack
+    /// Maximum length of the stack
     int maxN = 0;
 
-    // Current size of stack
+    /// Current size of stack
     int n = 0;
 
-    // Values inside stack
+    /// Values inside stack
     Vector<int> v;
 };
 

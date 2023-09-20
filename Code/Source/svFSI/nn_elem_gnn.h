@@ -1,7 +1,6 @@
-
-// Define a map type used to set element shape function data.
-//
-// Reproduces the Fortran 'GETGNN' subroutine.
+/// @brief Define a map type used to set element shape function data.
+///
+/// Reproduces the Fortran 'GETGNN' subroutine.
 //
 using GetElementShapeMapType = std::map<ElementType, std::function<void(const int, const int, const int, 
     Array<double>&, Array<double>&, Array3<double>&)>>;

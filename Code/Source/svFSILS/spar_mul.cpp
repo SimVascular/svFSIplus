@@ -12,10 +12,7 @@
 
 namespace spar_mul {
 
-//-------------------
-// fsils_spar_mul_ss
-//-------------------
-// Reproduces 'SUBROUTINE FSILS_SPARMULSS(lhs, rowPtr, colPtr, K, U, KU)'
+/// @brief Reproduces 'SUBROUTINE FSILS_SPARMULSS(lhs, rowPtr, colPtr, K, U, KU)'
 //
 void fsils_spar_mul_ss(FSILS_lhsType& lhs, const Array<int>& rowPtr, const Vector<int>& colPtr, 
     const Vector<double>& K, const Vector<double>& U, Vector<double>& KU)
@@ -32,10 +29,7 @@ void fsils_spar_mul_ss(FSILS_lhsType& lhs, const Array<int>& rowPtr, const Vecto
   fsils_commus(lhs, KU);
 }
 
-//-------------------
-// fsils_spar_mul_sv
-//-------------------
-// Reproduces 'SUBROUTINE FSILS_SPARMULSV(lhs, rowPtr, colPtr, dof, K, U, KU)'. 
+/// @brief Reproduces 'SUBROUTINE FSILS_SPARMULSV(lhs, rowPtr, colPtr, dof, K, U, KU)'. 
 //
 void fsils_spar_mul_sv(FSILS_lhsType& lhs, const Array<int>& rowPtr, const Vector<int>& colPtr, 
     const int dof, const Array<double>& K, const Vector<double>& U, Array<double>& KU)
@@ -101,10 +95,7 @@ void fsils_spar_mul_sv(FSILS_lhsType& lhs, const Array<int>& rowPtr, const Vecto
   fsils_commuv(lhs, dof, KU);
 }
 
-//-------------------
-// fsils_spar_mul_vs
-//-------------------
-// Reproduces 'SUBROUTINE FSILS_SPARMULVS(lhs, rowPtr, colPtr, dof, K, U, KU)'.
+/// @brief Reproduces 'SUBROUTINE FSILS_SPARMULVS(lhs, rowPtr, colPtr, dof, K, U, KU)'.
 //
 void fsils_spar_mul_vs(FSILS_lhsType& lhs, const Array<int>& rowPtr, const Vector<int>& colPtr, 
     const int dof, const Array<double>& K, const Array<double>& U, Vector<double>& KU)
@@ -166,10 +157,7 @@ void fsils_spar_mul_vs(FSILS_lhsType& lhs, const Array<int>& rowPtr, const Vecto
   fsils_commus(lhs, KU);
 }
 
-//--------------------
-// fsi_ls_spar_mul_vv
-//--------------------
-// Reproduces 'SUBROUTINE FSILS_SPARMULVV(lhs, rowPtr, colPtr, dof, K, U, KU)'. 
+/// @brief Reproduces 'SUBROUTINE FSILS_SPARMULVV(lhs, rowPtr, colPtr, dof, K, U, KU)'. 
 //
 void fsils_spar_mul_vv(FSILS_lhsType& lhs, const Array<int>& rowPtr, const Vector<int>& colPtr, 
     const int dof, const Array<double>& K, const Array<double>& U, Array<double>& KU)

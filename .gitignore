@@ -14,3 +14,9 @@ __pycache__
 
 # eclipse
 .project
+
+# Visual Studio Code
+.vscode
+
+# Doxygen output
+Documentation/html/
