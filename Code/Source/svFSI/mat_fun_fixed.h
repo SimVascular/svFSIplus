@@ -64,10 +64,6 @@ void transpose(const double A[N][N],  double result[N][N])
   }
 }
 
-//---------
-// mat_mul
-//---------
-//
 template <size_t N>
 void mat_mul(const double A[N][N], const double B[N][N], double result[N][N])
 {

@@ -3,11 +3,9 @@
 
 namespace consts {
 
-//---------------------------
-// element_type_to_elem_nonb
-//---------------------------
-// Reproduces the 'SELECT CASE (lM%eType)' statements in the
-// Fortran 'PARTMSH' subroutine. 
+
+/// @brief Reproduces the 'SELECT CASE (lM%eType)' statements in the
+/// Fortran 'PARTMSH' subroutine. 
 //
 const std::map<ElementType,int> element_type_to_elem_nonb = 
 {
@@ -26,14 +24,13 @@ const std::map<ElementType,int> element_type_to_elem_nonb =
   {ElementType::WDG,   3 }
 };
 
-// Map for constitutive_model string to ConstitutiveModelType. 
-/*
-!     Type of constitutive model (isochoric) for structure equation:
-!     St.Venant-Kirchhoff, modified St.Venant-Kirchhoff, NeoHookean,
-!     Mooney-Rivlin, modified Holzapfel-Gasser-Ogden with dispersion,
-!     Linear model (S = mu*I), Guccione (1995), Holzapfel & Ogden model
-*/
-
+/// @brief Map for constitutive_model string to ConstitutiveModelType. 
+///
+/// Type of constitutive model (isochoric) for structure equation:
+/// St.Venant-Kirchhoff, modified St.Venant-Kirchhoff, NeoHookean,
+/// Mooney-Rivlin, modified Holzapfel-Gasser-Ogden with dispersion,
+/// Linear model (S = mu*I), Guccione (1995), Holzapfel & Ogden model
+//
 const std::map<std::string,ConstitutiveModelType> constitutive_model_name_to_type = 
 {
   {"lin", ConstitutiveModelType::stIso_lin}, 
@@ -75,7 +72,8 @@ const std::map<std::string,ConstitutiveModelType> constitutive_model_name_to_typ
 
 };
 
-// Map for contact model string name to ContacteModelType.
+/// @brief Map for contact model string name to ContacteModelType
+//
 const std::map<std::string,ContactModelType> contact_model_name_to_type =
 {
   {"penalty", ContactModelType::cntctM_penalty},
@@ -83,11 +81,8 @@ const std::map<std::string,ContactModelType> contact_model_name_to_type =
 };
 
 
-//------------------------------------
-// fluid_viscosity_model_name_to_type
-//------------------------------------
+/// @brief Map for fluid viscosity model string to FluidViscosityModelType. 
 //
-// Map for fluid viscosity model string to FluidViscosityModelType. 
 const std::map<std::string,FluidViscosityModelType> fluid_viscosity_model_name_to_type
 {
   {"const", FluidViscosityModelType::viscType_Const},
@@ -103,13 +98,10 @@ const std::map<std::string,FluidViscosityModelType> fluid_viscosity_model_name_t
 };
 
 
-//------------------
-// node_num_to_type
-//------------------
-// Map number of element nodes to element type.
-//
-// Note that this is not an ambiguous mapping between, 
-// need to handle some overlap in number of element nodes.
+/// @brief Map number of element nodes to element type.
+///
+/// Note that this is not an ambiguous mapping between, 
+/// need to handle some overlap in number of element nodes.
 //
 static const std::map<int,ElementType> num_nodes_to_type = {
     {1, ElementType::PNT},
@@ -129,19 +121,13 @@ static const std::map<int,ElementType> num_nodes_to_type = {
     {0, ElementType::NRB}
   };
 
-//--------------------
-// cplbc_name_to_type
-//--------------------
 const std::map<std::string,CplBCType> cplbc_name_to_type = {
     {"E", CplBCType::cplBC_E},
     {"I", CplBCType::cplBC_I},
     {"SI", CplBCType::cplBC_SI}
   };
 
-//-----------------------
-// equation_name_to_type
-//-----------------------
-// Map equation name to a type.
+/// @brief Map equation name to a type
 //
 const std::map<std::string,EquationType> equation_name_to_type = {
     {"advection_diffusion", EquationType::phys_heatF},
@@ -188,10 +174,7 @@ const std::map<std::string,MeshGeneratorType> mesh_generator_name_to_type = {
     {"Meshsim", MeshGeneratorType::RMSH_MESHSIM}
 };
 
-//-----------------------------
-// preconditioner_name_to_type
-//-----------------------------
-// Map for preconditioner type string to PreconditionerType enum. 
+/// @brief Map for preconditioner type string to PreconditionerType enum
 //
 const std::map<std::string,PreconditionerMapType> preconditioner_name_to_type =
 {
@@ -216,10 +199,7 @@ const std::map<std::string,PreconditionerMapType> preconditioner_name_to_type =
 
 };
 
-//---------------------
-// solver_name_to_type
-//---------------------
-// Map solver type string to SolverType enum. 
+/// @brief Map solver type string to SolverType enum. 
 //
 const std::map<std::string,SolverType> solver_name_to_type 
 {

@@ -1,11 +1,9 @@
-
-// The DebugMsg is class is used to print debugging messages. 
-
 #ifndef DEBUG_MSG_H 
 #define DEBUG_MSG_H 
 
 #include <iostream>
 
+/// @brief The DebugMsg is class is used to print debugging messages. 
 class DebugMsg 
 {
   public:

@@ -16,12 +16,9 @@ namespace load_msh {
 
 #define ndbg_load_msh
 
-//-----------
-// read_ccne
-//-----------
-// Read mesh position coordinates and connectivity.
-//
-// [NOTE] Not imiplemented.
+/// @brief Read mesh position coordinates and connectivity.
+///
+/// [NOTE] Not imiplemented.
 //
 void read_ccne(Simulation* simulation, mshType& mesh, const MeshParameters* mesh_param)
 {
@@ -30,16 +27,15 @@ void read_ccne(Simulation* simulation, mshType& mesh, const MeshParameters* mesh
   throw std::runtime_error("[read_ccne] read_ccne() is not implemented."); 
 }
 
-//-------------
-// read_ndnlff
-//-------------
-// Read list of end nodes from a file into the face data structure.
-//
-// This sets the face data: 
-//   face.nNo 
-//   face.gN 
-//   face.nEl 
-//   face.eNoN 
+/// @brief Read list of end nodes from a file into the face data structure.
+///
+/// This sets the face data: 
+/// \code {.cpp}
+///   face.nNo 
+///   face.gN 
+///   face.nEl 
+///   face.eNoN 
+/// \endcode
 //
 void read_ndnlff(const std::string& file_name, faceType& face)
 {
@@ -81,14 +77,11 @@ void read_ndnlff(const std::string& file_name, faceType& face)
   face.eNoN = 1;
 }
 
-//---------
-// read_sv
-//---------
-// Create data for a mesh.
-//
-// Replicates Fortran READSV subroutine defined in LOADMSH.f.
-//
-//   SUBROUTINE READSV(list, lM)
+/// @brief Create data for a mesh.
+///
+/// Replicates Fortran READSV subroutine defined in LOADMSH.f.
+///
+///   SUBROUTINE READSV(list, lM)
 //
 void read_sv(Simulation* simulation, mshType& mesh, const MeshParameters* mesh_param)
 {

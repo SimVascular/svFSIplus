@@ -18,10 +18,6 @@
 
 namespace fluid {
 
-//---------
-// b_fluid
-//---------
-//
 void b_fluid(ComMod& com_mod, const int eNoN, const double w, const Vector<double>& N, const Vector<double>& y, 
     const double h, const Vector<double>& nV, Array<double>& lR, Array3<double>& lK)
 {
@@ -107,10 +103,7 @@ void b_fluid(ComMod& com_mod, const int eNoN, const double w, const Vector<doubl
   }
 } 
 
-//-------------
-// bw_fluid_2d
-//-------------
-//
+
 void bw_fluid_2d(ComMod& com_mod, const int eNoNw, const int eNoNq, const double w, const Vector<double>& Nw, 
     const Vector<double>& Nq, const Array<double>& Nwx, const Array<double>& yl, const Vector<double>& ub, 
     const Vector<double>& nV, const Vector<double>& tauB, Array<double>& lR, Array3<double>& lK)
@@ -210,14 +203,14 @@ void bw_fluid_2d(ComMod& com_mod, const int eNoNw, const int eNoNq, const double
   rM(0,1) = -mu*( u(1)*nV(0) + u(0)*nV(1) );
   rM(1,1) = -mu*( u(1)*nV(1) + u(1)*nV(1) );
 
-  // Local residue (momentum)
+  // Local residual (momentum)
   //
   for (int a = 0; a < eNoNw; a++) {
     lR(0,a) = lR(0,a) + w*(Nw(a)*rV(0) + Nwx(0,a)*rM(0,0) + Nwx(1,a)*rM(1,0));
     lR(1,a) = lR(1,a) + w*(Nw(a)*rV(1) + Nwx(0,a)*rM(0,1) + Nwx(1,a)*rM(1,1));
   }
 
-  // Local residue (continuity)
+  // Local residual (continuity)
   for (int a = 0; a < eNoNq; a++) {
     lR(2,a) = lR(2,a) - w*Nq(a)*ubn;
   }
@@ -273,10 +266,7 @@ void bw_fluid_2d(ComMod& com_mod, const int eNoNw, const int eNoNq, const double
   }
 }
 
-//-------------
-// bw_fluid_3d
-//-------------
-//
+
 void bw_fluid_3d(ComMod& com_mod, const int eNoNw, const int eNoNq, const double w, const Vector<double>& Nw, 
     const Vector<double>& Nq, const Array<double>& Nwx, const Array<double>& yl, const Vector<double>& ub, 
     const Vector<double>& nV, const Vector<double>& tauB, Array<double>& lR, Array3<double>& lK)
@@ -375,14 +365,14 @@ void bw_fluid_3d(ComMod& com_mod, const int eNoNw, const int eNoNq, const double
   rM(0,1) = -mu*( u(1)*nV(0) + u(0)*nV(1) );
   rM(1,1) = -mu*( u(1)*nV(1) + u(1)*nV(1) );
 
-  // Local residue (momentum)
+  // Local residual (momentum)
   //
   for (int a = 0; a < eNoNw; a++) {
     lR(0,a) = lR(0,a) + w*(Nw(a)*rV(0) + Nwx(0,a)*rM(0,0) + Nwx(1,a)*rM(1,0));
     lR(1,a) = lR(1,a) + w*(Nw(a)*rV(1) + Nwx(0,a)*rM(0,1) + Nwx(1,a)*rM(1,1));
   }
 
-  // Local residue (continuity)
+  // Local residual (continuity)
   for (int a = 0; a < eNoNq; a++) {
     lR(2,a) = lR(2,a) - w*Nq(a)*ubn;
   }
@@ -438,14 +428,9 @@ void bw_fluid_3d(ComMod& com_mod, const int eNoNw, const int eNoNq, const double
   }
 }
 
-//-----------------
-// construct_fluid
-//-----------------
-// This is for solving fluid transport equation solving Navier-Stokes
-// equations. Dirichlet boundary conditions are either treated
-// strongly or weakly.
-//
-// Modifies:
+/// @brief This is for solving fluid transport equation solving Navier-Stokes
+/// equations. Dirichlet boundary conditions are either treated
+/// strongly or weakly.
 //
 void construct_fluid(ComMod& com_mod, const mshType& lM, const Array<double>& Ag, const Array<double>& Yg)
 {
@@ -530,7 +515,7 @@ void construct_fluid(ComMod& com_mod, const mshType& lM, const Array<double>& Ag
       }
     }
 
-    // Initialize residue and tangents
+    // Initialize residual and tangents
     lR = 0.0;
     lK = 0.0;
     std::array<fsType,2> fs;
@@ -679,10 +664,7 @@ void construct_fluid(ComMod& com_mod, const mshType& lM, const Array<double>& Ag
   #endif
 }
 
-//------------
-// fluid_2d_c
-//------------
-// Reproduces Fortran 'FLUID2D_C()'.
+/// @brief Reproduces Fortran 'FLUID2D_C()'.
 //
 void fluid_2d_c(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int eNoNq, const double w, 
     const Array<double>& Kxi, const Vector<double>& Nw, const Vector<double>& Nq, const Array<double>& Nwx, 
@@ -895,7 +877,7 @@ void fluid_2d_c(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
     updu = 0.0;
   }
 
-  // Local residue
+  // Local residual
   //
   for (int a = 0; a < eNoNq; a++) {
     double upNx = up(0)*Nqx(0,a) + up(1)*Nqx(1,a);
@@ -929,10 +911,7 @@ void fluid_2d_c(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
   }
 }
 
-//------------
-// fluid_2d_m
-//------------
-//
+
 void fluid_2d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int eNoNq, const double w, 
     const Array<double>& Kxi, const Vector<double>& Nw, const Vector<double>& Nq, const Array<double>& Nwx, 
     const Array<double>& Nqx, const Array<double>& Nwxx, const Array<double>& al, const Array<double>& yl, 
@@ -1121,7 +1100,7 @@ void fluid_2d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
   rV(0) = ud(0) + ua(0)*ux(0,0) + ua(1)*ux(1,0);
   rV(1) = ud(1) + ua(0)*ux(0,1) + ua(1)*ux(1,1);
 
-  // Local residue
+  // Local residual
   Array3<double> updu(2,2,eNoNw);
   Vector<double> uNx(eNoNw), upNx(eNoNw), uaNx(eNoNw); 
 
@@ -1190,10 +1169,8 @@ void fluid_2d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
   }
 }
 
-//-----------
-// fluid_3d_c
-//-----------
-// Element continuity residue.
+
+/// @brief Element continuity residual.
 //
 void fluid_3d_c(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int eNoNq, const double w, 
     const Array<double>& Kxi, const Vector<double>& Nw, const Vector<double>& Nq, const Array<double>& Nwx, 
@@ -1457,7 +1434,7 @@ void fluid_3d_c(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
     std::memset(updu, 0, sizeof updu);
   }
 
-  //  Local residue
+  //  Local residual
   //
   for (int a = 0; a < eNoNq; a++) {
     double upNx = up[0]*Nqx(0,a) + up[1]*Nqx(1,a) + up[2]*Nqx(2,a);
@@ -1495,14 +1472,12 @@ void fluid_3d_c(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
   }
 }
 
-//------------
-// fluid_3d_m
-//------------
-// Element momentum residue.
-//
-//  Modifies:
-//    lR(dof,eNoN)  - Residue
-//    lK(dof*dof,eNoN,eNoN) - Stiffness matrix
+
+/// @brief Element momentum residual.
+///
+///  Modifies:
+///    lR(dof,eNoN)  - Residual
+///    lK(dof*dof,eNoN,eNoN) - Stiffness matrix
 //
 void fluid_3d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int eNoNq, const double w,
     const Array<double>& Kxi, const Vector<double>& Nw, const Vector<double>& Nq, const Array<double>& Nwx,
@@ -1820,7 +1795,7 @@ void fluid_3d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
   rV[1] = ud[1] + ua[0]*ux[0][1] + ua[1]*ux[1][1] + ua[2]*ux[2][1];
   rV[2] = ud[2] + ua[0]*ux[0][2] + ua[1]*ux[1][2] + ua[2]*ux[2][2];
 
-  //  Local residue
+  //  Local residual
   //
   double updu[3][3][MAX_SIZE] = {0.0};
   double uNx[MAX_SIZE] = {0.0};
@@ -1928,10 +1903,8 @@ void fluid_3d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
     }
   }
 }
-//---------------
-// get_viscosity
-//---------------
-//
+
+
 void get_viscosity(const ComMod& com_mod, const dmnType& lDmn, double& gamma, double& mu, double& mu_s, double& mu_x)
 {
   using namespace consts;

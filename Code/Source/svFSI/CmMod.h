@@ -26,14 +26,10 @@ const decltype(MPI_DOUBLE_PRECISION) mpreal = MPI_DOUBLE_PRECISION;
 const decltype(MPI_CHARACTER) mpchar = MPI_CHARACTER;
 };
 
-//-------
-// CmMod
-//-------
-// The CmMod class duplicates the data structures in the Fortran CMMOD module
-// defined in COMU.f. 
-//
-// The data members here are the global variables exposed by the CMMOD module.
-//
+/// @brief The CmMod class duplicates the data structures in the Fortran CMMOD module
+/// defined in COMU.f. 
+///
+/// The data members here are the global variables exposed by the CMMOD module.
 class CmMod {
 
   public:
@@ -53,11 +49,7 @@ class CmMod {
     decltype(MPI_CHARACTER) mpchar = MPI_CHARACTER;
 };
 
-//--------
-// cmType
-//--------
-// The cmType class stores data and defines methods used for mpi communication.
-//
+/// @brief The cmType class stores data and defines methods used for mpi communication.
 class cmType {
   public:
     cmType();

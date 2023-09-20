@@ -92,10 +92,7 @@ int Vector<float>::active = 0;
 template<>
 bool Vector<float>::write_enabled = false;
 
-//-------------------
-// build_file_prefix
-//-------------------
-// Build a prefix for a file name from label which may be from a debugging message.
+/// @brief Build a prefix for a file name from label which may be from a debugging message.
 //
 std::string build_file_prefix(const std::string& label)
 {

@@ -10,12 +10,9 @@
 
 namespace precond {
 
-//---------
-// pos_mul
-//---------
-// Post-multipling Val by W: Val = Val*W
-//
-// Modifies: Val
+/// @brief Post-multipling Val by W: Val = Val*W
+///
+/// Modifies: Val
 //
 void pos_mul(const Array<int>& rowPtr, const Vector<int>& colPtr, const int nNo, const int nnz, const int dof, Array<double>& Val, const Array<double>& W)
 {

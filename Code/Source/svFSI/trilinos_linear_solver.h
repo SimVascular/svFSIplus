@@ -91,7 +91,7 @@
 #define TRILINOS_ICT_PRECONDITIONER 707
 #define TRILINOS_ML_PRECONDITIONER 708
 
-// Initialize all Epetra types we need separate from Fortran
+/// @brief Initialize all Epetra types we need separate from Fortran
 struct Trilinos
 {
   static Epetra_BlockMap *blockMap;

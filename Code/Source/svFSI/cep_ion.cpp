@@ -8,12 +8,10 @@
 
 namespace cep_ion {
 
-//----------
-// cep_init
-//----------
-//
-// Modifies:
-//   cep_mod.Xion
+/// @brief Modifies:
+/// \code {.cpp}
+///   cep_mod.Xion
+/// \endcode
 //
 void cep_init(Simulation* simulation)
 {

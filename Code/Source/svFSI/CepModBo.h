@@ -1,10 +1,3 @@
-
-// The classes defined here duplicate the data structures in the Fortran BOMOD module defined 
-// in CEPMOD_BO.f and PARAMS_BO.f files. 
-
-// This module defines data structures for Bueno-Orovio cellular
-// activation model for cardiac electrophysiology.
-
 #ifndef CEP_MOD_BO_H 
 #define CEP_MOD_BO_H 
 
@@ -14,6 +7,11 @@
 
 using BoModelParam = std::array<double,3>;
 
+/// @brief This module defines data structures for Bueno-Orovio cellular
+/// activation model for cardiac electrophysiology.
+///
+/// The classes defined here duplicate the data structures in the Fortran BOMOD module defined 
+/// in CEPMOD_BO.f and PARAMS_BO.f files. 
 class CepModBo
 {
   public:
@@ -21,17 +19,17 @@ class CepModBo
     ~CepModBo();
 
     // Scaling factors
-    // Voltage scaling
+    /// Voltage scaling
     double Vscale = 85.70;
-    // Time scaling
+    /// Time scaling
     double Tscale = 1.0;
-    // Voltage offset parameter
+    /// Voltage offset parameter
     double Voffset = -84.0;
 
-    // Model parameters (epi, endo, myo)
-    //
-    // [TODO:DaveP] these guys should be maps map<int,double>.
-    //
+    /// Model parameters (epi, endo, myo)
+    ///
+    /// \todo [TODO:DaveP] these guys should be maps map<int,double>.
+    ///
     BoModelParam u_o = {0.0, 0.0, 0.0};
     BoModelParam u_u = {1.550, 1.56, 1.61};
     BoModelParam theta_v = {0.30, 0.3, 0.3};
@@ -62,35 +60,35 @@ class CepModBo
     BoModelParam ws_inf = {0.940, 0.78, 0.5};
 
     // Electromechanics coupling parameters: active stress model
-    // Resting voltage (mV)
+    /// Resting voltage (mV)
     double Vrest = -84.0;
-    // Critical voltage (mV)
+    /// Critical voltage (mV)
     double Vcrit = -30.0;
-    // Saturation potential
+    /// Saturation potential
     double eta_T = 5.E-3;
-    // Minimum activation (ms^{-1})
+    /// Minimum activation (ms^{-1})
     double eps_0 = 0.10;
-    // Maximum activation (ms^{-1})
+    /// Maximum activation (ms^{-1})
     double eps_i = 1.0;
-    // Transition rate (mV^{-1})
+    /// Transition rate (mV^{-1})
     double xi_T = 1.0;
 
     // Electromechanics coupling parameters: active strain model
-    // Active force of sacromere (-mM^{-2})
+    /// Active force of sacromere (-mM^{-2})
     double alFa = -4.E+6;
-    // Resting Ca concentration (mM) := slow inward current variable (s)
+    /// Resting Ca concentration (mM) := slow inward current variable (s)
     double c0 = 2.155E-4;
-    // Viscous-type constant (ms-mM^{-2})
+    /// Viscous-type constant (ms-mM^{-2})
     double mu_C = 5.E+6;
 
     // Force-length relationship parameters
-    // Initial length of sacromeres (um)
+    /// Initial length of sacromeres (um)
     double SL0 = 1.950;
-    // Min. length of sacromeres (um)
+    /// Min. length of sacromeres (um)
     double SLmin = 1.70;
-    // Max. length of sacromeres (um)
+    /// Max. length of sacromeres (um)
     double SLmax = 2.60;
-    // Fourier coefficients
+    /// Fourier coefficients
     double f0  = -4333.6183355821190;
     double fc1 =  2570.3953553521950;
     double fs1 = -2051.8272789919760;
@@ -99,11 +97,11 @@ class CepModBo
     double fc3 =  104.9437703051160;
     double fs3 =  218.3751742294220;
 
-    // Cm: Cell capacitance per unit surface area
+    /// Cm: Cell capacitance per unit surface area
     double Cm  = 1.0;
-    // sV: Surface to volume ratio
+    /// sV: Surface to volume ratio
     double sV  = 1.0;
-    // rho: Cellular resistivity
+    /// rho: Cellular resistivity
     double rho = 1.0;
 
     void actv_strn(const double c, const double I4f, const double dt, double& gf);

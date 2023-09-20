@@ -12,13 +12,9 @@ CepModAp::~CepModAp()
 {
 }
 
-//-----------
-// actv_strs
-//-----------
-// Compute activation force for electromechanics based on active stress model
-//
-// Replicates 'SUBROUTINE AP_ACTVSTRS(X, dt, Tact, epsX)' defined in 'CEPMOD_AP.f'.
-//
+/// @brief Compute activation force for electromechanics based on active stress model
+///
+/// Replicates 'SUBROUTINE AP_ACTVSTRS(X, dt, Tact, epsX)' defined in 'CEPMOD_AP.f'.
 void CepModAp::actv_strs(const double X, const double dt, double& Tact, double& epsX)
 {
   epsX = exp(-exp(-xi_T*(X - Vcrit)));
@@ -27,20 +23,12 @@ void CepModAp::actv_strs(const double X, const double dt, double& Tact, double& 
   Tact = nr / (1.0 + epsX*dt);
 }
 
-//------
-// getf
-//------
-// 
 void CepModAp::getf(const int n, const Vector<double>& X, Vector<double>& f, const double fext)
 {
   f(0) = X(0)*(c*(X(0)-alpha)*(1.0-X(0)) - X(1)) + fext;
   f(1) = (a + mu1*X(1)/(mu2 + X(0))) * (-X(1) - c*X(0)*(X(0) - b - 1.0));
 }
 
-//------
-// getj
-//------
-//
 void CepModAp::getj(const int n, const Vector<double>& X, Array<double>& JAC, const double Ksac)
 {
   JAC = 0.0;
@@ -63,39 +51,28 @@ void CepModAp::getj(const int n, const Vector<double>& X, Array<double>& JAC, co
   JAC(1,1) = n1*n3 - n2;
 }
 
-//------
-// init
-//------
-//
-// SUBROUTINE AP_INIT0(nX, X)
-//
+/// @brief SUBROUTINE AP_INIT0(nX, X)
 void CepModAp::init(const int nX, Vector<double> &X)
 {
   X = 1.e-3;
   X(0) = Voffset;
 }
 
-// SUBROUTINE AP_INITS(nX, X, X0)
-//
+/// @brief SUBROUTINE AP_INITS(nX, X, X0)
 void CepModAp::init(const int nX, Vector<double> &X, double X0)
 {
   X = X0;
 }
 
-// SUBROUTINE AP_INITV(nX, X, X0)
-//
+/// @brief SUBROUTINE AP_INITV(nX, X, X0)
 void CepModAp::init(const int nX, Vector<double> &X, Vector<double>& X0)
 {
   X = X0;
 }
 
-//-----------
-// integ_cn2
-//-----------
-// Time integration performed using Crank-Nicholson method
-//
-// Replicates 'SUBROUTINE AP_INTEGCN2(nX, Xn, Ts, Ti, Istim, Ksac, IPAR, RPAR)' defined in 'CEPMOD_AP.f'.
-//
+/// @brief Time integration performed using Crank-Nicholson method
+///
+/// Replicates 'SUBROUTINE AP_INTEGCN2(nX, Xn, Ts, Ti, Istim, Ksac, IPAR, RPAR)' defined in 'CEPMOD_AP.f'.
 void CepModAp::integ_cn2(const int nX, Vector<double>& Xn, const double Ts, const double Ti, const double Istim, const double Ksac,
     Vector<int>& IPAR, Vector<double>& RPAR)
 {
@@ -170,13 +147,9 @@ void CepModAp::integ_cn2(const int nX, Vector<double>& Xn, const double Ts, cons
   }
 }
 
-//-------------
-// ap_integ_fe
-//-------------
-// Time integration performed using Forward Euler method
-//
-// Replicates 'SUBROUTINE AP_INTEGFE(nX, X, Ts, Ti, Istim, Ksac)' defined in 'CEPMOD_AP.f'.
-//
+/// @brief Time integration performed using Forward Euler method
+///
+/// Replicates 'SUBROUTINE AP_INTEGFE(nX, X, Ts, Ti, Istim, Ksac)' defined in 'CEPMOD_AP.f'.
 void CepModAp::integ_fe(const int nX, Vector<double>& X, const double Ts, const double Ti, const double Istim, const double Ksac)
 {
   double t = Ts / Tscale;
@@ -192,13 +165,9 @@ void CepModAp::integ_fe(const int nX, Vector<double>& X, const double Ts, const 
   X(0) = X(0)*Vscale + Voffset;
 }
 
-//----------
-// integ_rk
-//----------
-// Time integration performed using 4th order Runge-Kutta method
-//
-// Replicates 'SUBROUTINE AP_INTEGRK(nX, X, Ts, Ti, Istim, Ksac)' defined in 'CEPMOD_AP.f'.
-//
+/// @brief Time integration performed using 4th order Runge-Kutta method
+///
+/// Replicates 'SUBROUTINE AP_INTEGRK(nX, X, Ts, Ti, Istim, Ksac)' defined in 'CEPMOD_AP.f'.
 void CepModAp::integ_rk(const int nX, Vector<double>& X, const double Ts, const double Ti, const double Istim, const double Ksac)
 {
   double t = Ts / Tscale;

@@ -18,10 +18,6 @@
 
 namespace norm {
 
-//--------------
-// fsi_ls_norms
-//--------------
-//
 double fsi_ls_norms(const int nNo, FSILS_commuType& commu, const Vector<double>& U)
 {
   double result = 0.0;
@@ -39,10 +35,6 @@ double fsi_ls_norms(const int nNo, FSILS_commuType& commu, const Vector<double>&
   return sqrt(result);
 }
 
-//--------------
-// fsi_ls_normv 
-//--------------
-//
 double fsi_ls_normv(const int dof, const int nNo, FSILS_commuType& commu, const Array<double>& U)
 {
   double result = 0.0;

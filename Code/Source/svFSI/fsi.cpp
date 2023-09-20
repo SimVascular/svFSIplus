@@ -20,12 +20,6 @@
 
 namespace fsi {
 
-//---------------
-// construct_fsi 
-//---------------
-//
-// Modifies:
-//
 void construct_fsi(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Array<double>& Ag, const Array<double>& Yg, const Array<double>& Dg)
 {
   #define n_debug_construct_fsi 
@@ -143,7 +137,7 @@ void construct_fsi(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Ar
       }
     }
 
-    // Initialize residue and tangents
+    // Initialize residual and tangents
     lR = 0.0;
     lK = 0.0;
     lKd = 0.0;

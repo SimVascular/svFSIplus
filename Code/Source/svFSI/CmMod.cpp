@@ -26,20 +26,12 @@ cmType::~cmType()
 {
 }
 
-//-----
-// com
-//-----
-// Returns commu handle
-//
+/// @brief Returns commu handle
 decltype(MPI_COMM_WORLD) cmType::com() const
 {  
   return cHndl; 
 }
 
-//--------
-// new_cm
-//--------
-//
 void cmType::new_cm(decltype(MPI_COMM_WORLD) comHandle)
 {
   cHndl  = comHandle;
@@ -55,19 +47,13 @@ void cmType::new_cm(decltype(MPI_COMM_WORLD) comHandle)
   }
 }
 
-//---------------------------
-//     bcast  methods      
-//---------------------------
-//
-// bcast bool.
-//
+/// @brief bcast bool.
 void cmType::bcast(const CmMod& cm_mod, bool* data) const
 {
   MPI_Bcast(data, 1, cm_mod::mplog, cm_mod.master, com());
 }
 
-// bcast bool array
-//
+/// @brief bcast bool array
 void cmType::bcast(const CmMod& cm_mod, std::vector<bool>& data) const
 {
   static const int MAX_ARRAY_SIZE = 100;
@@ -94,8 +80,7 @@ void cmType::bcast(const CmMod& cm_mod, std::vector<bool>& data) const
   }
 }
 
-// bcast char*
-//
+/// @brief bcast char*
 void cmType::bcast(const CmMod& cm_mod, std::string& data) const
 {
   static const int MAX_ARRAY_SIZE = 400;
@@ -112,22 +97,19 @@ void cmType::bcast(const CmMod& cm_mod, std::string& data) const
   data = buffer;
 }
 
-// bcast double 
-//
+/// @brief bcast double 
 void cmType::bcast(const CmMod& cm_mod, double* data) const
 {
   MPI_Bcast(data, 1, cm_mod::mpreal, cm_mod.master, com());
 }
 
-// bcast double array
-//
+/// @brief bcast double array
 void cmType::bcast(const CmMod& cm_mod, Array<double>& data, const std::string& name) const
 {
   MPI_Bcast(data.data(), data.size(), cm_mod::mpreal, cm_mod.master, com());
 }
 
-// bcast double Vector 
-//
+/// @brief bcast double Vector 
 void cmType::bcast(const CmMod& cm_mod, Vector<double>& data, const std::string& name) const
 {
   if (data.size() == 0) {
@@ -136,15 +118,13 @@ void cmType::bcast(const CmMod& cm_mod, Vector<double>& data, const std::string&
   MPI_Bcast(data.data(), data.size(), cm_mod::mpreal, cm_mod.master, com());
 }
 
-// bcast int 
-//
+/// @brief bcast int 
 void cmType::bcast(const CmMod& cm_mod, int* data) const
 {
   MPI_Bcast(data, 1, cm_mod::mpint, cm_mod.master, com());
 }
 
-// bcast int array
-//
+/// @brief bcast int array
 void cmType::bcast(const CmMod& cm_mod, Vector<int>& data) const
 {
   MPI_Bcast(data.data(), data.size(), cm_mod::mpint, cm_mod.master, com());

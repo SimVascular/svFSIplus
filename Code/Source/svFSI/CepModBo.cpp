@@ -13,12 +13,8 @@ CepModBo::~CepModBo()
 {
 }
 
-//-----------
-// actv_strn
-//-----------
-// Compute macroscopic fiber strain based on sacromere force-length
-// relationship and slow inward current variable (s)
-//
+/// @brief Compute macroscopic fiber strain based on sacromere force-length
+/// relationship and slow inward current variable (s)
 void CepModBo::actv_strn(const double c, const double I4f, const double dt, double& gf)
 {
   //  fiber length
@@ -38,11 +34,7 @@ void CepModBo::actv_strn(const double c, const double I4f, const double dt, doub
   gf = gf + dt*(Fa + rtmp)/(mu_C * c * c);
 }
 
-//-----------
-// actv_strs
-//-----------
-// Compute activation force for electromechanics based on active stress model
-//
+/// @brief Compute activation force for electromechanics based on active stress model
 void CepModBo::actv_strs(const double X, const double dt, double& Tact, double& epsX)
 {
   epsX = exp(-exp(-xi_T*(X - Vcrit)));
@@ -51,10 +43,6 @@ void CepModBo::actv_strs(const double X, const double dt, double& Tact, double& 
   Tact = nr / (1.0 + epsX*dt);
 }
 
-//-------
-// delta
-//-------
-//
 double CepModBo::delta(const double r)
 {
   double result{0.0};
@@ -66,11 +54,7 @@ double CepModBo::delta(const double r)
   return result;
 }
 
-//------
-// getf
-//------
-// The 'zone_id' parameter is the myocardium zone id: 1, 2 or 3.
-//
+/// @brief The 'zone_id' parameter is the myocardium zone id: 1, 2 or 3.
 void CepModBo::getf(const int zone_id, const int n, const Vector<double>& X, Vector<double>& f, const double fext, Vector<double>& RPAR)
 {
   // Create local copies of the 4 state variables
@@ -113,10 +97,6 @@ void CepModBo::getf(const int zone_id, const int n, const Vector<double>& X, Vec
   RPAR(3) = I_si;
 }
 
-//------
-// getj
-//------
-//
 void CepModBo::getj(const int i, const int n, const Vector<double>& X, Array<double>& JAC)
 {
 
@@ -176,10 +156,6 @@ void CepModBo::getj(const int i, const int n, const Vector<double>& X, Array<dou
   JAC(3,3) = -n3;
 }
 
-//------
-// init
-//------
-//
 void CepModBo::init(const int nX, Vector<double> &X)
 {
   X(0) = Voffset;
@@ -188,10 +164,6 @@ void CepModBo::init(const int nX, Vector<double> &X)
   X(3) = 0.0;
 }
 
-//-----------
-// integ_cn2
-//-----------
-//
 void CepModBo::integ_cn2(const int imyo, const int nX, Vector<double>& Xn, const double Ts, const double Ti, 
     const double Istim, const double Ksac, Vector<int>& IPAR, Vector<double>& RPAR)
 {
@@ -262,10 +234,6 @@ void CepModBo::integ_cn2(const int imyo, const int nX, Vector<double>& Xn, const
   }
 }
 
-//----------
-// integ_fe
-//----------
-//
 void CepModBo::integ_fe(const int imyo, const int nX, Vector<double>& X, const double Ts, const double Ti, 
     const double Istim, const double Ksac, Vector<double>& RPAR)
 {
@@ -285,10 +253,6 @@ void CepModBo::integ_fe(const int imyo, const int nX, Vector<double>& X, const d
   X(0) = X(0)*Vscale + Voffset;
 }
 
-//----------
-// integ_rk
-//----------
-//
 void CepModBo::integ_rk(const int imyo, const int nX, Vector<double>& X, const double Ts, const double Ti, 
     const double Istim, const double Ksac, Vector<double>& RPAR)
 {
@@ -326,10 +290,6 @@ void CepModBo::integ_rk(const int imyo, const int nX, Vector<double>& X, const d
 
 }
 
-//------
-// step
-//------
-//
 double CepModBo::step(const double r)
 {
   double result;

@@ -5,6 +5,7 @@
 #include "ComMod.h"
 #include "Simulation.h"
 
+/// @brief These subroutines implement the Coupled Momentum Method (CMM).
 namespace cmm {
 
 void cmm_3d(ComMod& com_mod, const int eNoN, const double w, const Vector<double>& N, const Array<double>& Nx,  

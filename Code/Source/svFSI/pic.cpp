@@ -16,24 +16,23 @@
 
 namespace pic {
 
-//------
-// picc
-//------
-// This is the corrector. Decision for next eqn is also made here (modifies cEq global).
-//
-// Modifies:
-//   com_mod.Ad
-//   com_mod.An
-//   com_mod.Dn
-//   com_mod.Yn
-//   cep_mod.Xion
-//   com_mod.pS0
-//   com_mod.pSa
-//   com_mod.pSn
-//
-//   com_mod.cEq
-//   eq.FSILS.RI.iNorm 
-//   eq.pNorm 
+/// @brief This is the corrector. Decision for next eqn is also made here (modifies cEq global).
+///
+/// Modifies:
+/// \code {.cpp}
+///   com_mod.Ad
+///   com_mod.An
+///   com_mod.Dn
+///   com_mod.Yn
+///   cep_mod.Xion
+///   com_mod.pS0
+///   com_mod.pSa
+///   com_mod.pSn
+///
+///   com_mod.cEq
+///   eq.FSILS.RI.iNorm 
+///   eq.pNorm
+/// \endcode
 //
 void picc(Simulation* simulation)
 {
