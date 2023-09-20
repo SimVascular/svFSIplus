@@ -1,7 +1,5 @@
 
-// To broadcast a variable to all processors
-//
-// Reproduces code in BCAST.f.
+
 
 #include "bcast.h"
 
@@ -9,9 +7,9 @@
 
 namespace bcast {
 
-//-------------
-// fsils_bcast
-//-------------
+/// @brief To broadcast a variable to all processors
+///
+/// Reproduces code in BCAST.f.
 //
 void fsils_bcast(double& u, FSILS_commuType& commu)
 {
@@ -22,10 +20,7 @@ void fsils_bcast(double& u, FSILS_commuType& commu)
   } 
 }
 
-//---------------
-// fsils_bcast_v
-//---------------
-//
+
 void fsils_bcast_v(const int n, Vector<double>& u, FSILS_commuType& commu)
 {
   if (commu.nTasks > 1) { 

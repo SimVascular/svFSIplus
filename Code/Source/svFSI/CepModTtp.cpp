@@ -12,11 +12,7 @@ CepModTtp::~CepModTtp()
 {
 }
 
-//-----------
-// actv_strn
-//-----------
-// Compute macroscopic fiber strain based on sacromere force-length relationship and calcium concentration
-//
+/// @brief Compute macroscopic fiber strain based on sacromere force-length relationship and calcium concentration
 void CepModTtp::actv_strn(const double c_Ca, const double I4f, const double dt, double& gf)
 {
   // fiber length
@@ -35,10 +31,6 @@ void CepModTtp::actv_strn(const double c_Ca, const double I4f, const double dt, 
   gf = gf + dt*(Fa + rtmp)/(mu_Ca * c_Ca * c_Ca);
 }
 
-//-----------
-// actv_strs
-//-----------
-//
 void CepModTtp::actv_strs(const double c_Ca, const double dt, double& Tact, double& epsX)
 {
   epsX = exp(-exp(-xi_T*(c_Ca - Ca_crit)));
@@ -47,15 +39,11 @@ void CepModTtp::actv_strs(const double c_Ca, const double dt, double& Tact, doub
   Tact = nr / (1.0 + epsX*dt);
 }
 
-//------
-// getf
-//------
-// Compute currents and time derivatives of state variables
-//
-// Note that is 'i' the myocardium zone id: 1, 2 or 3.
-//
-// Reproduces Fortran 'GETF()'.
-//
+/// @brief Compute currents and time derivatives of state variables
+///
+/// Note that is 'i' the myocardium zone id: 1, 2 or 3.
+///
+/// Reproduces Fortran 'GETF()'.
 void CepModTtp::getf(const int i, const int nX, const int nG, const Vector<double>& X, const Vector<double>& Xg, Vector<double>& dX, 
     const double I_stim, const double K_sac, Vector<double>& RPAR)
 {
@@ -217,10 +205,6 @@ void CepModTtp::getf(const int i, const int nX, const int nG, const Vector<doubl
   RPAR(17) = I_xfer;
 }
 
-//------
-// getj
-//------
-//
 void CepModTtp::getj(const int i, const int nX, const int nG, const Vector<double>& X, const Vector<double>& Xg, 
     Array<double>& JAC, const double Ksac)
 {
@@ -458,10 +442,6 @@ void CepModTtp::getj(const int i, const int nX, const int nG, const Vector<doubl
   JAC(6,6) = -(k2*Ca_ss + k4);
 }
 
-//------
-// init
-//------
-//
 void CepModTtp::init(const int imyo, const int nX, const int nG, Vector<double>& X, Vector<double>& Xg )
 {
   switch (imyo) {
@@ -561,11 +541,7 @@ void CepModTtp::init(const int imyo, const int nX, const int nG, Vector<double>&
   }
 }
 
-//-----------
-// integ_cn2
-//-----------
-// Time integration performed using Crank-Nicholson method
-//
+/// @brief Time integration performed using Crank-Nicholson method
 void CepModTtp::integ_cn2(const int imyo, const int nX, const int nG, Vector<double>& Xn, Vector<double>& Xg, 
     const double Ts, const double dt, const double Istim, const double Ksac, Vector<int>& IPAR, Vector<double>& RPAR)
 {
@@ -629,10 +605,6 @@ void CepModTtp::integ_cn2(const int imyo, const int nX, const int nG, Vector<dou
   }
 }
 
-//----------
-// integ_fe
-//----------
-//
 void CepModTtp::integ_fe(const int imyo, const int nX, const int nG, Vector<double>& X, Vector<double>& Xg, 
     const double Ts, const double dt, const double Istim, const double Ksac, Vector<double>& RPAR)
 {
@@ -650,10 +622,6 @@ void CepModTtp::integ_fe(const int imyo, const int nX, const int nG, Vector<doub
   X = X + dt*f;
 }
 
-//----------
-// integ_rk
-//----------
-//
 void CepModTtp::integ_rk(const int imyo, const int nX, const int nG, Vector<double>& X, Vector<double>& Xg, 
     const double Ts, const double dt, const double Istim, const double Ksac, Vector<double>& RPAR)
 {
@@ -689,11 +657,7 @@ void CepModTtp::integ_rk(const int imyo, const int nX, const int nG, Vector<doub
   Xg = Xgr;
 }
 
-//----------
-// update_g
-//----------
-// Update all the gating variables
-//
+/// @brief Update all the gating variables
 void CepModTtp::update_g(const int i, const double dt, const int n, const int nG, const Vector<double>& X, Vector<double>& Xg)
 {
   V  = X(0);

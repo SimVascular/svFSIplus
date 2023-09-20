@@ -1,9 +1,4 @@
 
-// The classes defined here duplicate the data structures in the Fortran TPPMOD module defined 
-// in CEPMOD_TTP.f and PARAMS_TPP.f files. 
-
-// This module defines data structures for ten Tusscher-Panfilov
-// epicardial cellular activation model for cardiac electrophysiology
 
 #ifndef CEP_MOD_TTP_H 
 #define CEP_MOD_TTP_H 
@@ -18,6 +13,11 @@
 template <class T>
 T& make_ref(T&& x) { return x; }
 
+/// @brief This module defines data structures for ten Tusscher-Panfilov
+/// epicardial cellular activation model for cardiac electrophysiology
+///
+/// The classes defined here duplicate the data structures in the Fortran TPPMOD module defined 
+/// in CEPMOD_TTP.f and PARAMS_TPP.f files. 
 class CepModTtp
 {
   public:
@@ -32,216 +32,216 @@ class CepModTtp
 //--------------------------------------------------------------------
 
 //     Default model parameters
-//     R: Gas constant
-      double Rc = 8314.472;     // units: J/mol/K
+      /// Gas constant [J/mol/K]
+      double Rc = 8314.472;
 
-//     T: Temperature
-      double Tc = 310.0;          // units: K
+      /// Temperature [K]
+      double Tc = 310.0;
 
-//     F: Faraday constant
-      double Fc = 96485.3415;    // units: C/mmol
+      /// Faraday constant [C/mmol]
+      double Fc = 96485.3415;
 
-//     Cm: Cell capacitance per unit surface area
-      double Cm = 0.185;         // units: uF/cm^{2}
+      /// Cell capacitance per unit surface area [uF/cm^{2}]
+      double Cm = 0.185;
 
-//     sV: Surface to volume ratio
-      double sV = 0.2;           // units: um^{-1}
+      /// Surface to volume ratio [um^{-1}]
+      double sV = 0.2;
 
-//     rho: Cellular resistivity
-      double rho = 162.0;         // units: \Omega-cm
+      /// Cellular resistivity [\f$\Omega\f$-cm]
+      double rho = 162.0;
 
-//     V_c: Cytoplasmic volume
-      double V_c = 16.404E-3;    // units: um^{3}
+      /// Cytoplasmic volume [um^{3}]
+      double V_c = 16.404E-3;
 
-//     V_sr: Sacroplasmic reticulum volume
-      double V_sr = 1.094E-3;    // units: um^{3}
+      /// Sacroplasmic reticulum volume [um^{3}]
+      double V_sr = 1.094E-3;
 
-//     V_ss: Subspace volume
-      double V_ss = 5.468E-5;    // units: um^{3}
+      /// Subspace volume [um^{3}]
+      double V_ss = 5.468E-5;
 
-//     K_o: Extracellular K concentration
-      double K_o = 5.4;          // units: mM
+      /// Extracellular K concentration [mM]
+      double K_o = 5.4;
 
-//     Na_o: Extracellular Na concentration
-      double Na_o = 140.0;        // units: mM
+      /// Extracellular Na concentration [mM]
+      double Na_o = 140.0;
 
-//     Ca_o: Extracellular Ca concentration
-      double Ca_o = 2.0;          // units: mM
+      /// Extracellular Ca concentration [mM]
+      double Ca_o = 2.0;
 
-//     G_Na: Maximal I_Na conductance
-      double G_Na = 14.838;      // units: nS/pF
+      /// Maximal I_Na conductance [nS/pF]
+      double G_Na = 14.838;
 
-//     G_K1: Maximal I_K1 conductance
-      double G_K1 = 5.405;       // units: nS/pF
+      /// Maximal I_K1 conductance [nS/pF]
+      double G_K1 = 5.405;
 
-//     G_to: Maximal epicardial I_to conductance, units: nS/pF
+      /// Maximal epicardial I_to conductance [nS/pF]
       Vector<double> G_to = {0.294, 0.073, 0.294};
 
-//     G_Kr: Maximal I_Kr conductance
-      double G_Kr = 0.153;      // units: nS/pF
+      /// Maximal I_Kr conductance [nS/pF]
+      double G_Kr = 0.153;
 
 //     G_Kr for spiral wave breakup
 //      double G_Kr = 0.172;     // units: nS/pF
 
-//     G_Ks: Maximal epicardial I_Ks conductance, units: nS/pF
+      /// Maximal epicardial I_Ks conductance [nS/pF]
       Vector<double> G_Ks = {0.392, 0.392, 0.098};
 
 //     G_Ks for spiral wave breakup (epi)
 //      double G_Ks(3) = (/0.441, 0.392_RKIND, 0.098_RKIND/)
 
-//     p_KNa: Relative I_Ks permeability to Na
-      double p_KNa = 3.E-2;     // dimensionless
+      /// Relative I_Ks permeability to Na [-]
+      double p_KNa = 3.E-2;
 
-//     G_CaL: Maximal I_CaL conductance
-      double G_CaL = 3.98E-5;   // units: cm^{3}/uF/ms
+      /// Maximal I_CaL conductance [cm^{3}/uF/ms]
+      double G_CaL = 3.98E-5;
 
-//     K_NaCa: Maximal I_NaCa
-      double K_NaCa = 1000.;    // units: pA/pF
+      /// Maximal I_NaCa [pA/pF]
+      double K_NaCa = 1000.;
 
-//     gamma: Voltage dependent parameter of I_NaCa
-      double gamma = 0.35;      // dimensionless
+      /// Voltage dependent parameter of I_NaCa [-]
+      double gamma = 0.35;
 
-//     K_mCa: Ca_i half-saturation constant for I_NaCa
-      double K_mCa = 1.38;      // units: mM
+      /// Ca_i half-saturation constant for I_NaCa [mM]
+      double K_mCa = 1.38;
 
-//     K_mNai: Na_i half-saturation constant for I_NaCa
-      double K_mNai = 87.5;     // units: mM
+      /// Na_i half-saturation constant for I_NaCa [mM]
+      double K_mNai = 87.5;
 
-//     K_sat: Saturation factor for I_NaCa
-      double K_sat = 0.1;       // dimensionless
+      /// Saturation factor for I_NaCa [-]
+      double K_sat = 0.1;
 
-//     alpha: Factor enhancing outward nature of I_NaCa
-      double alpha = 2.5;       // dimensionless
+      /// Factor enhancing outward nature of I_NaCa [-]
+      double alpha = 2.5;
 
-//     p_NaK: Maximal I_NaK
-      double p_NaK = 2.724;     // units: pA/pF
+      /// Maximal I_NaK [pA/pF]
+      double p_NaK = 2.724;
 
-//     K_mK: K_o half-saturation constant of I_NaK
-      double K_mK = 1.;         // units: mM
+      /// K_o half-saturation constant of I_NaK [mM]
+      double K_mK = 1.;
 
-//     K_mNa: Na_i half-saturation constant of I_NaK
-      double K_mNa = 40.;       // units: mM
+      /// Na_i half-saturation constant of I_NaK [mM]
+      double K_mNa = 40.;
 
-//     G_pK: Maximal I_pK conductance
-      double G_pK = 1.46E-2;    // units: nS/pF
+      /// Maximal I_pK conductance [nS/pF]
+      double G_pK = 1.46E-2;
 
 //     G_pK for spiral wave breakup
 //      double G_pK = 2.19E-3;    // units: nS/pF
 
-//     G_pCa: Maximal I_pCa conductance
-      double G_pCa = 0.1238;    // units: pA/pF
+      /// Maximal I_pCa conductance [pA/pF]
+      double G_pCa = 0.1238;
 
 //     G_pCa for spiral wave breakup
 //      double G_pCa = 0.8666;    // units: pA/pF
 
-//     K_pCa: Half-saturation constant of I_pCa
-      double K_pCa = 5.E-4;     // units: mM
+      /// Half-saturation constant of I_pCa [mM]
+      double K_pCa = 5.E-4;
 
-//     G_bNa: Maximal I_bNa conductance
-      double G_bNa = 2.9E-4;    // units: nS/pF
+      /// Maximal I_bNa conductance [nS/pF]
+      double G_bNa = 2.9E-4;
 
-//     G_bCa: Maximal I_bCa conductance
-      double G_bCa = 5.92E-4;   // units: nS/pF
+      /// Maximal I_bCa conductance [nS/pF]
+      double G_bCa = 5.92E-4;
 
-//     Vmax_up: Maximal I_up conductance
-      double Vmax_up = 6.375E-3;// units: mM/ms
+      /// Maximal I_up conductance [mM/ms]
+      double Vmax_up = 6.375E-3;
 
-//     K_up: Half-saturation constant of I_up
-      double K_up = 2.5E-4;     // units: mM
+      /// Half-saturation constant of I_up [mM]
+      double K_up = 2.5E-4;
 
-//     V_rel: Maximal I_rel conductance
-      double V_rel = 0.102;     // units: mM/ms
+      /// Maximal I_rel conductance [mM/ms]
+      double V_rel = 0.102;
 
-//     k1p: R to O and RI to I, I_rel transition rate
-      double k1p = 0.15;         // units: mM^{-2}/ms
+      /// R to O and RI to I, I_rel transition rate [mM^{-2}/ms]
+      double k1p = 0.15;
 
-//     k2p: O to I and R to RI, I_rel transition rate
-      double k2p = 4.5E-2;       // units: mM^{-1}/ms
+      /// O to I and R to RI, I_rel transition rate [mM^{-1}/ms]
+      double k2p = 4.5E-2;
 
-//     k3: O to R and I to RI, I_rel transition rate
-      double k3 = 6.E-2;         // units: ms^{-1}
+      /// O to R and I to RI, I_rel transition rate [ms^{-1}]
+      double k3 = 6.E-2;
 
-//     k4: I to O and Ri to I, I_rel transition rate
-      double k4 = 5.E-3;         // units: ms^{-1}
+      /// I to O and Ri to I, I_rel transition rate [ms^{-1}]
+      double k4 = 5.E-3;
 
-//     EC: Ca_sr half-saturation constant of k_casr
-      double EC = 1.5;           // units: mM
+      /// Ca_sr half-saturation constant of k_casr [mM]
+      double EC = 1.5;
 
-//     max_sr: Maximum value of k_casr
-      double max_sr = 2.5;       // dimensionless
+      /// Maximum value of k_casr [-]
+      double max_sr = 2.5;
 
-//     min_sr: Minimum value of k_casr
-      double min_sr = 1.;        // dimensionless
+      /// Minimum value of k_casr [-]
+      double min_sr = 1.;
 
-//     V_leak: Maximal I_leak conductance
-      double V_leak = 3.6E-4;    // units: mM/ms
+      /// Maximal I_leak conductance [mM/ms]
+      double V_leak = 3.6E-4;
 
-//     V_xfer: Maximal I_xfer conductance
-      double V_xfer = 3.8E-3;    // units: mM/ms
+      /// Maximal I_xfer conductance [mM/ms]
+      double V_xfer = 3.8E-3;
 
-//     Buf_c: Total cytoplasmic buffer concentration
-      double Buf_c = 0.2;        // units: mM
+      /// Total cytoplasmic buffer concentration [mM]
+      double Buf_c = 0.2;
 
-//     K_bufc: Ca_i half-saturation constant for cytplasmic buffer
-      double K_bufc = 1.E-3;     // units: mM
+      /// Ca_i half-saturation constant for cytplasmic buffer [mM]
+      double K_bufc = 1.E-3;
 
-//     Buf_sr: Total sacroplasmic buffer concentration
-      double Buf_sr = 10.;       // units: mM
+      /// Total sacroplasmic buffer concentration [mM]
+      double Buf_sr = 10.;
 
-//     K_bufsr: Ca_sr half-saturation constant for subspace buffer
-      double K_bufsr = 0.3;      // units: mM
+      /// Ca_sr half-saturation constant for subspace buffer [mM]
+      double K_bufsr = 0.3;
 
-//     Buf_ss: Total subspace buffer concentration
-      double Buf_ss = 0.4;       // units: mM
+      /// Total subspace buffer concentration [mM]
+      double Buf_ss = 0.4;
 
-//     K_bufss: Ca_ss half-saturation constant for subspace buffer
-      double K_bufss = 2.5E-4;   // units: mM
+      /// Ca_ss half-saturation constant for subspace buffer [mM]
+      double K_bufss = 2.5E-4;
 
-//     Resting potential
-      double Vrest = -85.23;     // units: mV
+      /// Resting potential [mV]
+      double Vrest = -85.23;
 
 //     Electromechanics coupling parameters: active stress model
-//     Ca_rest: Resting Ca concentration
-      double Ca_rest = 5.E-5;    // units: mM
+      /// Resting Ca concentration [mM]
+      double Ca_rest = 5.E-5;
 
-//     Ca_crit: Critical Ca concentration
-      double Ca_crit = 8.E-4;    // units: mM
+      /// Critical Ca concentration [mM]
+      double Ca_crit = 8.E-4;
 
-//     eta_T: Saturation of concentration
-      double eta_T = 12.5;       // units: MPa/mM
+      /// Saturation of concentration [MPa/mM]
+      double eta_T = 12.5;
 
-//     eps_0: Minimum activation
-      double eps_0 = 0.1;        // units: ms^{-1}
+      /// Minimum activation [ms^{-1}]
+      double eps_0 = 0.1;
 
-//     eps_i: Maximum activation
-      double eps_i = 1. ;        // units: ms^{-1}
+      /// Maximum activation [ms^{-1}]
+      double eps_i = 1. ;
 
-//     Transition rate
-      double xi_T = 4.E3;        // units: mM^{-1}
+      /// Transition rate [mM^{-1}]
+      double xi_T = 4.E3;
 
 //     Electromechanics coupling parameters: active strain model
 //
 
-//     Active force of sacromere (-mM^{-2})
+      /// Active force of sacromere [-mM^{-2}]
       double alFa = -4.E6;
 
-//     Resting Ca concentration (mM)
+      /// Resting Ca concentration [mM]
       double c_Ca0 = 2.155E-4;
 
-//     Viscous-type constant (ms-mM^{-2})
+      /// Viscous-type constant [ms-mM^{-2}]
       double mu_Ca = 5.E6;
 
 //     Force-length relationship parameters
-//     Initial length of sacromeres (um)
+      /// Initial length of sacromeres [um]
       double SL0 = 1.95;
 
-//     Min. length of sacromeres (um)
+      /// Min. length of sacromeres [um]
       double SLmin = 1.7;
 
-//     Max. length of sacromeres (um)
+      /// Max. length of sacromeres [um]
       double SLmax = 2.6;
 
-//     Fourier coefficients
+      /// Fourier coefficients
       double f0  = -4333.618335582119;
       double fc1 =  2570.395355352195;
       double fs1 = -2051.827278991976;
@@ -252,69 +252,69 @@ class CepModTtp
 
 //-----------------------------------------------------------------------
 //     Scaling factors
-//     Voltage scaling
+      /// Voltage scaling
       double Vscale  = 1.;
 
-//     Time scaling
+      /// Time scaling
       double Tscale  = 1.;
 
-//     Voltage offset parameter
+      /// Voltage offset parameter
       double Voffset = 0.;
 
 //-----------------------------------------------------------------------
 //     Variables
-//     Reverse potentials for Na, K, Ca
+      /// Reverse potentials for Na, K, Ca
       double E_Na;
       double E_K;
       double E_Ca;
       double E_Ks;
 //     Cellular transmembrane currents
-//     I_Na: Fast sodium current
+      /// Fast sodium current
       double I_Na;
 
-//     I_K1: inward rectifier outward current
+      /// inward rectifier outward current
       double I_K1;
 
-//     I_to: transient outward current
+      /// transient outward current
       double I_to;
 
-//     I_Kr: rapid delayed rectifier current
+      /// rapid delayed rectifier current
       double I_Kr;
 
-//     I_Ks: slow delayed rectifier current
+      /// slow delayed rectifier current
       double I_Ks;
 
-//     I_CaL: L-type Ca current
+      /// L-type Ca current
       double I_CaL;
 
-//     I_NaCa: Na-Ca exchanger current
+      /// Na-Ca exchanger current
       double I_NaCa;
 
-//     I_NaK: Na-K pump current
+      /// Na-K pump current
       double I_NaK;
 
-//     I_pCa: plateau Ca current
+      /// plateau Ca current
       double I_pCa;
 
-//     I_pK: plateau K current
+      /// plateau K current
       double I_pK;
 
-//     I_bCa: background Ca current
+      /// background Ca current
       double I_bCa;
 
-//     I_lean: background Na current
+      /// background Na current
       double I_bNa;
 
-//     I_leak: sacroplasmic reticulum Ca leak current
+      /// sacroplasmic reticulum Ca leak current
       double I_leak;
 
-//     I_up: sacroplasmic reticulum Ca pump current
+      /// sacroplasmic reticulum Ca pump current
       double I_up;
 
-//     I_rel: Ca induced Ca release current
+      /// Ca induced Ca release current
       double I_rel;
 
-//     I_xfer: diffusive Ca current
+      /// diffusive Ca current
       double I_xfer;
 //-----------------------------------------------------------------------
 //     State variables

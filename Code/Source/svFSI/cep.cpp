@@ -15,10 +15,6 @@
 
 namespace cep {
 
-//-------
-// b_cep 
-//-------
-//
 void b_cep(ComMod& com_mod, const int eNoN, const double w, const Vector<double>& N, const double h, Array<double>& lR)
 {
   double f = w*h;
@@ -30,12 +26,9 @@ void b_cep(ComMod& com_mod, const int eNoN, const double w, const Vector<double>
 
 }
 
-//--------
-// cep_1d
-//--------
-// This is for solving 1D electrophysiology diffusion equation for Purkinje fibers
-//
-// Reproduces Fortran 'CEP1D' subroutine.
+/// @brief This is for solving 1D electrophysiology diffusion equation for Purkinje fibers
+///
+/// Reproduces Fortran 'CEP1D' subroutine.
 // 
 void cep_1d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, const double w,
     const Vector<double>& N, const Array<double>& Nx, const Array<double>& al, const Array<double>& yl,

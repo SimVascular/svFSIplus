@@ -1,8 +1,4 @@
 
-//------------------------------------------------------------------
-// Biconjugate-gradient algorithm, available for scaler and vectors.
-//-------------------------------------------------------------------
-
 #include "bicgs.h"
 
 #include "fsils_api.hpp"
@@ -20,10 +16,7 @@
 
 namespace bicgs {
 
-//--------
-// bicgsv
-//--------
-//
+/// @brief Biconjugate-gradient algorithm, available for scaler and vectors.
 void bicgsv (fsi_linear_solver::FSILS_lhsType& lhs, fsi_linear_solver::FSILS_subLsType& ls, const int dof, 
     const Array<double>& K, Array<double>& R)
 {

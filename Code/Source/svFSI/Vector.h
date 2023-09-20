@@ -12,10 +12,7 @@ std::string build_file_prefix(const std::string& label);
 
 //#define Vector_check_enabled
 
-//-------
-// Vector 
-//-------
-// The Vector template class is used for storing int and double data.
+/// @brief The Vector template class is used for storing int and double data.
 //
 template<typename T>
 class Vector 
@@ -105,12 +102,9 @@ class Vector
       return is_allocated_ ;
     }
 
-    //-------
-    // clear 
-    //-------
-    // Free the array data. 
-    //
-    // This is to replicate the Fortran DEALLOCATE().
+    /// @brief Free the array data. 
+    ///
+    /// This is to replicate the Fortran DEALLOCATE().
     //
     void clear()
     {
@@ -128,10 +122,6 @@ class Vector
       data_ = nullptr;
     }
 
-    //-------
-    // Print
-    //-------
-    //
     void print(const std::string& label)
     {
       printf("%s (%d): \n", label.c_str(), size_);
@@ -140,7 +130,8 @@ class Vector
       }
     }   
 
-    // Resize the vector's memory.
+    /// @brief Resize the vector's memory.
+    //
     void resize(const int size)
     { 
       if (size <= 0) {
@@ -160,7 +151,8 @@ class Vector
       allocate(size);
     }
     
-    // Grow the vector.
+    /// @brief Grow the vector.
+    //
     void grow(const int size, T value={})
     {
       if (size <= 0) {
@@ -202,9 +194,6 @@ class Vector
       std::copy(values.begin(), values.end(), data_);
     }
 
-    //------
-    // read
-    //------
     void read(const std::string& file_name) 
     { 
       auto fp = fopen(file_name.c_str(), "rb");
@@ -214,10 +203,6 @@ class Vector
       fclose(fp);
     }
 
-    //-------
-    // write
-    //-------
-    //
     void write(const std::string& label, const T offset={}) const
     {
       if (!write_enabled) {
@@ -239,15 +224,15 @@ class Vector
     //  O p e r a t o r s  //
     /////////////////////////
 
-    // Vector assigment.
-    //
-    // Note: There are two ways to do this:
-    // 
-    //   1) Swap pointers to data_
-    //
-    //   2) Copy data_
-    //
-    // Fortran using 2) I think.
+    /// @brief Vector assigment.
+    ///
+    /// Note: There are two ways to do this:
+    /// 
+    ///   1) Swap pointers to data_
+    ///
+    ///   2) Copy data_
+    ///
+    /// Fortran using 2) I think.
     //
     Vector& operator=(const Vector& rhs)
     {
@@ -335,7 +320,7 @@ class Vector
     //  M a t h e m a t i c a l   o p e r a t o r s  //
     ///////////////////////////////////////////////////
 
-    // Add and subtract vectors.
+    /// @brief Add and subtract vectors.
     //
     Vector<T> operator+(const Vector<T>& vec) const
     {
@@ -359,7 +344,7 @@ class Vector
       return result;
     }
 
-    // Add and subtract a scalar from a vector.
+    /// @brief Add and subtract a scalar from a vector.
     //
     Vector<T> operator+(const T value) const
     {
@@ -397,7 +382,7 @@ class Vector
       return result;
     }
 
-    // Divide by a scalar.
+    /// @brief Divide by a scalar.
     //
     Vector<T> operator/(const T value) const
     {
@@ -417,7 +402,7 @@ class Vector
       return result;
     }
 
-    // Multiply by a scalar.
+    /// @brief Multiply by a scalar.
     //
     Vector<T> operator*(const T value) const
     {
@@ -438,7 +423,7 @@ class Vector
     }
 
 
-    // Negate.
+    /// @brief Negate.
     Vector<T> operator-() const
     {
       Vector<T> result(size_);
@@ -448,7 +433,7 @@ class Vector
       return result;
     }
 
-    // Absolute value.
+    /// @brief Absolute value.
     Vector<T> abs() const
     { 
       Vector<T> result(size_);
@@ -458,7 +443,7 @@ class Vector
       return result;
     }
 
-    // Cross product
+    /// @brief Cross product
     Vector<T> cross(const Vector<T>& v2)
     {
       Vector<T> result(size_);
@@ -470,7 +455,7 @@ class Vector
       return result;
     }
 
-    // Dot product.
+    /// @brief Dot product.
     T dot(const Vector<T>& v2)
     {
       if (size_ != v2.size()) {
@@ -530,10 +515,7 @@ class Vector
     //  i t e r a t o r   c l a s s s  //
     /////////////////////////////////////
    
-    //----------
-    // Iterator
-    //----------
-    // This class provides an interface to access Vector like STL containers.
+    /// @brief This class provides an interface to access Vector like STL containers.
     //
     class Iterator
     {
@@ -572,9 +554,6 @@ class Vector
       return data_;
     }
 
-    //----------
-    // allocate
-    //----------
     void allocate(const int size)
     {
       if (size <= 0) {
@@ -588,9 +567,6 @@ class Vector
       memory_in_use += sizeof(T)*size_;
     }
 
-    //-------------
-    // check_index
-    //-------------
     void check_index(const int i) const
     {
       if (data_ == nullptr) {
@@ -606,10 +582,7 @@ class Vector
       }
     }
 
-    //------------
-    // check_type
-    //------------
-    // Check that the Vector template type is int or double.
+    /// @brief Check that the Vector template type is int or double.
     //
     void check_type() const
     {

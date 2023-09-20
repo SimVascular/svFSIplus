@@ -9,25 +9,21 @@
 
 namespace fsi_linear_solver {
 
-//------------------
-// fsils_lhs_create 
-//------------------
-//
-// Modifies:
-//
-//  lhs.foC 
-//  lhs.gnNo 
-//  lhs.nNo 
-//  lhs.nnz 
-//  lhs.commu 
-//  lhs.nFaces 
-//  lhs.mynNo 
-//
-//  lhs.colPtr
-//  lhs.rowPtr
-//  lhs.diagPtr
-//  lhs.map
-//  lhs.face
+/// @brief Modifies:
+///
+///  lhs.foC 
+///  lhs.gnNo 
+///  lhs.nNo 
+///  lhs.nnz 
+///  lhs.commu 
+///  lhs.nFaces 
+///  lhs.mynNo 
+///
+///  lhs.colPtr
+///  lhs.rowPtr
+///  lhs.diagPtr
+///  lhs.map
+///  lhs.face
 //
 void fsils_lhs_create(FSILS_lhsType& lhs, FSILS_commuType& commu, int gnNo, int nNo, int nnz, Vector<int>& gNodes,  
        Vector<int> &rowPtr, Vector<int>& colPtr, int nFaces)

@@ -28,11 +28,6 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-//--------------------------------------------------------------------
-//
-// Interface to Tetgen for remeshing purposes.
-//
-//--------------------------------------------------------------------
 
 #include "tetgen.h"
 #include <array>
@@ -40,6 +35,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/// @brief Interface to Tetgen for remeshing purposes.
 class tetOptions {
   public:
     double maxRadRatio;
@@ -59,10 +55,6 @@ tetOptions::tetOptions () {
   optimScheme = 7;
 }
 
-//-----------------
-// remesh3d_tetgen
-//-----------------
-//
 void remesh3d_tetgen(const int nPoints, const int nFacets, const double* pointList, 
                      const int* facetList, const std::array<double,3>& params, int* pOK)
 {

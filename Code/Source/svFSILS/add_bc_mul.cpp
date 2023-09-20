@@ -1,22 +1,16 @@
 
-//--------------------------------------------------------------------
-// The contribution of coupled BCs is added to the matrix-vector
-// product operation. Depending on the type of operation (adding the
-// contribution or compution the PC contribution) different
-// coefficients are used.
-//--------------------------------------------------------------------
-
-// Reproduces code in ADDBCMUL.f.
-
 #include "add_bc_mul.h"
 
 #include "dot.h"
 
 namespace add_bc_mul {
 
-//------------
-// add_bc_mul
-//------------
+/// @brief The contribution of coupled BCs is added to the matrix-vector
+/// product operation. Depending on the type of operation (adding the
+/// contribution or compution the PC contribution) different
+/// coefficients are used.
+///
+/// Reproduces code in ADDBCMUL.f.
 //
 void add_bc_mul(FSILS_lhsType& lhs, const BcopType op_Type, const int dof, const Array<double>& X, Array<double>& Y)
 {

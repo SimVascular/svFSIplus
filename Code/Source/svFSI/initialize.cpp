@@ -34,23 +34,17 @@
 #include <iostream>
 #include <math.h>
 
-//----------
-// finalize
-//----------
-// This seems to deallocate a bunch of arrys.
-//
-// [TODO:DaveP] not implemented.
+/// @brief This seems to deallocate a bunch of arrys.
+///
+/// \todo [TODO:DaveP] not implemented.
 //
 void finalize(Simulation* simulation)
 {
 }
 
-//---------------
-// init_from_bin
-//---------------
-// Using the svFSI specific format binary file for initialization
-//
-// Reprodices 'SUBROUTINE INITFROMBIN(fName, timeP)' defined in INITIALIZE.f.
+/// @brief Using the svFSI specific format binary file for initialization
+///
+/// Reprodices 'SUBROUTINE INITFROMBIN(fName, timeP)' defined in INITIALIZE.f.
 //
 void init_from_bin(Simulation* simulation, const std::string& fName, std::array<double,3>& timeP)
 {
@@ -217,12 +211,9 @@ void init_from_bin(Simulation* simulation, const std::string& fName, std::array<
   // if (ANY(tStamp != stamp)) err = "Simulation stamp"// " does not match with "//fName
 }
 
-//---------------
-// init_from_vtu
-//---------------
-// Using the saved VTU files for initialization
-//
-// Reproduces the Fortran 'INITFROMVTU' subroutine.
+/// @brief Using the saved VTU files for initialization
+///
+/// Reproduces the Fortran 'INITFROMVTU' subroutine.
 //
 void init_from_vtu(Simulation* simulation, const std::string& fName, std::array<double,3>& timeP)
 {
@@ -262,34 +253,33 @@ void init_from_vtu(Simulation* simulation, const std::string& fName, std::array<
   com_mod.Do = all_fun::local(com_mod, cm_mod, cm, tmpD);
 }
 
-//------------
-// initialize 
-//------------
-// Initialize or finalize svFSI variables/structures.
-//
-// Modifies the following for each com_mod.eq[].
-//   eq.am
-//   eq.dof
-//   eq.pNorm
-//   eq.af
-//   eq.beta
+/// @brief Initialize or finalize svFSI variables/structures.
+///
+/// \code {.cpp}
+/// Modifies the following for each com_mod.eq[].
+///   eq.am
+///   eq.dof
+///   eq.pNorm
+///   eq.af
+///   eq.beta
 //   eq.gam
-//   eq.s
-//   eq.e
-//
-//   com_mod.Ao.resize(tDof,tnNo);
-//   com_mod.An.resize(tDof,tnNo);
-//   com_mod.Yo.resize(tDof,tnNo);
-//   com_mod.Yn.resize(tDof,tnNo);
-//   com_mod.Do.resize(tDof,tnNo);
-//   com_mod.Dn.resize(tDof,tnNo);
-//   com_mod.Bf.resize(nsd,tnNo);
-//
-//   com_mod.An = com_mod.Ao;
-//   com_mod.Yn = com_mod.Yo;
-//   com_mod.Dn = com_mod.Do;
-//
-// This function replicates the Fortran 'SUBROUTINE INITIALIZE(timeP)' in INITIALIZE.f.
+///   eq.s
+///   eq.e
+///
+///   com_mod.Ao.resize(tDof,tnNo);
+///   com_mod.An.resize(tDof,tnNo);
+///   com_mod.Yo.resize(tDof,tnNo);
+///   com_mod.Yn.resize(tDof,tnNo);
+///   com_mod.Do.resize(tDof,tnNo);
+///   com_mod.Dn.resize(tDof,tnNo);
+///   com_mod.Bf.resize(nsd,tnNo);
+///
+///   com_mod.An = com_mod.Ao;
+///   com_mod.Yn = com_mod.Yo;
+///   com_mod.Dn = com_mod.Do;
+/// \endcode
+///
+/// This function replicates the Fortran 'SUBROUTINE INITIALIZE(timeP)' in INITIALIZE.f.
 //
 void initialize(Simulation* simulation, Vector<double>& timeP)
 {

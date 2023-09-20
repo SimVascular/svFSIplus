@@ -1,10 +1,6 @@
-
-// Define a map type used to compute 2nd direivatives of element shape function data.
-
-//------------------------
-// get_element_2nd_derivs 
-//------------------------
-// Replicates 'SUBROUTINE GETGNNxx(insd, ind2, eType, eNoN, xi, Nxx)'
+/// @brief Define a map type used to compute 2nd direivatives of element shape function data.
+///
+/// Replicates 'SUBROUTINE GETGNNxx(insd, ind2, eType, eNoN, xi, Nxx)'
 //
 static double fp = 4.0;
 static double fn = -4.0;

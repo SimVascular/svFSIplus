@@ -190,7 +190,7 @@ C++ functions are defined within a `namespace` defined for each Fortran file. Fo
          - [<b> set_bc::set_bc_cmm(com_mod, cm_mod, Ag, Dg) </b>](#set_bc_cmm)
          - [<b> set_bc::set_bc_dir_w(com_mod, Yg, Dg) </b>](#)
          - [<b> contact::contact_forces(com_mod, cm_mod, Dg) </b>](#)
-         - [<b> all_fun::commu(com_mod, com_mod.R) </b>](#) - Synchronize residue R across processes
+         - [<b> all_fun::commu(com_mod, com_mod.R) </b>](#) - Synchronize residual R across processes
          - [<b> ustruct::ustruct_r(com_mod, Yg) </b>](#)
          - [<b> fs::thood_val_rc(com_mod) </b>](#)
          - [<b> set_bc::set_bc_undef_neu(com_mod) </b>](#)
@@ -1373,7 +1373,7 @@ lD(tDof, tnNo)
    - `set_bc::set_bc_cmm(com_mod, cm_mod, Ag, Dg)`
    - `set_bc::set_bc_dir_w(com_mod, Yg, Dg)` - Apply weakly applied Dirichlet BCs
    - `contact::contact_forces(com_mod, cm_mod, Dg)`
-   - `all_fun::commu(com_mod, com_mod.R)` - Synchronize residue across processes
+   - `all_fun::commu(com_mod, com_mod.R)` - Synchronize residual across processes
    - `ustruct::ustruct_r(com_mod, Yg)`
    - `fs::thood_val_rc(com_mod)`
    - `set_bc::set_bc_undef_neu(com_mod)`

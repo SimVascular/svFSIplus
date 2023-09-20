@@ -1,9 +1,11 @@
 
-// Define a map type used to set the bounds of element shape functions.
-//
-// Sets   
-//   mesh.xib(2, com_mod.nsd);   // Bounds on Gauss integration points in parametric space
-//   mesh.Nb2, mesh.eNoN);       // Bounds on shape functions
+/// @brief Define a map type used to set the bounds of element shape functions.
+///
+/// Sets   
+/// \code {.cpp}
+///   mesh.xib(2, com_mod.nsd);   // Bounds on Gauss integration points in parametric space
+///   mesh.Nb2, mesh.eNoN);       // Bounds on shape functions
+/// \endcode
 
 using SetElementShapeBoundsMapType = std::map<ElementType, std::function<void(int, mshType&)>>;
 

@@ -17,10 +17,6 @@
 
 namespace fsi_linear_solver {
 
-//--------------
-// fsils_commus
-//--------------
-//
 void fsils_commus(const FSILS_lhsType& lhs, Vector<double>& R)
 {
   if (lhs.commu.nTasks == 1) {
@@ -76,15 +72,12 @@ void fsils_commus(const FSILS_lhsType& lhs, Vector<double>& R)
   }
 }
 
-//--------------
-// fsils_commuv
-//--------------
-// This a both way communication with three main part:
-//
-// 1 - rTmp {in master} = R          {from slave}
-// 2 - R    {in master} = R + rTmp   {both from master}
-// 3 - rTmp {in master} = R          {from master}
-// 4 - R    {in slave}  = rTmp       {from master}
+/// @brief This a both way communication with three main part:
+///
+/// 1 - rTmp {in master} = R          {from slave}
+/// 2 - R    {in master} = R + rTmp   {both from master}
+/// 3 - rTmp {in master} = R          {from master}
+/// 4 - R    {in slave}  = rTmp       {from master}
 //
 void fsils_commuv(const FSILS_lhsType& lhs, int dof, Array<double>& R)
 {
