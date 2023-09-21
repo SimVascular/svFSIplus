@@ -725,8 +725,14 @@ void ConstitutiveModelParameters::set_values(tinyxml2::XMLElement* xml_elem)
 
   // Check constitutive model type.
   if (constitutive_model_types.count(type.value()) == 0) {
-      throw std::runtime_error("Unknown constitutive model '" + type.value() +
-        " in the '" + xml_elem->Name() + "' XML element.");
+    auto msg_1 = "Unknown constitutive model '" + type.value() + " in the '" + xml_elem->Name() + "' XML element.\n";
+    std::string msg_2 = "Valid types are:";
+    for (auto& name : constitutive_model_types) {
+      msg_2 += " " + name.first;
+    }
+    msg_2 += "\n";
+    auto msg = msg_1 + msg_2;
+    throw std::runtime_error(msg);
   }
   auto model_type = constitutive_model_types.at(type.value());
   type.set(model_type);
