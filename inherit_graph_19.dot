@@ -1,0 +1,8 @@
+digraph "Graphical Class Hierarchy"
+{
+ // LATEX_PDF_SIZE
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="LR";
+  Node0 [label="cplBCType",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classcpl_b_c_type.html",tooltip="For coupled 0D-3D problems."];
+}
