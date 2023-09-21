@@ -17,4 +17,4 @@ The *Second Stage* of the solver development will be an entirely new implementat
 
 ## Getting started
 
-Please see the documentation for [getting started](https://simvascular.github.io/svFSIplus/Documentation/build/html/index.html) and [implementation details](https://simvascular.github.io/svFSIplus/Documentation/build/html/implementation.html).
+Please see the documentation for [getting started](https://simvascular.github.io/svFSIplus/index.html) and [implementation details](https://simvascular.github.io/svFSIplus/implementation.html).
