@@ -133,6 +133,7 @@ void petsc_solve_(PetscReal *, PetscReal *, PetscReal *, PetscReal *, bool *, \
                   PetscInt *,  PetscReal *, const PetscInt *, const PetscInt *, \
                   const PetscInt *);
 void petsc_destroy_all_(const PetscInt *);
+// void petsc_destroy_all_(const PetscInt);
 
 #ifdef __cplusplus
 }

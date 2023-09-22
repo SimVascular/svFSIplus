@@ -64,7 +64,8 @@ void petsc_initialize_(const PetscInt *nNo, const PetscInt *mynNo, \
                        const PetscInt *svFSI_ltg, const PetscInt *svFSI_map, \
                        const PetscInt *svFSI_rowPtr, const PetscInt *svFSI_colPtr, char *inp)
 {   
-    char* in_file = rm_blank(inp);
+    // char* in_file = rm_blank(inp);
+    char* in_file = inp;
     if (access(in_file, F_OK) == 0) {
         PetscInitialize(NULL, NULL, in_file, NULL);
         PetscPrintf(MPI_COMM_WORLD, " <PETSC_INITIALIZE>: "
@@ -101,7 +102,8 @@ void petsc_initialize_(const PetscInt *nNo, const PetscInt *mynNo, \
 void petsc_create_linearsystem_(const PetscInt *dof, const PetscInt *iEq, const PetscInt *nEq, \
                                 const PetscReal *svFSI_DirBC, const PetscReal *svFSI_lpBC)
 {   
-    PetscInt cEq = *iEq - 1;
+    // PetscInt cEq = *iEq - 1;
+    PetscInt cEq = *iEq;   // in Fortran, cEq = 1; in C++, cEq = 0;
 
     if (psol[cEq].created) return;
 
@@ -121,7 +123,8 @@ void petsc_create_linearsolver_(const PetscInt *lsType, const PetscInt *pcType, 
                                 const PetscInt *phys, const PetscInt *dof, \
                                 const PetscInt *iEq, const PetscInt *nEq)
 {   
-    PetscInt cEq = *iEq - 1;
+    // PetscInt cEq = *iEq - 1;
+    PetscInt cEq = *iEq;   // in Fortran, cEq = 1; in C++, cEq = 0;
     PC pc;
     PetscBool usefieldsplit;
 
@@ -250,7 +253,8 @@ void petsc_create_linearsolver_(const PetscInt *lsType, const PetscInt *pcType, 
 void petsc_set_values_(const PetscInt *dof, const PetscInt *iEq, const PetscReal *R, \
                        const PetscReal *Val, const PetscReal *svFSI_DirBC, const PetscReal *svFSI_lpBC)
 {   
-    PetscInt cEq = *iEq - 1;
+    // PetscInt cEq = *iEq - 1;
+    PetscInt cEq = *iEq;   // in Fortran, cEq = 1; in C++, cEq = 0;
 
     /* Set values in A &b, apply Dir and Lumped parameter BC */
     PetscLogStagePush(stages[3]);
@@ -277,7 +281,8 @@ void petsc_solve_(PetscReal *resNorm,  PetscReal *initNorm,  PetscReal *dB, \
 {   
     PetscReal *a, *array;
     PetscInt   i, j, na;
-    PetscInt   cEq = *iEq - 1;
+    // PetscInt   cEq = *iEq - 1;
+    PetscInt   cEq = *iEq;   // in Fortran, cEq = 1; in C++, cEq = 0;
     PetscBool  usepreonly;
     KSPType    ksptype;
     Vec        lx, res;
@@ -346,6 +351,7 @@ void petsc_solve_(PetscReal *resNorm,  PetscReal *initNorm,  PetscReal *dB, \
 /* 
     Clean up all petsc data. 
 */
+// *nEq
 void petsc_destroy_all_(const PetscInt *nEq)
 {   
     PetscInt cEq, ierr;
@@ -365,6 +371,7 @@ void petsc_destroy_all_(const PetscInt *nEq)
     PetscFree2(plhs.rowPtr, plhs.colPtr);
     PetscFree2(plhs.ltg, plhs.ghostltg);
 
+    // *nEq
     for (cEq = 0; cEq < *nEq; cEq++)
     {   
         if (!psol[cEq].created) {
@@ -435,11 +442,13 @@ PetscErrorCode petsc_create_lhs(const PetscInt nNo, const PetscInt mynNo, const 
     plhs.mynNo   = mynNo;
     plhs.created = PETSC_TRUE;
 
-    /* Fortran index to C index */
+    /* Fortran index to C index (NOT apply for svFSIplus) */ 
     PetscCall(PetscMalloc2(nNo, &local2global, nNo, &local2local));
     for (i = 0; i < nNo; i++) {
-        local2global[i] = svFSI_ltg[i] - 1;
-        local2local[i]  = svFSI_map[i] - 1;
+        // local2global[i] = svFSI_ltg[i] - 1;
+        // local2local[i]  = svFSI_map[i] - 1;
+        local2global[i] = svFSI_ltg[i];
+        local2local[i]  = svFSI_map[i];
     }
 
     /* Create local mapping, map[O2] = O1 */
@@ -495,11 +504,14 @@ PetscErrorCode petsc_create_lhs(const PetscInt nNo, const PetscInt mynNo, const 
     /* Adjacency info in PETSc lhs (i.e plhs.rowPtr and plhs.colPtr) is used to set values. */
     PetscCall(PetscMalloc2(2*nNo, &plhs.rowPtr, nnz, &plhs.colPtr));
     for (i=0; i < nNo; i++) {
-        plhs.rowPtr[i*2]   = svFSI_rowPtr[i*2] - 1;
-        plhs.rowPtr[i*2+1] = svFSI_rowPtr[i*2+1];
+        // plhs.rowPtr[i*2]   = svFSI_rowPtr[i*2] - 1; 
+        plhs.rowPtr[i*2]   = svFSI_rowPtr[i*2];
+        // plhs.rowPtr[i*2+1] = svFSI_rowPtr[i*2+1];
+        plhs.rowPtr[i*2+1] = svFSI_rowPtr[i*2+1]+1;
     }
     for (i=0; i < nnz; i++) {
-        plhs.colPtr[i] = plhs.ltg[svFSI_colPtr[i] - 1];
+        // plhs.colPtr[i] = plhs.ltg[svFSI_colPtr[i] - 1];
+        plhs.colPtr[i] = plhs.ltg[svFSI_colPtr[i]];
     }
     
     /* Deallocate memory */
@@ -902,7 +914,7 @@ PetscErrorCode petsc_debug_save_mat(const char *filename, Mat mat)
     PetscFunctionReturn(0);
 }
 
-// Function removing spaces from string
+// Function removing spaces from string (Not used in svFSIplus)
 char * rm_blank(char *string)
 {
     // remove weird FORTRAN character

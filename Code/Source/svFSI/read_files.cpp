@@ -1899,7 +1899,7 @@ void read_ls(Simulation* simulation, EquationParameters* eq_params, consts::Solv
     if (!linear_solver.PETSc_file_path.defined()){
       throw std::runtime_error("No PETSc config file");
     }
-    lEq.ls.config = linear_solver.XML_file_path.value();
+    lEq.ls.config = linear_solver.PETSc_file_path.value();
   }
 
 
