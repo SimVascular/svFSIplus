@@ -1,0 +1,120 @@
+#----------------------------------------------------------------
+# General simulation parameters
+
+Continue previous simulation: 0
+Number of spatial dimensions: 3
+Number of time steps: 100
+Time step size: 0.01
+Spectral radius of infinite time step: 0.50
+Searched file name to trigger stop: STOP_SIM
+
+Save results to VTK format: 1
+Name prefix of saved VTK files: result
+Increment in saving VTK files: 100
+Start saving after time step: 1
+
+Increment in saving restart files: 100
+Convert BIN to VTK format: 0
+
+Verbose: 1
+Warning: 1
+Debug: 0
+
+#----------------------------------------------------------------
+# Mesh data
+Add mesh: msh {
+   Mesh file path:    mesh/P1/N016/mesh-complete.mesh.vtu
+   Add face: X0 {
+      Face file path: mesh/P1/N016/mesh-surfaces/X0.vtp
+   }
+   Add face: X1 {
+      Face file path: mesh/P1/N016/mesh-surfaces/X1.vtp
+   }
+   Add face: Y0 {
+      Face file path: mesh/P1/N016/mesh-surfaces/Y0.vtp
+   }
+   Add face: Y1 {
+      Face file path: mesh/P1/N016/mesh-surfaces/Y1.vtp
+   }
+   Add face: Z0 {
+      Face file path: mesh/P1/N016/mesh-surfaces/Z0.vtp
+   }
+   Add face: Z1 {
+      Face file path: mesh/P1/N016/mesh-surfaces/Z1.vtp
+   }
+   Add face: patch {
+      Face file path: mesh/P1/N016/mesh-surfaces/Z1_patch.vtp
+   }
+   Mesh scale factor: 0.001
+}
+
+#----------------------------------------------------------------
+# Equations
+Add equation: struct {
+   Coupled: 1
+   Min iterations: 3
+   Max iterations: 10
+   Tolerance: 1e-6
+
+   Constitutive model: nHK
+   Density: 1000.0
+   Elasticity modulus: 240.56596E6
+   Poisson ratio: 0.5
+   Dilational penalty model: ST91
+   Penalty parameter: 4.0E9   # nu ~ 0.49
+
+   Output: Spatial {
+      Displacement: t
+      Velocity: t
+      Jacobian: t
+      Stress: t
+      Strain: t
+      Cauchy_stress: t
+      VonMises_stress: t
+   }
+
+   LS type: GMRES
+   {
+      Preconditioner: PETSc
+      PETSc file path: direct.inp
+   }
+
+   Add BC: X0 {
+      Type: Dir
+      Value: 0.0
+      Effective direction: (1, 0, 0)
+   }
+
+   Add BC: Y0 {
+      Type: Dir
+      Value: 0.0
+      Effective direction: (0, 1, 0)
+   }
+
+   Add BC: Z0 {
+      Type: Dir
+      Value: 0.0
+      Effective direction: (0, 0, 1)
+   }
+
+   Add BC: Z1 {
+      Type: Dir
+      Value: 0.0
+      Effective direction: (1, 1, 0)
+   }
+
+   Add BC: patch {
+      Type: Dir
+      Value: 0.0
+      Effective direction: (1, 1, 0)
+   }
+
+   Add BC: patch {
+      Type: Neu
+      Time dependence: Unsteady
+      Temporal values file path: load.dat
+      Ramp function: t
+      Follower pressure load: t
+   }
+}
+
