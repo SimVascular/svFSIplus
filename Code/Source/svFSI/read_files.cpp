@@ -1156,6 +1156,9 @@ void read_domain(Simulation* simulation, EquationParameters* eq_params, eqType& 
           case PhysicalProperyType::source_term:
             rtmp = domain_params->source_term.value();
           break;
+
+          case PhysicalProperyType::permeability:
+            rtmp = domain_params->permeability.value();
         }
 
         lEq.dmn[iDmn].prop[prop] = rtmp;
@@ -1591,7 +1594,40 @@ void read_files(Simulation* simulation, const std::string& file_name)
       if (!com_mod.mvMsh) {
         throw std::runtime_error("mesh equation can only be specified after FSI equation");
       }     
-    }     
+    }
+
+    if (eq.phys == EquationType::phys_darcy) {
+      com_mod.perfusion_pressure_source.resize(com_mod.gtnNo);
+      com_mod.perfusion_pressure_sink.resize(com_mod.gtnNo);
+      com_mod.perfusion_beta0.resize(com_mod.gtnNo);
+      com_mod.perfusion_beta1.resize(com_mod.gtnNo);
+      std::ifstream perfusion_pressure_source_file;
+      std::ifstream perfusion_pressure_sink_file;
+      std::ifstream perfusion_pressure_b0_file;
+      std::ifstream perfusion_pressure_b1_file;
+      perfusion_pressure_source_file.open("perfusionSource");
+      perfusion_pressure_sink_file.open("perfusionSink");
+      perfusion_pressure_b0_file.open("perfusionB0");
+      perfusion_pressure_b1_file.open("perfusionB1");
+      if (!perfusion_pressure_source_file.is_open()) {
+        throw std::runtime_error("Failed to open the perfusion pressure source file 'perfusionSource'.");
+      }
+      if (!perfusion_pressure_sink_file.is_open()) {
+          throw std::runtime_error("Failed to open the perfusion pressure source file 'perfusionSource'.");
+      }
+      if (!perfusion_pressure_b0_file.is_open()) {
+          throw std::runtime_error("Failed to open the perfusion pressure source file 'perfusionSource'.");
+      }
+      if (!perfusion_pressure_b1_file.is_open()) {
+          throw std::runtime_error("Failed to open the perfusion pressure source file 'perfusionSource'.");
+      }
+      for (int i = 0; i < com_mod.gtnNo; i++) {
+        perfusion_pressure_source_file >> com_mod.perfusion_pressure_source[i];
+        perfusion_pressure_sink_file >> com_mod.perfusion_pressure_sink[i];
+        perfusion_pressure_b0_file >> com_mod.perfusion_beta0[i];
+        perfusion_pressure_b1_file >> com_mod.perfusion_beta1[i];
+      }
+    }
   }
   #ifdef debug_read_files
   dmsg << "Done Read equations " << " ";

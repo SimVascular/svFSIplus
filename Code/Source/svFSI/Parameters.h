@@ -1074,6 +1074,7 @@ class DomainParameters : public ParameterLists
     Parameter<double> solid_density;
     Parameter<double> solid_viscosity;
     Parameter<double> source_term;
+    Parameter<double> permeability;
     Parameter<double> time_step_for_integration;
 };
 

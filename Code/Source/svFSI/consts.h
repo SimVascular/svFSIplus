@@ -296,7 +296,8 @@ enum class EquationType
   phys_CMM = 209, 
   phys_CEP = 210,
   phys_ustruct = 211,  // Nonlinear elastodynamics using mixed VMS-stabilized formulation 
-  phys_stokes = 212
+  phys_stokes = 212,
+  phys_darcy = 213 // Darcy flow for perfusion problems
 };
 
 constexpr auto Equation_CMM = EquationType::phys_CMM;
@@ -311,6 +312,7 @@ constexpr auto Equation_shell = EquationType::phys_shell;
 constexpr auto Equation_stokes = EquationType::phys_stokes;
 constexpr auto Equation_struct = EquationType::phys_struct;
 constexpr auto Equation_ustruct = EquationType::phys_ustruct;
+constexpr auto Equation_darcy = EquationType::phys_darcy;
 
 extern const std::map<std::string,EquationType> equation_name_to_type;
 
@@ -359,6 +361,7 @@ enum class OutputType
   outGrp_fS = 523,
   outGrp_C = 524, 
   outGrp_I1 = 525,
+  outGrp_MBF = 526,
 
   out_velocity = 599,
   out_pressure = 598, 
@@ -387,7 +390,8 @@ enum class OutputType
   out_viscosity = 575,
   out_fibStrn = 574,
   out_CGstrain = 573,
-  out_CGInv1 = 572
+  out_CGInv1 = 572,
+  out_MBF = 571
 };
 
 //---------------------
@@ -412,7 +416,8 @@ enum class PhysicalProperyType
   damping = 12,
   shell_thickness = 13, 
   ctau_M = 14,                 // stabilization coeffs. for USTRUCT (momentum, continuity)
-  ctau_C = 15
+  ctau_C = 15,
+  permeability = 16
 };
 
 //--------------------

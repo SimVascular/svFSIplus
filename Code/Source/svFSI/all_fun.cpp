@@ -896,6 +896,48 @@ double jacobian(ComMod& com_mod, const int nDim, const int eNoN, const Array<dou
   return Jac;
 }
 
+//----------
+// local
+//----------
+
+    Vector<double> //kmenon_perfusion
+    local(const ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, Vector<double>& U)
+    {
+        Vector<double> local_vector;
+
+        if (com_mod.ltg.size() == 0) {
+            throw std::runtime_error("ltg is not set yet");
+        }
+
+        if (cm.mas(cm_mod)) {
+            if (U.size() != com_mod.gtnNo) {
+                throw std::runtime_error("local_rs is only specified for vector with size gtnNo");
+            }
+        }
+
+        if (cm.seq()) {
+            local_vector.resize(com_mod.gtnNo);
+            local_vector = U;
+            return local_vector;
+        }
+
+        local_vector.resize(com_mod.tnNo);
+        Vector<double> tmpU(com_mod.gtnNo);
+
+        if (cm.mas(cm_mod)) {
+            tmpU = U;
+        }
+
+        cm.bcast(cm_mod, tmpU);
+
+        for (int a = 0; a < com_mod.tnNo; a++) {
+            int Ac = com_mod.ltg[a];
+            local_vector[a] = tmpU[Ac];
+        }
+
+        return local_vector;
+    }
+
 //-------
 // local
 //-------
