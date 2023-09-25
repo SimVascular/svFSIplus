@@ -234,20 +234,19 @@ void ls_alloc(ComMod& com_mod, eqType& lEq)
 
 #endif
 
-#ifdef WITH_PETSC
-  // int test_nEq = com_mod.nEq;
-  // petsc_destroy_all_(test_nEq);
+// #ifdef WITH_PETSC
+//   petsc_destroy_all_(&com_mod.nEq);
 
-  petsc_initialize_(&com_mod.lhs.nNo, &com_mod.lhs.mynNo, &com_mod.lhs.nnz, &com_mod.nEq, com_mod.ltg.data(), com_mod.lhs.map.data(), com_mod.lhs.rowPtr.data(), com_mod.lhs.colPtr.data(), com_mod.eq[0].ls.config.data());
+//   petsc_initialize_(&com_mod.lhs.nNo, &com_mod.lhs.mynNo, &com_mod.lhs.nnz, &com_mod.nEq, com_mod.ltg.data(), com_mod.lhs.map.data(), com_mod.lhs.rowPtr.data(), com_mod.lhs.colPtr.data(), com_mod.eq[0].ls.config.data());
 
-    for (int a = 0; a < com_mod.nEq; a++){
-      int prec_type = static_cast<int>(com_mod.eq[a].ls.PREC_Type);
-      int ls_type = static_cast<int>(com_mod.eq[a].ls.LS_type);
-      int phys = static_cast<int>(com_mod.eq[a].phys);
-      petsc_create_linearsolver_(&ls_type, &prec_type, &com_mod.eq[a].ls.sD, &com_mod.eq[a].ls.mItr, &com_mod.eq[a].ls.relTol, &com_mod.eq[a].ls.absTol, &phys, &com_mod.eq[a].dof, &a, &com_mod.nEq);
-    }
+//     for (int a = 0; a < com_mod.nEq; a++){
+//       int prec_type = static_cast<int>(com_mod.eq[a].ls.PREC_Type);
+//       int ls_type = static_cast<int>(com_mod.eq[a].ls.LS_type);
+//       int phys = static_cast<int>(com_mod.eq[a].phys);
+//       petsc_create_linearsolver_(&ls_type, &prec_type, &com_mod.eq[a].ls.sD, &com_mod.eq[a].ls.mItr, &com_mod.eq[a].ls.relTol, &com_mod.eq[a].ls.absTol, &phys, &com_mod.eq[a].dof, &a, &com_mod.nEq);
+//     }
   
-#endif
+// #endif
 
 }
 
@@ -341,6 +340,22 @@ void ls_solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vecto
   }
 #endif
 
+}
+
+void initialize_petsc(ComMod& com_mod){
+
+#ifdef WITH_PETSC
+  petsc_destroy_all_(&com_mod.nEq);
+
+  petsc_initialize_(&com_mod.lhs.nNo, &com_mod.lhs.mynNo, &com_mod.lhs.nnz, &com_mod.nEq, com_mod.ltg.data(), com_mod.lhs.map.data(), com_mod.lhs.rowPtr.data(), com_mod.lhs.colPtr.data(), com_mod.eq[0].ls.config.data());
+
+    for (int a = 0; a < com_mod.nEq; a++){
+      int prec_type = static_cast<int>(com_mod.eq[a].ls.PREC_Type);
+      int ls_type = static_cast<int>(com_mod.eq[a].ls.LS_type);
+      int phys = static_cast<int>(com_mod.eq[a].phys);
+      petsc_create_linearsolver_(&ls_type, &prec_type, &com_mod.eq[a].ls.sD, &com_mod.eq[a].ls.mItr, &com_mod.eq[a].ls.relTol, &com_mod.eq[a].ls.absTol, &phys, &com_mod.eq[a].dof, &a, &com_mod.nEq);
+    }
+#endif
 }
 
 };

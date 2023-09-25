@@ -351,57 +351,57 @@ void petsc_solve_(PetscReal *resNorm,  PetscReal *initNorm,  PetscReal *dB, \
 /* 
     Clean up all petsc data. 
 */
-// *nEq
 void petsc_destroy_all_(const PetscInt *nEq)
 {   
-    PetscInt cEq, ierr;
+    if (!psol==NULL){
+        PetscInt cEq, ierr;
 
-    if (!plhs.created) {
-        PetscPrintf(MPI_COMM_WORLD, "ERROR <PETSC_DESTROY_ALL>: "
-                "lhs is not created.\n");
-        ierr = PETSC_ERR_ARG_WRONGSTATE;
-        PETSCABORT(MPI_COMM_WORLD, ierr);
-    }
-
-    plhs.nNo     = 0;
-    plhs.mynNo   = 0;
-    plhs.created = PETSC_FALSE;
-
-    PetscFree (plhs.map);
-    PetscFree2(plhs.rowPtr, plhs.colPtr);
-    PetscFree2(plhs.ltg, plhs.ghostltg);
-
-    // *nEq
-    for (cEq = 0; cEq < *nEq; cEq++)
-    {   
-        if (!psol[cEq].created) {
+        if (!plhs.created) {
             PetscPrintf(MPI_COMM_WORLD, "ERROR <PETSC_DESTROY_ALL>: "
-                "solver %d is not created.\n", cEq);
+                    "lhs is not created.\n");
             ierr = PETSC_ERR_ARG_WRONGSTATE;
             PETSCABORT(MPI_COMM_WORLD, ierr);
         }
 
-        psol[cEq].created = PETSC_FALSE;
+        plhs.nNo     = 0;
+        plhs.mynNo   = 0;
+        plhs.created = PETSC_FALSE;
 
-        psol[cEq].lpPts = 0;
-        PetscFree2(psol[cEq].lpBC_l, psol[cEq].lpBC_g);
+        PetscFree (plhs.map);
+        PetscFree2(plhs.rowPtr, plhs.colPtr);
+        PetscFree2(plhs.ltg, plhs.ghostltg);
 
-        psol[cEq].DirPts = 0;
-        PetscFree (psol[cEq].DirBC);
+        for (cEq = 0; cEq < *nEq; cEq++)
+        {   
+            if (!psol[cEq].created) {
+                PetscPrintf(MPI_COMM_WORLD, "ERROR <PETSC_DESTROY_ALL>: "
+                    "solver %d is not created.\n", cEq);
+                ierr = PETSC_ERR_ARG_WRONGSTATE;
+                PETSCABORT(MPI_COMM_WORLD, ierr);
+            }
 
-        VecDestroy(&psol[cEq].b);
-        MatDestroy(&psol[cEq].A);
-        KSPDestroy(&psol[cEq].ksp);
+            psol[cEq].created = PETSC_FALSE;
 
-        if (psol[cEq].rcs) {
-            psol[cEq].rcs = PETSC_FALSE;
-            VecDestroy(&psol[cEq].Dr);
-            VecDestroy(&psol[cEq].Dc);
+            psol[cEq].lpPts = 0;
+            PetscFree2(psol[cEq].lpBC_l, psol[cEq].lpBC_g);
+
+            psol[cEq].DirPts = 0;
+            PetscFree (psol[cEq].DirBC);
+
+            VecDestroy(&psol[cEq].b);
+            MatDestroy(&psol[cEq].A);
+            KSPDestroy(&psol[cEq].ksp);
+
+            if (psol[cEq].rcs) {
+                psol[cEq].rcs = PETSC_FALSE;
+                VecDestroy(&psol[cEq].Dr);
+                VecDestroy(&psol[cEq].Dc);
+            }
         }
+        PetscFree(psol); 
+        
+        PetscFinalize();
     }
-    PetscFree(psol); 
-    
-    PetscFinalize();
 }
 
 
