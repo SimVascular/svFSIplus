@@ -29,10 +29,7 @@
 #include <iomanip>
 #include <iostream>
 
-//------------
-// read_files
-//------------
-// Read in a solver XML file and all mesh and BC data.  
+/// @brief Read in a solver XML file and all mesh and BC data.  
 //
 void read_files(Simulation* simulation, const std::string& file_name)
 {
@@ -57,12 +54,9 @@ void read_files(Simulation* simulation, const std::string& file_name)
   
 }
 
-//------------------
-// iterate_solution
-//------------------
-// Iterate the simulation in time.
-//
-// Reproduces the outer and inner loops in Fortan MAIN.f. 
+/// @brief Iterate the simulation in time.
+///
+/// Reproduces the outer and inner loops in Fortan MAIN.f. 
 //
 void iterate_solution(Simulation* simulation)
 {
@@ -124,7 +118,7 @@ void iterate_solution(Simulation* simulation)
   auto& cEq = com_mod.cEq;
 
   auto& Ad = com_mod.Ad;      // Time derivative of displacement 
-  auto& Rd = com_mod.Rd;      // Residue of the displacement equation
+  auto& Rd = com_mod.Rd;      // Residual of the displacement equation
   auto& Kd = com_mod.Kd;      // LHS matrix for displacement equation
 
   auto& Ao = com_mod.Ao;      // Old time derivative of variables (acceleration)
@@ -277,7 +271,7 @@ void iterate_solution(Simulation* simulation)
       ls_ns::ls_alloc(com_mod, eq);
 
       // Compute body forces. If phys is shells or CMM (init), apply
-      // contribution from body forces (pressure) to residue
+      // contribution from body forces (pressure) to residual
       //
       // Modifes: com_mod.Bf, Dg
       //
@@ -325,7 +319,7 @@ void iterate_solution(Simulation* simulation)
 
       set_bc::set_bc_dir_w(com_mod, Yg, Dg);
 
-      // Apply contact model and add its contribution to residue
+      // Apply contact model and add its contribution to residual
       //
       if (com_mod.iCntct) {
         contact::construct_contact_pnlty(com_mod, cm_mod, Dg);
@@ -340,7 +334,7 @@ void iterate_solution(Simulation* simulation)
       }
 
       // Synchronize R across processes. Note: that it is important
-      // to synchronize residue, R before treating immersed bodies as
+      // to synchronize residual, R before treating immersed bodies as
       // ib.R is already communicated across processes
       //
       if (!eq.assmTLS) {
@@ -350,8 +344,8 @@ void iterate_solution(Simulation* simulation)
         all_fun::commu(com_mod, com_mod.R);
       }
 
-      // Update residue in displacement equation for USTRUCT phys.
-      // Note that this step is done only first iteration. Residue
+      // Update residual in displacement equation for USTRUCT phys.
+      // Note that this step is done only first iteration. Residual
       // will be 0 for subsequent iterations
       //
       // Modifies com_mod.Rd.
@@ -363,7 +357,7 @@ void iterate_solution(Simulation* simulation)
         ustruct::ustruct_r(com_mod, Yg);
       }
 
-      // Set the residue of the continuity equation and its tangent matrix
+      // Set the residual of the continuity equation and its tangent matrix
       // due to variation with pressure to 0 on all the edge nodes.
       //
       if (std::set<EquationType>{Equation_stokes, Equation_fluid, Equation_ustruct, Equation_FSI}.count(eq.phys) != 0) {
@@ -381,7 +375,7 @@ void iterate_solution(Simulation* simulation)
 
       set_bc::set_bc_undef_neu(com_mod);
 
-      // IB treatment: for explicit coupling, simply construct residue.
+      // IB treatment: for explicit coupling, simply construct residual.
       //
       /* [NOTE] not implemented.
       if (com_mod.ibFlag) {
@@ -602,20 +596,15 @@ void iterate_solution(Simulation* simulation)
   //#endif
 }
 
-//----------------
-// run_simulation
-//----------------
-//
+
 void run_simulation(Simulation* simulation)
 {
   iterate_solution(simulation);
 }
 
-//------
-// main
-//------
-// Run a simulation from the command line using the name of a solver input 
-// XML file as an argument.
+
+/// @brief Run a simulation from the command line using the name of a solver input 
+/// XML file as an argument.
 //
 int main(int argc, char *argv[])
 {

@@ -7,13 +7,11 @@
 
 namespace fs {
 
-//----------
-// alloc_fs
-//----------
-// Allocates arrays within the function space type. Assumes that 
-// fs%eNoN and fs%nG are already defined
-//
-// Replicates 'SUBROUTINE ALLOCFS(fs, insd)'.
+
+/// @brief Allocates arrays within the function space type. Assumes that 
+/// fs%eNoN and fs%nG are already defined
+///
+/// Replicates 'SUBROUTINE ALLOCFS(fs, insd)'.
 //
 void alloc_fs(fsType& fs, const int nsd, const int insd)
 {
@@ -31,10 +29,7 @@ void alloc_fs(fsType& fs, const int nsd, const int insd)
   fs.Nxx.resize(ind2,eNoN,nG);
 }
 
-//---------------
-// get_thood_fs
-//---------------
-//
+
 void get_thood_fs(ComMod& com_mod, std::array<fsType,2>& fs, const mshType& lM, const bool lStab, const int iOpt)
 {
   #define n_debug_get_thood_fs 
@@ -140,10 +135,7 @@ void get_thood_fs(ComMod& com_mod, std::array<fsType,2>& fs, const mshType& lM, 
   }
 }
 
-//---------
-// init_fs
-//---------
-//
+
 void init_fs(fsType& fs,  const int nsd, const int insd)
 {
   alloc_fs(fs, nsd, insd);
@@ -163,10 +155,7 @@ void init_fs(fsType& fs,  const int nsd, const int insd)
   nn::get_nn_bnds(nsd, fs.eType, fs.eNoN, fs.xib, fs.Nb);
 }
 
-//--------------
-// init_fs_face
-//--------------
-//
+
 void init_fs_face(const ComMod& com_mod, mshType& lM, faceType& lFa)
 {
   using namespace consts;
@@ -227,18 +216,15 @@ void init_fs_face(const ComMod& com_mod, mshType& lM, faceType& lFa)
   }
 }
 
-//-------------
-// init_fs_msh
-//-------------
-//
-// Modifies:
-//  lM.fs.resize(lM.nFs)
-//  lM.fs[0].lShpF = lM.lShpF;
-//  lM.fs[0].eType = lM.eType;
-//  lM.fs[0].eNoN  = lM.eNoN;
-//  lM.fs[0].nG    = lM.nG;
-//
-// Replicates 'SUBROUTINE INITFSMSH(lM)'.
+
+/// @brief Modifies:
+///  lM.fs.resize(lM.nFs)
+///  lM.fs[0].lShpF = lM.lShpF;
+///  lM.fs[0].eType = lM.eType;
+///  lM.fs[0].eNoN  = lM.eNoN;
+///  lM.fs[0].nG    = lM.nG;
+///
+/// Replicates 'SUBROUTINE INITFSMSH(lM)'.
 //
 void init_fs_msh(const ComMod& com_mod, mshType& lM)
 {
@@ -313,12 +299,10 @@ void init_fs_msh(const ComMod& com_mod, mshType& lM)
   }
 }
 
-//--------------
-// set_thood_fs
-//--------------
-// Sets Tayloor-Hood basis for a parent element type
-//
-// Replicates 'SUBROUTINE SETTHOODFS(fs, eType)'.
+
+/// @brief Sets Tayloor-Hood basis for a parent element type
+///
+/// Replicates 'SUBROUTINE SETTHOODFS(fs, eType)'.
 //
 void set_thood_fs(fsType& fs, consts::ElementType eType)
 {
@@ -369,17 +353,14 @@ void set_thood_fs(fsType& fs, consts::ElementType eType)
   }
 }
 
-//--------------
-// thood_val_rc
-//--------------
-// Set the residue of the continuity equation and its tangent matrix
-// due to variation with pressure to 0 on all the edge nodes. This
-// step is done only for P2P1 type discretization for mixed saddle
-// point type problems such as fluid, stokes, ustruct, and fsi.
-//
-// Modifies: com_mod.Val, com_mod.R
-//
-// Reproduces 'SUBROUTINE THOOD_ValRC()'
+/// @brief Set the residual of the continuity equation and its tangent matrix
+/// due to variation with pressure to 0 on all the edge nodes. This
+/// step is done only for P2P1 type discretization for mixed saddle
+/// point type problems such as fluid, stokes, ustruct, and fsi.
+///
+/// Modifies: com_mod.Val, com_mod.R
+///
+/// Reproduces 'SUBROUTINE THOOD_ValRC()'
 //
 void thood_val_rc(ComMod& com_mod)
 {

@@ -4,19 +4,16 @@
 
 #include <tuple>
 
-// The 'OutputProps' tuple stores data for the 'outputType' object for
-//
-//   output.grp - The group that this belong to (one of outType_)
-//   output.o - Offset from the first index
-//   output.l - Length of the outputed variable 
-//   output.name - The name to be used for the output and also in input file
+/// @brief The 'OutputProps' tuple stores data for the 'outputType' object for
+///
+///   output.grp - The group that this belong to (one of outType_)
+///   output.o - Offset from the first index
+///   output.l - Length of the outputed variable 
+///   output.name - The name to be used for the output and also in input file
 //
 using OutputProps = std::tuple<consts::OutputType, int, int, std::string>; 
 
-//------------------
-// output_props_map
-//------------------
-// Reproduces Fortran READOUTPUTS.
+/// @brief Reproduces Fortran READOUTPUTS.
 //
 std::map<consts::OutputType, OutputProps> output_props_map = 
 {

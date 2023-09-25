@@ -1,7 +1,3 @@
-
-// In this routine, the appropriate LS algorithm is called and
-// the solution is returned.
-
 #include "lhs.h"
 #include "CmMod.h"
 #include "bicgs.h"
@@ -12,16 +8,14 @@
 
 namespace fsi_linear_solver {
 
-//-------------
-// fsils_solve
-//-------------
-//
-// Modifies: Val, Ri
-//
-// Ri(dof,lhs.nNo): Residual
-// Val(dof*dof,lhs.nnz): LHS
-//
-// Reproduces 'SUBROUTINE FSILS_SOLVE (lhs, ls, dof, Ri, Val, prec, incL, res)'.
+/// @brief In this routine, the appropriate LS algorithm is called and
+/// the solution is returned.
+/// Modifies: Val, Ri
+///
+/// Ri(dof,lhs.nNo): Residual
+/// Val(dof*dof,lhs.nnz): LHS
+///
+/// Reproduces 'SUBROUTINE FSILS_SOLVE (lhs, ls, dof, Ri, Val, prec, incL, res)'.
 //
 void fsils_solve(FSILS_lhsType& lhs, FSILS_lsType& ls, const int dof, Array<double>& Ri, Array<double>& Val, 
     const consts::PreconditionerType prec, const Vector<int>& incL, const Vector<double>& res)
@@ -129,8 +123,11 @@ void fsils_solve(FSILS_lhsType& lhs, FSILS_lsType& ls, const int dof, Array<doub
 
     case LinearSolverType::LS_TYPE_CG:
       if (dof == 1) {
-         throw std::runtime_error("FSILS: CGRADS is not implemented");
-        //CALL CGRADS(lhs, ls.RI, Val, R)
+        auto Valv = Val.row(0);
+        auto Rv = R.row(0);
+        cgrad::cgrad_s(lhs, ls.RI, Valv, Rv);
+        Val.set_row(0,Valv);
+        R.set_row(0,Rv);
       } else {
         cgrad::cgrad_v(lhs, ls.RI, dof, Val, R);
       }
@@ -138,8 +135,11 @@ void fsils_solve(FSILS_lhsType& lhs, FSILS_lsType& ls, const int dof, Array<doub
 
     case LinearSolverType::LS_TYPE_BICGS:
       if (dof == 1) {
-         throw std::runtime_error("FSILS: BICGSS is not implemented");
-        //CALL BICGSS(lhs, ls.RI, Val, R)
+        auto Valv = Val.row(0);
+        auto Rv = R.row(0);
+        bicgs::bicgss(lhs, ls.RI, Valv, Rv);
+        Val.set_row(0,Valv);
+        R.set_row(0,Rv);
       } else {
         bicgs::bicgsv(lhs, ls.RI, dof, Val, R);
       }

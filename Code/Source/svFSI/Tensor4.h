@@ -6,10 +6,7 @@
 
 #define Tensor4_check_enabled
 
-//--------
-// Tensor4 
-//--------
-// The Tensor4 template class implements a simple interface to 4th order tensors.
+/// @brief The Tensor4 template class implements a simple interface to 4th order tensors.
 //
 template<typename T>
 class Tensor4 

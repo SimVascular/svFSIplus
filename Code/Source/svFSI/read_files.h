@@ -6,13 +6,13 @@
 
 #include <string>
 
+/// @brief Define some types used to pass data to functions.
+///
+/// \todo [TODO:DaveP] maxOutput=5 is is defined in consts but in the Fortran READEQ
+/// subroutine is defined as maxOutput=22.
+//
 namespace read_files_ns {
 
-  // Define some types used to pass data to functions.
-  //
-  // [TODO:DaveP] maxOutput=5 is is defined in consts but in the Fortran READEQ
-  // subroutine is defined as maxOutput=22.
-  //
   const int maxOutput = 22;
   using EquationNdop = std::array<int, 4>;
   using EquationOutputs = std::array<consts::OutputType, maxOutput>;

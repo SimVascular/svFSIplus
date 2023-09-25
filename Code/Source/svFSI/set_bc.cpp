@@ -21,10 +21,6 @@
 
 namespace set_bc {
 
-//-----------------
-// calc_der_cpl_bc
-//-----------------
-//
 void calc_der_cpl_bc(ComMod& com_mod, const CmMod& cm_mod)
 {
   using namespace consts;
@@ -153,10 +149,7 @@ void calc_der_cpl_bc(ComMod& com_mod, const CmMod& cm_mod)
   }
 }
 
-//---------------
-// cplBC_Integ_X
-//---------------
-// Interface to call 0D code (cplBC)
+/// @brief Interface to call 0D code (cplBC)
 // 
 void cplBC_Integ_X(ComMod& com_mod, const CmMod& cm_mod, const bool RCRflag)
 {
@@ -237,12 +230,9 @@ void cplBC_Integ_X(ComMod& com_mod, const CmMod& cm_mod, const bool RCRflag)
   }
 }
 
-//---------------
-// genBC_Integ_X
-//---------------
-// Interface to call 0D code (genBC/gcode)
-//
-// [NOTE] not fully implemented.
+/// @brief Interface to call 0D code (genBC/gcode)
+///
+/// \todo [NOTE] not fully implemented.
 //
 void genBC_Integ_X(ComMod& com_mod, const CmMod& cm_mod, const std::string& genFlag)
 {
@@ -327,10 +317,6 @@ void genBC_Integ_X(ComMod& com_mod, const CmMod& cm_mod, const std::string& genF
 
 }
 
-//-------------
-// RCR_Integ_X
-//-------------
-// 
 void RCR_Integ_X(ComMod& com_mod, const CmMod& cm_mod, int istat)
 {
   using namespace consts;
@@ -420,14 +406,11 @@ void RCR_Integ_X(ComMod& com_mod, const CmMod& cm_mod, int istat)
 
 }
 
-//----------
-// rcr_init
-//----------
-// Initialize RCR variables (Xo) from flow field or using user-
-// provided input. This subroutine is called only when the simulation
-// is not restarted.
-//
-// Replaces 'SUBROUTINE RCRINIT()'
+/// @brief Initialize RCR variables (Xo) from flow field or using user-
+/// provided input. This subroutine is called only when the simulation
+/// is not restarted.
+///
+/// Replaces 'SUBROUTINE RCRINIT()'
 //
 void rcr_init(ComMod& com_mod, const CmMod& cm_mod)
 {
@@ -462,10 +445,7 @@ void rcr_init(ComMod& com_mod, const CmMod& cm_mod)
   }
 }
 
-//------------
-// set_bc_cmm
-//------------
-// Below defines the SET_BC methods for the Coupled Momentum Method (CMM)
+/// @brief Below defines the SET_BC methods for the Coupled Momentum Method (CMM)
 //
 void set_bc_cmm(ComMod& com_mod, const CmMod& cm_mod, const Array<double>& Ag, const Array<double>& Dg ) 
 {
@@ -492,10 +472,6 @@ void set_bc_cmm(ComMod& com_mod, const CmMod& cm_mod, const Array<double>& Ag, c
   }
 }
 
-//--------------
-// set_bc_cmm_l
-//--------------
-//
 void set_bc_cmm_l(ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, const Array<double>& Ag, const Array<double>& Dg ) 
 {
   using namespace consts;
@@ -553,11 +529,7 @@ void set_bc_cmm_l(ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, con
 
 }
 
-//------------
-// set_bc_cpl 
-//------------
-//
-// Reproduces the Fortran 'SETBCCPL()' subrotutine.
+/// @brief Reproduces the Fortran 'SETBCCPL()' subrotutine.
 //
 void set_bc_cpl(ComMod& com_mod, CmMod& cm_mod)
 {
@@ -624,23 +596,20 @@ void set_bc_cpl(ComMod& com_mod, CmMod& cm_mod)
 
 }
 
-//------------
-// set_bc_dir
-//------------
-// Apply Dirichlet BCs strongly.
-//
-// Parameters
-//   lA - New time derivative of variables (An)
-//   lY - New variables (Yn)
-//   lD - New integrated variables (Dn)
-//
-// Modfies:
-//   lA(tDof, tnNo)
-//   lY(tDof, tnNo)
-//   lD(tDof, tnNo)
-//   com_mod.Ad - Time derivative of displacement
-//
-// Reproduces 'SUBROUTINE SETBCDIR(lA, lY, lD)'
+/// @brief Apply Dirichlet BCs strongly.
+///
+/// Parameters
+///   lA - New time derivative of variables (An)
+///   lY - New variables (Yn)
+///   lD - New integrated variables (Dn)
+///
+/// Modfies:
+///   lA(tDof, tnNo)
+///   lY(tDof, tnNo)
+///   lD(tDof, tnNo)
+///   com_mod.Ad - Time derivative of displacement
+///
+/// Reproduces 'SUBROUTINE SETBCDIR(lA, lY, lD)'
 //
 void set_bc_dir(ComMod& com_mod, Array<double>& lA, Array<double>& lY, Array<double>& lD)
 {
@@ -847,15 +816,11 @@ void set_bc_dir(ComMod& com_mod, Array<double>& lA, Array<double>& lY, Array<dou
 
 }
 
-//--------------
-// set_bc_dir_l
-//--------------
-//
-// Modifies:
-//   lA(lDof,lFa.nNo)
-//   lY(lDof,lFa.nNo)
-//
-// Reproduces 'SUBROUTINE SETBCDIRL(lBc, lFa, lA, lY, lDof)'
+/// Modifies:
+///   lA(lDof,lFa.nNo)
+///   lY(lDof,lFa.nNo)
+///
+/// Reproduces 'SUBROUTINE SETBCDIRL(lBc, lFa, lA, lY, lDof)'
 //
 void set_bc_dir_l(ComMod& com_mod, const bcType& lBc, const faceType& lFa, Array<double>& lA, Array<double>& lY, int lDof)
 {
@@ -917,10 +882,7 @@ void set_bc_dir_l(ComMod& com_mod, const bcType& lBc, const faceType& lFa, Array
   }
 }
 
-//--------------
-// set_bc_dir_w
-//--------------
-// Weak treatment of Dirichlet boundary conditions
+/// @brief Weak treatment of Dirichlet boundary conditions
 //
 void set_bc_dir_w(ComMod& com_mod, const Array<double>& Yg, const Array<double>& Dg)
 {
@@ -940,10 +902,7 @@ void set_bc_dir_w(ComMod& com_mod, const Array<double>& Yg, const Array<double>&
   }
 }
 
-//---------------
-// set_bc_dir_wl
-//---------------
-// Reproduces Fortran 'SETBCDIRWL'.
+/// @brief Reproduces Fortran 'SETBCDIRWL'.
 //
 void set_bc_dir_wl(ComMod& com_mod, const bcType& lBc, const mshType& lM, const faceType& lFa, const Array<double>& Yg, const Array<double>& Dg)
 {
@@ -1049,7 +1008,7 @@ void set_bc_dir_wl(ComMod& com_mod, const bcType& lBc, const mshType& lM, const 
   Array3<double> lK(dof*dof,eNoN,eNoN);
   Array<double> xbl(nsd,eNoNb), ubl(nsd,eNoNb);
 
-  // Loop over all the elements of the face and construct residue and
+  // Loop over all the elements of the face and construct residual and
   // tangent matrices
   //
 
@@ -1061,7 +1020,7 @@ void set_bc_dir_wl(ComMod& com_mod, const bcType& lBc, const mshType& lM, const 
       throw std::runtime_error("[set_bc_dir_wl] Weakly applied Dirichlet BC is allowed for fluid phys only");
     }
 
-    // Initialize local residue and stiffness
+    // Initialize local residual and stiffness
     lR = 0.0;
     lK = 0.0;
 
@@ -1178,10 +1137,7 @@ void set_bc_dir_wl(ComMod& com_mod, const bcType& lBc, const mshType& lM, const 
   }
 }
 
-//------------
-// set_bc_neu
-//------------
-// Set outlet BCs.
+/// @brief Set outlet BCs.
 //
 void set_bc_neu(ComMod& com_mod, const CmMod& cm_mod, const Array<double>& Yg, const Array<double>& Dg)
 {
@@ -1221,10 +1177,7 @@ void set_bc_neu(ComMod& com_mod, const CmMod& cm_mod, const Array<double>& Yg, c
   }
 }
 
-//--------------
-// set_bc_neu_l
-//--------------
-// Set Neumann BC
+/// @brief Set Neumann BC
 //
 void set_bc_neu_l(ComMod& com_mod, const CmMod& cm_mod, const bcType& lBc, const faceType& lFa, const Array<double>& Yg, const Array<double>& Dg) 
 {
@@ -1329,10 +1282,7 @@ void set_bc_neu_l(ComMod& com_mod, const CmMod& cm_mod, const bcType& lBc, const
   }
 }
 
-//-------------
-// set_bc_rbnl
-//-------------
-// Set Robin BC
+/// @brief Set Robin BC
 //
 void set_bc_rbnl(ComMod& com_mod, const faceType& lFa, const double ks, const double cs, const bool isN, 
   const Array<double>& Yg, const Array<double>& Dg)
@@ -1552,10 +1502,7 @@ void set_bc_rbnl(ComMod& com_mod, const faceType& lFa, const double ks, const do
 
 }
 
-//---------------
-// set_bc_trac_l
-//---------------
-// Set Traction BC
+/// @brief Set Traction BC
 //
 void set_bc_trac_l(ComMod& com_mod, const CmMod& cm_mod, const bcType& lBc, const faceType& lFa) 
 {
@@ -1670,18 +1617,14 @@ void set_bc_trac_l(ComMod& com_mod, const CmMod& cm_mod, const bcType& lBc, cons
   }
 }
 
-//------------------
-// set_bc_undef_neu
-//------------------
-//
-// Treat Neumann boundaries that are not deforming.
-//
-// Leave the row corresponding to the master node of the owner
-// process in the LHS matrix and the residue vector untouched. For
-// all the other nodes of the face, set the residue to be 0 for
-// velocity dofs. Zero out all the elements of corresponding rows of
-// the LHS matrix. Make the diagonal elements of the LHS matrix equal
-// to 1 and the column entry corresponding to the master node, -1
+/// @brief Treat Neumann boundaries that are not deforming.
+///
+/// Leave the row corresponding to the master node of the owner
+/// process in the LHS matrix and the residual vector untouched. For
+/// all the other nodes of the face, set the residual to be 0 for
+/// velocity dofs. Zero out all the elements of corresponding rows of
+/// the LHS matrix. Make the diagonal elements of the LHS matrix equal
+/// to 1 and the column entry corresponding to the master node, -1
 //
 void set_bc_undef_neu(ComMod& com_mod)
 {
@@ -1701,10 +1644,7 @@ void set_bc_undef_neu(ComMod& com_mod)
   }
 }
 
-//--------------------
-// set_bc_undef_neu_l
-//--------------------
-// Modifies: com_mod.R, com_mod.Val
+/// Modifies: com_mod.R, com_mod.Val
 //
 void set_bc_undef_neu_l(ComMod& com_mod, const bcType& lBc, const faceType& lFa)
 {

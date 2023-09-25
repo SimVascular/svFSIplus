@@ -2,7 +2,7 @@
 #include <map>
 #include <tuple>
 
-// The 'equation_dof_map' map defined here sets equation dof and sym data members. 
+/// @brief The 'equation_dof_map' map defined here sets equation dof and sym data members. 
 //
 using EquationDofType = std::tuple<int, std::string>; 
 

@@ -22,11 +22,7 @@
 
 namespace ns_solver {
 
-//--------
-// bc_pre
-//--------
-//
-// Modifies: lhs.face[].nS
+/// @brief Modifies: lhs.face[].nS
 //
 void bc_pre(fsi_linear_solver::FSILS_lhsType& lhs, const int nsd, const int dof, const int nNo, const int mynNo) 
 {
@@ -59,12 +55,9 @@ void bc_pre(fsi_linear_solver::FSILS_lhsType& lhs, const int nsd, const int dof,
   }
 }
 
-//--------
-// depart
-//--------
-// Store sections of the 'Val' into separate arrays: 'Gt', 'mK', etc.
-//
-// Modifies: no globals
+/// @brief Store sections of the 'Val' into separate arrays: 'Gt', 'mK', etc.
+///
+/// Modifies: no globals
 //
 void depart(fsi_linear_solver::FSILS_lhsType& lhs, const int nsd, const int dof, const int nNo, const int nnz, 
     const Array<double>& Val, Array<double>& Gt, Array<double>& mK, Array<double>& mG, Array<double>& mD, Vector<double>& mL)
@@ -136,14 +129,11 @@ void depart(fsi_linear_solver::FSILS_lhsType& lhs, const int nsd, const int dof,
   }
 }
 
-//-----------
-// ns_solver
-//-----------
-// This routine is mainley intended for solving incompressible NS or
-// FSI equations with a form of AU=R, in which A = [K D;-G L] and
-// G = -D^t
-//
-// Ri (dof, lhs.nNo )
+/// @brief This routine is mainley intended for solving incompressible NS or
+/// FSI equations with a form of AU=R, in which A = [K D;-G L] and
+/// G = -D^t
+///
+/// Ri (dof, lhs.nNo )
 //
 void ns_solver(fsi_linear_solver::FSILS_lhsType& lhs, fsi_linear_solver::FSILS_lsType& ls, const int dof, const Array<double>& Val, Array<double>& Ri)
 {
@@ -270,19 +260,19 @@ void ns_solver(fsi_linear_solver::FSILS_lhsType& lhs, fsi_linear_solver::FSILS_l
 
     // P = D*U
     //
-    auto P_col = P.col(i);
-    spar_mul::fsils_spar_mul_vs(lhs, lhs.rowPtr, lhs.colPtr, nsd, mD, U.slice(i), P_col);
-    P.set_col(i, P_col);
+    auto P_col = P.rcol(i);
+    spar_mul::fsils_spar_mul_vs(lhs, lhs.rowPtr, lhs.colPtr, nsd, mD, U.rslice(i), P_col);
+    //P.set_col(i, P_col);
 
     // P = Rc - P
     //
-    P.set_col(i, Rc - P.col(i));
+    P.set_col(i, Rc - P_col);
 
     // P = [L + G^t*G]^-1*P
     //
-    P_col = P.col(i);
+    P_col = P.rcol(i);
     cgrad::schur(lhs, ls.CG, nsd, Gt, mG, mL, P_col);
-    P.set_col(i, P_col);
+    //P.set_col(i, P_col);
 
     // MU1 = G*P
     //
@@ -290,10 +280,10 @@ void ns_solver(fsi_linear_solver::FSILS_lhsType& lhs, fsi_linear_solver::FSILS_l
     dmsg << "i: " << i+1;
     dmsg << "iB: " << iB+1;
     #endif
-    P_col = P.col(i);
-    auto MU_iB = MU.slice(iB);
+    P_col = P.rcol(i);
+    auto MU_iB = MU.rslice(iB);
     spar_mul::fsils_spar_mul_sv(lhs, lhs.rowPtr, lhs.colPtr, nsd, mG, P_col, MU_iB);
-    MU.set_slice(iB, MU_iB); 
+    //MU.set_slice(iB, MU_iB); 
 
     // MU2 = Rm - G*P
     //
@@ -302,29 +292,29 @@ void ns_solver(fsi_linear_solver::FSILS_lhsType& lhs, fsi_linear_solver::FSILS_l
     // U = inv(K) * [Rm - G*P]
     //
     lhs.debug_active = true;
-    auto U_i = U.slice(i);
+    auto U_i = U.rslice(i);
     gmres::gmres(lhs, ls.GM, nsd, mK, MU.slice(iBB), U_i);
-    U.set_slice(i, U_i);
+    //U.set_slice(i, U_i);
 
     // MU2 = K*U
     //
-    auto MU_iBB = MU.slice(iBB);
-    spar_mul::fsils_spar_mul_vv(lhs, lhs.rowPtr, lhs.colPtr, nsd, mK, U.slice(i), MU_iBB);
-    MU.set_slice(iBB, MU_iBB);
+    auto MU_iBB = MU.rslice(iBB);
+    spar_mul::fsils_spar_mul_vv(lhs, lhs.rowPtr, lhs.colPtr, nsd, mK, U.rslice(i), MU_iBB);
+    //MU.set_slice(iBB, MU_iBB);
 
-    add_bc_mul::add_bc_mul(lhs, BcopType::BCOP_TYPE_ADD, nsd, U.slice(i), MU_iBB);
-    MU.set_slice(iBB, MU_iBB);
+    add_bc_mul::add_bc_mul(lhs, BcopType::BCOP_TYPE_ADD, nsd, U.rslice(i), MU_iBB);
+    //MU.set_slice(iBB, MU_iBB);
 
     // MP1 = L*P
     //
-    auto MP_iB = MP.col(iB);
-    spar_mul::fsils_spar_mul_ss(lhs, lhs.rowPtr, lhs.colPtr, mL, P.col(i), MP_iB);
-    MP.set_col(iB, MP_iB);
+    auto MP_iB = MP.rcol(iB);
+    spar_mul::fsils_spar_mul_ss(lhs, lhs.rowPtr, lhs.colPtr, mL, P.rcol(i), MP_iB);
+    //MP.set_col(iB, MP_iB);
 
     // MP2 = D*U
-    auto MP_iBB = MP.col(iBB);
-    spar_mul::fsils_spar_mul_vs(lhs, lhs.rowPtr, lhs.colPtr, nsd, mD, U.slice(i), MP_iBB);
-    MP.set_col(iBB, MP_iBB);
+    auto MP_iBB = MP.rcol(iBB);
+    spar_mul::fsils_spar_mul_vs(lhs, lhs.rowPtr, lhs.colPtr, nsd, mD, U.rslice(i), MP_iBB);
+    //MP.set_col(iBB, MP_iBB);
 
     int c = 0;
 

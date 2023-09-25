@@ -16,10 +16,7 @@
 
 namespace pc_gmres {
 
-//----------
-// pc_gmres
-//----------
-// [NOTE] Not implemented.
+/// \todo [NOTE] Not implemented.
 //
 void pc_gmres(fsi_linear_solver::FSILS_lhsType& lhs, fsi_linear_solver::FSILS_subLsType& ls, const int dof, 
     const Array<double>& Val, const Array<double>& R)

@@ -1,7 +1,3 @@
-
-// This routine applies penalty-based contact model for possible
-// contacting shell surfaces.
-
 #include "contact.h"
 
 #include "all_fun.h"
@@ -13,11 +9,10 @@
 
 namespace contact {
 
-//----------------
-// contact_forces 
-//----------------
-//
-// Reproduces Fortran CONSTRUCT_CONTACTPNLTY.
+/// @brief This routine applies penalty-based contact model for possible
+/// contacting shell surfaces.
+///
+/// Reproduces Fortran CONSTRUCT_CONTACTPNLTY.
 //
 void construct_contact_pnlty(ComMod& com_mod, CmMod& cm_mod, const Array<double>& Dg)
 {
@@ -195,7 +190,7 @@ void construct_contact_pnlty(ComMod& com_mod, CmMod& cm_mod, const Array<double>
   } // iM
 
   // Check if any node is strictly involved in contact and compute
-  // corresponding penalty forces assembled to the residue
+  // corresponding penalty forces assembled to the residual
   //
   Array<double> lR(dof,tnNo); 
   Vector<int> incNd(tnNo);

@@ -14,10 +14,6 @@
 
 namespace mat_models {
 
-//--------------
-// cc_to_voigt
-//--------------
-//
 template <size_t N>
 void cc_to_voigt(const double CC[N][N][N][N], double Dm[2*N][2*N])
 {
@@ -71,10 +67,6 @@ void cc_to_voigt(const double CC[N][N][N][N], double Dm[2*N][2*N])
   } 
 }
 
-//-----------
-// get_pk2cc
-//-----------
-//
 template <size_t N>
 void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn, const double F[N][N], const int nfd,
     const Array<double>& fl, const double ya, double S[N][N], double Dm[2*N][2*N])

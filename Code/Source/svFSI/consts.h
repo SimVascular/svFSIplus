@@ -19,38 +19,27 @@ const int maxNProp = 20;
 
 const int maxOutput = 5;
 
-// Use inf numeric values to represent a value that is not set.
+/// Use inf numeric values to represent a value that is not set.
 const int int_inf = std::numeric_limits<int>::infinity();
 const double double_inf = std::numeric_limits<double>::infinity();
 
-//----------
-// enum_int
-//-----------
-//
 template<typename T>
 int enum_int(T value)
 {
   return static_cast<int>(value);
 }
 
-//---------
-// present
-//---------
-// Check if a value is set to infinity.
-//
+
+/// Check if a value is set to infinity.
 template<typename T>
 bool present(T value)
 {
   return (value != std::numeric_limits<T>::infinity()); 
 }
 
-//---------------
-// BodyForceType
-//---------------
-// Body force types: volumetric (default), traction, Neumann
-// (pressure based), time dependence (steady, unsteady, spatially
-// varying, general)
-//
+/// @brief Body force types: volumetric (default), traction, Neumann
+/// (pressure based), time dependence (steady, unsteady, spatially
+/// varying, general)
 enum class BodyForceType 
 {
   bfType_vol = 0, 
@@ -62,32 +51,28 @@ enum class BodyForceType
   bfType_gen = 6
 };
 
-//-----------------------
-// BoundaryConditionType
-//-----------------------
-//Boundary conditions type.
-//
-// BC types are stored as bitwise values.
-//
-// boundary conditions types. Items of this list can be combined
-//
-//   BCs from imposing perspective can be Neu/Dir/per
-//
-//   BCs time dependence can be std/ustd/cpl/gen/res
-//
-//   BCs spatial distribution can be flat/para/ud
-//
-//   Beside these nodes at the boundary perimeter can be set to
-//   zero and flux through surface can be assigned instead of nodal
-//   values.
-//
-//   Dirichlet, Neumann, Traction, CMM, Robin, steady, unsteady,
-//   coupled, general (combination of ud/ustd), resistance, imposed
-//   flux, zero out perimeter, impose BC on the integral of state
-//   variable or D (instead of Y), flat profile, parabolic profile,
-//   user defined profile, backflow stabilization, BCs for shells
-//   (fixed, hinged, free, symmetric), undeforming Neu, RCR-Neu
-
+/// @brief Boundary conditions type.
+///
+/// BC types are stored as bitwise values.
+///
+/// boundary conditions types. Items of this list can be combined
+///
+///  - BCs from imposing perspective can be Neu/Dir/per
+///
+///  - BCs time dependence can be std/ustd/cpl/gen/res
+///
+///  - BCs spatial distribution can be flat/para/ud
+///
+///  - Beside these nodes at the boundary perimeter can be set to
+///    zero and flux through surface can be assigned instead of nodal
+///    values.
+///
+///  - Dirichlet, Neumann, Traction, CMM, Robin, steady, unsteady,
+///    coupled, general (combination of ud/ustd), resistance, imposed
+///    flux, zero out perimeter, impose BC on the integral of state
+///    variable or D (instead of Y), flat profile, parabolic profile,
+///    user defined profile, backflow stabilization, BCs for shells
+///    (fixed, hinged, free, symmetric), undeforming Neu, RCR-Neu
 enum class BoundaryConditionType 
 {
   bType_Dir = 0,       // Dirichlet
@@ -198,13 +183,9 @@ enum class ConstitutiveModelType
   stVol_M94 = 653
 };
 
-// Map for constitutive_model string to ConstitutiveModelType. 
+/// @brief Map for constitutive_model string to ConstitutiveModelType. 
 extern const std::map<std::string,ConstitutiveModelType> constitutive_model_name_to_type;
 
-//------------------
-// ContactModelType
-//------------------
-//
 enum class ContactModelType
 {
   cntctM_NA = 800,
@@ -212,15 +193,17 @@ enum class ContactModelType
   cntctM_potential = 802
 };
 
-// Map for model type string to ContactModelType. 
+/// @brief Map for model type string to ContactModelType. 
 extern const std::map<std::string,ContactModelType> contact_model_name_to_type;
 
-// Differenty type of coupling for cplBC. 
+/// @brief Differenty type of coupling for cplBC. 
+///
+/// \code {.f}
+/// INTEGER(KIND=IKIND), PARAMETER :: cplBC_NA = 400, cplBC_I = 401,
+/// cplBC_SI = 402, cplBC_E = 403
 //
-// INTEGER(KIND=IKIND), PARAMETER :: cplBC_NA = 400, cplBC_I = 401,
-// cplBC_SI = 402, cplBC_E = 403
-//
-// INTEGER(KIND=IKIND), PARAMETER :: cplBC_Dir = 66112, cplBC_Neu = 66113
+/// INTEGER(KIND=IKIND), PARAMETER :: cplBC_Dir = 66112, cplBC_Neu = 66113
+/// \endcode
 //
 enum class CplBCType 
 {
@@ -232,13 +215,10 @@ enum class CplBCType
   cplBC_SI = 402,      // semi-implicit
 };
 
-// Map for cplBC type to CplBCType. 
+/// @brief Map for cplBC type to CplBCType. 
 extern const std::map<std::string,CplBCType> cplbc_name_to_type;
 
-//-------------
-// ElementType
-//-------------
-// Element type replicating eType_NA, eType_PNT, etc. 
+/// @brief Element type replicating eType_NA, eType_PNT, etc. 
 //
 enum class ElementType 
 {
@@ -271,16 +251,13 @@ std::ostream& operator<<(typename std::enable_if<std::is_enum<T>::value, std::os
 }
 */
 
-//--------------
-// EquationType
-//--------------
-// Types of equations that are included in this solver.
-//
-//  Fluid equation (Navier-Stokes), nonlinear structure (pure d), heat
-//  equation, linear elasticity, heat in fluid (advection-diffusion),
-//  fluid-structure-interaction, mesh motion, Shell mechanics,
-//  Coupled-Momentum-Method, Cardiac Electro-Physiology,
-//  Nonlinear structure (v-p), Stokes equations
+/// @brief Types of equations that are included in this solver.
+///
+///  Fluid equation (Navier-Stokes), nonlinear structure (pure d), heat
+///  equation, linear elasticity, heat in fluid (advection-diffusion),
+///  fluid-structure-interaction, mesh motion, Shell mechanics,
+///  Coupled-Momentum-Method, Cardiac Electro-Physiology,
+///  Nonlinear structure (v-p), Stokes equations
 //
 enum class EquationType 
 {
@@ -314,23 +291,15 @@ constexpr auto Equation_ustruct = EquationType::phys_ustruct;
 
 extern const std::map<std::string,EquationType> equation_name_to_type;
 
-//-------------------
-// MeshGeneratorType
-//-------------------
-//
 enum class MeshGeneratorType
 {
   RMSH_TETGEN = 1,
   RMSH_MESHSIM = 2
 };
 
-// Map for string to MeshGeneratorType. 
+/// Map for string to MeshGeneratorType. 
 extern const std::map<std::string,MeshGeneratorType> mesh_generator_name_to_type;
 
-//------------
-// OutputType
-//------------
-//
 enum class OutputType 
 {
   outGrp_NA = 500, 
@@ -390,10 +359,7 @@ enum class OutputType
   out_CGInv1 = 572
 };
 
-//---------------------
-// PhysicalProperyType
-//---------------------
-// Possible physical properties. Current maxNPror is 20.
+/// @brief Possible physical properties. Current maxNPror is 20.
 //
 enum class PhysicalProperyType 
 {
@@ -415,10 +381,6 @@ enum class PhysicalProperyType
   ctau_C = 15
 };
 
-//--------------------
-// PreconditionerType
-//--------------------
-//
 enum class PreconditionerType 
 {
   PREC_NONE = 700,
@@ -435,16 +397,11 @@ enum class PreconditionerType
   PREC_PETSC = 713
 };
 
-// Map for preconditioner type string to pair (PreconditionerType enum, bool(true if Trilinos precondition)). 
-//  
+/// Map for preconditioner type string to pair (PreconditionerType enum, bool(true if Trilinos precondition)). 
 using PreconditionerMapType = std::pair<PreconditionerType,bool>;
 //extern const std::map<std::string,PreconditionerType> preconditioner_name_to_type;
 extern const std::map<std::string,PreconditionerMapType> preconditioner_name_to_type;
 
-//------------
-// SolverType
-//------------
-//
 enum class SolverType
 {
   lSolver_NA = 799,
@@ -454,13 +411,9 @@ enum class SolverType
   lSolver_BICGS = 795
 };
 
-// Map for solver type string to SolverType enum. 
+/// Map for solver type string to SolverType enum. 
 extern const std::map<std::string,SolverType> solver_name_to_type;
 
-//-------------------------
-// FluidViscosityModelType
-//-------------------------
-//
 enum class FluidViscosityModelType 
 {
   viscType_CY = 697, 
@@ -469,10 +422,10 @@ enum class FluidViscosityModelType
   viscType_NA = 699
 };
 
-// Map for fluid viscosity model string to FluidViscosityModelType. 
+/// Map for fluid viscosity model string to FluidViscosityModelType. 
 extern const std::map<std::string,FluidViscosityModelType> fluid_viscosity_model_name_to_type;
 
-// Template for printing enum class types as an int.
+/// Template for printing enum class types as an int.
 template<typename T>
 std::ostream& operator<<(typename std::enable_if<std::is_enum<T>::value, std::ostream>::type& stream, const T& e)
 {

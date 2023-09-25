@@ -1,0 +1,25 @@
+# This workflow builds and deploys the html documentation
+name: Documentation
+on: [push, pull_request]
+permissions:
+  contents: write
+jobs:
+  documentation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build doxygen documentation
+        run: |
+          sudo apt install -y doxygen
+          doxygen Documentation/Doxyfile
+      - name: Save documentation
+        uses: actions/upload-artifact@v3
+        with:
+          name: documentation
+          path: Documentation/build/html
+      - name: Deploy documentation
+        if: github.ref == 'refs/heads/main'
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: Documentation/build/html

@@ -5,10 +5,7 @@
 
 namespace omp_la {
 
-//-----------
-// omp_mul_s
-//-----------
-// Reproduces 'SUBROUTINE OMPMULS (nNo, r, U)'.
+/// @brief Reproduces 'SUBROUTINE OMPMULS (nNo, r, U)'.
 //
 void omp_mul_s(const int nNo, const double r, Vector<double>& U)
 {
@@ -17,10 +14,7 @@ void omp_mul_s(const int nNo, const double r, Vector<double>& U)
   }
 }
 
-//-----------
-// omp_mul_v
-//-----------
-// Reproduces 'SUBROUTINE OMPMULV (dof, nNo, r, U)'.
+/// @brief Reproduces 'SUBROUTINE OMPMULV (dof, nNo, r, U)'.
 //
 void omp_mul_v(const int dof, const int nNo, const double r, Array<double>& U)
 {
@@ -65,10 +59,7 @@ void omp_mul_v(const int dof, const int nNo, const double r, Array<double>& U)
   }
 }
 
-//-----------
-// omp_sum_s 
-//-----------
-// Reproduces 'SUBROUTINE OMPSUMS (nNo, r, U, V)'.
+/// @brief Reproduces 'SUBROUTINE OMPSUMS (nNo, r, U, V)'.
 //
 void omp_sum_s(const int nNo, const double r, Vector<double>& U, const Vector<double>& V)
 {
@@ -77,10 +68,7 @@ void omp_sum_s(const int nNo, const double r, Vector<double>& U, const Vector<do
   }
 }
 
-//-----------
-// omp_sum_v 
-//-----------
-// Reproduces 'SUBROUTINE OMPSUMV (dof, nNo, r, U, V)'.
+/// @brief Reproduces 'SUBROUTINE OMPSUMV (dof, nNo, r, U, V)'.
 //
 void omp_sum_v(const int dof, const int nNo, const double r, Array<double>& U, const Array<double>& V)
 {

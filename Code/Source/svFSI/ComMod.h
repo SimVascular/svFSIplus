@@ -27,10 +27,7 @@
 #include <string>
 #include <vector>
 
-//--------
-// fcType
-//--------
-// Fourier coefficients that are used to specify unsteady BCs
+/// @brief Fourier coefficients that are used to specify unsteady BCs
 //
 class fcType
 {
@@ -66,10 +63,7 @@ class fcType
     Array<double> r;
 };
 
-//--------
-// MBType
-//--------
-// Moving boundary data structure (used for general BC)
+/// @brief Moving boundary data structure (used for general BC)
 //
 class MBType
 {
@@ -93,10 +87,6 @@ class MBType
     Array3<double> d;
 };
 
-//---------
-// rcrType
-//---------
-//
 class rcrType
 {
   public:
@@ -117,12 +107,7 @@ class rcrType
     double Xo = 0.0;
 };
 
-
-
-//--------
-// bcType
-//--------
-// Boundary condition data type
+/// @brief Boundary condition data type
 //
 class bcType
 {
@@ -200,10 +185,7 @@ class bcType
     rcrType RCR;
 };
 
-//--------
-// bsType
-//--------
-// Class storing data for B-Splines.
+/// @brief Class storing data for B-Splines.
 //
 class bsType 
 {
@@ -231,10 +213,7 @@ class bsType
     Vector<double> xi;
 };
 
-//--------
-// fsType
-//--------
-// Function spaces (basis) type.
+/// @brief Function spaces (basis) type.
 //
 class fsType {
 
@@ -327,10 +306,7 @@ class fibStrsType
     fcType gt;
 };
 
-//-------------
-// stModelType
-//-------------
-// Structural domain type
+/// @brief Structural domain type
 //
 class stModelType
 {
@@ -377,10 +353,7 @@ class stModelType
     fibStrsType Tf;
 };
 
-//---------------
-// viscModelType
-//---------------
-// Fluid viscosity model type
+/// @brief Fluid viscosity model type
 //
 class viscModelType
 {
@@ -405,8 +378,9 @@ class viscModelType
     double n = 0.0;
 };
 
-//     Domain type is to keep track with element belong to which domain
-//     and also different physical quantities
+/// @brief Domain type is to keep track with element belong to which domain
+/// and also different physical quantities
+//
 class dmnType
 {
   public:
@@ -437,10 +411,7 @@ class dmnType
     viscModelType visc;
 };
 
-//---------
-// adjType
-//---------
-// Mesh adjacency (neighboring element for each element)
+/// @brief Mesh adjacency (neighboring element for each element)
 //
 class adjType
 {
@@ -458,8 +429,9 @@ class adjType
 
 };
 
-// Tracer type used for immersed boundaries. Identifies traces of
-// nodes and integration points on background mesh elements
+/// @brief Tracer type used for immersed boundaries. Identifies traces of
+/// nodes and integration points on background mesh elements
+//
 class traceType
 {
   public:
@@ -493,10 +465,7 @@ class traceType
     Array<double> xiG;
 };
 
-//----------
-// faceType
-//----------
-// The face type containing mesh at boundary
+/// @brief The face type containing mesh at boundary
 //
 class faceType
 {
@@ -592,7 +561,8 @@ class faceType
     double qmTRI3 = 2.0/3.0;
 };
 
-// Declared type for outputed variables
+/// @brief Declared type for outputed variables
+//
 class outputType
 {
   public:
@@ -615,57 +585,58 @@ class outputType
 };
 
 
-// Linear system of equations solver type
+/// @brief Linear system of equations solver type
+//
 class lsType
 {
   public:
 
-    // LS solver                     (IN)
+    /// @brief LS solver                     (IN)
     consts::SolverType LS_type = consts::SolverType::lSolver_NA;
 
-    // Preconditioner                (IN)
+    /// @brief Preconditioner                (IN)
     consts::PreconditionerType PREC_Type = consts::PreconditionerType::PREC_NONE;
 
-    // Successful solving            (OUT)
+    /// @brief Successful solving            (OUT)
     bool suc = false;
 
-    // Maximum iterations            (IN)
+    /// @brief Maximum iterations            (IN)
     int mItr = 1000;
 
-    // Space dimension               (IN)
+    /// @brief Space dimension               (IN)
     int sD = 0;
 
-    // Number of iteration           (OUT)
+    /// @brief Number of iteration           (OUT)
     int itr = 0;
 
-    // Number of Ax multiple         (OUT)
+    /// @brief Number of Ax multiple         (OUT)
     int cM = 0;
 
-    // Number of |x| norms           (OUT)
+    /// @brief Number of |x| norms           (OUT)
     int cN = 0;
 
-    // Number of <x.y> dot products  (OUT)
+    /// @brief Number of <x.y> dot products  (OUT)
     int cD = 0;
 
-    // Only for data alignment       (-)
+    /// @brief Only for data alignment       (-)
     int reserve = 0;
 
-    // Absolute tolerance            (IN)
+    /// @brief Absolute tolerance            (IN)
     double absTol = 1e-08;
 
-    // Relative tolerance            (IN)
+    /// @brief Relative tolerance            (IN)
     double relTol = 0.0;
 
-    // Initial norm of residual      (OUT)
+    /// @brief Initial norm of residual      (OUT)
     double iNorm = 0.0;
 
-    // Final norm of residual        (OUT)
+    /// @brief Final norm of residual        (OUT)
     double fNorm = 0.0;
 
-    // Res. rduction in last itr.    (OUT)
+    /// @brief Res. rduction in last itr.    (OUT)
     double dB = 0.0;
 
-    // Calling duration              (OUT)
+    /// @brief Calling duration              (OUT)
     double callD = 0.0;
 
     //Configuration file for linear solvers (Trilinos, PETSc)
@@ -673,7 +644,8 @@ class lsType
 };
 
 
-// Contact model type
+/// @brief Contact model type
+//
 class cntctModelType
 {
   public:
@@ -730,67 +702,60 @@ class cplFaceType
     rcrType RCR;
 };
 
-
-//-----------
-// cplBCType
-//-----------
-// For coupled 0D-3D problems
+/// @brief For coupled 0D-3D problems
 //
 class cplBCType
 {
   public:
     cplBCType();
-    // Is multi-domain active
+    /// @brief Is multi-domain active
     bool coupled = false;
 
-    //  Whether to use genBC
+    /// @brief Whether to use genBC
     bool useGenBC = false;
 
-    //  Whether to initialize RCR from flow data
+    /// @brief Whether to initialize RCR from flow data
     bool initRCR = false;
 
-    //  Number of coupled faces
+    /// @brief Number of coupled faces
     int nFa = 0;
 
-    //  Number of unknowns in the 0D domain
+    /// @brief Number of unknowns in the 0D domain
     int nX = 0;
 
-    //  Number of output variables addition to nX
+    /// @brief Number of output variables addition to nX
     int nXp = 0;
 
-    //  Implicit/Explicit/Semi-implicit schemes
+    /// @brief Implicit/Explicit/Semi-implicit schemes
     consts::CplBCType schm = consts::CplBCType::cplBC_NA;
     //int schm = cplBC_NA;
 
-    //  Path to the 0D code binary file
+    /// @brief Path to the 0D code binary file
     std::string binPath;
 
-    //  File name for communication between 0D and 3D
+    /// @brief File name for communication between 0D and 3D
     std::string commuName;
     //std::string commuName = ".CPLBC_0D_3D.tmp";
 
-    //  The name of history file containing "X"
+    /// @brief The name of history file containing "X"
     std::string saveName;
     //std::string(LEN=stdL) :: saveName = "LPN.dat";
 
-    //  New time step unknowns in the 0D domain
+    /// @brief New time step unknowns in the 0D domain
     Vector<double> xn;
 
-    //  Old time step unknowns in the 0D domain
+    /// @brief Old time step unknowns in the 0D domain
     Vector<double> xo;
 
-    //  Output variables to be printed
+    /// @brief Output variables to be printed
     Vector<double> xp;
 
-    //  Data structure used for communicating with 0D code
+    /// @brief Data structure used for communicating with 0D code
     std::vector<cplFaceType> fa;
 };
 
-//---------
-// mshType
-//---------
-// This is the container for a mesh or NURBS patch, those specific
-// to NURBS are noted
+/// @brief This is the container for a mesh or NURBS patch, those specific
+/// to NURBS are noted
 //
 class mshType
 {
@@ -816,155 +781,155 @@ class mshType
       //std::cout << "- - - - -  mshType dtor - - - - -   dname: " << dname << std::endl;
     };
 
-    // Whether the shape function is linear
+    /// @brief Whether the shape function is linear
     bool lShpF = false;
 
-    // Whether the mesh is shell
+    /// @brief Whether the mesh is shell
     bool lShl = false;
 
-    // Whether the mesh is fibers (Purkinje)
+    /// @brief Whether the mesh is fibers (Purkinje)
     bool lFib = false;
 
-    // Element type
+    /// @brief Element type
     consts::ElementType eType = consts::ElementType::NA;
     //int eType = eType_NA
 
-    // Number of nodes (control points) in a single element
+    /// @brief Number of nodes (control points) in a single element
     int eNoN = 0;
 
-    // Global number of elements (knot spans)
+    /// @brief Global number of elements (knot spans)
     int gnEl = 0;
 
-    // Global number of nodes (control points)
+    /// @brief Global number of nodes (control points)
     int gnNo = 0;
 
-    // Number of element face. Used for reading Gambit mesh files
+    /// @brief Number of element face. Used for reading Gambit mesh files
     int nEf = 0;
 
-    // Number of elements (knot spans)
+    /// @brief Number of elements (knot spans)
     int nEl = 0;
 
-    // Number of faces
+    /// @brief Number of faces
     int nFa = 0;
 
-    // Number of function spaces
+    /// @brief Number of function spaces
     int nFs = 0;
 
-    // Number of Gauss points for integration
+    /// @brief Number of Gauss points for integration
     int nG = 0;
 
-    // Number of nodes (control points) for 2D elements?
+    /// @brief Number of nodes (control points) for 2D elements?
     int nNo = 0;
 
-    // Number of elements sample points to be outputs (NURBS)
+    /// @brief Number of elements sample points to be outputs (NURBS)
     int nSl = 0;
 
-    // The element type recognized by VTK format
+    /// @brief The element type recognized by VTK format
     int vtkType = 0;
 
-    // Number of fiber directions
+    /// @brief Number of fiber directions
     int nFn = 0;
 
-    // Mesh scale factor
+    /// @brief Mesh scale factor
     double scF = 0.0;
 
-    // IB: Mesh size parameter
+    /// @brief IB: Mesh size parameter
     double dx = 0.0;
 
-    // Element distribution between processors
+    /// @brief Element distribution between processors
     Vector<int> eDist;
 
-    // Element domain ID number
+    /// @brief Element domain ID number
     Vector<int> eId;
 
-    // Global nodes maping nNo --> tnNo
+    /// @brief Global nodes maping nNo --> tnNo
     Vector<int> gN;
 
-    // GLobal projected nodes mapping projected -> unprojected mapping
+    /// @brief GLobal projected nodes mapping projected -> unprojected mapping
     Vector<int> gpN;
 
-    // Global connectivity array mappig eNoN,nEl --> gnNo
+    /// @brief Global connectivity array mappig eNoN,nEl --> gnNo
     Array<int> gIEN;
 
-    // The connectivity array mapping eNoN,nEl --> nNo
+    /// @brief The connectivity array mapping eNoN,nEl --> nNo
     Array<int> IEN;
 
-    // gIEN mapper from old to new
+    /// @brief gIEN mapper from old to new
     Vector<int> otnIEN;
 
-    // Local knot pointer (NURBS)
+    /// @brief Local knot pointer (NURBS)
     Array<int> INN;
 
-    // Global to local maping tnNo --> nNo
+    /// @brief Global to local maping tnNo --> nNo
     Vector<int> lN;
 
-    // Shells: extended IEN array with neighboring nodes
+    /// @brief Shells: extended IEN array with neighboring nodes
     Array<int> eIEN;
 
-    // Shells: boundary condition variable
+    /// @brief Shells: boundary condition variable
     Array<int> sbc;
 
-    // IB: Whether a cell is a ghost cell or not
+    /// @brief IB: Whether a cell is a ghost cell or not
     Vector<int> iGC;
 
-    // Control points weights (NURBS)
+    /// @brief Control points weights (NURBS)
     Vector<double> nW;
 
-    // Gauss weights
+    /// @brief Gauss weights
     Vector<double> w;
 
-    // Gauss integration points in parametric space
+    /// @brief Gauss integration points in parametric space
     Array<double> xi;
 
-    // Bounds on parameteric coordinates
+    /// @brief Bounds on parameteric coordinates
     Array<double> xib;
 
-    // Position coordinates
+    /// @brief Position coordinates
     Array<double> x;
 
-    // Parent shape function
+    /// @brief Parent shape function
     Array<double> N;
 
-    // Shape function bounds
+    /// @brief Shape function bounds
     Array<double> Nb;
 
-    // Normal vector to each nodal point (for Shells)
+    /// @brief Normal vector to each nodal point (for Shells)
     Array<double> nV;
 
-    // Fiber orientations stored at the element level - used for
-    // electrophysiology and solid mechanics
+    /// @brief Fiber orientations stored at the element level - used for
+    /// electrophysiology and solid mechanics
     Array<double> fN;
 
-    // Parent shape functions gradient
-    // double Nx(:,:,:)
+    /// @brief Parent shape functions gradient
+    /// double Nx(:,:,:)
     Array3<double> Nx;
 
-    // Second derivatives of shape functions - used for shells & IGA
-    // davep double Nxx(:,:,:)
+    /// @brief Second derivatives of shape functions - used for shells & IGA
+    /// davep double Nxx(:,:,:)
     Array3<double> Nxx;
 
-    // Mesh Name
+    /// @brief Mesh Name
     std::string name;
 
-    // Mesh nodal adjacency
+    /// @brief Mesh nodal adjacency
     adjType nAdj;
 
-    // Mesh element adjacency
+    /// @brief Mesh element adjacency
     adjType eAdj;
 
-    // Function spaces (basis)
+    /// @brief Function spaces (basis)
     std::vector<fsType> fs;
 
-    // BSpline in different directions (NURBS)
+    /// @brief BSpline in different directions (NURBS)
     std::vector<bsType> bs;
 
-    // Faces are stored in this variable
+    /// @brief Faces are stored in this variable
     std::vector<faceType> fa;
 
-    // IB: tracers
+    /// @brief IB: tracers
     traceType trc;
 
-    // TET4 quadrature modifier
+    /// @brief TET4 quadrature modifier
     double qmTET4 = (5.0+3.0*sqrt(5.0))/20.0;
 
   private:
@@ -973,10 +938,7 @@ class mshType
 
 };
 
-//--------
-// eqType
-//--------
-// Equation type
+/// @brief Equation type
 //
 class eqType
 {
@@ -984,128 +946,124 @@ class eqType
     eqType();
     ~eqType();
 
-    // Should be satisfied in a coupled/uncoupled fashion
+    /// @brief Should be satisfied in a coupled/uncoupled fashion
     bool coupled = false;
     //bool coupled = .TRUE.
 
-    // Satisfied/not satisfied
+    /// @brief Satisfied/not satisfied
     bool ok = false;
 
-    //  Use C++ Trilinos framework for the linear solvers
+    /// @brief Use C++ Trilinos framework for the linear solvers
     bool useTLS = false;
 
-    //  Use C++ Trilinos framework for assembly and for linear solvers
+    /// @brief Use C++ Trilinos framework for assembly and for linear solvers
     bool assmTLS = false;
 
-    //  Degrees of freedom
+    /// @brief Degrees of freedom
     int dof = 0;
 
-    //  Pointer to end of unknown Yo(:,s:e)
+    /// @brief Pointer to end of unknown Yo(:,s:e)
     int e = -1;
 
-    //  Pointer to start of unknown Yo(:,s:e)
+    /// @brief Pointer to start of unknown Yo(:,s:e)
     int s = -1;
 
-    //  Number of performed iterations
+    /// @brief Number of performed iterations
     int itr = 0;
 
-    //  Maximum iteration for this eq.
+    /// @brief Maximum iteration for this eq.
     int maxItr = 5;
 
-    //  Minimum iteration for this eq.
+    /// @brief Minimum iteration for this eq.
     int minItr = 1;
 
-    //  Number of possible outputs
+    /// @brief Number of possible outputs
     int nOutput = 0;
 
-    //  IB: Number of possible outputs
+    /// @brief IB: Number of possible outputs
     int nOutIB = 0;
 
-    //  Number of domains
+    /// @brief Number of domains
     int nDmn = 0;
 
-    //  IB: Number of immersed domains
+    /// @brief IB: Number of immersed domains
     int nDmnIB = 0;
 
-    //  Number of BCs
+    /// @brief Number of BCs
     int nBc = 0;
 
-    //  IB: Number of BCs on immersed surfaces
+    /// @brief Number of BCs on immersed surfaces
     int nBcIB = 0;
 
-    //  Number of BFs
+    /// @brief Number of BFs
     int nBf = 0;
 
-    //  Type of equation fluid/heatF/heatS/lElas/FSI
+    /// @brief Type of equation fluid/heatF/heatS/lElas/FSI
     consts::EquationType phys = consts::EquationType::phys_NA;
 
     // Parameters used for the Generalized α− Method.
     //
-    //  \alpha_f
+    /// @brief \f$\alpha_f\f$
     double af = 0.0;
 
-    //  \alpha_m
-    //
-    // For second order equations: am = (2.0 - roInf) / (1.0 + roInf)
-    // First order equations: am = 0.5 * (3.0 - roInf) / (1.0 + roInf)
+    /// @brief \f$\alpha_m\f$
+    ///
+    /// For second order equations: am = (2.0 - roInf) / (1.0 + roInf)
+    /// First order equations: am = 0.5 * (3.0 - roInf) / (1.0 + roInf)
     //
     double am = 0.0;
 
-    //  \beta
+    /// @brief \f$\beta\f$
     double beta = 0.0;
 
-    //  \gamma
+    /// @brief \f$\gamma\f$
     double gam = 0.0;
 
-
-    //  Initial norm of residual
+    /// @brief Initial norm of residual
     double iNorm = 0.0;
 
-    //  First iteration norm
+    /// @brief First iteration norm
     double pNorm = 0.0;
 
-    //  \rho_{infinity}
+    /// @brief \f$\rho_{infinity}\f$
     double roInf = 0.0;
 
-    //  Accepted relative tolerance
+    /// @brief Accepted relative tolerance
     double tol = 0.0;
 
-    //  Equation symbol
+    /// @brief Equation symbol
     std::string sym;
     //std::string(LEN=2) :: sym = "NA";
 
-    //  type of linear solver
+    /// @brief type of linear solver
     lsType ls;
 
-    //  FSILS type of linear solver
+    /// @brief FSILS type of linear solver
     fsi_linear_solver::FSILS_lsType FSILS;
 
-    //  BCs associated with this equation;
+    /// @brief BCs associated with this equation;
     std::vector<bcType> bc;
 
-    //  IB: BCs associated with this equation on immersed surfaces
+    /// @brief IB: BCs associated with this equation on immersed surfaces
     std::vector<bcType> bcIB;
 
-    //  domains that this equation must be solved
+    /// @brief domains that this equation must be solved
     std::vector<dmnType> dmn;
 
-    //  IB: immersed domains that this equation must be solved
+    /// @brief IB: immersed domains that this equation must be solved
     std::vector<dmnType> dmnIB;
 
-    //  Outputs
+    /// @brief Outputs
     std::vector<outputType> output;
 
-    //  IB: Outputs
+    /// @brief IB: Outputs
     std::vector<outputType> outIB;
 
-    //  Body force associated with this equation
+    /// @brief Body force associated with this equation
     std::vector<bfType> bf;
 };
 
-//----------
-// dataType
-//----------
-// This type will be used to write data in the VTK files.
+/// @brief This type will be used to write data in the VTK files.
 //
 class dataType
 {
@@ -1143,178 +1101,174 @@ class rmshType
 
     rmshType();
 
-    // Whether remesh is required for problem or not
+    /// @brief Whether remesh is required for problem or not
     bool isReqd = false;
 
-    // Method for remeshing: 1-TetGen, 2-MeshSim
+    /// @brief Method for remeshing: 1-TetGen, 2-MeshSim
     consts::MeshGeneratorType method = consts::MeshGeneratorType::RMSH_TETGEN;
 
-    // Counter to track number of remesh done
+    /// @brief Counter to track number of remesh done
     int cntr = 0;
 
-    // Time step from which remeshing is done
+    /// @brief Time step from which remeshing is done
     int rTS = 0;
 
-    // Time step freq for saving data
+    /// @brief Time step freq for saving data
     int cpVar = 0;
 
-    // Time step at which forced remeshing is done
+    /// @brief Time step at which forced remeshing is done
     int fTS = 1000;
 
-    // Time step frequency for forced remeshing
+    /// @brief Time step frequency for forced remeshing
     int freq = 1000;
 
-    // Time where remeshing starts
+    /// @brief Time where remeshing starts
     double time = 0.0;
 
-    // Mesh quality parameters
+    /// @brief Mesh quality parameters
     double minDihedAng = 0.0;
     double maxRadRatio = 0.0;
 
-    // Edge size of mesh
+    /// @brief Edge size of mesh
     Vector<double> maxEdgeSize;
 
-    // Initial norm of an equation
+    /// @brief Initial norm of an equation
     Vector<double> iNorm;
 
-    // Copy of solution variables where remeshing starts
+    /// @brief Copy of solution variables where remeshing starts
     Array<double> A0;
     Array<double> Y0;
     Array<double> D0;
 
-    // Flag is set if remeshing is required for each mesh
+    /// @brief Flag is set if remeshing is required for each mesh
     std::vector<bool> flag;
 };
 
-//------------
-// ibCommType
-//------------
-//
 class ibCommType
 {
   public:
-    //  Num traces (nodes) local to each process
+    /// @brief Num traces (nodes) local to each process
     Vector<int> n;
 
-    //  Pointer to global trace (node num) stacked contiguously
+    /// @brief Pointer to global trace (node num) stacked contiguously
     Vector<int> gN;
 
-    //  Num traces (Gauss points) local to each process
+    /// @brief Num traces (Gauss points) local to each process
     Vector<int> nG;
 
-    //  Pointer to global trace (Gauss point) stacked contiguously
+    /// @brief Pointer to global trace (Gauss point) stacked contiguously
     Vector<int> gE;
 };
 
 
-// Immersed Boundary (IB) data type
+/// @brief Immersed Boundary (IB) data type
 //
 class ibType
 {
   public:
 
-    //  Whether any file being saved
+    /// @brief  Whether any file being saved
     bool savedOnce = false;
     //bool savedOnce = .FALSE.
 
-    //  IB method
+    /// @brief IB method
     int mthd = 0;
     //int mthd = ibMthd_NA;
 
-    //  IB coupling
+    /// @brief IB coupling
     int cpld = 0;
     //int cpld = ibCpld_NA;
 
-    //  IB interpolation method
+    /// @brief IB interpolation method
     int intrp = 0;
     //int intrp = ibIntrp_NA;
 
-    //  Current IB domain ID
+    /// @brief Current IB domain ID
     int cDmn = 0;
 
-    //  Current equation
+    /// @brief Current equation
     int cEq = 0;
 
-    //  Total number of IB nodes
+    /// @brief Total number of IB nodes
     int tnNo = 0;
 
-    //  Number of IB meshes
+    /// @brief Number of IB meshes
     int nMsh = 0;
 
-    //  IB call duration (1: total time; 2: update; 3,4: communication)
+    /// @brief IB call duration (1: total time; 2: update; 3,4: communication)
     double callD[4] = {0.0, 0.0, 0.0, 0.0};
 
-    //  IB Domain ID
+    /// @brief IB Domain ID
     Vector<int> dmnID;
 
-    //  Row pointer (for sparse LHS matrix storage)
+    /// @brief Row pointer (for sparse LHS matrix storage)
     Vector<int> rowPtr;
 
-    //  Column pointer (for sparse LHS matrix storage)
+    /// @brief Column pointer (for sparse LHS matrix storage)
     Vector<int> colPtr;
 
-    //  IB position coordinates
+    /// @brief IB position coordinates
     Array<double> x;
 
-    //  Velocity (new)
+    /// @brief Velocity (new)
     Array<double> Yb;
 
-    //  Time derivative of displacement (old)
+    /// @brief Time derivative of displacement (old)
     Array<double> Auo;
 
-    //  Time derivative of displacement (new)
+    /// @brief Time derivative of displacement (new)
     Array<double> Aun;
 
-    //  Time derivative of displacement (n+am)
+    /// @brief Time derivative of displacement (n+am)
     Array<double> Auk;
 
-    //  Displacement (old)
+    /// @brief Displacement (old)
     Array<double> Ubo;
 
-    //  Displacement (new)
+    /// @brief Displacement (new)
     Array<double> Ubn;
 
-    //  Displacement (n+af)
+    /// @brief Displacement (n+af)
     Array<double> Ubk;
 
-    //  Displacement (projected on background mesh, old)
+    /// @brief Displacement (projected on background mesh, old)
     Array<double> Uo;
 
-    //  Displacement (projected on background mesh, new, n+af)
+    /// @brief Displacement (projected on background mesh, new, n+af)
     Array<double> Un;
 
-    //  Residue (FSI force)
+    /// @brief Residual (FSI force)
     Array<double> R;
 
-    //  Residue (displacement, background mesh)
+    /// @brief Residual (displacement, background mesh)
     Array<double> Ru;
 
-    //  Residue (displacement, IB mesh)
+    /// @brief Residual (displacement, IB mesh)
     Array<double> Rub;
 
-    //  LHS tangent matrix for displacement
+    /// @brief LHS tangent matrix for displacement
     Array<double> Ku;
 
-    //  DERIVED class VARIABLES IB meshes;
+    /// @brief DERIVED class VARIABLES IB meshes;
     std::vector<mshType> msh;
 
-    //  IB communicator
+    /// @brief IB communicator
     ibCommType cm;
 };
 
-// Data type for Trilinos Linear Solver related arrays
+/// @brief Data type for Trilinos Linear Solver related arrays
 //
 class tlsType
 {
   public:
 
-    //  Local to global mapping
+    /// @brief Local to global mapping
     Vector<int> ltg;
 
-    //  Factor for Dirichlet BCs
+    /// @brief Factor for Dirichlet BCs
     Array<double> W;
 
-    //  Residue
+    /// @brief Residual
     Array<double> R;
 };
 
@@ -1338,13 +1292,10 @@ class plsType
 };
 
 
-//--------
-// ComMod 
-//--------
-// The ComMod class duplicates the data structures in the Fortran COMMOD module
-// defined in MOD.f. 
-//
-// The data members here are the global variables exposed by the COMMOD module.
+/// @brief The ComMod class duplicates the data structures in the Fortran COMMOD module
+/// defined in MOD.f. 
+///
+/// The data members here are the global variables exposed by the COMMOD module.
 //
 class ComMod {
 
@@ -1354,210 +1305,210 @@ class ComMod {
 
     //----- bool members -----//
 
-    // Whether there is a requirement to update mesh and Dn-Do variables
+    /// @brief Whether there is a requirement to update mesh and Dn-Do variables
     bool dFlag = false;
 
-    // Whether mesh is moving
+    /// @brief Whether mesh is moving
     bool mvMsh = false;
 
-    // Whether to averaged results
+    /// @brief Whether to averaged results
     bool saveAve = false;
 
-    // Whether to save to VTK files
+    /// @brief Whether to save to VTK files
     bool saveVTK = false;
 
-    // Whether any file being saved
+    /// @brief Whether any file being saved
     bool savedOnce = false;
 
-    // Whether to use separator in output
+    /// @brief Whether to use separator in output
     bool sepOutput = false;
 
-    // Whether start from beginning or from simulations
+    /// @brief Whether start from beginning or from simulations
     bool stFileFlag = false;
 
-    // Whether to overwrite restart file or not
+    /// @brief Whether to overwrite restart file or not
     bool stFileRepl = false;
 
-    // Restart simulation after remeshing
+    /// @brief Restart simulation after remeshing
     bool resetSim = false;
 
-    // Check IEN array for initial mesh
+    /// @brief Check IEN array for initial mesh
     bool ichckIEN = false;
 
-    // Reset averaging variables from zero
+    /// @brief Reset averaging variables from zero
     bool zeroAve = false;
 
-    // Whether CMM equation is initialized
+    /// @brief Whether CMM equation is initialized
     bool cmmInit = false;
 
-    // Whether variable wall properties are used for CMM
+    /// @brief Whether variable wall properties are used for CMM
     bool cmmVarWall = false;
 
-    // Whether shell equation is being solved
+    /// @brief Whether shell equation is being solved
     bool shlEq = false;
 
-    // Whether PRESTRESS is being solved
+    /// @brief Whether PRESTRESS is being solved
     bool pstEq = false;
 
-    // Whether velocity-pressure based structural dynamics solver is used
+    /// @brief Whether velocity-pressure based structural dynamics solver is used
     bool sstEq = false;
 
-    // Whether to detect and apply any contact model
+    /// @brief Whether to detect and apply any contact model
     bool iCntct = false;
 
-    // Whether any Immersed Boundary (IB) treatment is required
+    /// @brief Whether any Immersed Boundary (IB) treatment is required
     bool ibFlag = false;
 
-    // Postprocess step - convert bin to vtk
+    /// @brief Postprocess step - convert bin to vtk
     bool bin2VTK = false;
 
 
     //----- int members -----//
 
-    // Current domain
+    /// @brief Current domain
     int cDmn = 0;
 
-    // Current equation
+    /// @brief Current equation
     int cEq = 0;
 
-    // Current time step
+    /// @brief Current time step
     int cTS = 0;
 
     std::array<double,3> timeP;
 
-    // Starting time step
+    /// @brief Starting time step
     int startTS = 0;
 
-    // Current equation degrees of freedom
+    /// @brief Current equation degrees of freedom
     int dof = 0;
 
-    // Global total number of nodes
+    /// @brief Global total number of nodes
     int gtnNo = 0;
 
-    // Number of equations
+    /// @brief Number of equations
     int nEq = 0;
 
-    // Number of faces in the LHS passed to FSILS
+    /// @brief Number of faces in the LHS passed to FSILS
     int nFacesLS = 0;
 
-    // Number of meshes
+    /// @brief Number of meshes
     int nMsh = 0;
 
-    // Number of spatial dimensions
+    /// @brief Number of spatial dimensions
     int nsd = 0;
 
-    // Number of time steps
+    /// @brief Number of time steps
     int nTS = 0;
 
-    // Number of initialization time steps
+    /// @brief Number of initialization time steps
     int nITs = 0;
 
-    // stFiles record length
+    /// @brief stFiles record length
     int recLn = 0;
 
-    // Start saving after this number of time step
+    /// @brief Start saving after this number of time step
     int saveATS = 0;
 
-    // Increment in saving solutions
+    /// @brief Increment in saving solutions
     int saveIncr = 0;
 
-    // Stamp ID to make sure simulation is compatible with stFiles
+    /// @brief Stamp ID to make sure simulation is compatible with stFiles
     std::array<int,7> stamp;
 
-    // Increment in saving restart file
+    /// @brief Increment in saving restart file
     int stFileIncr = 0;
 
-    // Total number of degrees of freedom per node
+    /// @brief Total number of degrees of freedom per node
     int tDof = 0;
 
-    // Total number of nodes
+    /// @brief Total number of nodes
     int tnNo = 0;
 
-    // Restart Time Step
+    /// @brief Restart Time Step
     int rsTS = 0;
 
-    // Number of stress values to be stored
+    /// @brief Number of stress values to be stored
     int nsymd = 0;
 
 
     //----- double members -----//
 
-    // Time step size
+    /// @brief Time step size
     double dt = 0.0;
 
-    // Time
+    /// @brief Time
     double time = 0.0;
 
 
     //----- string members -----//
 
-    // Initialization file path
+    /// @brief Initialization file path
     std::string iniFilePath;
 
-    // Saved output file name
+    /// @brief Saved output file name
     std::string saveName;
 
-    // Restart file name
+    /// @brief Restart file name
     std::string stFileName;
 
-    // Stop_trigger file name
+    /// @brief Stop_trigger file name
     std::string stopTrigName;
 
     // ALLOCATABLE DATA
 
-    // Column pointer (for sparse LHS matrix structure)
-    // Modified in: lhsa()
+    /// @brief Column pointer (for sparse LHS matrix structure)
+    /// Modified in: lhsa()
     Vector<int> colPtr;
 
-    // Domain ID
+    /// @brief Domain ID
     Vector<int>  dmnId;
 
-    // Local to global pointer tnNo --> gtnNo
+    /// @brief Local to global pointer tnNo --> gtnNo
     Vector<int> ltg;
 
-    // Row pointer (for sparse LHS matrix structure)
-    // Modified in: lhsa()
+    /// @brief Row pointer (for sparse LHS matrix structure)
+    /// Modified in: lhsa()
     Vector<int> rowPtr;
 
-    // Array that maps global node id to rowN in the matrix
-    // Modified in: lhsa()
+    /// @brief Array that maps global node id to rowN in the matrix
+    /// Modified in: lhsa()
     Vector<int> idMap;
 
-    // Boundary nodes set for CMM initialization and for zeroing-out
-    // non-wall nodal displacements
+    /// @brief Boundary nodes set for CMM initialization and for zeroing-out
+    /// non-wall nodal displacements
     Vector<int> cmmBdry;
 
-    // IB: iblank used for immersed boundaries (1 => solid, 0 => fluid)
+    /// @brief IB: iblank used for immersed boundaries (1 => solid, 0 => fluid)
     Vector<int> iblank;
 
-    // Old time derivative of variables (acceleration)
+    /// @brief Old time derivative of variables (acceleration)
     Array<double>  Ao;
 
-    // New time derivative of variables
+    /// @brief New time derivative of variables
     Array<double>  An;
 
-    // Old integrated variables (dissplacement)
+    /// @brief Old integrated variables (dissplacement)
     Array<double>  Do;
 
-    // New integrated variables
+    /// @brief New integrated variables
     Array<double>  Dn;
 
-    // Residual vector
+    /// @brief Residual vector
     Array<double>  R;
 
-    // LHS matrix
+    /// @brief LHS matrix
     Array<double>  Val;
 
-    // Position vector
+    /// @brief Position vector
     Array<double>  x;
 
-    // Old variables (velocity)
+    /// @brief Old variables (velocity)
     Array<double>  Yo;
 
-    // New variables
+    /// @brief New variables
     Array<double>  Yn;
 
-    // Body force
+    /// @brief Body force
     Array<double>  Bf;
 
     //-----------------------------------------------------
@@ -1565,63 +1516,63 @@ class ComMod {
     // nonlinear solid mechanics.
     //-----------------------------------------------------
 
-    // Time derivative of displacement
+    /// @brief Time derivative of displacement
     Array<double>  Ad;
 
-    // Residue of the displacement equation
+    /// @brief Residual of the displacement equation
     Array<double>  Rd;
 
-    // LHS matrix for displacement equation
+    /// @brief LHS matrix for displacement equation
     Array<double>  Kd;
 
-    // Variables for prestress calculations
+    /// @brief Variables for prestress calculations
     Array<double>  pS0;
     Array<double>  pSn;
     Vector<double>  pSa;
 
-    // Temporary storage for initializing state variables
+    /// @brief Temporary storage for initializing state variables
     Vector<double> Pinit;
     Array<double>  Vinit;
     Array<double>  Dinit;
 
-    // CMM-variable wall properties: 1-thickness, 2-Elasticity modulus
+    /// @brief CMM-variable wall properties: 1-thickness, 2-Elasticity modulus
     Array<double>  varWallProps;
 
     //------------------------
     // DERIVED TYPE VARIABLES
     //------------------------
 
-    // Coupled BCs structures used for multidomain simulations
+    /// @brief Coupled BCs structures used for multidomain simulations
     cplBCType cplBC;
 
-    // All data related to equations are stored in this container
+    /// @brief All data related to equations are stored in this container
     std::vector<eqType> eq;
 
-    // FSILS data structure to produce LHS sparse matrix
+    /// @brief FSILS data structure to produce LHS sparse matrix
     fsi_linear_solver::FSILS_lhsType lhs;
 
-    // All the meshes are stored in this variable
+    /// @brief All the meshes are stored in this variable
     std::vector<mshType> msh;
 
-    // Input/output to the screen is handled by this structure
+    /// @brief Input/output to the screen is handled by this structure
     chnlType std, err, wrn, dbg;
 
-    // To group above channels
+    /// @brief To group above channels
     ioType io;
 
-    // The general communicator
+    /// @brief The general communicator
     cmType cm;
 
-    // Remesher type
+    /// @brief Remesher type
     rmshType rmsh;
 
-    // Contact model type
+    /// @brief Contact model type
     cntctModelType cntctM;
 
-    // IB: Immersed boundary data structure
+    /// @brief IB: Immersed boundary data structure
     ibType ib;
 
-    // Trilinos Linear Solver data type
+    /// @brief Trilinos Linear Solver data type
     tlsType  tls;
 
     // PETSc Liear Solver data type

@@ -101,14 +101,10 @@ faceType::~faceType()
 {
 }
 
-//---------
-// destroy
-//---------
-// Free memory and reset some data members.
-//
-// This replicates the Fortran 'SUBROUTINE DESTROYFACE(lFa)' 
-// implemented in ALLFUN.f. 
-//
+/// @brief Free memory and reset some data members.
+///
+/// This replicates the Fortran 'SUBROUTINE DESTROYFACE(lFa)' 
+/// implemented in ALLFUN.f. 
 void faceType::destroy()
 {
   gE.clear();     
@@ -145,12 +141,7 @@ fsType::fsType()
 {
 }
 
-//---------
-// destroy
-//---------
-//
-// SUBROUTINE DESTROYFS(fs)
-//
+/// @brief SUBROUTINE DESTROYFS(fs)
 void fsType::destroy()
 {
   eType = consts::ElementType::NA;

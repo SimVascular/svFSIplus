@@ -13,7 +13,7 @@ this_file_dir = os.path.abspath(os.path.dirname(__file__))
 cpp_exec = os.path.join(this_file_dir, "..", "build", "svFSI-build", "bin", "svFSI")
 
 # relative tolerances for tested results
-RTOL = {'Pressure': 1.0e-12, 'Velocity': 1.0e-12, 'Action_potential': 1.0e-12, 'Temperature': 1.0e-12, 'ECG': 1.0e-12}
+RTOL = {'Pressure': 1.0e-12, 'Velocity': 1.0e-12, 'Action_potential': 1.0e-12, 'Temperature': 1.0e-12, 'ECG': 1.0e-12, 'Displacement': 1.0e-12}
 
 # number of processors to test
 procs = [1, 3, 4]
@@ -32,7 +32,7 @@ def run_by_name(folder, name, t_max, n_proc=1):
     Simulation results
     """
     # run simulation
-    cmd = " ".join(["mpirun", "--oversubscribe", "-np", str(n_proc), cpp_exec, name])
+    cmd = " ".join(["mpirun", "--oversubscribe" if n_proc>1 else "", "-np", str(n_proc), cpp_exec, name])
     subprocess.call(cmd, cwd=folder, shell=True)
 
     # read results
@@ -71,7 +71,15 @@ def run_with_reference(folder, name_inp, name_ref, fields, t_max, n_proc=1):
                 b = b[:, :2]
 
         # compare solution to reference
-        assert np.all(np.isclose(a, b, rtol=RTOL[f]))
+        close = np.isclose(a, b, rtol=RTOL[f])
+        if np.all(close):
+            return
+        else:
+            msg = "Test failed!"
+            msg += "\nResults in field " + f + " differ by more than rtol=" + str(RTOL[f])
+            msg += " in " + str(np.sum(close)) + " out of " + str(close.size) + " results."
+            msg += " Max. abs. difference is " + "{:.1e}".format(np.max(np.abs(a-b)))
+            raise ValueError(msg)
 
 
 @pytest.mark.parametrize("mesh", ["N" + str(2**i).zfill(3) for i in range(2, 3)])
@@ -85,28 +93,66 @@ def test_stokes_manufactured_solution(ele, mesh, n_proc):
     name_ref = "result_" + str(t_max[ele]).zfill(3) + ".vtu"
     run_with_reference(folder, name_inp, name_ref, fields, t_max[ele], n_proc)
 
-
 @pytest.mark.parametrize("n_proc", procs)
-def test_niederer_benchmark_ECGs_quadrature(n_proc):
-    folder = os.path.join("cases", "niederer_benchmark_ECGs_quadrature")
+def test_1Dcable_TTP(n_proc):
+    folder = os.path.join("cases", "1Dcable_TTP")
     field = ["Action_potential"]
     t_max = 1
     name_inp = "svFSI.xml"
     name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
     run_with_reference(folder, name_inp, name_ref, field, t_max, n_proc)
 
-    ecg_true_values = [-0.0786707, 0.0786707, 0.00891599]
-    for index in range(0, 3):
-        ecg_trace = pd.read_csv(folder + '/ecglead_' + str(index + 1) + '.txt', header = None)
-        assert abs(ecg_trace.iloc[-1, 1] - ecg_true_values[index]) < RTOL['ECG']
-
+@pytest.mark.parametrize("n_proc", procs)
+def test_2Dspiral_BO(n_proc):
+    folder = os.path.join("cases", "2Dspiral_BO")
+    field = ["Action_potential"]
+    t_max = 1
+    name_inp = "svFSI.xml"
+    name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
+    run_with_reference(folder, name_inp, name_ref, field, t_max, n_proc)
 
 @pytest.mark.parametrize("n_proc", procs)
-def test_diffusion_line_source(n_proc):
+def test_2Dsquare_AP(n_proc):
+    folder = os.path.join("cases", "2Dsquare_AP")
+    field = ["Action_potential"]
+    t_max = 1
+    name_inp = "svFSI.xml"
+    name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
+    run_with_reference(folder, name_inp, name_ref, field, t_max, n_proc)
+
+@pytest.mark.parametrize("n_proc", procs)
+def test_purkinje(n_proc):
+    folder = os.path.join("cases", "purkinje")
+    field = ["Action_potential"]
+    t_max = 1
+    name_inp = "svFSI.xml"
+    name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
+    run_with_reference(folder, name_inp, name_ref, field, t_max, n_proc)
+
+@pytest.mark.parametrize("confs_ecgs", [["BICG_CN_myocardium_BO"  , -0.0781125,  0.0781125,  0.00885273],
+                                        ["CG_RK4_endocardium_BO"  , -0.0780188,  0.0780188,  0.00884210],
+                                        ["GMRES_FE_epicardium_TTP", -0.0786707,  0.0786707,  0.00891599],
+                                        ["GMRES_FE_pfib_AP"       ,  0.0786707, -0.0786707, -0.00891599]])
+@pytest.mark.parametrize("n_proc", procs)
+def test_niederer_benchmark_ECGs_quadrature(confs_ecgs, n_proc):
+    folder = os.path.join("cases", "niederer_benchmark_ECGs_quadrature")
+    field = ["Action_potential"]
+    t_max = 1
+    name_inp = "svFSI_" + confs_ecgs[0] + ".xml"
+    name_ref = "result_" + confs_ecgs[0] + "_" + str(t_max).zfill(3) + ".vtu"
+    run_with_reference(folder, name_inp, name_ref, field, t_max, n_proc)
+
+    for jj in range(0, 3):
+        ecg_trace = pd.read_csv(folder + "/" + str(n_proc) + "-procs/ecglead_" + str(jj + 1) + ".txt", header = None)
+        assert abs((ecg_trace.iloc[-1, 1] - confs_ecgs[jj + 1]) / confs_ecgs[jj + 1]) < RTOL['ECG'], \
+               "Results in field ecglead_" + str(jj + 1) + ".txt differ by more than rtol=" + str(RTOL['ECG']) + " for test case " + confs_ecgs[0] 
+
+@pytest.mark.parametrize("name_inp", ["svFSI_CG.xml", "svFSI_BICG.xml", "svFSI_GMRES.xml"])
+@pytest.mark.parametrize("n_proc", procs)
+def test_diffusion_line_source(name_inp, n_proc):
     folder = os.path.join("cases", "diffusion_line_source")
     field = ["Temperature"]
-    t_max = 20
-    name_inp = "svFSI.xml"
+    t_max = 2
     name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
     run_with_reference(folder, name_inp, name_ref, field, t_max, n_proc)
 
@@ -126,6 +172,16 @@ def test_cavity_2d(n_proc):
     folder = os.path.join("cases", "driven_cavity_2D")
     fields = ["Pressure", "Velocity"]
     t_max = 2
+    name_inp = "svFSI.xml"
+    name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
+    run_with_reference(folder, name_inp, name_ref, fields, t_max, n_proc)
+
+
+@pytest.mark.parametrize("n_proc", procs)
+def test_ale_3d_pipe(n_proc):
+    folder = os.path.join("cases", "ale_3d_pipe")
+    fields = ["Displacement", "Pressure", "Velocity"]
+    t_max = 5
     name_inp = "svFSI.xml"
     name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
     run_with_reference(folder, name_inp, name_ref, fields, t_max, n_proc)

@@ -1,59 +1,5 @@
 
-// The classes defined here are used to process svFSIplus simulation parameters read in 
-// from an Extensible Markup Language (XML) format file. XML is a simple text-based format 
-// for representing structured information. 
-//
-// An XML document is formed as an element tree. The XML tree starts at a root element and 
-// branches from the root to sub-elements. All elements can have sub-elements:
-//
-// <svFSIFile>
-//   <element>
-//     <subelement>.....</subelement>
-//   </element>
-// </svFSIFile>
-//
-// The elements in the svFSIplus simulation file are represented by sections of
-// related parameters. Sub-elements are refered to as sub-sections.
-//
-//-----------------
-// Parameters class 
-//-----------------
-// The 'Parameters' class is the top level class. It contains objects used to store 
-// parameters for the sections making up an XML simulation parameters file
-//
-//   1) General     (GeneralSimulationParameters)
-//   2) Mesh        (MeshParameters)
-//   3) Equation    (EquationParameters)
-//   4) Projection  (ProjectionParameters)
-//
-// Each object contains methods to parse the XML file for the parameters defined for it.
-// These section objects may also contain objects representing the sub-sections defined 
-// for each section.
-//
-//-----------------
-// Section objects 
-//-----------------
-// Each section object contains objects representing parameters. A parameter's name and value 
-// is stored using either a 'Parameter' and 'VectorParamater' template objects. A parameter 
-// value is stored as a basic type: bool, double, int and string. 
-//
-// Parameter objects in a section class are named using the same XML element name with the 1st 
-// character lower case.
-//
-// Example: 'GeneralSimulationParameters' class 
-//
-//   Parameter<bool> verbose;                                  // <Verbose> 
-//   Parameter<double> spectral_radius_of_infinite_time_step;  // <Spectral_radius_of_infinite_time_step>
-//   Parameter<double> time_step_size;                         // <Time_step_size> 
-//
-// The name and default value for each parameter is defined in a section object's constructor.
-//
-// Parameter values are set using the 'set_values()' method which contains calls to tinyxml2  
-// to parse parameter values from an XML file.
-//
-// Each section object inherits from the 'ParameterLists' class. This class provides methods to
-// store parameters in a map and process iterated over them for setting values and other operations.
-//
+
 #ifndef PARAMETERS_H 
 #define PARAMETERS_H 
 
@@ -71,14 +17,70 @@
 
 #include "tinyxml2.h"
 
-//-----------
-// Parameter
-//-----------
-// The Parameter class template is used to store a named 
-// paramater and its scalar value as a basic type: bool, double, 
-// int and string.
-//
 template<typename T>
+
+/// @brief The Parameter class template is used to store a named 
+/// paramater and its scalar value as a basic type: bool, double, 
+/// int and string.
+///
+/// The classes defined here are used to process svFSIplus simulation parameters read in 
+/// from an Extensible Markup Language (XML) format file. XML is a simple text-based format 
+/// for representing structured information. 
+///
+/// An XML document is formed as an element tree. The XML tree starts at a root element and 
+/// branches from the root to sub-elements. All elements can have sub-elements:
+///
+/// \code{.cpp}
+/// <svFSIFile>
+///   <element>
+///     <subelement>.....</subelement>
+///   </element>
+/// </svFSIFile>
+/// \endcode
+///
+/// The elements in the svFSIplus simulation file are represented by sections of
+/// related parameters. Sub-elements are refered to as sub-sections.
+///
+///-----------------
+/// Parameters class 
+///-----------------
+/// The Parameters class is the top level class. It contains objects used to store 
+/// parameters for the sections making up an XML simulation parameters file
+///
+///   1) General     (GeneralSimulationParameters)
+///   2) Mesh        (MeshParameters)
+///   3) Equation    (EquationParameters)
+///   4) Projection  (ProjectionParameters)
+///
+/// Each object contains methods to parse the XML file for the parameters defined for it.
+/// These section objects may also contain objects representing the sub-sections defined 
+/// for each section.
+///
+///-----------------
+/// Section objects 
+///-----------------
+/// Each section object contains objects representing parameters. A parameter's name and value 
+/// is stored using either a Parameter and VectorParamater template objects. A parameter 
+/// value is stored as a basic type: bool, double, int and string. 
+///
+/// Parameter objects in a section class are named using the same XML element name with the 1st 
+/// character lower case.
+///
+/// Example: GeneralSimulationParameters class 
+///
+/// \code{.cpp}
+///   Parameter<bool> verbose;                                  // <Verbose> 
+///   Parameter<double> spectral_radius_of_infinite_time_step;  // <Spectral_radius_of_infinite_time_step>
+///   Parameter<double> time_step_size;                         // <Time_step_size> 
+/// \endcode
+///
+/// The name and default value for each parameter is defined in a section object's constructor.
+///
+/// Parameter values are set using the set_values() method which contains calls to tinyxml2  
+/// to parse parameter values from an XML file.
+///
+/// Each section object inherits from the ParameterLists class. This class provides methods to
+/// store parameters in a map and process iterated over them for setting values and other operations.
 class Parameter
 {
   public:
@@ -96,11 +98,7 @@ class Parameter
     T operator()() const { return value_; };
     bool defined() const { return value_set_; };
 
-    //--------
-    // svalue
-    //--------
-    // Get the value of a parameter as a string.
-    //
+    /// @brief Get the value of a parameter as a string.
     std::string svalue()
     {
       std::ostringstream str_stream;
@@ -114,22 +112,14 @@ class Parameter
       return out;
     }
 
-    //-----
-    // set
-    //-----
-    // Set the parameter name and value, and if it is required.
-    //
+    /// @brief Set the parameter name and value, and if it is required.
     void set(const std::string& name, bool required, T value) { 
       name_ = name;
       required_ = required;
       value_ = value;
     }
 
-    //-----
-    // set
-    //-----
-    // Set the parameter value from a string.
-    //
+    /// @brief Set the parameter value from a string.
     void set(const std::string& str_value)
     {
       if (str_value == "") {
@@ -151,10 +141,6 @@ class Parameter
       value_set_ = true;
     }
 
-    //--------------------
-    // check_required_set
-    //--------------------
-    //
     bool check_required_set()
     {
       if (!required_) {
@@ -170,13 +156,9 @@ class Parameter
     std::vector<T> range_;
 };
 
-//-----------------
-// VectorParameter
-//-----------------
-// The VectorParameter class template is used to store a named 
-// paramater and its vector of values as a basic type: bool, double, 
-// int and string.
-//
+/// @brief The VectorParameter class template is used to store a named 
+/// paramater and its vector of values as a basic type: bool, double, 
+/// int and string.
 template<typename T>
 class VectorParameter
 {
@@ -198,11 +180,7 @@ class VectorParameter
     std::vector<T> operator()() const { return value_; };
     const double& operator[](const int i) const { return value_[i]; };
 
-    //--------
-    // svalue
-    //--------
-    // Get the string representation of the parameter value.
-    //
+    /// @brief Get the string representation of the parameter value.
     std::string svalue() 
     {
       std::string str;
@@ -228,11 +206,7 @@ class VectorParameter
        return out;
     }
 
-    //-----
-    // set
-    //-----
-    // Set the parameter name and value, and if it is required.
-    //
+    /// @brief Set the parameter name and value, and if it is required.
     void set(const std::string& name, bool required, const std::vector<T>& value) 
     { 
       name_ = name;
@@ -240,11 +214,7 @@ class VectorParameter
       value_ = value;
     }
 
-    //-----
-    // set
-    //-----
-    // Set the parameter value from a string.
-    //
+    /// @brief Set the parameter value from a string.
     void set(const std::string& str_value)
     {
       if (str_value == "") {
@@ -270,10 +240,6 @@ class VectorParameter
       }
     }
 
-    //--------------------
-    // check_required_set
-    //--------------------
-    //
     bool check_required_set()
     {
       if (!required_) {
@@ -289,12 +255,8 @@ class VectorParameter
     std::vector<T> range_;
 };
 
-//----------------
-// ParameterLists
-//----------------
-// Defines parameter name and value, and stores them in
-// maps for settng values from XML.
-//
+/// @brief Defines parameter name and value, and stores them in
+/// maps for settng values from XML.
 class ParameterLists
 {
   public:
@@ -306,11 +268,7 @@ class ParameterLists
       xml_element_name = name;
     }
 
-    //---------------
-    // set_parameter
-    //---------------
-    // Set the name, default value and the parameter required flag.
-    //
+    /// @brief Set the name, default value and the parameter required flag.
     void set_parameter(const std::string& name, const bool value, bool required, Parameter<bool>& param) 
     {
       param.set(name, required, value); 
@@ -354,11 +312,7 @@ class ParameterLists
       params_map[name] = &param;
     }
 
-    //---------------------
-    // set_parameter_value
-    //---------------------
-    // Set the value of a paramter from a string.
-    //
+    /// @brief Set the value of a paramter from a string.
     void set_parameter_value(const std::string& name, const std::string& value) 
     {
       if (params_map.count(name) == 0) {
@@ -368,11 +322,7 @@ class ParameterLists
       std::visit([value](auto&& p) { p->set(value); }, params_map[name]);
     }
 
-    //----------------
-    // check_required
-    //----------------
-    // Check if any required parameters have not been set.
-    //
+    /// @brief Check if any required parameters have not been set.
     void check_required()
     {
       bool unset_found = false;
@@ -386,11 +336,7 @@ class ParameterLists
       }
     }
 
-    //------------
-    // get_params
-    //------------
-    // Get the defined parameters as a map of strings.
-    //
+    /// @brief Get the defined parameters as a map of strings.
     std::map<std::string,std::string> get_parameter_list()
     {
       std::map<std::string,std::string> params;
@@ -404,11 +350,7 @@ class ParameterLists
       return params;
     }
 
-    //----------------------
-    // print_parameter_list
-    //----------------------
-    // Print the parameters.
-    //
+    /// @brief Print the parameters.
     void print_parameter_list()
     {
       for (auto& [ key, param ] : params_map) {
@@ -420,11 +362,7 @@ class ParameterLists
       }
     }
 
-    //------------
-    // params_map
-    //------------
-    // Map used for storing parameters by name / Parameter template union.
-    //
+    /// @brief Map used for storing parameters by name / Parameter template union.
     std::map<std::string, std::variant<Parameter<bool>*, Parameter<double>*, Parameter<int>*, 
         Parameter<std::string>*, VectorParameter<double>*, VectorParameter<int>*,
         VectorParameter<std::string>* >> params_map;
@@ -439,10 +377,6 @@ class ParameterLists
 // The following classes are used to store parameters for
 // various constitutive models.
 
-//--------------------
-// LeeSacksParameters
-//--------------------
-//
 class LeeSacksParameters : public ParameterLists
 {
   public:
@@ -458,9 +392,6 @@ class LeeSacksParameters : public ParameterLists
     bool value_set = false;
 };
 
-//--------------------
-// GuccioneParameters  
-//--------------------
 class GuccioneParameters : public ParameterLists
 {
   public:
@@ -498,9 +429,6 @@ class HolzapfelParameters : public ParameterLists
     bool value_set = false;
 };
 
-//--------------------------------
-// HolzapfelGasserOgdenParameters
-//--------------------------------
 class HolzapfelGasserOgdenParameters : public ParameterLists
 { 
   public:
@@ -516,9 +444,6 @@ class HolzapfelGasserOgdenParameters : public ParameterLists
     bool value_set = false;
 };
 
-//------------------------
-// MooneyRivlinParameters
-//------------------------
 class MooneyRivlinParameters : public ParameterLists
 { 
   public:
@@ -549,12 +474,8 @@ class StVenantKirchhoffParameters : public ParameterLists
     bool value_set = false;
 };
 
-//-----------------------------
-// ConstitutiveModelParameters
-//-----------------------------
-// The ConstitutiveModelParameters class store parameters
-// for various constitutive models.
-//
+/// @brief The ConstitutiveModelParameters class store parameters
+/// for various constitutive models.
 class ConstitutiveModelParameters : public ParameterLists
 {
   public:
@@ -586,11 +507,7 @@ class ConstitutiveModelParameters : public ParameterLists
     bool value_set = false;
 };
 
-//-----------------------
-// CoupleCplBCParameters
-//-----------------------
-// Couple to reduced-order models.
-//
+/// @brief Couple to reduced-order models.
 class CoupleCplBCParameters : public ParameterLists
 {
   public:
@@ -616,11 +533,7 @@ class CoupleCplBCParameters : public ParameterLists
     bool value_set = false;
 };
 
-//-----------------------
-// CoupleGenBCParameters
-//-----------------------
-// Coupling to GenBC.
-//
+/// @brief Coupling to GenBC.
 class CoupleGenBCParameters : public ParameterLists
 {
   public:
@@ -640,11 +553,15 @@ class CoupleGenBCParameters : public ParameterLists
     bool value_set = false;
 };
 
-//---------------------
-// BodyForceParameters
-//---------------------
-// Body force over a mesh using the "Add_BF" command.
-//
+/// @brief Body force over a mesh using the "Add_BF" command.
+///
+/// \code {.xml}
+/// <Add_BF mesh="msh" >
+///   <Type> volumetric </Type>
+///   <Time_dependence> general </Time_dependence>
+///   <Temporal_and_spatial_values_file_path> bforce.dat </Temporal_and_spatial_values_file_path>
+/// </Add_BF>
+/// \endcode
 class BodyForceParameters : public ParameterLists
 {
   public:
@@ -671,11 +588,15 @@ class BodyForceParameters : public ParameterLists
     Parameter<std::string> type;
 };
 
-//--------------------------------
-// BoundaryConditionRCRParameters 
-//--------------------------------
-// RCR values for Neumann BC type.
-//
+/// @brief RCR values for Neumann BC type.
+///
+/// \code {.xml}
+/// <RCR_values>
+///   <Proximal_resistance> 121.0 </Proximal_resistance>
+///   <Capacitance> 1.5e-5 </Capacitance>
+///   <Distal_resistance> 1212.0 </Distal_resistance>
+/// </RCR_values>
+/// \endcode
 class BoundaryConditionRCRParameters : public ParameterLists
 {
   public:
@@ -695,12 +616,8 @@ class BoundaryConditionRCRParameters : public ParameterLists
     bool value_set = false;
 };
 
-//-----------------------------
-// BoundaryConditionParameters
-//-----------------------------
-// The BoundaryConditionParameters stores paramaters for various
-// type of boundary conditions under the Add_BC XML element.
-//
+/// @brief The BoundaryConditionParameters stores paramaters for various
+/// type of boundary conditions under the Add_BC XML element.
 class BoundaryConditionParameters : public ParameterLists
 {
   public:
@@ -755,12 +672,14 @@ class BoundaryConditionParameters : public ParameterLists
     Parameter<bool> zero_out_perimeter;
 };
 
-//------------------
-// OutputParameters 
-//------------------
-// The OutputParameters class stores parameters for the
-// Output XML element under Add_equation.
-//
+/// @brief The OutputParameters class stores parameters for the
+/// Output XML element under Add_equation.
+///
+/// \code {.xml}
+/// <Output type="Volume_integral" >
+///   <Temperature> true </Temperature>
+/// </Output>
+/// \endcode
 class OutputParameters : public ParameterLists
 {
   public:
@@ -782,13 +701,14 @@ class OutputParameters : public ParameterLists
     std::vector<Parameter<std::string>> alias_list;
 };
 
-//----------------------
-// ProjectionParameters
-//----------------------
-// The ProjectionParameters class stores parameters for the
-// 'Add_projection' XML element used for fluid-structure interaction 
-// simulations.
-//
+/// @brief The ProjectionParameters class stores parameters for the
+/// 'Add_projection' XML element used for fluid-structure interaction 
+/// simulations.
+/// \code {.xml}
+/// <Add_projection name="wall_inner" >
+///   <Project_from_face> lumen_wall </Project_from_face>
+/// </Add_projection>
+/// \endcode
 class ProjectionParameters : public ParameterLists
 {
   public:
@@ -804,12 +724,8 @@ class ProjectionParameters : public ParameterLists
      Parameter<double> projection_tolerance;
 };
 
-//-----------------------------
-// VariableWallPropsParameters
-//-----------------------------
-// The VariableWallPropsParameters class stores parameters for
-// variable wall properties for the CMM equation.
-//
+/// @brief The VariableWallPropsParameters class stores parameters for
+/// variable wall properties for the CMM equation.
 class VariableWallPropsParameters : public ParameterLists
 {
   public:
@@ -831,10 +747,6 @@ class VariableWallPropsParameters : public ParameterLists
 // The following classes are used to store parameters for
 // various viscosity models.
 
-//------------------------------
-// ViscosityNewtonianParameters 
-//------------------------------
-//
 class ViscosityNewtonianParameters : public ParameterLists
 {
   public:
@@ -869,10 +781,6 @@ class ViscosityCassonsParameters : public ParameterLists
     Parameter<double> low_shear_rate_threshold;
 };
 
-//---------------------
-// ViscosityParameters
-//---------------------
-//
 class ViscosityParameters : public ParameterLists
 {
   public:
@@ -895,12 +803,8 @@ class ViscosityParameters : public ParameterLists
     ViscosityCassonsParameters cassons_model;
 };
 
-//------------------------
-// LinearSolverParameters
-//------------------------
-// The LinearSolverParameters class stores parameters for
-// the 'LS' XML element.
-//
+/// @brief The LinearSolverParameters class stores parameters for
+/// the 'LS' XML element.
 class LinearSolverParameters : public ParameterLists
 {
   public:
@@ -932,13 +836,18 @@ class LinearSolverParameters : public ParameterLists
     Parameter<std::string> PETSc_file_path;
 };
 
-//--------------------
-// StimulusParameters 
-//--------------------
-// The StimulusParameters class stores parameters for 
-// 'Stimulus' XML element used to parameters for 
-// pacemaker cells.
-//
+/// @brief The StimulusParameters class stores parameters for 
+/// 'Stimulus' XML element used to parameters for 
+/// pacemaker cells.
+///
+/// \code {.xml}
+/// <Stimulus type="Istim" >
+///   <Amplitude> -52.0 </Amplitude>
+///   <Start_time> 0.0 </Start_time>
+///   <Duration> 1.0 </Duration>
+///   <Cycle_length> 10000.0 </Cycle_length>
+/// </Stimulus>
+/// \endcode
 class StimulusParameters : public ParameterLists
 { 
   public:
@@ -960,10 +869,6 @@ class StimulusParameters : public ParameterLists
     bool value_set = false;
 };
 
-//--------------------
-// ECGLeadsParameters 
-//--------------------
-
 class ECGLeadsParameters : public ParameterLists
 { 
   public:
@@ -982,13 +887,16 @@ class ECGLeadsParameters : public ParameterLists
     bool value_set = false;
 };
 
-//------------------------------------
-// FiberReinforcementStressParameters
-//------------------------------------
-// The FiberReinforcementStressParameters class stores fiber
-// reinforcement stress parameters for the 'Fiber_reinforcement_stress` 
-// XML element.
-//
+/// @brief The FiberReinforcementStressParameters class stores fiber
+/// reinforcement stress parameters for the 'Fiber_reinforcement_stress` 
+/// XML element.
+///
+/// \code {.xml}
+/// <Fiber_reinforcement_stress type="Unsteady" >
+///   <Temporal_values_file_path> fib_stress.dat </Temporal_values_file_path>
+///   <Ramp_function> true </Ramp_function>
+/// </Fiber_reinforcement_stress>
+/// \endcode
 class FiberReinforcementStressParameters : public ParameterLists
 {
   public:
@@ -1009,12 +917,19 @@ class FiberReinforcementStressParameters : public ParameterLists
     bool value_set = false;
 };
 
-//------------------
-// DomainParameters 
-//------------------
-// The DomainParameters class stores parameters for the XML
-// 'Domain' element to specify properties for solving equations.
-//
+/// @brief The DomainParameters class stores parameters for the XML
+/// 'Domain' element to specify properties for solving equations.
+///
+/// \code {.xml}
+/// <Domain id="1" >
+///   <Equation> fluid </Equation>
+///   <Density> 1.06 </Density>
+///   <Viscosity model="Constant" >
+///     <Value> 0.04 </Value>
+///   </Viscosity>
+///   <Backflow_stabilization_coefficient> 0.2 </Backflow_stabilization_coefficient>
+/// </Domain>
+/// \endcode
 class DomainParameters : public ParameterLists
 {
   public:
@@ -1080,12 +995,19 @@ class DomainParameters : public ParameterLists
     Parameter<double> time_step_for_integration;
 };
 
-//--------------------
-// RemesherParameters
-//--------------------
-// The RemesherParameters class stores parameters for the 
-// 'Remesher' XML element used for remeshing.
-//
+/// @brief The RemesherParameters class stores parameters for the 
+/// 'Remesher' XML element used for remeshing.
+///
+/// \code {.xml}
+/// <Remesher type="Tetgen" >
+///   <Max_edge_size name="lumen" value="0.7"> </Max_edge_size>
+///   <Max_edge_size name="wall"  value="0.5"> </Max_edge_size>
+///   <Min_dihedral_angle> 10.0 </Min_dihedral_angle>
+///   <Max_radius_ratio> 1.1 </Max_radius_ratio>
+///   <Remesh_frequency> 1000 </Remesh_frequency>
+///   <Frequency_for_copying_data> 1 </Frequency_for_copying_data>
+/// </Remesher>
+/// \endcode
 class RemesherParameters : public ParameterLists
 {
   public:
@@ -1110,13 +1032,9 @@ class RemesherParameters : public ParameterLists
     Parameter<int> frequency_for_copying_data;
 };
 
-//-------------------
-// ContactParameters
-//-------------------
-// The ContactParameters class stores parameters for the 'Contact''
-// XML element used to specify parameter values for contact
-// computations. 
-//
+/// @brief The ContactParameters class stores parameters for the 'Contact''
+/// XML element used to specify parameter values for contact
+/// computations. 
 class ContactParameters : public ParameterLists
 {
   public:
@@ -1138,12 +1056,19 @@ class ContactParameters : public ParameterLists
     Parameter<double> penalty_constant;
 };
 
-//--------------------
-// EquationParameters
-//--------------------
-// The EquationParameters class stores parameters for the 'Add_equation'
-// XML element used to specify an equation to be solved (e.g. fluid).
-//
+/// @brief The EquationParameters class stores parameters for the 'Add_equation'
+/// XML element used to specify an equation to be solved (e.g. fluid).
+///
+/// \code {.xml}
+/// <Add_equation type="FSI" >
+///   <Coupled> true </Coupled>
+///   <Min_iterations> 1 </Min_iterations>
+///   <Max_iterations> 1 </Max_iterations>
+///   .
+///   .
+///   .
+/// </Add_equation>
+/// \endcode
 class EquationParameters : public ParameterLists
 {
   public:
@@ -1208,12 +1133,29 @@ class EquationParameters : public ParameterLists
     ECGLeadsParameters ecg_leads;
 };
 
-//-----------------------------
-// GeneralSimulationParameters 
-//-----------------------------
-// The GeneralSimulationParameters class stores paramaters for the
-// 'GeneralSimulationParameters' XML element.
-//
+/// @brief The GeneralSimulationParameters class stores paramaters for the
+/// 'GeneralSimulationParameters' XML element.
+///
+/// \code {.xml}
+/// <GeneralSimulationParameters>
+///   <Continue_previous_simulation> 0 </Continue_previous_simulation>
+///   <Number_of_spatial_dimensions> 3 </Number_of_spatial_dimensions>
+///   <Number_of_time_steps> 1 </Number_of_time_steps>
+///   <Time_step_size> 1e-4 </Time_step_size>
+///   <Spectral_radius_of_infinite_time_step> 0.50 </Spectral_radius_of_infinite_time_step>
+///   <Searched_file_name_to_trigger_stop> STOP_SIM </Searched_file_name_to_trigger_stop>
+///   <Save_results_to_VTK_format> true </Save_results_to_VTK_format>
+///   <Name_prefix_of_saved_VTK_files> result </Name_prefix_of_saved_VTK_files>
+///   <Increment_in_saving_VTK_files> 1 </Increment_in_saving_VTK_files>
+///   <Start_saving_after_time_step> 1 </Start_saving_after_time_step>
+///   <Increment_in_saving_restart_files> 1 </Increment_in_saving_restart_files>
+///   <Convert_BIN_to_VTK_format> 0 </Convert_BIN_to_VTK_format>
+///   <Verbose> 1 </Verbose>
+///   <Warning> 0 </Warning>
+///   <Debug> 0 </Debug>
+///   <Simulation_requires_remeshing> true </Simulation_requires_remeshing>
+/// </GeneralSimulationParameters>
+/// \endcode
 class GeneralSimulationParameters : public ParameterLists 
 {
   public:
@@ -1254,12 +1196,8 @@ class GeneralSimulationParameters : public ParameterLists
     Parameter<std::string> simulation_initialization_file_path; 
 };
 
-//---------------
-// FaceParameters
-//---------------
-// The FaceParameters class is used to store parameters for the
-// 'Add_face' XML element.
-//
+/// @brief The FaceParameters class is used to store parameters for the
+/// 'Add_face' XML element.
 class FaceParameters : public ParameterLists
 {
   public:
@@ -1277,12 +1215,29 @@ class FaceParameters : public ParameterLists
     Parameter<double> quadrature_modifier_TRI3;
 };
 
-//----------------
-// MeshParameters
-//----------------
-// The MeshParameters class is used to store paramaters for the
-// 'Add_mesh' XML element.
-//
+/// @brief The MeshParameters class is used to store paramaters for the
+/// 'Add_mesh' XML element.
+///
+/// \code {.xml}
+/// <Add_mesh name="lumen" >
+///   <Mesh_file_path> mesh/lumen/mesh-complete.mesh.vtu  </Mesh_file_path>
+///
+///   <Add_face name="lumen_inlet">
+///       <Face_file_path> mesh/lumen/mesh-surfaces/lumen_inlet.vtp </Face_file_path>
+///   </Add_face>
+///
+///   <Add_face name="lumen_outlet">
+///       <Face_file_path> mesh/lumen/mesh-surfaces/lumen_outlet.vtp </Face_file_path>
+///   </Add_face>
+///
+///   <Add_face name="lumen_wall">
+///       <Face_file_path> mesh/lumen/mesh-surfaces/lumen_wall.vtp </Face_file_path>
+///   </Add_face>
+///
+///   <Domain> 0 </Domain>
+/// 
+/// </Add_mesh>
+/// \endcode
 class MeshParameters : public ParameterLists
 {
   public:
@@ -1325,11 +1280,7 @@ class MeshParameters : public ParameterLists
     Parameter<double> quadrature_modifier_TET4;
 };
 
-//------------
-// Parameters
-//------------
-// The Parameters class stores parameter values read in from a solver input file.
-//
+/// @brief The Parameters class stores parameter values read in from a solver input file.
 class Parameters {
 
   public:

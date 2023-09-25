@@ -16,10 +16,7 @@
 
 namespace remesh {
 
-//--------
-// distre
-//--------
-// Distribute the new mesh elements to all processors
+/// @brief Distribute the new mesh elements to all processors
 //
 void distre(ComMod& com_mod, CmMod& cm_mod, mshType& lM, int& nEl, Vector<int>& gE)
 {
@@ -63,10 +60,7 @@ void distre(ComMod& com_mod, CmMod& cm_mod, mshType& lM, int& nEl, Vector<int>& 
   }
 }
 
-//--------------
-// dist_msh_srf
-//--------------
-// Reproduces Fortran 'SUBROUTINE DISTMSHSRF(lFa, lM, iOpt)'
+/// @brief Reproduces Fortran 'SUBROUTINE DISTMSHSRF(lFa, lM, iOpt)'
 //
 void dist_msh_srf(ComMod& com_mod, ChnlMod& chnl_mod, faceType& lFa, mshType& lM, const int iOpt)
 {
@@ -171,11 +165,7 @@ void dist_msh_srf(ComMod& com_mod, ChnlMod& chnl_mod, faceType& lFa, mshType& lM
   }
 }
 
-//--------
-// distrn
-//--------
-//
-// Modifies
+/// @brief Modifies
 //   gN(nNo) - list of node indices 0  
 //   lM.gpN - processor ID (1, 2, 3, ...) for each node
 //
@@ -351,12 +341,9 @@ void find_n(ComMod& com_mod, const Vector<double>& Xp, const int iM, const Array
   Nsf = 0.0;
 }
 
-//--------------
-// get_adj_esrc
-//--------------
-// Create list of connected/adjacent elements for old/source mesh
-//
-// Reproduces Fortran 'SUBROUTINE GETADJESRC(lM, kneList)'
+/// @brief Create list of connected/adjacent elements for old/source mesh
+///
+/// Reproduces Fortran 'SUBROUTINE GETADJESRC(lM, kneList)'
 //
 void get_adj_esrc(ComMod& com_mod, mshType& lM, Array<int>& kneList)
 {
@@ -457,12 +444,9 @@ void get_adj_esrc(ComMod& com_mod, mshType& lM, Array<int>& kneList)
   }
 }
 
-//--------------
-// get_adj_ntgt
-//--------------
-// Create list of connected/adjacent nodes for new/target mesh
-//
-// Reproduces Fortran 'SUBROUTINE GETADJNTGT(lM, nNo, nEl, gN, gE, knnList)'
+/// @brief Create list of connected/adjacent nodes for new/target mesh
+///
+/// Reproduces Fortran 'SUBROUTINE GETADJNTGT(lM, nNo, nEl, gN, gE, knnList)'
 //
 void get_adj_ntgt(ComMod& com_mod, mshType& lM, const int nNo, const int nEl, const Vector<int>& gN, 
     const Vector<int>& gE, Array<int>& knnList)
@@ -552,10 +536,7 @@ void get_adj_ntgt(ComMod& com_mod, mshType& lM, const int nNo, const int nEl, co
 
 }
 
-//---------
-// interp
-//---------
-// Interpolation of data variables from source mesh to target mesh
+/// @brief Interpolation of data variables from source mesh to target mesh
 //
 void interp(ComMod& com_mod, CmMod& cm_mod, const int lDof, const int iM, mshType& tMsh, Array<double>& sD, Array<double>& tgD)
 {
@@ -1224,10 +1205,7 @@ void interp(ComMod& com_mod, CmMod& cm_mod, const int lDof, const int iM, mshTyp
   }
 }
 
-//-------------
-// int_msh_srf
-//-------------
-// Reproduces 'SUBROUTINE INTMSHSRF(lM, lFa)'
+/// @brief Reproduces 'SUBROUTINE INTMSHSRF(lM, lFa)'
 //
 void int_msh_srf(ComMod& com_mod, CmMod& cm_mod, mshType& lM, faceType& lFa)
 {
@@ -1304,10 +1282,6 @@ void int_msh_srf(ComMod& com_mod, CmMod& cm_mod, mshType& lM, faceType& lFa)
    }
 }
 
-//-------------
-// remesher_3d
-//-------------
-//
 void remesher_3d(ComMod& com_mod, CmMod& cm_mod, int iM, faceType& lFa, mshType& lM)
 {
   using namespace consts;
@@ -1443,10 +1417,7 @@ void remesher_3d(ComMod& com_mod, CmMod& cm_mod, int iM, faceType& lFa, mshType&
   nn::select_ele(com_mod, lM);
 }
 
-//----------------
-// remesh_restart
-//----------------
-// Reproduces Fortran 'SUBROUTINE REMESHRESTART(timeP)'
+/// @brief Reproduces Fortran 'SUBROUTINE REMESHRESTART(timeP)'
 //
 void remesh_restart(Simulation* simulation)
 {
@@ -1936,10 +1907,6 @@ void remesh_restart(Simulation* simulation)
   com_mod.pSa.clear();
 }
 
-//--------------
-// set_face_ebc
-//--------------
-//
 void set_face_ebc(ComMod& com_mod, CmMod& cm_mod, faceType& lFa, mshType& lM)
 {
   const int nsd = com_mod.nsd;

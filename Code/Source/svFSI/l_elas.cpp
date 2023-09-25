@@ -16,12 +16,9 @@
 
 namespace l_elas {
 
-//----------
-// b_l_elas 
-//----------
-// This is for boundary elasticity equation
-//
-// Reproduces 'SUBROUTINE BLELAS (eNoN, w, N, h, nV, lR)'
+/// @brief This is for boundary elasticity equation
+///
+/// Reproduces 'SUBROUTINE BLELAS (eNoN, w, N, h, nV, lR)'
 //
 void b_l_elas(ComMod& com_mod, const int eNoN, const double w, const Vector<double>& N, const double h, 
     const Vector<double>& nV, Array<double>& lR)
@@ -36,10 +33,7 @@ void b_l_elas(ComMod& com_mod, const int eNoN, const double w, const Vector<doub
   }
 }
 
-//------------------
-// construct_l_elas
-//------------------
-// Reproduces Fortran 'CONSTRUCT_LELAS'.
+/// @brief Reproduces Fortran 'CONSTRUCT_LELAS'.
 //
 void construct_l_elas(ComMod& com_mod, const mshType& lM, const Array<double>& Ag, const Array<double>& Dg)
 {
@@ -159,11 +153,7 @@ void construct_l_elas(ComMod& com_mod, const mshType& lM, const Array<double>& A
   }
 }
 
-//-----------
-// l_elas_3d
-//-----------
-//
-// Reproducs Fortran 'LELAS2D()'.
+/// @brief Reproducs Fortran 'LELAS2D()'.
 //
 void l_elas_2d(ComMod& com_mod, const int eNoN, const double w, const Vector<double>& N,
     const Array<double>& Nx, const Array<double>& al, const Array<double>& dl, const Array<double>& bfl,

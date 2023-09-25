@@ -11,13 +11,10 @@
 
 namespace mat_models {
 
-//-------------
-// actv_strain
-//-------------
-// Compute active component of deformation gradient tensor for
-// electromechanics coupling based on active strain formulation
-//
-// Reproduces Fortran 'ACTVSTRAIN'.
+/// @brief Compute active component of deformation gradient tensor for
+/// electromechanics coupling based on active strain formulation
+///
+/// Reproduces Fortran 'ACTVSTRAIN'.
 //
 void actv_strain(const ComMod& com_mod, const CepMod& cep_mod, const double gf, 
     const int nfd, const Array<double>& fl, Array<double>& Fa) 
@@ -40,10 +37,6 @@ void actv_strain(const ComMod& com_mod, const CepMod& cep_mod, const double gf,
   Fa = IDm + gf*Hf + gs*Hs + gn*Hn;
 }
 
-//-------------
-// cc_to_voigt
-//-------------
-//
 void cc_to_voigt(const int nsd, const Tensor4<double>& CC, Array<double>& Dm)
 {
   if (nsd == 3) {
@@ -96,12 +89,9 @@ void cc_to_voigt(const int nsd, const Tensor4<double>& CC, Array<double>& Dm)
   } 
 }
 
-//----------------
-// get_fib_stress
-//----------------
-// Compute additional fiber-reinforcement stress.
-//
-// Reproduces Fortran 'GETFIBSTRESS' subroutine.
+/// @brief Compute additional fiber-reinforcement stress.
+///
+/// Reproduces Fortran 'GETFIBSTRESS' subroutine.
 //
 void get_fib_stress(const ComMod& com_mod, const CepMod& cep_mod, const fibStrsType& Tfl, double& g)
 {
@@ -118,13 +108,10 @@ void get_fib_stress(const ComMod& com_mod, const CepMod& cep_mod, const fibStrsT
   }
 }
 
-//-----------
-// get_pk2cc
-//-----------
-// Compute 2nd Piola-Kirchhoff stress and material stiffness tensors
-// including both dilational and isochoric components.
-//
-// Reproduces the Fortran 'GETPK2CC' subroutine.
+/// @brief Compute 2nd Piola-Kirchhoff stress and material stiffness tensors
+/// including both dilational and isochoric components.
+///
+/// Reproduces the Fortran 'GETPK2CC' subroutine.
 //
 void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn, const Array<double>& F, const int nfd,
     const Array<double>& fl, const double ya, Array<double>& S, Array<double>& Dm)
@@ -463,12 +450,9 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
   cc_to_voigt(nsd, CC, Dm);
 }
 
-//---------------
-// get_pk2cc_dev
-//---------------
-// Compute isochoric (deviatoric) component of 2nd Piola-Kirchhoff stress and material stiffness tensors.
-//
-// Reproduces 'SUBROUTINE GETPK2CCdev(lDmn, F, nfd, fl, ya, S, Dm, Ja)'. 
+/// @brief Compute isochoric (deviatoric) component of 2nd Piola-Kirchhoff stress and material stiffness tensors.
+///
+/// Reproduces 'SUBROUTINE GETPK2CCdev(lDmn, F, nfd, fl, ya, S, Dm, Ja)'. 
 //
 void get_pk2cc_dev(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn, const Array<double>& F, const int nfd, 
     const Array<double>& fl, const double ya, Array<double>& S, Array<double>& Dm, double& Ja)
@@ -780,11 +764,8 @@ void get_pk2cc_dev(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& 
   cc_to_voigt(nsd, CC, Dm);
 }
 
-//----------------
-// get_pk2cc_shlc
-//----------------
-// Compute 2nd Piola-Kirchhoff stress and material stiffness tensors
-// for compressible shell elements.
+/// @brief Compute 2nd Piola-Kirchhoff stress and material stiffness tensors
+/// for compressible shell elements.
 //
 void get_pk2cc_shlc(const ComMod& com_mod, const dmnType& lDmn, const int nfd, const Array<double>& fNa0,
     const Array<double>& gg_0, const Array<double>& gg_x, double& g33, Vector<double>& Sml, Array<double>& Dml)
@@ -1140,13 +1121,10 @@ void get_pk2cc_shlc(const ComMod& com_mod, const dmnType& lDmn, const int nfd, c
   Dml(2,1) = Dml(1,2);
 }
 
-//----------------
-// get_pk2cc_shli
-//----------------
-// Compute 2nd Piola-Kirchhoff stress and material stiffness tensors
-// for incompressible shell elements
-//
-// Reproduces Fortran GETPK2CC_SHLi
+/// @brief Compute 2nd Piola-Kirchhoff stress and material stiffness tensors
+/// for incompressible shell elements
+///
+/// Reproduces Fortran GETPK2CC_SHLi
 //
 void get_pk2cc_shli(const ComMod& com_mod, const dmnType& lDmn, const int nfd, const Array<double>& fNa0, 
     const Array<double>& gg_0, const Array<double>& gg_x, double& g33, Vector<double>& Sml, Array<double>& Dml)
@@ -1346,10 +1324,7 @@ void get_pk2cc_shli(const ComMod& com_mod, const dmnType& lDmn, const int nfd, c
 }
 
 
-//------------
-// get_svol_p
-//------------
-// Reproduces Fortran 'GETSVOLP'.
+/// @brief Reproduces Fortran 'GETSVOLP'.
 //
 void get_svol_p(const ComMod& com_mod, const CepMod& cep_mod, const stModelType& stM, const double J, 
     double& p, double& pl) 
@@ -1376,12 +1351,9 @@ void get_svol_p(const ComMod& com_mod, const CepMod& cep_mod, const stModelType&
   } 
 }
 
-//---------
-// get_tau
-//---------
-// Compute stabilization parameters tauM and tauC.
-//
-// Reproduces Fortran 'GETTAU'.
+/// @brief Compute stabilization parameters tauM and tauC.
+///
+/// Reproduces Fortran 'GETTAU'.
 //
 void get_tau(const ComMod& com_mod, const dmnType& lDmn, const double detF, const double Je, double& tauM, double& tauC)
 {
@@ -1408,10 +1380,6 @@ void get_tau(const ComMod& com_mod, const dmnType& lDmn, const double detF, cons
   tauC = ctC * (he*c) * (rho0/detF);
 }
 
-//-----------
-// g_vol_pen
-//-----------
-//
 void g_vol_pen(const ComMod& com_mod, const dmnType& lDmn, const double p, 
     double& ro, double& bt, double& dro, double& dbt, const double Ja)
 {

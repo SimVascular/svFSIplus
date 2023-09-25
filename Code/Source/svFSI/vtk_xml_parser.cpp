@@ -28,7 +28,7 @@ namespace vtk_xml_parser {
 const std::string VtkFileExtentions::VTK_VTU_EXTENSION = "vtu";
 const std::string VtkFileExtentions::VTK_VTP_EXTENSION = "vtp";
 
-// Map used to convert VTK cell types to number of nodes per element.
+/// Map used to convert VTK cell types to number of nodes per element.
 std::map<unsigned char,int> vtk_cell_to_elem {
   {VTK_HEXAHEDRON, 8},
   {VTK_LINE, 2},
@@ -38,7 +38,7 @@ std::map<unsigned char,int> vtk_cell_to_elem {
   {VTK_WEDGE, 6}
 };
 
-// Names of data arrays store in VTK mesh files.
+/// Names of data arrays store in VTK mesh files.
 const std::string NODE_IDS_NAME("GlobalNodeID");
 const std::string ELEMENT_IDS_NAME("GlobalElementID");
 
@@ -46,17 +46,14 @@ const std::string ELEMENT_IDS_NAME("GlobalElementID");
 //             I n t e r n a l  U t i l i t i e s              //
 /////////////////////////////////////////////////////////////////
 
-//--------------------
-// store_element_conn
-//--------------------
-// Store element connectivity into the Face object.
-//
-// Face variables set
-//   face.nEl - number of elements
-//   face.eNoN - number of noders per element
-//   face.IEN - element connectivity (num_nodes_per_elem, num_elems)
-//
-// Note: The face.IEN array is allocated as in the Fortran code as (face.eNoN, face.nEl).
+/// @brief Store element connectivity into the Face object.
+///
+/// Face variables set
+///   face.nEl - number of elements
+///   face.eNoN - number of noders per element
+///   face.IEN - element connectivity (num_nodes_per_elem, num_elems)
+///
+/// Note: The face.IEN array is allocated as in the Fortran code as (face.eNoN, face.nEl).
 //
 void store_element_conn(vtkSmartPointer<vtkPolyData> vtk_polydata, faceType& face)
 {
@@ -126,17 +123,14 @@ void store_element_conn(vtkSmartPointer<vtkPolyData> vtk_polydata, mshType& mesh
   }
 }
 
-//--------------------
-// store_element_conn
-//--------------------
-// Store VTK vtkUnstructuredGrid cell connectivity into a mesh element connectivity. 
-//
-// Mesh variables set
-//   mesh.gnEl - number of elements
-//   mesh.eNoN - number of noders per element
-//   mesh.gIEN - element connectivity (num_nodes_per_elem, num_elems)
-//
-// Note: The mesh.gIEN array is allocated as in the Fortran code as (np_elem, num_elems).
+/// @brief Store VTK vtkUnstructuredGrid cell connectivity into a mesh element connectivity. 
+///
+/// Mesh variables set
+///   mesh.gnEl - number of elements
+///   mesh.eNoN - number of noders per element
+///   mesh.gIEN - element connectivity (num_nodes_per_elem, num_elems)
+///
+/// Note: The mesh.gIEN array is allocated as in the Fortran code as (np_elem, num_elems).
 //
 void store_element_conn(vtkSmartPointer<vtkUnstructuredGrid> vtk_ugrid, mshType& mesh)
 {
@@ -248,12 +242,9 @@ void store_element_conn(vtkSmartPointer<vtkUnstructuredGrid> vtk_ugrid, mshType&
   }
 }
 
-//-------------------
-// store_element_ids
-//-------------------
-// Store element IDs into a mshType object. 
-//
-// [NOTE] Are element IDs used?
+/// @brief Store element IDs into a mshType object. 
+///
+/// \todo [NOTE] Are element IDs used?
 //
 void store_element_ids(vtkSmartPointer<vtkUnstructuredGrid> vtk_ugrid, mshType& mesh)
 {
@@ -266,13 +257,10 @@ void store_element_ids(vtkSmartPointer<vtkUnstructuredGrid> vtk_ugrid, mshType& 
   }
 }
 
-//-------------------
-// store_element_ids
-//-------------------
-// Store element IDs into a faceType object.
-//
-// Face data set
-//   face.gE
+/// @brief Store element IDs into a faceType object.
+///
+/// Face data set
+///   face.gE
 //
 void store_element_ids(vtkSmartPointer<vtkPolyData> vtk_polydata, faceType& face)
 {
@@ -292,14 +280,11 @@ void store_element_ids(vtkSmartPointer<vtkPolyData> vtk_polydata, faceType& face
   }
 }
 
-//--------------------
-// store_nodal_coords
-//--------------------
-// Store nodal coordinates from the VTK points into a face.
-//
-// Face data set
-//   face.nNo - number of nodes
-//   face.x - node coordinates
+/// @brief Store nodal coordinates from the VTK points into a face.
+///
+/// Face data set
+///   face.nNo - number of nodes
+///   face.x - node coordinates
 //
 void store_nodal_coords(vtkPoints* points, faceType& face)
 {
@@ -315,14 +300,11 @@ void store_nodal_coords(vtkPoints* points, faceType& face)
   }
 }
 
-//--------------------
-// store_nodal_coords
-//--------------------
-// Store VTK points into a mesh nodal coordinates.
-//
-// Mesh variables set
-//   mesh.gnNo - number of nodes
-//   mesh.x - node coordinates
+/// @brief Store VTK points into a mesh nodal coordinates.
+///
+/// Mesh variables set
+///   mesh.gnNo - number of nodes
+///   mesh.x - node coordinates
 //
 void store_nodal_coords(vtkPoints* points, mshType& mesh)
 {
@@ -339,15 +321,12 @@ void store_nodal_coords(vtkPoints* points, mshType& mesh)
   }
 }
 
-//-----------------
-// store_nodal_ids
-//-----------------
-// Store VTK node IDs data array into a mesh nodal IDs.
-//
-// Note: This array appeats to be optional. 
-//
-// Mesh variables set
-//   mesh.gN - nodal IDs
+/// @brief Store VTK node IDs data array into a mesh nodal IDs.
+///
+/// Note: This array appeats to be optional. 
+///
+/// Mesh variables set
+///   mesh.gN - nodal IDs
 //
 void store_nodal_ids(vtkSmartPointer<vtkUnstructuredGrid> vtk_ugrid, mshType& mesh)
 {
@@ -363,15 +342,12 @@ void store_nodal_ids(vtkSmartPointer<vtkUnstructuredGrid> vtk_ugrid, mshType& me
   }
 }
 
-//-----------------
-// store_nodal_ids
-//-----------------
-// Store VTK node IDs data array into a face nodal IDs.
-//
-// Note: This array appeats to be optional. 
-//
-// Face variables set
-//   face.gN - nodal IDs
+/// @brief Store VTK node IDs data array into a face nodal IDs.
+///
+/// Note: This array appeats to be optional. 
+///
+/// Face variables set
+///   face.gN - nodal IDs
 //
 void store_nodal_ids(vtkSmartPointer<vtkPolyData> vtk_polydata, faceType& face)
 {
@@ -408,22 +384,19 @@ void store_nodal_ids(vtkSmartPointer<vtkPolyData> vtk_polydata, mshType& mesh)
 //             E x p o s e d    U t i l i t i e s              //
 /////////////////////////////////////////////////////////////////
 
-//--------------------------
-// load_fiber_direction_vtu
-//--------------------------
-// Read fiber direction data from a VTK VTU file and copy it into a mesh..
-//
-// Data is stored in the mesh for all fiber direction files.
-//
-// Mesh variables set
-//   mesh.fN - Fiber orientations stored at the element level.  
-//             mesh.fN shape is Array<double>(num_fiber_files*nsd, num_elems)
-//
-// Arguments:
-//   file_name - The name of the VTK VTU file storing fiber direction data
-//   data_name - The name of the VTK Cell Data Array storing fiber direction data
-//   idx - The id used to identify a fiber file (0, 1, ..., number of fiber files - 1)
-//   mesh - The mesh to store the data into.
+/// @brief Read fiber direction data from a VTK VTU file and copy it into a mesh..
+///
+/// Data is stored in the mesh for all fiber direction files.
+///
+/// Mesh variables set
+///   mesh.fN - Fiber orientations stored at the element level.  
+///             mesh.fN shape is Array<double>(num_fiber_files*nsd, num_elems)
+///
+/// Arguments:
+///   file_name - The name of the VTK VTU file storing fiber direction data
+///   data_name - The name of the VTK Cell Data Array storing fiber direction data
+///   idx - The id used to identify a fiber file (0, 1, ..., number of fiber files - 1)
+///   mesh - The mesh to store the data into.
 //
 void load_fiber_direction_vtu(const std::string& file_name, const std::string& data_name, const int idx, 
     const int nsd, mshType& mesh)
@@ -479,10 +452,7 @@ void load_fiber_direction_vtu(const std::string& file_name, const std::string& d
   }
 }
 
-//----------
-// load_vtp
-//----------
-// Store a surface mesh read from a VTK .vtp file into a Face object.
+/// @brief Store a surface mesh read from a VTK .vtp file into a Face object.
 //
 void load_vtp(const std::string& file_name, faceType& face)
 {
@@ -524,10 +494,7 @@ void load_vtp(const std::string& file_name, faceType& face)
   #endif
 }
 
-//----------
-// load_vtp
-//----------
-// Store a surface mesh read from a VTK .vtp file into a Mesh object.
+/// @brief Store a surface mesh read from a VTK .vtp file into a Mesh object.
 //
 void load_vtp(const std::string& file_name, mshType& mesh) 
 {
@@ -569,20 +536,17 @@ void load_vtp(const std::string& file_name, mshType& mesh)
   #endif
 }
 
-//----------
-// load_vtu 
-//----------
-// Read a mesh from a .vtu file.
-//
-// Mesh variables set
-//   mesh.gnNo - number of nodes
-//   mesh.x - node coordinates
-//   mesh.gN - node IDs 
-//   mesh.gnEl - number of elements
-//   mesh.eNoN - number of noders per element
-//   mesh.gIEN - element connectivity (num_nodes_per_elem, num_elems)
-//
-// Replicates 'subroutine loadVTK(vtk,fName,istat)' defined in vtkXMLParser.f90.
+/// @brief Read a mesh from a .vtu file.
+///
+/// Mesh variables set
+///   mesh.gnNo - number of nodes
+///   mesh.x - node coordinates
+///   mesh.gN - node IDs 
+///   mesh.gnEl - number of elements
+///   mesh.eNoN - number of noders per element
+///   mesh.gIEN - element connectivity (num_nodes_per_elem, num_elems)
+///
+/// Replicates 'subroutine loadVTK(vtk,fName,istat)' defined in vtkXMLParser.f90.
 //
 void load_vtu(const std::string& file_name, mshType& mesh)
 {
