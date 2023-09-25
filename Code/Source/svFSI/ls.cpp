@@ -103,7 +103,6 @@ void init_dir_and_coup_neu(ComMod& com_mod, const Vector<int>& incL, const Vecto
 }
 
 
-<<<<<<< HEAD
 //-----------------------
 // init_dir_and_coupneu_bc_petsc
 //-----------------------
@@ -185,17 +184,7 @@ void init_dir_and_coupneu_bc_petsc(ComMod& com_mod, const Vector<int>& incL, con
 
 }
 
-//----------
-// ls_alloc
-//----------
-// Allocate com_mod.R and com_mod.Val arrays.
-//
-// Modifies:
-//    com_mod.R - Residual vector
-//    com_mod.Val - LHS matrix 
-//
-// Reproduces 'SUBROUTINE LSALLOC(lEq)'.
-=======
+
 /// @brief Allocate com_mod.R and com_mod.Val arrays.
 ///
 /// Modifies:
@@ -203,8 +192,8 @@ void init_dir_and_coupneu_bc_petsc(ComMod& com_mod, const Vector<int>& incL, con
 ///    com_mod.Val - LHS matrix 
 ///
 /// Reproduces 'SUBROUTINE LSALLOC(lEq)'.
->>>>>>> origin/main
 //
+
 void ls_alloc(ComMod& com_mod, eqType& lEq)
 {
   int dof = com_mod.dof;
