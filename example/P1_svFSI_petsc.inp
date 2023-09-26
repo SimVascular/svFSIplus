@@ -73,12 +73,10 @@ Add equation: struct {
       VonMises_stress: t
    }
 
-  LS type: BICG
+   LS type: GMRES
    {
-      Preconditioner:      FSILS
-      Tolerance:           1D-6
-      Max iterations:      1000
-      #Krylov space dimension: 50
+      Preconditioner: PETSc
+      PETSc file path: direct.inp
    }
 
    Add BC: X0 {

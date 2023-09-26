@@ -11,10 +11,10 @@
 
   <Save_results_to_VTK_format> 1 </Save_results_to_VTK_format> 
   <Name_prefix_of_saved_VTK_files> result </Name_prefix_of_saved_VTK_files> 
-  <Increment_in_saving_VTK_files> 1 </Increment_in_saving_VTK_files> 
+  <Increment_in_saving_VTK_files> 2 </Increment_in_saving_VTK_files> 
   <Start_saving_after_time_step> 1 </Start_saving_after_time_step> 
 
-  <Increment_in_saving_restart_files> 2 </Increment_in_saving_restart_files> 
+  <Increment_in_saving_restart_files> 100 </Increment_in_saving_restart_files> 
   <Convert_BIN_to_VTK_format> 0 </Convert_BIN_to_VTK_format> 
 
   <Verbose> 1 </Verbose> 
@@ -71,10 +71,10 @@
    <Constitutive_model type="nHK"> </Constitutive_model>
    <Density> 1000.0 </Density> 
    <Elasticity_modulus> 240.56596E6 </Elasticity_modulus>
-   <Poisson_ratio> 0.5 </Poisson_ratio>
+   <Poisson_ratio> 0.50 </Poisson_ratio>
 
    <Dilational_penalty_model> ST91 </Dilational_penalty_model>
-   <Penalty_parameter> 4.0E9 </Penalty_parameter> 
+   <Penalty_parameter> 4.0E9 </Penalty_parameter>
 
    <Output type="Spatial" >
      <Displacement> true </Displacement>
@@ -87,10 +87,9 @@
      <VonMises_stress> true </VonMises_stress>
    </Output>
 
-   <LS type="BICG" >
-      <Preconditioner> FSILS </Preconditioner> 
-      <Tolerance> 1e-6 </Tolerance>
-      <Max_iterations> 1000 </Max_iterations> 
+   <LS type="GMRES" >
+      <Preconditioner> PETSc </Preconditioner> 
+      <PETSc_file_path> direct.inp </PETSc_file_path> 
    </LS>
 
    <Add_BC name="X0" > 
