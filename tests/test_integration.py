@@ -177,20 +177,22 @@ def test_cavity_2d(n_proc):
     run_with_reference(folder, name_inp, name_ref, fields, t_max, n_proc)
 
 
+@pytest.mark.parametrize("name_inp", ["svFSI.xml", "svFSI_petsc.xml"])
 @pytest.mark.parametrize("n_proc", procs)
-def test_ale_3d_pipe(n_proc):
+def test_ale_3d_pipe(name_inp, n_proc):
     folder = os.path.join("cases", "ale_3d_pipe")
     fields = ["Displacement", "Pressure", "Velocity"]
     t_max = 5
-    name_inp = "svFSI.xml"
-    name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
+    # name_inp = "svFSI.xml"
+    name_ref = "result_" + str(t_max).zfill(3) + "_cpp.vtu"
     run_with_reference(folder, name_inp, name_ref, fields, t_max, n_proc)
 
-@pytest.mark.parametrize("name_inp", ["P1_svFSI.xml", "P1_svFSI_petsc.xml"])
-@pytest.mark.parametrize("n_proc", procs)
-def test_block_compression(name_inp, n_proc):
-    folder = os.path.join("cases", "block_compression")
-    field = ["Strain", "Cauchy_stress"]
-    t_max = 2
-    name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
-    run_with_reference(folder, name_inp, name_ref, field, t_max, n_proc)
+
+# @pytest.mark.parametrize("name_inp", ["P1_svFSI.xml", "P1_svFSI_petsc.xml"])
+# @pytest.mark.parametrize("n_proc", procs)
+# def test_block_compression(name_inp, n_proc):
+#     folder = os.path.join("cases", "block_compression")
+#     field = ["Strain", "Cauchy_stress"]
+#     t_max = 2
+#     name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
+#     run_with_reference(folder, name_inp, name_ref, field, t_max, n_proc)

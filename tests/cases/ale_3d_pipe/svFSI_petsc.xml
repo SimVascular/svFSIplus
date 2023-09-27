@@ -80,11 +80,8 @@
    </Domain>
 
    <LS type="GMRES" >
-      <Preconditioner> FSILS </Preconditioner>
-      <!--Preconditioner> Trilinos-ILUT </Preconditioner-->
-      <Tolerance> 1e-12 </Tolerance>
-      <Max_iterations> 100 </Max_iterations> 
-      <Krylov_space_dimension> 50 </Krylov_space_dimension>
+      <Preconditioner> PETSc </Preconditioner>
+      <PETSc_file_path> direct.inp </PETSc_file_path>
    </LS>
 
    <Output type="Spatial" >
