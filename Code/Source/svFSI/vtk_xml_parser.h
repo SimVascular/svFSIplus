@@ -11,10 +11,6 @@ enum class VtkFileFormat {
   VTU
 };
 
-//-------------------
-// VtkFileExtentions
-//-------------------
-//
 class VtkFileExtentions {
   public:
     const static std::string VTK_VTU_EXTENSION;

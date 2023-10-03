@@ -6,6 +6,7 @@
 #include <iostream>
 #include <string>
 
+/// @brief Keep track of time
 class Timer 
 {
   public:

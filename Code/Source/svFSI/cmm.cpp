@@ -17,10 +17,6 @@
 
 namespace cmm {
 
-//--------
-// cmm_3d
-//--------
-//
 void cmm_3d(ComMod& com_mod, const int eNoN, const double w, const Vector<double>& N, const Array<double>& Nx, 
     const Array<double>& al, const Array<double>& yl, const Array<double>& bfl, const Array<double>& Kxi, 
     Array<double>& lR, Array3<double>& lK)
@@ -265,10 +261,7 @@ void cmm_3d(ComMod& com_mod, const int eNoN, const double w, const Vector<double
   }
 }
 
-//-------
-// cmm_b
-//-------
-//
+
 void cmm_b(ComMod& com_mod, const faceType& lFa, const int e, const Array<double>& al, const Array<double>& dl, 
     const Array<double>& xl, const Array<double>& bfl, const Vector<double>& pS0l, const Vector<double>& vwp, 
     const Vector<int>& ptr) 
@@ -311,10 +304,7 @@ void cmm_b(ComMod& com_mod, const faceType& lFa, const int e, const Array<double
   }
 }
 
-//-------
-// bcmmi 
-//-------
-//
+
 void bcmmi(ComMod& com_mod, const int eNoN, const int idof, const double w, const Vector<double>& N, const Array<double>& Nxi, 
     const Array<double>& xl, const Array<double>& tfl, Array<double>& lR)
 {
@@ -345,7 +335,7 @@ void bcmmi(ComMod& com_mod, const int eNoN, const int idof, const double w, cons
   dmsg << "nV: " << nV ;
   #endif
 
-  // Local residue
+  // Local residual
   //
   if (idof == 1) {
     double wl = w * tfn(0);
@@ -365,12 +355,10 @@ void bcmmi(ComMod& com_mod, const int eNoN, const int idof, const double w, cons
   }
 }
 
-//------
-// cmmi
-//------
-// CMM initialization (interior).
-//
-// Reproduces Fortran 'CMMI'.
+
+/// @brief CMM initialization (interior).
+///
+/// Reproduces Fortran 'CMMI'.
 //
 void cmmi(ComMod& com_mod, const mshType& lM, const Array<double>& al, const Array<double>& dl, const Array<double>& xl,
     const Array<double>& bfl, const Vector<double>& pS0l, const Vector<double>& vwp, const Vector<int>& ptr)
@@ -442,10 +430,7 @@ void cmmi(ComMod& com_mod, const mshType& lM, const Array<double>& al, const Arr
 
 }
 
-//----------
-// cmm_mass
-//----------
-//
+
 void cmm_mass(ComMod& com_mod, const double w, const Vector<double>& N, const Array<double>& al, 
     const Array<double>& bfl, const Vector<double>& vwp, Array<double>& lR, Array3<double>& lK)
 {
@@ -516,10 +501,7 @@ void cmm_mass(ComMod& com_mod, const double w, const Vector<double>& N, const Ar
   }
 }
 
-//---------------
-// cmm_stiffness
-//---------------
-//
+
 void cmm_stiffness(ComMod& com_mod, const Array<double>& Nxi, const Array<double>& xl, const Array<double>& dl,
     const Vector<double>& pS0l, const Vector<double>& vwp, Vector<double>& pSl, Array<double>& lR, Array3<double>& lK)
 {
@@ -737,7 +719,7 @@ void cmm_stiffness(ComMod& com_mod, const Array<double>& Nxi, const Array<double
     pSl(5) = pSm(1,2);
   }
 
-  // Internal stress contribution to residue together with prestress
+  // Internal stress contribution to residual together with prestress
   //
   Sl = Sl + S0l;
   Vector<double> BtS(9);
@@ -755,7 +737,7 @@ void cmm_stiffness(ComMod& com_mod, const Array<double>& Nxi, const Array<double
   }
 
   // Now all the required tensors are defined, contributions to
-  // residue and stiffness can be computed
+  // residual and stiffness can be computed
   //
   double T1 = ht * Jac * 0.50;
 
@@ -791,11 +773,8 @@ void cmm_stiffness(ComMod& com_mod, const Array<double>& Nxi, const Array<double
   }
 }
 
-//---------------
-// construct_cmm
-//---------------
-//
-// Reproduces Fortran 'CONSTRUCT_CMM'.
+
+/// @brief Reproduces Fortran 'CONSTRUCT_CMM'.
 //
 void construct_cmm(ComMod& com_mod, const mshType& lM, const Array<double>& Ag, const Array<double>& Yg, const Array<double>& Dg)
 {

@@ -110,12 +110,9 @@ void commu(const ComMod& com_mod, Array<double>& U)
 
 }
 
-//--------
-// domain
-//--------
-// This function returns the domain that an element of a mesh belongs to
-//
-// Reproduces 'FUNCTION DOMAIN(lM, iEq, e)' defined in ALLFUN.f.
+/// @brief This function returns the domain that an element of a mesh belongs to
+///
+/// Reproduces 'FUNCTION DOMAIN(lM, iEq, e)' defined in ALLFUN.f.
 //
 int domain(const ComMod& com_mod, const mshType& lM, const int iEq, const int e)
 {
@@ -145,10 +142,7 @@ int domain(const ComMod& com_mod, const mshType& lM, const int iEq, const int e)
   return domain_id;
 }
 
-//-----------
-// find_face
-//-----------
-// Find the face ID and mesh ID based on the face name.
+/// @brief Find the face ID and mesh ID based on the face name.
 //
 void find_face(const std::vector<mshType>& mesh_list, const std::string& faceName, int& iM, int& iFa)
 {
@@ -172,10 +166,7 @@ void find_face(const std::vector<mshType>& mesh_list, const std::string& faceNam
   }
 }
 
-//----------
-// find_msh
-//----------
-// Find the mesh ID based on the mesh name.
+/// @brief Find the mesh ID based on the mesh name.
 //
 void find_msh(const std::vector<mshType>& mesh_list, const std::string& mesh_name, int& iM)
 {
@@ -189,10 +180,7 @@ void find_msh(const std::vector<mshType>& mesh_list, const std::string& mesh_nam
   }
 }
 
-//--------
-// global
-//--------
-// Reproduces 'FUNCTION GLOBALRV(lM, U)' defined in ALLFUN.f.
+/// @brief Reproduces 'FUNCTION GLOBALRV(lM, U)' defined in ALLFUN.f.
 //
 Array<double> 
 global(const ComMod& com_mod, const CmMod& cm_mod, const mshType& lM, const Array<double>& U)
@@ -275,12 +263,9 @@ global(const ComMod& com_mod, const CmMod& cm_mod, const mshType& lM, const Arra
   return result;
 }
 
-//-------
-// integ
-//-------
-// This routine integrate an equation over a particular domain
-//
-// Replicates 'FUNCTION vInteg(dId, s, l, u, pFlag)' defined in ALLFUN.f.
+/// @brief This routine integrate an equation over a particular domain
+///
+/// Replicates 'FUNCTION vInteg(dId, s, l, u, pFlag)' defined in ALLFUN.f.
 //
 double integ(const ComMod& com_mod, const CmMod& cm_mod, int dId, const Array<double>& s, int l, int u, bool pFlag)
 {
@@ -518,12 +503,9 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, int dId, const Array<do
   return result;
 }
 
-//-------
-// integ
-//-------
-// This routine integrate s over the surface faId.
-//
-// Reproduces 'FUNCTION IntegS(lFa, s, pflag)'.
+/// @brief This routine integrate s over the surface faId.
+///
+/// Reproduces 'FUNCTION IntegS(lFa, s, pflag)'.
 //
 double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, const Vector<double>& s, bool pFlag)
 {
@@ -663,12 +645,9 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, co
   return result; 
 }
 
-//-------
-// integ
-//-------
-// This routine integrate s over the surface faId. 
-//
-// Reproduces 'FUNCTION IntegV(lFa, s)'
+/// @brief This routine integrate s over the surface faId. 
+///
+/// Reproduces 'FUNCTION IntegV(lFa, s)'
 //
 double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, const Array<double>& s)
 {
@@ -764,14 +743,11 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, co
   return result; 
 }
 
-//-------
-// integ
-//-------
-// This routine integrate s(l:u,:) over the surface faId.
-//
-// Note that 'l' seems to be a length and 'uo' an offset. 'l' should never be 0.
-//
-// Reproduces 'FUNCTION IntegG(lFa, s, l, uo, THflag)'.
+/// @brief This routine integrate s(l:u,:) over the surface faId.
+///
+/// Note that 'l' seems to be a length and 'uo' an offset. 'l' should never be 0.
+///
+/// Reproduces 'FUNCTION IntegG(lFa, s, l, uo, THflag)'.
 //
 double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, const Array<double>& s, const int l, int uo, bool THflag)
 {
@@ -832,10 +808,7 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, co
   return result; 
 }
 
-//-----------
-// is_domain
-//-----------
-//
+
 bool is_domain(const ComMod& com_mod, const eqType& eq, const int node, const consts::EquationType phys)
 {
   bool result = false;
@@ -868,10 +841,8 @@ bool is_domain(const ComMod& com_mod, const eqType& eq, const int node, const co
   return result;
 }
 
-//----------
-// jacobian
-//----------
-// Computes the JACOBIAN of an element.
+
+/// @brief Computes the JACOBIAN of an element.
 //
 double jacobian(ComMod& com_mod, const int nDim, const int eNoN, const Array<double>& x, const Array<double>&Nxi)
 {
@@ -896,10 +867,7 @@ double jacobian(ComMod& com_mod, const int nDim, const int eNoN, const Array<dou
   return Jac;
 }
 
-//-------
-// local
-//-------
-//
+
 Vector<int> 
 local(const ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, Vector<int>& U)
 {
@@ -938,10 +906,7 @@ local(const ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, Vector<int>&
   return local_vector;
 }
 
-//-------
-// local
-//-------
-//
+
 Array<double> 
 local(const ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, Array<double>& U)
 {
@@ -1011,10 +976,7 @@ local(const ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, Array<double
   return local_array;
 }
 
-//-----
-// mkc
-//-----
-//
+
 Vector<double> 
 mkc(const ComMod& com_mod, Vector<double>& U)
 {
@@ -1058,10 +1020,7 @@ mkc(const ComMod& com_mod, Array<double>& U)
   return result;
 }
 
-//------
-// mkci
-//------
-//
+
 void mkci(const ComMod& com_mod, Vector<double>& U)
 {
   if (com_mod.cm.seq()) {
@@ -1104,10 +1063,7 @@ void mkci(const ComMod& com_mod, Array<double>& U)
   }
 }
 
-//------------
-// set_dmn_id
-//------------
-// Set domain ID to a given number for the entire or a range of elements in a mesh.
+/// @brief Set domain ID to a given number for the entire or a range of elements in a mesh.
 //
 void set_dmn_id(mshType& mesh, const int iDmn, const int ifirst, const int ilast)
 {
@@ -1139,10 +1095,7 @@ void set_dmn_id(mshType& mesh, const int iDmn, const int ifirst, const int ilast
   }
 }
 
-//----------
-// skewness
-//----------
-// Computes the Skewness of an element.
+/// @brief Computes the Skewness of an element.
 //
 double skewness(ComMod& com_mod, const int nDim, const int eNoN, const Array<double>& x)
 {
@@ -1200,21 +1153,19 @@ double skewness(ComMod& com_mod, const int nDim, const int eNoN, const Array<dou
   return fabs(integ_eq - integ_el) / integ_eq;
 }
 
-//------------
-// split_jobs
-//------------
-// Spliting "m" jobs between "n" workers. "b" contains amount of jobs
-// and "A" will store the distribution of jobs
-//
-// A(nMsh, num_proc)
-//
-// b(nMsh)
-//
-// n = nMsh
-//
-// m = num_proc
-//
-// Replicates 'RECURSIVE SUBROUTINE SPLITJOBS(m, n, A, b)' in ALLFUN.f.
+
+/// @brief Spliting "m" jobs between "n" workers. "b" contains amount of jobs
+/// and "A" will store the distribution of jobs
+///
+/// A(nMsh, num_proc)
+///
+/// b(nMsh)
+///
+/// n = nMsh
+///
+/// m = num_proc
+///
+/// Replicates 'RECURSIVE SUBROUTINE SPLITJOBS(m, n, A, b)' in ALLFUN.f.
 //
 void split_jobs(int tid, int m, int n, Array<double>& A, Vector<double>& b)
 {

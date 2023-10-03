@@ -8,10 +8,6 @@
 
 #include <iostream>
 
-//------------
-// Simulation
-//------------
-//
 Simulation::Simulation() 
 {
   roInf = 0.2;
@@ -20,18 +16,10 @@ Simulation::Simulation()
   history_file_name = "histor.dat";
 }
 
-//-------------
-// ~Simulation
-//-------------
-//
 Simulation::~Simulation() 
 {
 }
 
-//---------
-// get_msh
-//---------
-//
 const mshType& Simulation::get_msh(const std::string& name)
 {
   for (auto& mesh : com_mod.msh) { 
@@ -41,24 +29,18 @@ const mshType& Simulation::get_msh(const std::string& name)
   }
 }
 
-//-----------------
-// read_parameters
-//-----------------
-// Read solver parameters.
+/// @brief Read solver parameters.
 //
 void Simulation::read_parameters(const std::string& file_name)
 {
   parameters.read_xml(file_name);
 }
 
-//-----------------------
-// set_module_parameters
-//-----------------------
-// Set the simulation and module member data.
-//
-// Replicates the README subroutine lines to set COMMOD module varliables
-//
-//   lPtr => list%get(nTs,"Number of time steps",1,ll=1)
+/// @brief Set the simulation and module member data.
+///
+/// Replicates the README subroutine lines to set COMMOD module varliables
+///
+///   lPtr => list%get(nTs,"Number of time steps",1,ll=1)
 //
 void Simulation::set_module_parameters()
 {

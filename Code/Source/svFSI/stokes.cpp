@@ -20,12 +20,6 @@
 
 namespace stokes {
 
-//-----------------
-// construct_stokes
-//-----------------
-//
-// Modifies:
-//
 void construct_stokes(ComMod& com_mod, const mshType& lM, const Array<double>& Ag, const Array<double>& Yg)
 {
   #define n_debug_construct_stokes
@@ -111,7 +105,7 @@ void construct_stokes(ComMod& com_mod, const mshType& lM, const Array<double>& A
       }
     }
 
-    // Initialize residue and tangents
+    // Initialize residual and tangents
     lR = 0.0;
     lK = 0.0;
     std::array<fsType,2> fs;
@@ -224,10 +218,7 @@ void construct_stokes(ComMod& com_mod, const mshType& lM, const Array<double>& A
 
 }
 
-//-------------
-// stokes_2d_c 
-//-------------
-// Reproduces Fortran 'STOKES2D_C()'.
+/// @brief Reproduces Fortran 'STOKES2D_C()'.
 //
 void stokes_2d_c(ComMod& com_mod, const int lStab, const int eNoNw, const int eNoNq, const double w, 
     const Array<double>& ksix, const Vector<double>& Nw, const Vector<double>& Nq, const Array<double>& Nwx, 
@@ -308,7 +299,7 @@ void stokes_2d_c(ComMod& com_mod, const int lStab, const int eNoNw, const int eN
     tauM = 0.0;
   }
 
-  // Local residue
+  // Local residual
   //
   auto rMv = vd + px;
 
@@ -460,7 +451,7 @@ void stokes_2d_m(ComMod& com_mod, const int eNoNw, const int eNoNq, const double
 //-------------
 // stokes_3d_c
 //-------------
-// Element continuity residue.
+// Element continuity residual.
 //
 void stokes_3d_c(ComMod& com_mod, const int lStab, const int eNoNw, const int eNoNq, const double w, 
     const Array<double>& ksix, const Vector<double>& Nw, const Vector<double>& Nq, const Array<double>& Nwx, 
@@ -538,7 +529,7 @@ void stokes_3d_c(ComMod& com_mod, const int lStab, const int eNoNw, const int eN
     tauM = 0.0;
   }
 
-  // Local residue
+  // Local residual
   //
   auto rMv = vd + px;
 
@@ -571,14 +562,11 @@ void stokes_3d_c(ComMod& com_mod, const int lStab, const int eNoNw, const int eN
   }
 }
 
-//-------------
-// stokes_3d_m
-//-------------
-// Element momentum residue.
-//
-//  Modifies:
-//    lR(dof,eNoN)  - Residue
-//    lK(dof*dof,eNoN,eNoN) - Stiffness matrix
+/// @brief Element momentum residual
+///
+///  Modifies:
+///    lR(dof,eNoN)  - Residual
+///    lK(dof*dof,eNoN,eNoN) - Stiffness matrix
 //
 void stokes_3d_m(ComMod& com_mod, const int eNoNw, const int eNoNq, const double w, 
     const Vector<double>& Nw, const Vector<double>& Nq, const Array<double>& Nwx, 
@@ -675,7 +663,7 @@ void stokes_3d_m(ComMod& com_mod, const int eNoNw, const int eNoNq, const double
   es(2,0) = es(0,2);
   es(2,1) = es(1,2);
 
-  // Local residue
+  // Local residual
   for (int a = 0; a < eNoNw; a++) {
     double rM = Nwx(0,a)*(-p + es(0,0)) + Nwx(1,a)*es(0,1) + Nwx(2,a)*es(0,2);
     lR(0,a) = lR(0,a) + w*(Nw(a)*vd(0) + rM);

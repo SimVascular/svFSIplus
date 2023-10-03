@@ -41,10 +41,6 @@ class VtkData {
     std::string file_name;
 };
 
-//------------
-// VtkVtpData
-//------------
-//
 class VtkVtpData : public VtkData {
   public:
     VtkVtpData();
@@ -80,10 +76,6 @@ class VtkVtpData : public VtkData {
     VtkVtpDataImpl* impl;
 };
 
-//------------
-// VtkVtuData
-//------------
-//
 class VtkVtuData : public VtkData {
   public:
     VtkVtuData();

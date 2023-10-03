@@ -9,14 +9,11 @@
 
 namespace output {
 
-//---------------
-// output_result 
-//---------------
-// Prepares the output of svFSI to the standard output.
-//
-// Modifies: timeP
-//
-// NOTE: This is not fully implemented.
+/// @brief Prepares the output of svFSI to the standard output.
+///
+/// Modifies: timeP
+///
+/// \todo NOTE: This is not fully implemented.
 //
 void output_result(Simulation* simulation,  std::array<double,3>& timeP, const int co, const int iEq)
 {
@@ -141,10 +138,6 @@ void output_result(Simulation* simulation,  std::array<double,3>& timeP, const i
   }
 }
 
-//---------------------
-// read_restart_header
-//---------------------
-//
 void read_restart_header(ComMod& com_mod, std::array<int,7>& tStamp, double& timeP, std::ifstream& restart_file)
 {
   auto& cTS = com_mod.cTS;
@@ -160,10 +153,7 @@ void read_restart_header(ComMod& com_mod, std::array<int,7>& tStamp, double& tim
   }
 }
 
-//---------------
-// write_restart
-//---------------
-// Reproduces the Fortran 'WRITERESTART' subroutine.
+/// @brief Reproduces the Fortran 'WRITERESTART' subroutine.
 //
 void write_restart(Simulation* simulation, std::array<double,3>& timeP)
 {
@@ -324,10 +314,6 @@ void write_restart(Simulation* simulation, std::array<double,3>& timeP)
   }
 }
 
-//----------------------
-// write_restart_header
-//----------------------
-//
 void write_restart_header(ComMod& com_mod, std::array<double,3>& timeP, std::ofstream& restart_file)
 {
   auto const cTS = com_mod.cTS;
@@ -345,12 +331,9 @@ void write_restart_header(ComMod& com_mod, std::array<double,3>& timeP, std::ofs
   }
 }
 
-//---------------
-// write_results
-//---------------
-// [NOTE] not fully implemented.
-//
-// Reproduces: WRITE(fid, REC=myID) stamp, cTS, time,CPUT()-timeP(1), eq.iNorm, cplBC.xn, Yn, An, Dn
+/// \todo [NOTE] not fully implemented.
+///
+/// Reproduces: WRITE(fid, REC=myID) stamp, cTS, time,CPUT()-timeP(1), eq.iNorm, cplBC.xn, Yn, An, Dn
 //
 void write_results(ComMod& com_mod, const std::array<double,3>& timeP, const std::string& fName, const bool sstEq)
 {

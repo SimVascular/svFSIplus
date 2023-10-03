@@ -12,10 +12,6 @@
 
 namespace ustruct {
 
-//--------------
-// b_ustruct_2d
-//--------------
-//
 void b_ustruct_2d(const ComMod& com_mod, const int eNoN, const double w, const Vector<double>& N, 
     const Array<double>& Nx, const Array<double>& dl, const Vector<double>& hl, const Vector<double>& nV, 
     Array<double>& lR, Array3<double>& lK, Array3<double>& lKd)
@@ -73,10 +69,7 @@ void b_ustruct_2d(const ComMod& com_mod, const int eNoN, const double w, const V
   }
 }
 
-//--------------
-// b_ustruct_3d
-//--------------
-//
+
 void b_ustruct_3d(const ComMod& com_mod, const int eNoN, const double w, const Vector<double>& N, 
     const Array<double>& Nx, const Array<double>& dl, const Vector<double>& hl, const Vector<double>& nV, 
     Array<double>& lR, Array3<double>& lK, Array3<double>& lKd)
@@ -159,11 +152,7 @@ void b_ustruct_3d(const ComMod& com_mod, const int eNoN, const double w, const V
   }
 }
 
-//-------------------
-// construct_usolid
-//-------------------
-//
-// Reproduces Fortran CONSTRUCT_uSOLID.
+/// @brief Reproduces Fortran CONSTRUCT_uSOLID.
 //
 void construct_usolid(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Array<double>& Ag, 
     const Array<double>& Yg, const Array<double>& Dg)
@@ -257,7 +246,7 @@ void construct_usolid(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const
       }
     }
 
-    // Initialize residue and tangents
+    // Initialize residual and tangents
     lR = 0.0;
     lK = 0.0;
     lKd = 0.0;
@@ -361,10 +350,6 @@ void construct_usolid(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const
 
 }
 
-//-------------
-// get_col_ptr
-//-------------
-//
 int get_col_ptr(ComMod& com_mod, const int rowN, const int colN)
 {
   auto& rowPtr = com_mod.rowPtr;
@@ -386,11 +371,7 @@ int get_col_ptr(ComMod& com_mod, const int rowN, const int colN)
   return ptr;
 } 
 
-//---------------
-// ustruct_2d_c
-//---------------
-//
-// Reproduces Fortran USTRUCT2D_C.
+/// @brief Reproduces Fortran USTRUCT2D_C.
 //
 void ustruct_2d_c(ComMod& com_mod, CepMod& cep_mod, const bool vmsFlag, const int eNoNw, const int eNoNq,
     const double w, const double Je, const Vector<double>& Nw,  const Vector<double>& Nq,
@@ -546,7 +527,7 @@ void ustruct_2d_c(ComMod& com_mod, CepMod& cep_mod, const bool vmsFlag, const in
   rM(0) = rho*vd(0) + PxFi(0);
   rM(1) = rho*vd(1) + PxFi(1);
 
-  // Local residue
+  // Local residual
   //
   Vector<double> rMNqx(eNoNq);
 
@@ -607,11 +588,7 @@ void ustruct_2d_c(ComMod& com_mod, CepMod& cep_mod, const bool vmsFlag, const in
   }
 }
 
-//---------------
-// ustruct_3d_c
-//---------------
-//
-// Reproduces Fortran USTRUCT3D_C.
+/// @brief Reproduces Fortran USTRUCT3D_C.
 //
 void ustruct_3d_c(ComMod& com_mod, CepMod& cep_mod, const bool vmsFlag, const int eNoNw, const int eNoNq,
     const double w, const double Je, const Vector<double>& Nw,  const Vector<double>& Nq,
@@ -798,7 +775,7 @@ void ustruct_3d_c(ComMod& com_mod, CepMod& cep_mod, const bool vmsFlag, const in
   rM(1) = rho*vd(1) + PxFi(1);
   rM(2) = rho*vd(2) + PxFi(2);
 
-  // Local residue
+  // Local residual
   //
   Vector<double> rMNqx(eNoNq);
 
@@ -871,11 +848,7 @@ void ustruct_3d_c(ComMod& com_mod, CepMod& cep_mod, const bool vmsFlag, const in
   }
 }
 
-//--------------
-// ustruct_2d_m
-//--------------
-//
-// Replicates Fortran USTRUCT2D_M.
+/// @brief Replicates Fortran USTRUCT2D_M.
 //
 void ustruct_2d_m(ComMod& com_mod, CepMod& cep_mod, const bool vmsFlag, const int eNoNw, const int eNoNq, 
     const int nFn, const double w, const double Je, const Vector<double>& Nw,  const Vector<double>& Nq, 
@@ -1023,7 +996,7 @@ void ustruct_2d_m(ComMod& com_mod, CepMod& cep_mod, const bool vmsFlag, const in
   double rC  = beta*pd + VxFi(1,1) + VxFi(2,2);
   double rCl = -p + tauC*rC;
 
-  // Local residue
+  // Local residual
   //
   for (int a = 0; a < eNoNw; a++) {
     double T1 = Jac*rho*vd(0)*Nw(a);
@@ -1176,11 +1149,7 @@ void ustruct_2d_m(ComMod& com_mod, CepMod& cep_mod, const bool vmsFlag, const in
   }
 }
 
-//--------------
-// ustruct_3d_m
-//--------------
-//
-// Reproduces Fortran USTRUCT3D_M.
+/// @brief Reproduces Fortran USTRUCT3D_M.
 //
 void ustruct_3d_m(ComMod& com_mod, CepMod& cep_mod, const bool vmsFlag, const int eNoNw, const int eNoNq, 
     const int nFn, const double w, const double Je, const Vector<double>& Nw,  const Vector<double>& Nq, 
@@ -1351,7 +1320,7 @@ void ustruct_3d_m(ComMod& com_mod, CepMod& cep_mod, const bool vmsFlag, const in
   double rC  = beta*pd + VxFi(0,0) + VxFi(1,1) + VxFi(2,2);
   double rCl = -p + tauC*rC;
 
-  // Local residue
+  // Local residual
   //
   double T1, T2, T3;
 
@@ -1646,10 +1615,7 @@ void ustruct_3d_m(ComMod& com_mod, CepMod& cep_mod, const bool vmsFlag, const in
 
 }
 
-//------------------
-// ustruct_do_assem
-//------------------
-// Replicates 'SUBROUTINE USTRUCT_DOASSEM(d, eqN, lKd, lK, lR)'
+/// @brief Replicates 'SUBROUTINE USTRUCT_DOASSEM(d, eqN, lKd, lK, lR)'
 //
 void ustruct_do_assem(ComMod& com_mod, const int d, const Vector<int>& eqN, const Array3<double>& lKd, 
     const Array3<double>& lK, const Array<double>& lR)
@@ -1661,13 +1627,13 @@ void ustruct_do_assem(ComMod& com_mod, const int d, const Vector<int>& eqN, cons
   auto& Val = com_mod.Val;
 
   for (int a = 0; a < d; a++) {
-    // Momentum equation residue is assembled at mapped rows
+    // Momentum equation residual is assembled at mapped rows
     int rowN = idMap(eqN(a));
     for (int i = 0; i < nsd; i++) {
       R(i,rowN) = R(i,rowN) + lR(i,a);
     }
 
-    // Continuity equation residue is assembled at unmapped rows
+    // Continuity equation residual is assembled at unmapped rows
     rowN = eqN(a);
     R(nsd,rowN) = R(nsd,rowN) + lR(nsd,a);
   }
@@ -1795,12 +1761,8 @@ void ustruct_do_assem(ComMod& com_mod, const int d, const Vector<int>& eqN, cons
   }
 }
 
-//-----------
-// ustruct_r
-//-----------
-//
-// Modifies:
-//   com_mod.Rd
+/// Modifies:
+///   com_mod.Rd
 //
 void ustruct_r(ComMod& com_mod, const Array<double>& Yg)
 {

@@ -19,23 +19,22 @@
 
 namespace baf_ini_ns {
 
-//---------
-// baf_ini
-//---------
-// This routine initializes required structure for boundaries,
-// faces, those that interface with FSILS and cplBC.
-//
-// Modifies:
-//  com_mod.cplBC.fa
-//  com_mod.cplBC.xn
-//
-//  com_mod.cplBC.fa[i].RCR.Rp = bc.RCR.Rp;
-//  com_mod.cplBC.fa[i].RCR.C  = bc.RCR.C;
-//  com_mod.cplBC.fa[i].RCR.Rd = bc.RCR.Rd;
-//  com_mod.cplBC.fa[i].RCR.Pd = bc.RCR.Pd;
-//  com_mod.cplBC.fa[i].RCR.Xo = bc.RCR.Xo;
-//
-// Replicates 'SUBROUTINE BAFINI()' defined in BAFINIT.f
+/// @brief This routine initializes required structure for boundaries,
+/// faces, those that interface with FSILS and cplBC.
+///
+/// Modifies:
+/// \code {.cpp}
+///  com_mod.cplBC.fa
+///  com_mod.cplBC.xn
+///
+///  com_mod.cplBC.fa[i].RCR.Rp = bc.RCR.Rp;
+///  com_mod.cplBC.fa[i].RCR.C  = bc.RCR.C;
+///  com_mod.cplBC.fa[i].RCR.Rd = bc.RCR.Rd;
+///  com_mod.cplBC.fa[i].RCR.Pd = bc.RCR.Pd;
+///  com_mod.cplBC.fa[i].RCR.Xo = bc.RCR.Xo;
+/// \endcode
+///
+/// Replicates 'SUBROUTINE BAFINI()' defined in BAFINIT.f
 //
 void baf_ini(Simulation* simulation)
 {

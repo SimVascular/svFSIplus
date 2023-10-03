@@ -18,13 +18,10 @@
 
 namespace shells {
 
-//-----------------
-// construct_shell
-//-----------------
-// This routines is for solving nonlinear shell mechanics problem
-// using finite elements and IGA.
-// 
-// Reproduces Fortran CONSTRUCT_SHELL
+/// @brief This routines is for solving nonlinear shell mechanics problem
+/// using finite elements and IGA.
+/// 
+/// Reproduces Fortran CONSTRUCT_SHELL
 //
 void construct_shell(ComMod& com_mod, const mshType& lM, const Array<double>& Ag,
     const Array<double>& Yg, const Array<double>& Dg)
@@ -456,7 +453,7 @@ void shell_3d(ComMod& com_mod, const mshType& lM, const int g, const int eNoN,
     ud(2) = ud(2) + N(a)*(rho*(al(k,a)-bfl(2,a)) + dmp*yl(k,a));
   }
 
-  // Local residue
+  // Local residual
   //
   auto w = lM.w(g)*Jac0;
   auto wh = w*ht;
@@ -1159,7 +1156,7 @@ void shell_bf(ComMod& com_mod, const int eNoN, const double w, const Vector<doub
   Vector<double> nV(3);
   nn::gnns(nsd, eNoN, Nx, xc, nV, gCov, gCnv);
 
-  //  Local residue
+  //  Local residual
   for (int a = 0; a < eNoN; a++) {
     lR(0,a) = lR(0,a) - wl*N(a)*nV(0);
     lR(1,a) = lR(1,a) - wl*N(a)*nV(1);
@@ -1436,7 +1433,7 @@ void shell_cst(ComMod& com_mod, const mshType& lM, const int e, const int eNoN, 
     D2Bb.rslice(a) = mat_fun::mat_mul(Dm.rslice(2), Bb.rslice(a));
   }
 
-  // Contribution to residue and stiffness matrices due to inertia and
+  // Contribution to residual and stiffness matrices due to inertia and
   // body forces
   //
   Array<double> lR(dof,eNoN);
@@ -1456,7 +1453,7 @@ void shell_cst(ComMod& com_mod, const mshType& lM, const int e, const int eNoN, 
       ud(2) = ud(2) + N(a)*(rho*(al(k,a)-bfl(2,a)) + dmp*yl(k,a));
      }
 
-     // Local residue
+     // Local residual
      for (int a = 0; a < lM.eNoN; a++) {
        lR(0,a) = lR(0,a) + N(a)*w*ud(0);
        lR(1,a) = lR(1,a) + N(a)*w*ud(1);
@@ -1477,7 +1474,7 @@ void shell_cst(ComMod& com_mod, const mshType& lM, const int e, const int eNoN, 
   //std::cout << "[shell_cst] lK: " << lK << std::endl;
   //exit(0);
 
-  // Contribution to residue from membrane strain
+  // Contribution to residual from membrane strain
   //
   double w = Jac0 * 0.5;
 
@@ -1492,7 +1489,7 @@ void shell_cst(ComMod& com_mod, const mshType& lM, const int e, const int eNoN, 
     lR(2,a) = lR(2,a) + w*BtS;
   }
 
-  // Contribution to residue from bending strain
+  // Contribution to residual from bending strain
   //
   for (int a = 0; a < eNoN; a++) {
      double BtS = Bb(0,0,a)*Sm(0,1) + Bb(1,0,a)*Sm(1,1) + Bb(2,0,a)*Sm(2,1);
@@ -1704,7 +1701,7 @@ void shell_fp(ComMod& com_mod, const int eNoN, const double w, const Vector<doub
   Array<double> gCnv(3,2);
   nn::gnns(nsd, eNoN, Nx, xc, nV, gCov, gCnv);
 
-  // Local residue
+  // Local residual
   for (int a = 0; a < eNoN; a++) {
     lR(0,a) = lR(0,a) - wl*N(a)*nV(0);
     lR(1,a) = lR(1,a) - wl*N(a)*nV(1);

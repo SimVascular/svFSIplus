@@ -4,17 +4,13 @@
 
 namespace fsi_linear_solver {
 
-//-----------------
-// fsils_bc_create
-//-----------------
-//
-// Modifies:
-//  lhs.face[faIn].nNo 
-//  lhs.face[faIn].dof
-//  lhs.face[faIn].bGrp 
-//  lhs.face[faIn].glob
-//  lhs.face[faIn].val
-//  lhs.face[faIn].valM
+/// @brief Modifies:
+///  lhs.face[faIn].nNo 
+///  lhs.face[faIn].dof
+///  lhs.face[faIn].bGrp 
+///  lhs.face[faIn].glob
+///  lhs.face[faIn].val
+///  lhs.face[faIn].valM
 //
 void fsils_bc_create(FSILS_lhsType& lhs, int faIn, int nNo, int dof, BcType BC_type, const Vector<int>& gNodes, 
     const Array<double>& Val)
@@ -102,10 +98,7 @@ void fsils_bc_create(FSILS_lhsType& lhs, int faIn, int nNo, int dof, BcType BC_t
   }
 }
 
-//-----------------
-// fsils_bc_create
-//-----------------
-// fsils_bc_create() without optional 'Val' parameter.
+/// @brief fsils_bc_create() without optional 'Val' parameter.
 //
 void fsils_bc_create(FSILS_lhsType& lhs, int faIn, int nNo, int dof, BcType BC_type, const Vector<int>& gNodes)
 {
@@ -113,10 +106,7 @@ void fsils_bc_create(FSILS_lhsType& lhs, int faIn, int nNo, int dof, BcType BC_t
   fsils_bc_create(lhs, faIn, nNo, dof, BC_type, gNodes, Val);
 }
 
-//---------------
-// fsils_bc_free
-//---------------
-//
+
 void fsils_bc_free(FSILS_lhsType& lhs, int faIn)
 {
   //IF (.NOT.lhs%face(faIn)%foC) THEN

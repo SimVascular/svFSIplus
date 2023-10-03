@@ -1,8 +1,8 @@
-// The 'set_equation_props' map defined here sets equation 
-// properties from values read in from a file.
+/// @brief The 'set_equation_props' map defined here sets equation 
+/// properties from values read in from a file.
+///
+/// This replaces the 'SELECT CASE (eqName)' statement in the Fortran 'READEQ()' subroutine.
 //
-// This replaces the 'SELECT CASE (eqName)' statement in the Fortran 'READEQ()' subroutine.
-
 using SetEquationPropertiesMapType = std::map<consts::EquationType, std::function<void(Simulation*, EquationParameters*, 
   eqType&, EquationProps&, EquationOutputs&, EquationNdop&)>>;
 

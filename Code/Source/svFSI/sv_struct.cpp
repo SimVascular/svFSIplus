@@ -21,10 +21,6 @@
 
 namespace struct_ns {
 
-//-------------
-// b_struct_2d
-//-------------
-//
 void b_struct_2d(const ComMod& com_mod, const int eNoN, const double w, const Vector<double>& N, 
     const Array<double>& Nx, const Array<double>& dl, const Vector<double>& hl, const Vector<double>& nV, 
     Array<double>& lR, Array3<double>& lK)
@@ -80,10 +76,7 @@ void b_struct_2d(const ComMod& com_mod, const int eNoN, const double w, const Ve
   }
 }
 
-//--------------
-// b_struct_3d
-//--------------
-//
+
 void b_struct_3d(const ComMod& com_mod, const int eNoN, const double w, const Vector<double>& N, 
     const Array<double>& Nx, const Array<double>& dl, const Vector<double>& hl, const Vector<double>& nV, 
     Array<double>& lR, Array3<double>& lK)
@@ -177,11 +170,7 @@ void b_struct_3d(const ComMod& com_mod, const int eNoN, const double w, const Ve
   }
 }
 
-//------------------
-// construct_dsolid
-//------------------
-//
-// Replicates the Fortan 'CONSTRUCT_dSOLID' subroutine.
+/// @brief Replicates the Fortan 'CONSTRUCT_dSOLID' subroutine.
 //
 void construct_dsolid(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Array<double>& Ag, const Array<double>& Yg, const Array<double>& Dg)
 {
@@ -334,10 +323,7 @@ void construct_dsolid(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const
   } 
 }
 
-//-----------
-// struct_2d
-//-----------
-// Reproduces Fortran 'STRUCT2D' subroutine.
+/// @brief Reproduces Fortran 'STRUCT2D' subroutine.
 //
 void struct_2d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, const double w, 
     const Vector<double>& N, const Array<double>& Nx, const Array<double>& al, const Array<double>& yl, 
@@ -459,7 +445,7 @@ void struct_2d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, 
   debug << "   " << P(1,0) << " " << P(1,1);
   #endif
 
-  // Local residue
+  // Local residual
   for (int a = 0; a < eNoN; a++) {
     lR(0,a) = lR(0,a) + w*(N(a)*ud(0) + Nx(0,a)*P(0,0) + Nx(2,a)*P(0,1));
     lR(1,a) = lR(1,a) + w*(N(a)*ud(1) + Nx(0,a)*P(1,0) + Nx(1,a)*P(1,1));
@@ -566,11 +552,7 @@ void struct_2d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, 
 
 }
 
-//-----------
-// struct_3d
-//-----------
-//
-// Reproduces Fortran 'STRUCT3D' subroutine.
+/// @brief Reproduces Fortran 'STRUCT3D' subroutine.
 //
 void struct_3d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, const double w, 
     const Vector<double>& N, const Array<double>& Nx, const Array<double>& al, const Array<double>& yl, 
@@ -738,7 +720,7 @@ void struct_3d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, 
   Array3<double> Bm(6,3,eNoN); 
   mat_fun::mat_mul(F, S, P);
 
-  // Local residue
+  // Local residual
   for (int a = 0; a < eNoN; a++) {
     lR(0,a) = lR(0,a) + w*(N(a)*ud(0) + Nx(0,a)*P(0,0) + Nx(1,a)*P(0,1) + Nx(2,a)*P(0,2));
     lR(1,a) = lR(1,a) + w*(N(a)*ud(1) + Nx(0,a)*P(1,0) + Nx(1,a)*P(1,1) + Nx(2,a)*P(1,2));

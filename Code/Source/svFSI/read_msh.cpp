@@ -28,12 +28,9 @@ namespace read_msh_ns {
 #define ndebug_set_projector
 #define ndebug_match_faces
 
-//--------------------
-// check_element_conn
-//--------------------
-// A map of function pointers used to check element connecivity.
-//
-// Reproduces 'SUBROUTINE CHECKIEN(lM)' defined in READMSH.f.
+/// @brief A map of function pointers used to check element connecivity.
+///
+/// Reproduces 'SUBROUTINE CHECKIEN(lM)' defined in READMSH.f.
 //
 std::map<consts::ElementType, std::function<void(mshType&)>> check_element_conn = {
   {consts::ElementType::LIN1, check_line_conn},
@@ -49,10 +46,7 @@ std::map<consts::ElementType, std::function<void(mshType&)>> check_element_conn 
   {consts::ElementType::WDG, check_wedge_conn}
 };
 
-//--------------
-// calc_elem_ar
-//--------------
-// Calculate element Aspect Ratio of a given mesh
+/// @brief Calculate element Aspect Ratio of a given mesh
 //
 void calc_elem_ar(ComMod& com_mod, const CmMod& cm_mod, mshType& lM, bool& rflag)
 {
@@ -147,10 +141,7 @@ void calc_elem_ar(ComMod& com_mod, const CmMod& cm_mod, mshType& lM, bool& rflag
 
 }
 
-//---------------
-// calc_elem_jac
-//---------------
-// Calculate element Jacobian of a given mesh.
+/// @brief Calculate element Jacobian of a given mesh.
 //
 void calc_elem_jac(ComMod& com_mod, const CmMod& cm_mod, mshType& lM, bool& rflag)
 {
@@ -270,10 +261,7 @@ void calc_elem_jac(ComMod& com_mod, const CmMod& cm_mod, mshType& lM, bool& rfla
   #endif
 }
 
-//----------------
-// calc_elem_skew
-//----------------
-// Calculate element Skewness of a given mesh.
+/// @brief Calculate element Skewness of a given mesh.
 //
 void calc_elem_skew(ComMod& com_mod, const CmMod& cm_mod, mshType& lM, bool& rflag)
 {
@@ -363,10 +351,6 @@ void calc_elem_skew(ComMod& com_mod, const CmMod& cm_mod, mshType& lM, bool& rfl
   #endif
 }
 
-//-----------------
-// calc_mesh_props
-//-----------------
-//
 void calc_mesh_props(ComMod& com_mod, const CmMod& cm_mod, const int nMesh, std::vector<mshType>& mesh)
 {
   #define n_debug_calc_mesh_props
@@ -446,21 +430,18 @@ void calc_mesh_props(ComMod& com_mod, const CmMod& cm_mod, const int nMesh, std:
   }
 }
 
-//----------
-// calc_nbc
-//----------
-// Checks that face nodes are valid and creates a list of unique 
-// node IDs for the face.
-//
-// Valid face nodes 
-//   1) Must be < number of nodes in the volume mesh
-//   2) Must match the nodes from its parent volume mesh element 
-//
-// Face data modified
-//   face.gN - Face global node Ids 
-//   face.nNo - Number of nodes
-//
-// Reproduces 'SUBROUTINE CALCNBC(lM, lFa)'
+/// @brief Checks that face nodes are valid and creates a list of unique 
+/// node IDs for the face.
+///
+/// Valid face nodes 
+///   1) Must be < number of nodes in the volume mesh
+///   2) Must match the nodes from its parent volume mesh element 
+///
+/// Face data modified
+///   face.gN - Face global node Ids 
+///   face.nNo - Number of nodes
+///
+/// Reproduces 'SUBROUTINE CALCNBC(lM, lFa)'
 //
 void calc_nbc(mshType& mesh, faceType& face)
 {
@@ -525,12 +506,9 @@ void calc_nbc(mshType& mesh, faceType& face)
   } 
 }
 
-//-----------
-// check_ien
-//-----------
-// Check the mesh connectivity and node ordering.
-//
-// Replicates the Fortran CHECKIEN subroutine defined in READMSH.f.
+/// @brief Check the mesh connectivity and node ordering.
+///
+/// Replicates the Fortran CHECKIEN subroutine defined in READMSH.f.
 //
 void check_ien(Simulation* simulation, mshType& mesh)
 {
@@ -589,10 +567,7 @@ void check_ien(Simulation* simulation, mshType& mesh)
   }
 }
 
-//----------
-// find_blk
-//----------
-// Compute the block ID for the given coordinate.
+/// @brief Compute the block ID for the given coordinate.
 //
 int find_blk(const int nsd, const int nBkd, const std::vector<bool>& nFlt, const Vector<double>&xMin, const Vector<double>&dx, const Vector<double>& x)
 {
@@ -632,64 +607,45 @@ int find_blk(const int nsd, const int nBkd, const std::vector<bool>& nFlt, const
   return block_id;
 }
 
-//-----------------
-// check_line_conn
-//-----------------
-// Check and reorder line connectivity if needed.
-//
-// [NOTE] Not implemented.
+/// @brief Check and reorder line connectivity if needed.
+///
+/// \todo [NOTE] Not implemented.
 //
 void check_line_conn(mshType& mesh)
 {
 }
 
-//-----------------
-// check_hex8_conn
-//-----------------
-// Check and reorder hex connectivity if needed.
-//
-// [NOTE] Not implemented.
+/// @brief Check and reorder hex connectivity if needed.
+///
+/// \todo [NOTE] Not implemented.
 //
 void check_hex8_conn(mshType& mesh)
 {
 }
 
-//-----------------
-// check_hex20_conn
-//-----------------
-// Check and reorder hex connectivity if needed.
-//
-// [NOTE] Not implemented.
+/// @brief Check and reorder hex connectivity if needed.
+///
+/// \todo [NOTE] Not implemented.
 //
 void check_hex20_conn(mshType& mesh)
 {
 }
 
-//-----------------
-// check_hex27_conn
-//-----------------
-// Check and reorder hex connectivity if needed.
-//
-// [NOTE] Not implemented.
+/// @brief Check and reorder hex connectivity if needed.
+///
+/// \todo [NOTE] Not implemented.
 //
 void check_hex27_conn(mshType& mesh)
 {
 }
 
-//------------------
-// check_quad4_conn 
-//------------------
-//
-// [NOTE] Not implemented.
+/// \todo [NOTE] Not implemented.
 //
 void check_quad4_conn(mshType& mesh)
 {
 }
 
-//----------------
-// check_tet_conn
-//----------------
-// Check and reorder tet connectivity if needed.
+/// @brief Check and reorder tet connectivity if needed.
 //
 void check_tet_conn(mshType& mesh)
 {
@@ -741,28 +697,19 @@ void check_tet_conn(mshType& mesh)
   //std::cout << "[check_tet_conn] Reorder " << num_reorder << " element connectivity from " << num_elems << "  elements." << std::endl;
 }
 
-//-----------------
-// check_tri3_conn
-//-----------------
-// [NOTE] Not implemented.
+/// \todo [NOTE] Not implemented.
 //
 void check_tri3_conn(mshType& mesh)
 {
 }
 
-//-----------------
-// check_tri6_conn
-//-----------------
-// [NOTE] Not implemented.
+/// \todo [NOTE] Not implemented.
 //
 void check_tri6_conn(mshType& mesh)
 {
 }
 
-//------------------
-// check_wedge_conn
-//------------------
-// Check and reorder wedge connectivity if needed.
+/// @brief Check and reorder wedge connectivity if needed.
 //
 void check_wedge_conn(mshType& mesh)
 {
@@ -795,17 +742,14 @@ void check_wedge_conn(mshType& mesh)
   }
 }
 
-//--------------
-// load_var_ini
-//--------------
-// Read initial field values (pressure, velocity or displacement).
-//
-// Variables that may be changed
-//   com_mod.Pinit - 
-//   com_mod.Vinit - 
-//   com_mod.Dinit - 
-//
-// Reproduces Fortran 'LOADVARINI'.
+/// @brief Read initial field values (pressure, velocity or displacement).
+///
+/// Variables that may be changed
+///   com_mod.Pinit - 
+///   com_mod.Vinit - 
+///   com_mod.Dinit - 
+///
+/// Reproduces Fortran 'LOADVARINI'.
 //
 void load_var_ini(Simulation* simulation, ComMod& com_mod)
 {
@@ -1086,28 +1030,22 @@ void match_faces(const ComMod& com_mod, const faceType& lFa, const faceType& pFa
 
 } 
 
-//--------------
-// read_fib_nff
-//--------------
-// Read fiber direction from a vtu file.
-//
-// The fiber orientations data is copied into mesh.fN. 
-//
-// Reproduces Fortran READFIBNFF.
+/// @brief Read fiber direction from a vtu file.
+///
+/// The fiber orientations data is copied into mesh.fN. 
+///
+/// Reproduces Fortran READFIBNFF.
 //
 void read_fib_nff(Simulation* simulation, mshType& mesh, const std::string& fName, const std::string& kwrd, const int idx)
 {
   vtk_xml_parser::load_fiber_direction_vtu(fName, kwrd, idx, simulation->com_mod.nsd, mesh);
 }
 
-//----------
-// read_msh
-//----------
-// For each mesh defined for the simulation 
-//
-//   1) Set mesh parameters 
-//
-//   2) Read mesh nodal coordiantes and element connectivity 
+/// @brief For each mesh defined for the simulation 
+///
+///   1) Set mesh parameters 
+///
+///   2) Read mesh nodal coordiantes and element connectivity 
 //
 void read_msh(Simulation* simulation)
 {
@@ -1721,12 +1659,9 @@ void read_msh(Simulation* simulation)
   }
 }
 
-//---------------
-// set_dmn_id_ff 
-//---------------
-// Read domain from a dat file
-//
-// Reproduces the Fortran 'SETDMNIDFF' subroutine.
+/// @brief Read domain from a dat file
+///
+/// Reproduces the Fortran 'SETDMNIDFF' subroutine.
 //
 void set_dmn_id_ff(Simulation* simulation, mshType& lM, const std::string& file_name)
 {
@@ -1786,28 +1721,24 @@ void set_dmn_id_ff(Simulation* simulation, mshType& lM, const std::string& file_
   }
 }
 
-//----------------
-// set_dmn_id_vtk
-//----------------
-// Read mesh domains from a vtu/vtp file.
-//
-// [NOTE] Not implemented.
+/// @brief Read mesh domains from a vtu/vtp file.
+///
+/// \todo [NOTE] Not implemented.
 //
 void set_dmn_id_vtk(Simulation* simulation, mshType& mesh, const std::string& file_name, const std::string& kwrd)
 {
   int btSiz = std::numeric_limits<int>::digits;
 }
 
-//---------------
-// set_projector
-//---------------
-// This routines associates two faces with each other and sets gN.
-//
-// Data set
-//   mesh.gpN = Vector<int>(gnNo);
-//   com_mod.msh[].gpN = Vector<int>(gnNo);
-//   com_mod.gtnNo 
-//   com_mod.msh[].gN[]
+/// @brief This routines associates two faces with each other and sets gN.
+///
+/// Data set
+/// \code {.cpp}
+///   mesh.gpN = Vector<int>(gnNo);
+///   com_mod.msh[].gpN = Vector<int>(gnNo);
+///   com_mod.gtnNo 
+///   com_mod.msh[].gN[]
+/// \endcode
 //
 void set_projector(Simulation* simulation, utils::stackType& avNds)
 {
