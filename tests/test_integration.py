@@ -13,7 +13,7 @@ this_file_dir = os.path.abspath(os.path.dirname(__file__))
 cpp_exec = os.path.join(this_file_dir, "..", "build", "svFSI-build", "bin", "svFSI")
 
 # relative tolerances for tested results
-RTOL = {'Pressure': 1.0e-12, 'Velocity': 1.0e-12, 'Action_potential': 1.0e-12, 'Temperature': 1.0e-12, 'ECG': 1.0e-12, 'Displacement': 1.0e-12}
+RTOL = {'Pressure': 1.0e-12, 'Velocity': 1.0e-12, 'Action_potential': 1.0e-12, 'Temperature': 1.0e-12, 'ECG': 1.0e-12, 'Displacement': 1.0e-12, 'Jacobian': 1.0e-12, 'Stress': 1.0e-12, 'Strain': 1.0e-12, 'Cauchy_stress': 1.0e-12, 'Def_grad': 1.0e-12, 'VonMises_stress':1.0e-12, 'Traction':1.0e-12, 'WSS':1.0e-12}
 
 # number of processors to test
 procs = [1, 3, 4]
@@ -148,6 +148,7 @@ def test_niederer_benchmark_ECGs_quadrature(confs_ecgs, n_proc):
                "Results in field ecglead_" + str(jj + 1) + ".txt differ by more than rtol=" + str(RTOL['ECG']) + " for test case " + confs_ecgs[0] 
 
 @pytest.mark.parametrize("name_inp", ["svFSI_CG.xml", "svFSI_BICG.xml", "svFSI_GMRES.xml"])
+
 @pytest.mark.parametrize("n_proc", procs)
 def test_diffusion_line_source(name_inp, n_proc):
     folder = os.path.join("cases", "diffusion_line_source")
@@ -182,6 +183,60 @@ def test_ale_3d_pipe(n_proc):
     folder = os.path.join("cases", "ale_3d_pipe")
     fields = ["Displacement", "Pressure", "Velocity"]
     t_max = 5
+    name_inp = "svFSI.xml"
+    name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
+    run_with_reference(folder, name_inp, name_ref, fields, t_max, n_proc)
+
+@pytest.mark.parametrize("n_proc", procs)
+def test_LV_Guccione_passive(n_proc):
+    folder = os.path.join("cases", "LV_Guccione_passive")
+    fields = ["Displacement", "Velocity", "Jacobian"] 
+    t_max = 1
+    name_inp = "svFSI.xml"
+    name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
+    run_with_reference(folder, name_inp, name_ref, fields, t_max, n_proc)
+
+@pytest.mark.parametrize("n_proc", procs)
+def test_block_compression(n_proc):
+    folder = os.path.join("cases", "block_compression")
+    fields = ["Displacement", "Velocity", "Jacobian", "Stress", "Strain", "Caucy_stress", "Def_grad", "VonMises_stress"] 
+    t_max = 1
+    name_inp = "svFSI.xml"
+    name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
+    run_with_reference(folder, name_inp, name_ref, fields, t_max, n_proc)
+
+@pytest.mark.parametrize("n_proc", procs)
+def test_dye_AD(n_proc):
+    folder = os.path.join("cases", "dye_AD")
+    fields = ["Velocity", "Pressure", "Traction", "WSS"] 
+    t_max = 1
+    name_inp = "svFSI.xml"
+    name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
+    run_with_reference(folder, name_inp, name_ref, fields, t_max, n_proc)
+
+@pytest.mark.parametrize("n_proc", procs)
+def test_newtonian_flow(n_proc):
+    folder = os.path.join("cases", "newtonian_flow")
+    fields = ["Velocity", "Pressure", "Traction", "WSS"] 
+    t_max = 1
+    name_inp = "svFSI.xml"
+    name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
+    run_with_reference(folder, name_inp, name_ref, fields, t_max, n_proc)
+
+@pytest.mark.parametrize("n_proc", procs)
+def test_casson_flow(n_proc):
+    folder = os.path.join("cases", "casson_flow")
+    fields = ["Velocity", "Pressure", "Traction", "WSS"] 
+    t_max = 1
+    name_inp = "svFSI.xml"
+    name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
+    run_with_reference(folder, name_inp, name_ref, fields, t_max, n_proc)
+
+@pytest.mark.parametrize("n_proc", procs)
+def test_carreau_yasuda_flow(n_proc):
+    folder = os.path.join("cases", "carreau_yasuda_flow")
+    fields = ["Velocity", "Pressure", "Traction", "WSS"] 
+    t_max = 1
     name_inp = "svFSI.xml"
     name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
     run_with_reference(folder, name_inp, name_ref, fields, t_max, n_proc)
