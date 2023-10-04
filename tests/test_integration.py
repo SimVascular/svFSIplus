@@ -240,3 +240,21 @@ def test_carreau_yasuda_flow(n_proc):
     name_inp = "svFSI.xml"
     name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
     run_with_reference(folder, name_inp, name_ref, fields, t_max, n_proc)
+
+@pytest.mark.parametrize("n_proc", procs)
+def test_cmm_3d_pipe(n_proc):
+    folder = os.path.join("cases", "cmm_3d_pipe")
+    inflate_folder = os.path.join(folder,"2a-inflate")
+    fields = ["Displacement"]
+    t_max = 20
+    name_inp = "svFSI.xml"
+    name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
+    run_with_reference(inflate_folder, name_inp, name_ref, fields, t_max, 1)
+
+    inflate_cmm_folder = os.path.join(folder,"3a-inflate-cmm")
+    fields = ["Displacement", "Pressure", "Velocity"]
+    t_max = 5
+    name_inp = "svFSI.xml"
+    name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
+    run_with_reference(inflate_cmm_folder, name_inp, name_ref, fields, t_max, n_proc)
+

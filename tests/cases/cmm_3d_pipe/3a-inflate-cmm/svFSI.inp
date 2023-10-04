@@ -1,0 +1,91 @@
+#----------------------------------------------------------------
+# General simulation parameters
+
+Continue previous simulation: 0
+Number of spatial dimensions: 3
+Number of time steps: 5
+Time step size: 0.005
+Spectral radius of infinite time step: 0.50
+Searched file name to trigger stop: STOP_SIM
+
+Save results to VTK format: 1
+Name prefix of saved VTK files: result
+Increment in saving VTK files: 5
+Start saving after time step: 1
+
+Increment in saving restart files: 5
+Convert BIN to VTK format: 0
+
+Verbose: 1
+Warning: 0
+Debug: 0
+
+#----------------------------------------------------------------
+# Mesh data
+Add mesh: msh {
+   Mesh file path:    ../../pipe3D_RCR/mesh/mesh-complete.mesh.vtu
+   Add face: lumen_inlet {
+      Face file path: ../../pipe3D_RCR/mesh/mesh-surfaces/lumen_inlet.vtp
+   }
+   Add face: lumen_outlet {
+      Face file path: ../../pipe3D_RCR/mesh/mesh-surfaces/lumen_outlet.vtp
+   }
+   Add face: lumen_wall {
+      Face file path: ../../pipe3D_RCR/mesh/mesh-surfaces/lumen_wall.vtp
+   }
+   Initial velocities file path: ../1-rigid-solution/result_800_cpp.vtu
+   Initial pressures file path:  ../1-rigid-solution/result_800_cpp.vtu
+}
+
+#----------------------------------------------------------------
+# Equations
+Add equation: CMM {
+   Coupled: 1
+   Min iterations: 3
+   Max iterations: 10
+   Tolerance: 1e-4
+   Backflow stabilization coefficient: 0.2
+
+   Fluid density: 1.06
+   Viscosity: Constant {Value: 0.04}
+
+   Solid density: 1.0
+   Poisson ratio: 0.5
+   Shell thickness: 0.2
+   Elasticity modulus: 4000000.0
+
+   Output: Spatial {
+      Velocity: t
+      Pressure: t
+      Displacement: t
+      WSS: t
+   }
+
+   LS type: GMRES
+   {
+      Preconditioner:     FSILS
+      Max iterations:      100
+      Tolerance:           1D-4
+      Krylov space dimension: 50
+   }
+
+   Add BC: lumen_inlet {
+      Type: Dir
+      Time dependence: Unsteady
+      Temporal values file path: ../lumen_inlet.flow
+      Profile: Parabolic
+      Impose flux: t
+   }
+
+   Add BC: lumen_outlet {
+      Type: Neu
+      Time dependence: RCR
+      RCR values: (121.0, 1.5D-5, 1212.0)
+      Distal pressure: 0.0
+   }
+
+   Add BC: lumen_wall {
+      Type: CMM
+      Initial displacements file path: ../2a-inflate/result_020.vtu
+   }
+}
