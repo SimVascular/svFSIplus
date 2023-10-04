@@ -45,9 +45,8 @@ Add equation: CMM {
       Displacement: t
    }
 
-   LS type: BICG
+   LS type: CG
    {
-      Preconditioner: Trilinos-ILUT
       Max iterations:      500
       Tolerance:           1D-6
    }

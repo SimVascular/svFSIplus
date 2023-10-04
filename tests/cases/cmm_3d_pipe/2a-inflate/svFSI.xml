@@ -44,8 +44,7 @@
       <Displacement> true </Displacement>
    </Output>
 
-   <LS type="BICG" >
-     <Preconditioner> Trilinos-ILUT </Preconditioner>
+   <LS type="CG" >
      <Max_iterations> 500 </Max_iterations>
      <Tolerance> 1e-6 </Tolerance>
    </LS>
