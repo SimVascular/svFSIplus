@@ -14,7 +14,8 @@ cpp_exec = os.path.join(this_file_dir, "..", "build", "svFSI-build", "bin", "svF
 
 # relative tolerances for tested results
 RTOL = {'Pressure': 1.0e-12, 'Velocity': 1.0e-12, 'Action_potential': 1.0e-12, 'Temperature': 1.0e-12, 'ECG': 1.0e-12, 'Displacement': 1.0e-12, \
-        'Stress': 1.0e-12, 'VonMises_stress': 1.0e-12, 'Cauchy_stress' : 1.0e-12, 'Strain' : 1.0e-12, 'Jacobian' : 1.0e-12, 'Divergence' : 1.0e-12}
+        'Stress': 1.0e-12, 'VonMises_stress': 1.0e-12, 'Cauchy_stress' : 1.0e-12, 'Strain' : 1.0e-12, 'Jacobian' : 1.0e-12, 'Divergence' : 1.0e-12, \
+        'Def_grad': 1.0e-12, 'Traction':1.0e-12, 'WSS':1.0e-12}
 
 # number of processors to test
 procs = [1, 3, 4]
@@ -189,8 +190,8 @@ def test_ale_3d_pipe(n_proc):
 
 @pytest.mark.parametrize("ele", ["P1P1_VMS"])
 @pytest.mark.parametrize("n_proc", procs)
-def test_block_compression(ele, n_proc):
-    folder = os.path.join("cases", "block-compression", ele)
+def test_block_compression_ustruct(ele, n_proc):
+    folder = os.path.join("cases", "block_compression_ustruct", ele)
     field = ["Displacement", "Pressure", "Stress", "Divergence"]
     t_max = 1
     name_inp = "svFSI.xml"
@@ -199,7 +200,7 @@ def test_block_compression(ele, n_proc):
 
 @pytest.mark.parametrize("n_proc", procs)
 def test_tensile_adventitia_HGO(n_proc):
-    folder = os.path.join("cases", "tensile-adventitia_HGO")
+    folder = os.path.join("cases", "tensile_adventitia_HGO")
     field = ["Displacement", "Velocity", "Stress", "VonMises_stress"]
     t_max = 1
     name_inp = "svFSI.xml"
@@ -208,9 +209,63 @@ def test_tensile_adventitia_HGO(n_proc):
 
 @pytest.mark.parametrize("n_proc", procs)
 def test_LV_Guccione_active(n_proc):
-    folder = os.path.join("cases", "LV-Guccione-active")
+    folder = os.path.join("cases", "LV_Guccione_active")
     field = ["Displacement", "Velocity", "Pressure", "VonMises_stress", "Cauchy_stress", "Strain", "Jacobian"]
     t_max = 1
     name_inp = "svFSI.xml"
     name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
     run_with_reference(folder, name_inp, name_ref, field, t_max, n_proc)
+
+@pytest.mark.parametrize("n_proc", procs)
+def test_LV_Guccione_passive(n_proc):
+    folder = os.path.join("cases", "LV_Guccione_passive")
+    fields = ["Displacement", "Velocity", "Jacobian"] 
+    t_max = 1
+    name_inp = "svFSI.xml"
+    name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
+    run_with_reference(folder, name_inp, name_ref, fields, t_max, n_proc)
+
+@pytest.mark.parametrize("n_proc", procs)
+def test_block_compression_struct(n_proc):
+    folder = os.path.join("cases", "block_compression_struct")
+    fields = ["Displacement", "Velocity", "Jacobian", "Stress", "Strain", "Caucy_stress", "Def_grad", "VonMises_stress"] 
+    t_max = 1
+    name_inp = "svFSI.xml"
+    name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
+    run_with_reference(folder, name_inp, name_ref, fields, t_max, n_proc)
+
+@pytest.mark.parametrize("n_proc", procs)
+def test_dye_AD(n_proc):
+    folder = os.path.join("cases", "dye_AD")
+    fields = ["Velocity", "Pressure", "Traction", "WSS"] 
+    t_max = 1
+    name_inp = "svFSI.xml"
+    name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
+    run_with_reference(folder, name_inp, name_ref, fields, t_max, n_proc)
+
+@pytest.mark.parametrize("n_proc", procs)
+def test_newtonian_flow(n_proc):
+    folder = os.path.join("cases", "newtonian_flow")
+    fields = ["Velocity", "Pressure", "Traction", "WSS"] 
+    t_max = 1
+    name_inp = "svFSI.xml"
+    name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
+    run_with_reference(folder, name_inp, name_ref, fields, t_max, n_proc)
+
+@pytest.mark.parametrize("n_proc", procs)
+def test_casson_flow(n_proc):
+    folder = os.path.join("cases", "casson_flow")
+    fields = ["Velocity", "Pressure", "Traction", "WSS"] 
+    t_max = 1
+    name_inp = "svFSI.xml"
+    name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
+    run_with_reference(folder, name_inp, name_ref, fields, t_max, n_proc)
+
+@pytest.mark.parametrize("n_proc", procs)
+def test_carreau_yasuda_flow(n_proc):
+    folder = os.path.join("cases", "carreau_yasuda_flow")
+    fields = ["Velocity", "Pressure", "Traction", "WSS"] 
+    t_max = 1
+    name_inp = "svFSI.xml"
+    name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
+    run_with_reference(folder, name_inp, name_ref, fields, t_max, n_proc)

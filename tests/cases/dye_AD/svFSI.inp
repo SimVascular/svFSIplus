@@ -1,0 +1,140 @@
+#----------------------------------------------------------------
+# General simulation parameters
+
+Continue previous simulation: 0
+Number of spatial dimensions: 3
+Number of time steps: 400
+Time step size: 0.01
+Spectral radius of infinite time step: 0.50
+Searched file name to trigger stop: STOP_SIM
+
+Save results to VTK format: 1
+Name prefix of saved VTK files: result
+Increment in saving VTK files: 5
+Start saving after time step: 1
+
+Increment in saving restart files: 5
+Convert BIN to VTK format: 0
+
+Verbose: 1
+Warning: 0
+Debug: 0
+
+#----------------------------------------------------------------
+# Mesh data
+Add mesh: msh {
+   Mesh file path:    mesh-complete/mesh-complete.mesh.vtu
+   Add face: lumen_inlet {
+      Face file path: mesh-complete/mesh-surfaces/lumen_inlet.vtp
+   }
+   Add face: lumen_outlet {
+      Face file path: mesh-complete/mesh-surfaces/lumen_outlet.vtp
+   }
+   Add face: lumen_wall {
+      Face file path: mesh-complete/mesh-surfaces/lumen_wall.vtp
+   }
+}
+
+#----------------------------------------------------------------
+
+# Equations
+
+#----------------------------------------------------------------
+# Flow transport - Navier-Stokes equations
+
+Add equation: fluid {
+   Coupled: 1
+   Min iterations: 3
+   Max iterations: 10
+   Tolerance: 1e-4
+   Backflow stabilization coefficient: 0.2
+
+   Density: 1.06
+   Viscosity: Constant {Value: 0.04}
+
+   Output: Spatial {
+      Velocity: t
+      Pressure: t
+      Traction: t
+      WSS: t
+   }
+
+   Output: Boundary_integral {
+      WSS: t
+   }
+
+   LS type: NS
+   {
+      Max iterations:      10
+      NS-GM max iterations: 3
+      NS-CG max iterations: 500
+      Tolerance:           1D-4
+      NS-GM tolerance:     1D-4
+      NS-CG tolerance:     1D-4
+      Absolute tolerance:  1D-12
+      Krylov space dimension: 50
+   }
+
+   Add BC: lumen_inlet {
+      Type: Dir
+      Time dependence: Unsteady
+      Temporal values file path: lumen_inlet.flow
+      Profile: Parabolic
+      Impose flux: t
+   }
+
+   Add BC: lumen_outlet {
+      Type: Neu
+      Time dependence: RCR
+      RCR values: (121.0, 1.50D-5, 1212.0)
+      Distal pressure: 0.0
+   }
+
+   Add BC: lumen_wall {
+      Type: Dirichlet
+      Time dependence: Steady
+      Value: 0
+   }
+}
+
+#----------------------------------------------------------------
+# Scalar transport - advection-diffusion equations
+
+Add equation: scalarTransport {
+    Coupled: f
+    Min iterations: 2
+    Max iterations: 5
+    Tolerance: 1e-6
+
+    Conductivity: 1e-8
+    Source term: 0.0
+
+#   Below lines could be used for computing residence time in a given
+#   region of interest, defined in `Domain 2'
+#   Domain: 2 {
+#      Conductivity: 1e-8
+#      Source term: 1.0
+#   }
+
+   Output: Volume_integral {
+      Temperature: t
+   }
+
+   Output: Alias {
+      Temperature: Concentration
+   }
+
+   LS type: GMRES
+   {
+      Preconditioner: FSILS
+      Tolerance: 1D-6
+      Max iterations: 100
+      Krylov space dimension: 50
+   }
+
+   Add BC: lumen_inlet {
+      Type: Dir
+      Time dependence: Steady
+      Value: 1.0
+   }
+}
