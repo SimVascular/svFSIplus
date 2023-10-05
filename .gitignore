@@ -20,3 +20,6 @@ __pycache__
 
 # Doxygen output
 Documentation/html/
+
+# custom build script
+do-configure.sh
