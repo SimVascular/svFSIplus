@@ -16,12 +16,12 @@ jobs:
           sudo apt install -y build-essential cmake qtbase5-dev libblas-dev liblapack-dev 
           sudo apt install -y libopenblas-dev mesa-common-dev libgl1-mesa-dev libglu1-mesa-dev
           sudo apt install -y libvtk7-dev openmpi-bin libopenmpi-dev
-          sudo apt install -y lcov clang-format
+          sudo apt install -y lcov
       - name: Install MacOS dependencies
         if: startsWith(matrix.os, 'macos')
         run: | 
           brew install cmake vtk openblas lapack mesa open-mpi qt
-          brew install lcov clang-format
+          brew install lcov
           sudo ln -s /usr/local/opt/qt5/mkspecs /usr/local/mkspecs
           sudo ln -s /usr/local/opt/qt5/plugins /usr/local/plugins
       - name: Build svFSIplus
@@ -50,8 +50,3 @@ jobs:
         with:
           name: coverage_report
           path: build/svFSI-build/coverage
-      - name: Check code format
-        if: startsWith(matrix.os, 'ubuntu-22.04')
-        run: |
-          cd build
-          make codecheck
