@@ -1,5 +1,6 @@
 
-// This routine computes body force for the current equation and assembles it to the residual
+// This routine computes body force for the current equation and assembles it to
+// the residual
 
 #include "bf.h"
 
@@ -23,17 +24,18 @@ namespace bf {
 ///
 /// Reproduces 'SUBROUTINE BFCONSTRUCT(lM, e, eNoN, idof, xl, dl, bfl, ptr)'.
 //
-void bf_construct(ComMod& com_mod, const mshType& lM, const int e, const int eNoN, const int idof, Array<double>& xl, 
-    const Array<double>& dl, const Array<double>& bfl, const Vector<int>& ptr)
-{
+void bf_construct(ComMod& com_mod, const mshType& lM, const int e,
+                  const int eNoN, const int idof, Array<double>& xl,
+                  const Array<double>& dl, const Array<double>& bfl,
+                  const Vector<int>& ptr) {
   using namespace consts;
 
-  #define n_debug_bf_construct 
+#define n_debug_bf_construct
   auto& cm = com_mod.cm;
-  #ifdef debug_bf_construct 
+#ifdef debug_bf_construct
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
-  #endif
+#endif
 
   const int nsd = com_mod.nsd;
   const int tDof = com_mod.tDof;
@@ -43,20 +45,20 @@ void bf_construct(ComMod& com_mod, const mshType& lM, const int e, const int eNo
   auto& eq = com_mod.eq[cEq];
   auto& cDmn = com_mod.cDmn;
 
-  Vector<double> N(eNoN); 
-  Array<double> Nx(2,eNoN);
-  Array<double> lR(dof,eNoN);
-  Array3<double> lK(dof*dof,eNoN,eNoN);
+  Vector<double> N(eNoN);
+  Array<double> Nx(2, eNoN);
+  Array<double> lR(dof, eNoN);
+  Array3<double> lK(dof * dof, eNoN, eNoN);
 
   cDmn = all_fun::domain(com_mod, lM, cEq, e);
   auto cPhys = eq.dmn[cDmn].phys;
-  #ifdef debug_bf_construct 
+#ifdef debug_bf_construct
   dmsg << "cPhys: " << cPhys;
-  #endif
+#endif
 
   //  Updating the shape functions, if neccessary
   if (lM.eType == ElementType::NRB) {
-    //CALL NRBNNX(lM, e)
+    // CALL NRBNNX(lM, e)
   }
 
   // Setting intial values
@@ -68,32 +70,34 @@ void bf_construct(ComMod& com_mod, const mshType& lM, const int e, const int eNo
 
     switch (cPhys) {
       case EquationType::phys_shell:
-        // [NOTE] passing Array 'bfl' to Vector 'tfl' arg in shell_fp does not work.
+        // [NOTE] passing Array 'bfl' to Vector 'tfl' arg in shell_fp does not
+        // work.
         shells::shell_fp(com_mod, eNoN, w, N, Nx, dl, xl, bfl, lR, lK);
-        //CALL SHELLFP(eNoN, w, N, Nx, dl, xl, bfl, lR, lK)
-        //throw std::runtime_error("[bf_construct] Shell follower pressure loads not implemented.");
-      break;
+        // CALL SHELLFP(eNoN, w, N, Nx, dl, xl, bfl, lR, lK)
+        // throw std::runtime_error("[bf_construct] Shell follower pressure
+        // loads not implemented.");
+        break;
 
       case EquationType::phys_CMM:
         cmm::bcmmi(com_mod, eNoN, idof, w, N, Nx, xl, bfl, lR);
-      break;
+        break;
 
-      default: 
+      default:
         throw std::runtime_error("[bf_construct] Undefined physics.");
     }
   }
 
- // Now doing the assembly part
+  // Now doing the assembly part
 
 #ifdef WITH_TRILINOS
 
   if (eq.assmTLS) {
-    trilinos_doassem_(const_cast<int&>(eNoN), const_cast<int*>(ptr.data()), lK.data(), lR.data());
-  } else { 
-
+    trilinos_doassem_(const_cast<int&>(eNoN), const_cast<int*>(ptr.data()),
+                      lK.data(), lR.data());
+  } else {
 #endif
 
-   lhsa_ns::do_assem(com_mod, eNoN, ptr, lK, lR);
+    lhsa_ns::do_assem(com_mod, eNoN, ptr, lK, lR);
 
 #ifdef WITH_TRILINOS
   }
@@ -102,22 +106,21 @@ void bf_construct(ComMod& com_mod, const mshType& lM, const int e, const int eNo
 
 /// @brief Modifes: com_mod.Bf, Dg
 //
-void set_bf(ComMod& com_mod, const Array<double>& Dg)
-{
-  #define n_debug_set_bf
+void set_bf(ComMod& com_mod, const Array<double>& Dg) {
+#define n_debug_set_bf
   auto& cm = com_mod.cm;
-  #ifdef debug_set_bf 
+#ifdef debug_set_bf
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
-  #endif
+#endif
 
   const auto& cEq = com_mod.cEq;
   auto& eq = com_mod.eq[cEq];
   auto& Bf = com_mod.Bf;
   Bf = 0.0;
-  #ifdef debug_set_bf 
+#ifdef debug_set_bf
   dmsg << "eq.nBf: " << eq.nBf;
-  #endif
+#endif
 
   for (int iBf = 0; iBf < eq.nBf; iBf++) {
     int iM = eq.bf[iBf].iM;
@@ -132,15 +135,15 @@ void set_bf(ComMod& com_mod, const Array<double>& Dg)
 ///
 /// Reproduces 'SUBROUTINE SETBFL(lBf, lM, Dg)'.
 //
-void set_bf_l(ComMod& com_mod, bfType& lBf, mshType& lM, const Array<double>& Dg)
-{
-  #define n_debug_set_bf_l 
+void set_bf_l(ComMod& com_mod, bfType& lBf, mshType& lM,
+              const Array<double>& Dg) {
+#define n_debug_set_bf_l
   auto& cm = com_mod.cm;
-  #ifdef debug_set_bf_l 
+#ifdef debug_set_bf_l
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
   dmsg << "lBf.file_name: " << lBf.file_name;
-  #endif
+#endif
 
   using namespace consts;
 
@@ -150,15 +153,15 @@ void set_bf_l(ComMod& com_mod, bfType& lBf, mshType& lM, const Array<double>& Dg
   const int nNo = lM.nNo;
   const int idof = lBf.dof;
   const int eNoN = lM.eNoN;
-  #ifdef debug_set_bf_l 
+#ifdef debug_set_bf_l
   dmsg << "nsd: " << nsd;
   dmsg << "idof: " << idof;
   dmsg << "eNoN: " << eNoN;
   dmsg << "lBf.bType: " << lBf.bType;
-  #endif
+#endif
 
   Vector<double> f(idof);
-  Array<double> bfl; 
+  Array<double> bfl;
 
   if (utils::btest(lBf.bType, enum_int(BodyForceType::bfType_std))) {
     f = lBf.b;
@@ -168,20 +171,20 @@ void set_bf_l(ComMod& com_mod, bfType& lBf, mshType& lM, const Array<double>& Dg
     ifft(com_mod, lBf.bt, f, rtmp);
 
   } else if (utils::btest(lBf.bType, enum_int(BodyForceType::bfType_gen))) {
-    bfl.resize(idof,nNo); 
-    Array<double> xl(idof,nNo);
+    bfl.resize(idof, nNo);
+    Array<double> xl(idof, nNo);
     igbc(com_mod, lBf.bm, bfl, xl);
   }
 
-  Array<double> bfg(idof,tnNo);
+  Array<double> bfg(idof, tnNo);
 
-  if (utils::btest(lBf.bType,enum_int(BodyForceType::bfType_gen))) {
+  if (utils::btest(lBf.bType, enum_int(BodyForceType::bfType_gen))) {
     for (int a = 0; a < lM.nNo; a++) {
       int Ac = lM.gN(a);
       bfg.set_col(Ac, bfl.col(a));
     }
 
-  } else if (utils::btest(lBf.bType,enum_int(BodyForceType::bfType_spl))) {
+  } else if (utils::btest(lBf.bType, enum_int(BodyForceType::bfType_spl))) {
     for (int a = 0; a < lM.nNo; a++) {
       int Ac = lM.gN(a);
       bfg.set_col(Ac, lBf.bx.col(a));
@@ -202,17 +205,17 @@ void set_bf_l(ComMod& com_mod, bfType& lBf, mshType& lM, const Array<double>& Dg
     for (int a = 0; a < nNo; a++) {
       int Ac = lM.gN(a);
       com_mod.Bf.set_col(Ac, bfg.col(Ac));
-     }
+    }
 
   } else {
-    Array<double> bfl(idof,eNoN); 
-    Array<double> xl(nsd,eNoN); 
-    Array<double> dl(tDof,eNoN);
+    Array<double> bfl(idof, eNoN);
+    Array<double> xl(nsd, eNoN);
+    Array<double> dl(tDof, eNoN);
     Vector<int> ptr(eNoN);
 
     for (int e = 0; e < lM.nEl; e++) {
       for (int a = 0; a < eNoN; a++) {
-        int Ac = lM.IEN(a,e);
+        int Ac = lM.IEN(a, e);
         ptr(a) = Ac;
         xl.set_col(a, com_mod.x.col(Ac));
         dl.set_col(a, Dg.col(Ac));
@@ -223,6 +226,4 @@ void set_bf_l(ComMod& com_mod, bfType& lBf, mshType& lM, const Array<double>& Dg
   }
 }
 
-};
-
-
+};  // namespace bf

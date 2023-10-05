@@ -1,28 +1,23 @@
 
 #include "Simulation.h"
 
-#include "all_fun.h"
-#include "load_msh.h"
-
-#include "mpi.h"
-
 #include <iostream>
 
-Simulation::Simulation() 
-{
+#include "all_fun.h"
+#include "load_msh.h"
+#include "mpi.h"
+
+Simulation::Simulation() {
   roInf = 0.2;
   com_mod.cm.new_cm(MPI_COMM_WORLD);
 
   history_file_name = "histor.dat";
 }
 
-Simulation::~Simulation() 
-{
-}
+Simulation::~Simulation() {}
 
-const mshType& Simulation::get_msh(const std::string& name)
-{
-  for (auto& mesh : com_mod.msh) { 
+const mshType& Simulation::get_msh(const std::string& name) {
+  for (auto& mesh : com_mod.msh) {
     if (mesh.name == name) {
       return mesh;
     }
@@ -31,8 +26,7 @@ const mshType& Simulation::get_msh(const std::string& name)
 
 /// @brief Read solver parameters.
 //
-void Simulation::read_parameters(const std::string& file_name)
-{
+void Simulation::read_parameters(const std::string& file_name) {
   parameters.read_xml(file_name);
 }
 
@@ -42,15 +36,14 @@ void Simulation::read_parameters(const std::string& file_name)
 ///
 ///   lPtr => list%get(nTs,"Number of time steps",1,ll=1)
 //
-void Simulation::set_module_parameters()
-{
+void Simulation::set_module_parameters() {
   // Set ComMod module varliables.
   //
   auto& general = parameters.general_simulation_parameters;
 
   com_mod.iniFilePath = general.simulation_initialization_file_path.value();
   com_mod.nsd = general.number_of_spatial_dimensions.value();
-  com_mod.nsymd = 3*(com_mod.nsd-1);
+  com_mod.nsymd = 3 * (com_mod.nsd - 1);
 
   com_mod.nTS = general.number_of_time_steps.value();
   com_mod.nITs = general.number_of_initialization_time_steps.value();

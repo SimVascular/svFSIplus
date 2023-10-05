@@ -1,17 +1,16 @@
 
 
-
 #include "cgrad.h"
-#include "DebugMsg.h"
-
-#include "fsils_api.hpp"
-#include "add_bc_mul.h"
-#include "dot.h"
-#include "omp_la.h"
-#include "norm.h"
-#include "spar_mul.h"
 
 #include <math.h>
+
+#include "DebugMsg.h"
+#include "add_bc_mul.h"
+#include "dot.h"
+#include "fsils_api.hpp"
+#include "norm.h"
+#include "omp_la.h"
+#include "spar_mul.h"
 
 namespace cgrad {
 
@@ -20,47 +19,47 @@ namespace cgrad {
 ///
 /// Reproduces 'SUBROUTINE CGRAD_SCHUR(lhs, ls, dof, D, G, L, R)'
 //
-void schur(FSILS_lhsType& lhs, FSILS_subLsType& ls, const int dof, const Array<double>& D, 
-    const Array<double>& G, const Vector<double>& L, Vector<double>& R)
-{
-  #define n_debug_schur
-  #ifdef debug_schur
-  DebugMsg dmsg(__func__,  lhs.commu.task);
+void schur(FSILS_lhsType& lhs, FSILS_subLsType& ls, const int dof,
+           const Array<double>& D, const Array<double>& G,
+           const Vector<double>& L, Vector<double>& R) {
+#define n_debug_schur
+#ifdef debug_schur
+  DebugMsg dmsg(__func__, lhs.commu.task);
   dmsg.banner();
-  #endif
+#endif
 
   int nNo = lhs.nNo;
   int mynNo = lhs.mynNo;
 
-  Vector<double> X(nNo), P(nNo), SP(nNo), DGP(nNo); 
-  Array<double> GP(dof,nNo), unCondU(dof,nNo);
+  Vector<double> X(nNo), P(nNo), SP(nNo), DGP(nNo);
+  Array<double> GP(dof, nNo), unCondU(dof, nNo);
 
   double time = fsi_linear_solver::fsils_cpu_t();
   ls.suc = false;
   ls.iNorm = norm::fsi_ls_norms(mynNo, lhs.commu, R);
-  double eps = pow(std::max(ls.absTol,ls.relTol*ls.iNorm),2.0);
-  double errO = ls.iNorm*ls.iNorm;
+  double eps = pow(std::max(ls.absTol, ls.relTol * ls.iNorm), 2.0);
+  double errO = ls.iNorm * ls.iNorm;
   double err = errO;
-  #ifdef debug_schur
+#ifdef debug_schur
   dmsg << "dof: " << dof;
   dmsg << "nNo: " << nNo;
   dmsg << "mynNo: " << mynNo;
   dmsg << "ls.iNorm: " << ls.iNorm;
   dmsg << "eps: " << eps;
   dmsg << "errO: " << errO;
-  #endif
+#endif
 
   X = 0.0;
   P = R;
   int last_i = 0;
 
   for (int i = 0; i < ls.mItr; i++) {
-    #ifdef debug_schur
+#ifdef debug_schur
     dmsg;
-    dmsg << "----- i " << i+1 << " -----";
+    dmsg << "----- i " << i + 1 << " -----";
     dmsg << "err: " << err;
-    auto istr = "_" + std::to_string(i+1);
-    #endif
+    auto istr = "_" + std::to_string(i + 1);
+#endif
     last_i = i;
 
     if (err < eps) {
@@ -100,13 +99,13 @@ void schur(FSILS_lhsType& lhs, FSILS_subLsType& ls, const int dof, const Array<d
 
     err = norm::fsi_ls_norms(mynNo, lhs.commu, R);
     err = err * err;
-    #ifdef debug_schur
+#ifdef debug_schur
     dmsg << "err: " << err;
-    dmsg << "errO/err: " << errO/err;
-    dmsg << "err/errO: " << err/errO;
-    #endif
+    dmsg << "errO/err: " << errO / err;
+    dmsg << "err/errO: " << err / errO;
+#endif
 
-    // P = P + errO/err * R 
+    // P = P + errO/err * R
     double c1 = errO / err;
     omp_la::omp_sum_s(nNo, c1, P, R);
 
@@ -119,16 +118,16 @@ void schur(FSILS_lhsType& lhs, FSILS_subLsType& ls, const int dof, const Array<d
   ls.fNorm = sqrt(err);
   ls.callD = fsi_linear_solver::fsils_cpu_t() - time + ls.callD;
   ls.itr = ls.itr + last_i;
-  #ifdef debug_schur
+#ifdef debug_schur
   dmsg << "errO: " << errO;
   dmsg << "ls.fNorm: " << ls.fNorm;
   dmsg << "ls.itr: " << ls.itr;
-  #endif
+#endif
 
   if (errO < std::numeric_limits<double>::epsilon()) {
     ls.dB = 0.0;
   } else {
-    ls.dB = 5.0 * log(err/errO);
+    ls.dB = 5.0 * log(err / errO);
   }
 }
 
@@ -136,48 +135,48 @@ void schur(FSILS_lhsType& lhs, FSILS_subLsType& ls, const int dof, const Array<d
 // cgrad_v
 //---------
 //
-void cgrad_v(FSILS_lhsType& lhs, FSILS_subLsType& ls, const int dof, const Array<double>& K, Array<double>& R)
-{
-  #define n_debug_cgrad_v 
-  #ifdef debug_cgrad_v
-  DebugMsg dmsg(__func__,  lhs.commu.task);
+void cgrad_v(FSILS_lhsType& lhs, FSILS_subLsType& ls, const int dof,
+             const Array<double>& K, Array<double>& R) {
+#define n_debug_cgrad_v
+#ifdef debug_cgrad_v
+  DebugMsg dmsg(__func__, lhs.commu.task);
   dmsg.banner();
   double time = fsi_linear_solver::fsils_cpu_t();
-  #endif
+#endif
 
   int nNo = lhs.nNo;
   int mynNo = lhs.mynNo;
-  #ifdef debug_cgrad_v
+#ifdef debug_cgrad_v
   dmsg << "nNo: " << nNo;
   dmsg << "mynNo: " << mynNo;
   dmsg << "ls.mItr: " << ls.mItr;
-  #endif
+#endif
 
-  Array<double> P(dof,nNo), KP(dof,nNo), X(dof,nNo);
+  Array<double> P(dof, nNo), KP(dof, nNo), X(dof, nNo);
 
   ls.callD = fsi_linear_solver::fsils_cpu_t();
   ls.suc = false;
   ls.iNorm = norm::fsi_ls_normv(dof, mynNo, lhs.commu, R);
-  double eps = pow(std::max(ls.absTol, ls.relTol* ls.iNorm), 2.0);
+  double eps = pow(std::max(ls.absTol, ls.relTol * ls.iNorm), 2.0);
 
   double errO = ls.iNorm * ls.iNorm;
-  double err  = errO;
+  double err = errO;
   X = 0.0;
   P = R;
   int last_i = 0;
-  #ifdef debug_cgrad_v
+#ifdef debug_cgrad_v
   dmsg << "ls.iNorm: " << ls.iNorm;
   dmsg << "eps: " << eps;
   dmsg << "err: " << eps;
-  #endif
+#endif
 
   for (int i = 0; i < ls.mItr; i++) {
-    #ifdef debug_cgrad_v
+#ifdef debug_cgrad_v
     dmsg;
-    dmsg << "----- i " << i+1 << " -----";
+    dmsg << "----- i " << i + 1 << " -----";
     dmsg << "err: " << err;
-    auto istr = "_" + std::to_string(i+1);
-    #endif
+    auto istr = "_" + std::to_string(i + 1);
+#endif
     last_i = i;
 
     if (err < eps) {
@@ -196,8 +195,8 @@ void cgrad_v(FSILS_lhsType& lhs, FSILS_subLsType& ls, const int dof, const Array
     err = norm::fsi_ls_normv(dof, mynNo, lhs.commu, R);
     err = err * err;
 
-    omp_la::omp_sum_v(dof, nNo, errO/err, P, R);
-    omp_la::omp_mul_v(dof, nNo, err/errO, P);
+    omp_la::omp_sum_v(dof, nNo, errO / err, P, R);
+    omp_la::omp_mul_v(dof, nNo, err / errO, P);
   }
 
   R = X;
@@ -208,61 +207,61 @@ void cgrad_v(FSILS_lhsType& lhs, FSILS_subLsType& ls, const int dof, const Array
   if (errO < std::numeric_limits<double>::epsilon()) {
     ls.dB = 0.0;
   } else {
-    ls.dB = 5.0 * log(err/errO);
+    ls.dB = 5.0 * log(err / errO);
   }
 
-  #ifdef debug_cgrad_v
+#ifdef debug_cgrad_v
   double exec_time = fsi_linear_solver::fsils_cpu_t() - time;
   dmsg << "Execution time: " << exec_time;
   dmsg << "Done";
-  #endif
+#endif
 }
 
 //---------
 // cgrad_s
 //---------
 //
-void cgrad_s(FSILS_lhsType& lhs, FSILS_subLsType& ls, const Vector<double>& K, Vector<double>& R)
-{
-  #define n_debug_cgrad_s 
-  #ifdef debug_cgrad_s
-  DebugMsg dmsg(__func__,  lhs.commu.task);
+void cgrad_s(FSILS_lhsType& lhs, FSILS_subLsType& ls, const Vector<double>& K,
+             Vector<double>& R) {
+#define n_debug_cgrad_s
+#ifdef debug_cgrad_s
+  DebugMsg dmsg(__func__, lhs.commu.task);
   dmsg.banner();
   double time = fsi_linear_solver::fsils_cpu_t();
-  #endif
+#endif
 
   int nNo = lhs.nNo;
   int mynNo = lhs.mynNo;
-  #ifdef debug_cgrad_s
+#ifdef debug_cgrad_s
   dmsg << "nNo: " << nNo;
   dmsg << "mynNo: " << mynNo;
   dmsg << "ls.mItr: " << ls.mItr;
-  #endif
+#endif
 
   Vector<double> P(nNo), KP(nNo), X(nNo);
 
   ls.callD = fsi_linear_solver::fsils_cpu_t();
   ls.suc = false;
   ls.iNorm = norm::fsi_ls_norms(mynNo, lhs.commu, R);
-  double eps = pow(std::max(ls.absTol, ls.relTol* ls.iNorm), 2.0);
+  double eps = pow(std::max(ls.absTol, ls.relTol * ls.iNorm), 2.0);
   double errO = ls.iNorm * ls.iNorm;
-  double err  = errO;
+  double err = errO;
   X = 0.0;
   P = R;
   int last_i = 0;
-  #ifdef debug_cgrad_s
+#ifdef debug_cgrad_s
   dmsg << "ls.iNorm: " << ls.iNorm;
   dmsg << "eps: " << eps;
   dmsg << "err: " << eps;
-  #endif
+#endif
 
   for (int i = 0; i < ls.mItr; i++) {
-    #ifdef debug_cgrad_s
+#ifdef debug_cgrad_s
     dmsg;
-    dmsg << "----- i " << i+1 << " -----";
+    dmsg << "----- i " << i + 1 << " -----";
     dmsg << "err: " << err;
-    auto istr = "_" + std::to_string(i+1);
-    #endif
+    auto istr = "_" + std::to_string(i + 1);
+#endif
     last_i = i;
 
     if (err < eps) {
@@ -281,8 +280,8 @@ void cgrad_s(FSILS_lhsType& lhs, FSILS_subLsType& ls, const Vector<double>& K, V
     err = norm::fsi_ls_norms(mynNo, lhs.commu, R);
     err = err * err;
 
-    omp_la::omp_sum_s(nNo, errO/err, P, R);
-    omp_la::omp_mul_s(nNo, err/errO, P);
+    omp_la::omp_sum_s(nNo, errO / err, P, R);
+    omp_la::omp_mul_s(nNo, err / errO, P);
   }
 
   R = X;
@@ -293,16 +292,14 @@ void cgrad_s(FSILS_lhsType& lhs, FSILS_subLsType& ls, const Vector<double>& K, V
   if (errO < std::numeric_limits<double>::epsilon()) {
     ls.dB = 0.0;
   } else {
-    ls.dB = 5.0 * log(err/errO);
+    ls.dB = 5.0 * log(err / errO);
   }
 
-  #ifdef debug_cgrad_s
+#ifdef debug_cgrad_s
   double exec_time = fsi_linear_solver::fsils_cpu_t() - time;
   dmsg << "Execution time: " << exec_time;
   dmsg << "Done";
-  #endif
+#endif
 }
 
-};
-
-
+};  // namespace cgrad

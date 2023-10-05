@@ -10,21 +10,20 @@
 
 #include "norm.h"
 
-#include "CmMod.h"
-
-#include "mpi.h"
-
 #include <math.h>
+
+#include "CmMod.h"
+#include "mpi.h"
 
 namespace norm {
 
-double fsi_ls_norms(const int nNo, FSILS_commuType& commu, const Vector<double>& U)
-{
+double fsi_ls_norms(const int nNo, FSILS_commuType& commu,
+                    const Vector<double>& U) {
   double result = 0.0;
 
   for (int i = 0; i < nNo; i++) {
-    result = result + U(i)*U(i);
-  } 
+    result = result + U(i) * U(i);
+  }
 
   if (commu.nTasks != 1) {
     double tmp;
@@ -35,43 +34,45 @@ double fsi_ls_norms(const int nNo, FSILS_commuType& commu, const Vector<double>&
   return sqrt(result);
 }
 
-double fsi_ls_normv(const int dof, const int nNo, FSILS_commuType& commu, const Array<double>& U)
-{
+double fsi_ls_normv(const int dof, const int nNo, FSILS_commuType& commu,
+                    const Array<double>& U) {
   double result = 0.0;
 
   switch (dof) {
     case 1: {
       for (int i = 0; i < nNo; i++) {
-        result = result + U(0,i)*U(0,i);
+        result = result + U(0, i) * U(0, i);
       }
-    } break; 
+    } break;
 
     case 2: {
       for (int i = 0; i < nNo; i++) {
-        result = result + U(0,i)*U(0,i) + U(1,i)*U(1,i);
+        result = result + U(0, i) * U(0, i) + U(1, i) * U(1, i);
       }
-    } break; 
+    } break;
 
     case 3: {
       for (int i = 0; i < nNo; i++) {
-        result = result + U(0,i)*U(0,i) + U(1,i)*U(1,i) + U(2,i)*U(2,i);
+        result =
+            result + U(0, i) * U(0, i) + U(1, i) * U(1, i) + U(2, i) * U(2, i);
       }
-    } break; 
+    } break;
 
     case 4: {
       for (int i = 0; i < nNo; i++) {
-        result = result + U(0,i)*U(0,i) + U(1,i)*U(1,i) + U(2,i)*U(2,i) + U(3,i)*U(3,i);
+        result = result + U(0, i) * U(0, i) + U(1, i) * U(1, i) +
+                 U(2, i) * U(2, i) + U(3, i) * U(3, i);
       }
-    } break; 
+    } break;
 
-    default: { 
+    default: {
       for (int i = 0; i < nNo; i++) {
         for (int j = 0; j < U.nrows(); j++) {
-          result = result + U(j,i)*U(j,i);
+          result = result + U(j, i) * U(j, i);
         }
       }
-    } break; 
-  } 
+    } break;
+  }
 
   if (commu.nTasks != 1) {
     double tmp;
@@ -82,4 +83,4 @@ double fsi_ls_normv(const int dof, const int nNo, FSILS_commuType& commu, const 
   return sqrt(result);
 }
 
-};
+};  // namespace norm

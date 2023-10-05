@@ -1,7 +1,4 @@
 
 #include "ChnlMod.h"
 
-ChnlMod::ChnlMod()
-{
-  pClr = true; 
-}
+ChnlMod::ChnlMod() { pClr = true; }

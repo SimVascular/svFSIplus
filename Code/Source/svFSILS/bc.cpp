@@ -1,25 +1,25 @@
 
-#include "fsils_api.hpp"
 #include "fils_struct.hpp"
+#include "fsils_api.hpp"
 
 namespace fsi_linear_solver {
 
 /// @brief Modifies:
-///  lhs.face[faIn].nNo 
+///  lhs.face[faIn].nNo
 ///  lhs.face[faIn].dof
-///  lhs.face[faIn].bGrp 
+///  lhs.face[faIn].bGrp
 ///  lhs.face[faIn].glob
 ///  lhs.face[faIn].val
 ///  lhs.face[faIn].valM
 //
-void fsils_bc_create(FSILS_lhsType& lhs, int faIn, int nNo, int dof, BcType BC_type, const Vector<int>& gNodes, 
-    const Array<double>& Val)
-{
+void fsils_bc_create(FSILS_lhsType& lhs, int faIn, int nNo, int dof,
+                     BcType BC_type, const Vector<int>& gNodes,
+                     const Array<double>& Val) {
   using namespace consts;
 
-  #define n_debug_fsils_bc_create
-  #ifdef debug_fsils_bc_create
-  DebugMsg dmsg(__func__,  lhs.commu.task);
+#define n_debug_fsils_bc_create
+#ifdef debug_fsils_bc_create
+  DebugMsg dmsg(__func__, lhs.commu.task);
   dmsg.banner();
   dmsg << "lhs.nNo: " << lhs.nNo;
   dmsg << "lhs.nFaces: " << lhs.nFaces;
@@ -30,11 +30,13 @@ void fsils_bc_create(FSILS_lhsType& lhs, int faIn, int nNo, int dof, BcType BC_t
   dmsg << "Val.size(): " << Val.size();
   dmsg << "Val.nrows: " << Val.nrows_;
   dmsg << "Val.ncols: " << Val.ncols_;
-  #endif
+#endif
 
   if (faIn >= lhs.nFaces) {
-    throw std::runtime_error("FSILS: faIn is exceeding lhs structure maximum number of faces (" 
-        + std::to_string(lhs.nFaces) + ") is less than " + std::to_string(faIn) + ".");
+    throw std::runtime_error(
+        "FSILS: faIn is exceeding lhs structure maximum number of faces (" +
+        std::to_string(lhs.nFaces) + ") is less than " + std::to_string(faIn) +
+        ".");
   }
 
   if (faIn <= -1) {
@@ -45,9 +47,9 @@ void fsils_bc_create(FSILS_lhsType& lhs, int faIn, int nNo, int dof, BcType BC_t
   lhs.face[faIn].dof = dof;
   lhs.face[faIn].bGrp = BC_type;
 
-  lhs.face[faIn].glob.resize(nNo); 
-  lhs.face[faIn].val.resize(dof,nNo);   
-  lhs.face[faIn].valM.resize(dof,nNo);
+  lhs.face[faIn].glob.resize(nNo);
+  lhs.face[faIn].val.resize(dof, nNo);
+  lhs.face[faIn].valM.resize(dof, nNo);
 
   for (int a = 0; a < nNo; a++) {
     int Ac = lhs.map(gNodes(a));
@@ -57,11 +59,11 @@ void fsils_bc_create(FSILS_lhsType& lhs, int faIn, int nNo, int dof, BcType BC_t
   if (Val.size() != 0) {
     for (int a = 0; a < nNo; a++) {
       for (int i = 0; i < Val.nrows(); i++) {
-        lhs.face[faIn].val(i,a) = Val(i,a);
+        lhs.face[faIn].val(i, a) = Val(i, a);
       }
     }
-  } else { 
-     lhs.face[faIn].val = 0.0;
+  } else {
+    lhs.face[faIn].val = 0.0;
   }
 
   if (lhs.commu.nTasks > 1) {
@@ -77,21 +79,21 @@ void fsils_bc_create(FSILS_lhsType& lhs, int faIn, int nNo, int dof, BcType BC_t
 
     if (Ac > 1) {
       lhs.face[faIn].sharedFlag = true;
-      Array<double> v(dof,lhs.nNo);
+      Array<double> v(dof, lhs.nNo);
 
       for (int a = 0; a < nNo; a++) {
         int Ac = lhs.face[faIn].glob(a);
         for (int i = 0; i < dof; i++) {
-          v(i,Ac) = lhs.face[faIn].val(i,a);
+          v(i, Ac) = lhs.face[faIn].val(i, a);
         }
       }
 
-      fsils_commuv(lhs, dof, v); 
+      fsils_commuv(lhs, dof, v);
 
       for (int a = 0; a < nNo; a++) {
         int Ac = lhs.face[faIn].glob(a);
         for (int i = 0; i < dof; i++) {
-          lhs.face[faIn].val(i,a) = v(i,Ac);
+          lhs.face[faIn].val(i, a) = v(i, Ac);
         }
       }
     }
@@ -100,29 +102,25 @@ void fsils_bc_create(FSILS_lhsType& lhs, int faIn, int nNo, int dof, BcType BC_t
 
 /// @brief fsils_bc_create() without optional 'Val' parameter.
 //
-void fsils_bc_create(FSILS_lhsType& lhs, int faIn, int nNo, int dof, BcType BC_type, const Vector<int>& gNodes)
-{
+void fsils_bc_create(FSILS_lhsType& lhs, int faIn, int nNo, int dof,
+                     BcType BC_type, const Vector<int>& gNodes) {
   Array<double> Val;
   fsils_bc_create(lhs, faIn, nNo, dof, BC_type, gNodes, Val);
 }
 
+void fsils_bc_free(FSILS_lhsType& lhs, int faIn) {
+  // IF (.NOT.lhs%face(faIn)%foC) THEN
+  //        PRINT *, 'FSILS: Cannot free a face that is not created yet'
+  //       STOP "FSILS: FATAL ERROR"
+  // END IF
 
-void fsils_bc_free(FSILS_lhsType& lhs, int faIn)
-{
-  //IF (.NOT.lhs%face(faIn)%foC) THEN
-  //       PRINT *, 'FSILS: Cannot free a face that is not created yet'
-  //      STOP "FSILS: FATAL ERROR"
-  //END IF
-
-  lhs.face[faIn].foC        = false;
-  lhs.face[faIn].nNo        = 0;
-  lhs.face[faIn].bGrp       = BcType::BC_TYPE_Dir;
-  lhs.face[faIn].res        = 0.0;
+  lhs.face[faIn].foC = false;
+  lhs.face[faIn].nNo = 0;
+  lhs.face[faIn].bGrp = BcType::BC_TYPE_Dir;
+  lhs.face[faIn].res = 0.0;
   lhs.face[faIn].sharedFlag = false;
 
-  //DEALLOCATE(lhs.face(faIn).glob, lhs.face(faIn).val, lhs.face(faIn).valM)
-
+  // DEALLOCATE(lhs.face(faIn).glob, lhs.face(faIn).val, lhs.face(faIn).valM)
 }
 
-};
-
+};  // namespace fsi_linear_solver

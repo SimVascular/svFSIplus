@@ -1,6 +1,11 @@
 
 #include "mesh.h"
 
+#include <math.h>
+
+#include <array>
+#include <iomanip>
+
 #include "all_fun.h"
 #include "consts.h"
 #include "fluid.h"
@@ -11,28 +16,24 @@
 #include "sv_struct.h"
 #include "utils.h"
 
-#include <array>
-#include <iomanip>
-#include <math.h>
-
 #ifdef WITH_TRILINOS
 #include "trilinos_linear_solver.h"
 #endif
 
 namespace mesh {
 
-void construct_mesh(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Array<double>& Ag, const Array<double>& Dg)
-{
-  #define n_debug_construct_mesh 
-  #ifdef debug_construct_mesh
+void construct_mesh(ComMod& com_mod, CepMod& cep_mod, const mshType& lM,
+                    const Array<double>& Ag, const Array<double>& Dg) {
+#define n_debug_construct_mesh
+#ifdef debug_construct_mesh
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
-  #endif
+#endif
 
   using namespace consts;
 
   auto& cem = cep_mod.cem;
-  const int nsd  = com_mod.nsd;
+  const int nsd = com_mod.nsd;
   const int tDof = com_mod.tDof;
   const int dof = com_mod.dof;
   const int cEq = com_mod.cEq;
@@ -47,21 +48,21 @@ void construct_mesh(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const A
 
   // Start and end DOF
   int is = nsd + 1;
-  int ie = 2*nsd;
+  int ie = 2 * nsd;
   int eNoN = lM.eNoN;
-  #ifdef debug_construct_mesh
+#ifdef debug_construct_mesh
   dmsg << "cEq: " << cEq;
   dmsg << "is: " << is;
   dmsg << "ie: " << ie;
   dmsg << "cDmn: " << cDmn;
-  #endif
+#endif
 
   Vector<int> ptr(eNoN);
   Vector<double> pSl(nsymd), ya_l(eNoN), N(eNoN);
-  Array<double> xl(nsd,eNoN), al(tDof,eNoN), yl(tDof,eNoN), dl(tDof,eNoN),
-                dol(nsd,eNoN), pS0l(nsymd,eNoN), Nx(nsd,eNoN), lR(dof,eNoN);
-  Array3<double> lK(dof*dof,eNoN,eNoN);
-  Array<double> ksix(nsd,nsd), bfl(nsd,eNoN);
+  Array<double> xl(nsd, eNoN), al(tDof, eNoN), yl(tDof, eNoN), dl(tDof, eNoN),
+      dol(nsd, eNoN), pS0l(nsymd, eNoN), Nx(nsd, eNoN), lR(dof, eNoN);
+  Array3<double> lK(dof * dof, eNoN, eNoN);
+  Array<double> ksix(nsd, nsd), bfl(nsd, eNoN);
 
   for (int e = 0; e < lM.nEl; e++) {
     // Update domain and proceed if domain phys and eqn phys match
@@ -73,7 +74,7 @@ void construct_mesh(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const A
 
     // Update shape functions for NURBS
     if (lM.eType == ElementType::NRB) {
-      //CALL NRBNNX(lM, e)
+      // CALL NRBNNX(lM, e)
     }
 
     // Create local copies
@@ -81,17 +82,17 @@ void construct_mesh(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const A
     pS0l = 0.0;
 
     for (int a = 0; a < eNoN; a++) {
-      int Ac = lM.IEN(a,e);
+      int Ac = lM.IEN(a, e);
       ptr(a) = Ac;
 
       for (int i = 0; i < nsd; i++) {
-        xl(i,a) = com_mod.x(i,Ac);
-        dol(i,a) = Do(is+i,Ac);
+        xl(i, a) = com_mod.x(i, Ac);
+        dol(i, a) = Do(is + i, Ac);
       }
 
       for (int i = 0; i < tDof; i++) {
-        al(i,a) = Ag(i,Ac);
-        dl(i,a) = Dg(i,Ac);
+        al(i, a) = Ag(i, Ac);
+        dl(i, a) = Dg(i, Ac);
       }
     }
 
@@ -99,8 +100,8 @@ void construct_mesh(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const A
     // beginning of the time step. Update displacements accordingly
     for (int i = 0; i < nsd; i++) {
       for (int j = 0; j < eNoN; j++) {
-        xl(i,j) = xl(i,j) + dol(i,j);
-        dl(i+is,j) = dl(i+is,j) - dol(i,j);
+        xl(i, j) = xl(i, j) + dol(i, j);
+        dl(i + is, j) = dl(i + is, j) - dol(i, j);
       }
     }
 
@@ -115,7 +116,8 @@ void construct_mesh(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const A
         auto Nx_g = lM.Nx.rslice(g);
         nn::gnn(eNoN, nsd, nsd, Nx_g, xl, Nx, Jac, ksix);
         if (utils::is_zero(Jac)) {
-          throw std::runtime_error("[construct_mesh] Jacobian for element " + std::to_string(e) + " is < 0.");
+          throw std::runtime_error("[construct_mesh] Jacobian for element " +
+                                   std::to_string(e) + " is < 0.");
         }
       }
 
@@ -124,10 +126,12 @@ void construct_mesh(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const A
       pS0l = 0.0;
 
       if (nsd == 3) {
-        l_elas::l_elas_3d(com_mod, eNoN, w, N, Nx, al, dl, bfl, pS0l, pSl, lR, lK);
+        l_elas::l_elas_3d(com_mod, eNoN, w, N, Nx, al, dl, bfl, pS0l, pSl, lR,
+                          lK);
 
       } else if (nsd == 2) {
-        l_elas::l_elas_2d(com_mod, eNoN, w, N, Nx, al, dl, bfl, pS0l, pSl, lR, lK);
+        l_elas::l_elas_2d(com_mod, eNoN, w, N, Nx, al, dl, bfl, pS0l, pSl, lR,
+                          lK);
       }
     }
 
@@ -135,15 +139,15 @@ void construct_mesh(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const A
     //
 #ifdef WITH_TRILINOS
     if (eq.assmTLS) {
-      trilinos_doassem_(const_cast<int&>(eNoN), ptr.data(), lK.data(), lR.data());
+      trilinos_doassem_(const_cast<int&>(eNoN), ptr.data(), lK.data(),
+                        lR.data());
     } else {
 #endif
       lhsa_ns::do_assem(com_mod, eNoN, ptr, lK, lR);
 #ifdef WITH_TRILINOS
     }
 #endif
-
   }
 }
 
-};
+};  // namespace mesh

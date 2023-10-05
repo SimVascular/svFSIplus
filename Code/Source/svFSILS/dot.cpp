@@ -14,14 +14,14 @@
 
 namespace dot {
 
-/// @brief Reproduces 'FUNCTION FSILS_DOTS(nNo, commu, U, V)'. 
+/// @brief Reproduces 'FUNCTION FSILS_DOTS(nNo, commu, U, V)'.
 //
-double fsils_dot_s(const int nNo, FSILS_commuType& commu, const Vector<double>& U, const Vector<double>& V)
-{
-  double result = 0.0; 
+double fsils_dot_s(const int nNo, FSILS_commuType& commu,
+                   const Vector<double>& U, const Vector<double>& V) {
+  double result = 0.0;
 
   for (int i = 0; i < nNo; i++) {
-    result = result + U(i)*V(i);
+    result = result + U(i) * V(i);
   }
 
   if (commu.nTasks == 1) {
@@ -37,42 +37,44 @@ double fsils_dot_s(const int nNo, FSILS_commuType& commu, const Vector<double>& 
 
 /// @brief Reproduces 'FUNCTION FSILS_DOTV(dof, nNo, commu, U, V)'.
 //
-double fsils_dot_v(const int dof, const int nNo, FSILS_commuType& commu, const Array<double>& U, const Array<double>& V)
-{
-  double result = 0.0; 
+double fsils_dot_v(const int dof, const int nNo, FSILS_commuType& commu,
+                   const Array<double>& U, const Array<double>& V) {
+  double result = 0.0;
 
   switch (dof) {
     case 1:
       for (int i = 0; i < nNo; i++) {
-        result = result + U(0,i)*V(0,i);
+        result = result + U(0, i) * V(0, i);
       }
-    break;
+      break;
 
     case 2:
       for (int i = 0; i < nNo; i++) {
-        result = result + U(0,i)*V(0,i) + U(1,i)*V(1,i);
+        result = result + U(0, i) * V(0, i) + U(1, i) * V(1, i);
       }
-    break;
+      break;
 
     case 3:
       for (int i = 0; i < nNo; i++) {
-        result = result + U(0,i)*V(0,i) + U(1,i)*V(1,i) +  U(2,i)*V(2,i);
+        result =
+            result + U(0, i) * V(0, i) + U(1, i) * V(1, i) + U(2, i) * V(2, i);
       }
-    break;
+      break;
 
     case 4:
       for (int i = 0; i < nNo; i++) {
-        result = result + U(0,i)*V(0,i) + U(1,i)*V(1,i) + U(2,i)*V(2,i) + U(3,i)*V(3,i);
+        result = result + U(0, i) * V(0, i) + U(1, i) * V(1, i) +
+                 U(2, i) * V(2, i) + U(3, i) * V(3, i);
       }
-    break;
+      break;
 
-    defualt: 
+    defualt:
       for (int i = 0; i < nNo; i++) {
         double sum{0.0};
         for (int j = 0; j < U.nrows(); j++) {
-          sum += U(j,i) * V(j,i);
+          sum += U(j, i) * V(j, i);
         }
-        result = result + sum; 
+        result = result + sum;
       }
   }
 
@@ -89,58 +91,58 @@ double fsils_dot_v(const int dof, const int nNo, FSILS_commuType& commu, const A
 
 /// @brief Reproduces Fortran 'FSILS_NCDOTS(nNo, , U, V)'.
 //
-double fsils_nc_dot_s(const int nNo, const Vector<double>& U, const Vector<double>& V)
-{
+double fsils_nc_dot_s(const int nNo, const Vector<double>& U,
+                      const Vector<double>& V) {
   double result{0.0};
 
-  for (int i = 0; i < nNo; i++) { 
-    result = result + U(i)*V(i);
-  } 
+  for (int i = 0; i < nNo; i++) {
+    result = result + U(i) * V(i);
+  }
 
   return result;
 }
 
 /// @brief Reproduces 'FUNCTION FSILS_NCDOTV(dof, nNo, U, V) RESULT(FSILS_DOTV)'.
 //
-double fsils_nc_dot_v(const int dof, const int nNo, const Array<double>& U, const Array<double>& V)
-{
+double fsils_nc_dot_v(const int dof, const int nNo, const Array<double>& U,
+                      const Array<double>& V) {
   double result = 0.0;
 
   switch (dof) {
     case 1: {
-      for (int i = 0; i < nNo; i++) { 
-        result = result + U(0,i)*V(0,i);
+      for (int i = 0; i < nNo; i++) {
+        result = result + U(0, i) * V(0, i);
       }
     } break;
 
     case 2: {
-      for (int i = 0; i < nNo; i++) { 
-        result = result + U(0,i)*V(0,i) + U(1,i)*V(1,i);
+      for (int i = 0; i < nNo; i++) {
+        result = result + U(0, i) * V(0, i) + U(1, i) * V(1, i);
       }
     } break;
 
     case 3: {
-      for (int i = 0; i < nNo; i++) { 
-        result = result + U(0,i)*V(0,i) + U(1,i)*V(1,i) + U(2,i)*V(2,i);
+      for (int i = 0; i < nNo; i++) {
+        result =
+            result + U(0, i) * V(0, i) + U(1, i) * V(1, i) + U(2, i) * V(2, i);
       }
     } break;
 
     case 4: {
-      for (int i = 0; i < nNo; i++) { 
-        result = result + U(0,i)*V(0,i) + U(1,i)*V(1,i) +  U(2,i)*V(2,i) + U(3,i)*V(3,i);
+      for (int i = 0; i < nNo; i++) {
+        result = result + U(0, i) * V(0, i) + U(1, i) * V(1, i) +
+                 U(2, i) * V(2, i) + U(3, i) * V(3, i);
       }
     } break;
 
     default: {
-      for (int i = 0; i < nNo; i++) { 
+      for (int i = 0; i < nNo; i++) {
         result = result + U.col(i) * V.col(i);
       }
     } break;
-  } 
+  }
 
   return result;
 }
 
-};
-
-
+};  // namespace dot

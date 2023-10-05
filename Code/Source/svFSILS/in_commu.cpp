@@ -9,16 +9,14 @@
 // 3 - rTmp {in master} = R          {from master}
 // 4 - R    {in slave}  = rTmp       {from master}
 
-#include "fsils.hpp"
-#include "CmMod.h"
 #include "Array3.h"
-
+#include "CmMod.h"
+#include "fsils.hpp"
 #include "fsils_std.h"
 
 namespace fsi_linear_solver {
 
-void fsils_commus(const FSILS_lhsType& lhs, Vector<double>& R)
-{
+void fsils_commus(const FSILS_lhsType& lhs, Vector<double>& R) {
   if (lhs.commu.nTasks == 1) {
     return;
   }
@@ -28,26 +26,31 @@ void fsils_commus(const FSILS_lhsType& lhs, Vector<double>& R)
     return;
   }
 
-  int nmax = std::max_element(lhs.cS.begin(), lhs.cS.end(), 
-    [](const FSILS_cSType& a, const FSILS_cSType& b){return a.n < b.n;})->n; 
+  int nmax = std::max_element(lhs.cS.begin(), lhs.cS.end(),
+                              [](const FSILS_cSType& a, const FSILS_cSType& b) {
+                                return a.n < b.n;
+                              })
+                 ->n;
 
-  Array<double> sB(nmax,nReq); 
-  Array<double> rB(nmax,nReq); 
-  std::vector<MPI_Request> rReq(nReq); 
+  Array<double> sB(nmax, nReq);
+  Array<double> rB(nmax, nReq);
+  std::vector<MPI_Request> rReq(nReq);
   std::vector<MPI_Request> sReq(nReq);
 
   for (int i = 0; i < nReq; i++) {
-    for (int j = 0; j < lhs.cS[i].n; j++) { 
+    for (int j = 0; j < lhs.cS[i].n; j++) {
       int k = lhs.cS[i].ptr(j);
-      sB(j,i) = R(k);
+      sB(j, i) = R(k);
     }
   }
 
   int mpi_tag = 1;
 
   for (int i = 0; i < nReq; i++) {
-    auto rec_err = MPI_Irecv(rB.col_data(i), lhs.cS[i].n, mpreal, lhs.cS[i].iP, mpi_tag, lhs.commu.comm, &rReq[i]);
-    auto send_err = MPI_Isend(sB.col_data(i), lhs.cS[i].n, mpreal, lhs.cS[i].iP, mpi_tag, lhs.commu.comm, &sReq[i]);
+    auto rec_err = MPI_Irecv(rB.col_data(i), lhs.cS[i].n, mpreal, lhs.cS[i].iP,
+                             mpi_tag, lhs.commu.comm, &rReq[i]);
+    auto send_err = MPI_Isend(sB.col_data(i), lhs.cS[i].n, mpreal, lhs.cS[i].iP,
+                              mpi_tag, lhs.commu.comm, &sReq[i]);
   }
 
   // Wait for the MPI receive to complete.
@@ -58,9 +61,9 @@ void fsils_commus(const FSILS_lhsType& lhs, Vector<double>& R)
   }
 
   for (int i = 0; i < nReq; i++) {
-    for (int j = 0; j < lhs.cS[i].n; j++) { 
+    for (int j = 0; j < lhs.cS[i].n; j++) {
       int k = lhs.cS[i].ptr(j);
-      R(k) = R(k) + rB(j,i);
+      R(k) = R(k) + rB(j, i);
     }
   }
 
@@ -79,8 +82,7 @@ void fsils_commus(const FSILS_lhsType& lhs, Vector<double>& R)
 /// 3 - rTmp {in master} = R          {from master}
 /// 4 - R    {in slave}  = rTmp       {from master}
 //
-void fsils_commuv(const FSILS_lhsType& lhs, int dof, Array<double>& R)
-{
+void fsils_commuv(const FSILS_lhsType& lhs, int dof, Array<double>& R) {
   if (lhs.commu.nTasks == 1) {
     return;
   }
@@ -90,21 +92,24 @@ void fsils_commuv(const FSILS_lhsType& lhs, int dof, Array<double>& R)
   }
 
   int nReq = lhs.nReq;
-  int nmax = std::max_element(lhs.cS.begin(), lhs.cS.end(), 
-      [](const FSILS_cSType& a, const FSILS_cSType& b){return a.n < b.n;})->n; 
+  int nmax = std::max_element(lhs.cS.begin(), lhs.cS.end(),
+                              [](const FSILS_cSType& a, const FSILS_cSType& b) {
+                                return a.n < b.n;
+                              })
+                 ->n;
 
-  Array3<double> sB(dof,nmax,nReq); 
-  Array3<double> rB(dof,nmax,nReq); 
-  std::vector<MPI_Request> rReq(nReq); 
+  Array3<double> sB(dof, nmax, nReq);
+  Array3<double> rB(dof, nmax, nReq);
+  std::vector<MPI_Request> rReq(nReq);
   std::vector<MPI_Request> sReq(nReq);
 
   int n = 1;
 
   for (int i = 0; i < nReq; i++) {
-    for (int j = 0; j < lhs.cS[i].n; j++) { 
+    for (int j = 0; j < lhs.cS[i].n; j++) {
       int k = lhs.cS[i].ptr(j);
-      for (int l = 0; l < dof; l++) { 
-        sB(l,j,i) = R(l,k);
+      for (int l = 0; l < dof; l++) {
+        sB(l, j, i) = R(l, k);
       }
     }
   }
@@ -112,8 +117,10 @@ void fsils_commuv(const FSILS_lhsType& lhs, int dof, Array<double>& R)
   int mpi_tag = 1;
 
   for (int i = 0; i < nReq; i++) {
-    auto rec_err = MPI_Irecv(rB.slice_data(i), lhs.cS[i].n*dof, mpreal, lhs.cS[i].iP, mpi_tag, lhs.commu.comm, &rReq[i]);
-    auto send_err = MPI_Isend(sB.slice_data(i), lhs.cS[i].n*dof, mpreal, lhs.cS[i].iP, mpi_tag, lhs.commu.comm, &sReq[i]);
+    auto rec_err = MPI_Irecv(rB.slice_data(i), lhs.cS[i].n * dof, mpreal,
+                             lhs.cS[i].iP, mpi_tag, lhs.commu.comm, &rReq[i]);
+    auto send_err = MPI_Isend(sB.slice_data(i), lhs.cS[i].n * dof, mpreal,
+                              lhs.cS[i].iP, mpi_tag, lhs.commu.comm, &sReq[i]);
   }
 
   // Wait for the MPI receive to complete.
@@ -124,10 +131,10 @@ void fsils_commuv(const FSILS_lhsType& lhs, int dof, Array<double>& R)
   }
 
   for (int i = 0; i < nReq; i++) {
-    for (int j = 0; j < lhs.cS[i].n; j++) { 
+    for (int j = 0; j < lhs.cS[i].n; j++) {
       int k = lhs.cS[i].ptr(j);
-      for (int l = 0; l < dof; l++) { 
-        R(l,k) = R(l,k) + rB(l,j,i);
+      for (int l = 0; l < dof; l++) {
+        R(l, k) = R(l, k) + rB(l, j, i);
       }
     }
   }
@@ -140,6 +147,4 @@ void fsils_commuv(const FSILS_lhsType& lhs, int dof, Array<double>& R)
   }
 }
 
-};
-
-
+};  // namespace fsi_linear_solver

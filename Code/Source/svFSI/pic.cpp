@@ -3,16 +3,16 @@
 
 #include "pic.h"
 
+#include <math.h>
+
+#include <iostream>
+
 #include "Simulation.h"
 #include "all_fun.h"
 #include "cep_ion.h"
+#include "mpi.h"
 #include "nn.h"
 #include "utils.h"
-
-#include "mpi.h"
-
-#include <iostream>
-#include <math.h>
 
 namespace pic {
 
@@ -30,22 +30,21 @@ namespace pic {
 ///   com_mod.pSn
 ///
 ///   com_mod.cEq
-///   eq.FSILS.RI.iNorm 
+///   eq.FSILS.RI.iNorm
 ///   eq.pNorm
 /// \endcode
 //
-void picc(Simulation* simulation)
-{
+void picc(Simulation* simulation) {
   using namespace consts;
 
   auto& com_mod = simulation->com_mod;
   auto& cep_mod = simulation->get_cep_mod();
 
-  #define n_debug_picc
-  #ifdef debug_picc
+#define n_debug_picc
+#ifdef debug_picc
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
-  #endif
+#endif
 
   const int nsd = com_mod.nsd;
   const int tnNo = com_mod.tnNo;
@@ -70,94 +69,98 @@ void picc(Simulation* simulation)
   int s = eq.s;
   int e = eq.e;
 
-  std::array<double,4> coef;
+  std::array<double, 4> coef;
   coef[0] = eq.gam * dt;
-  coef[1] = eq.beta*dt*dt;
+  coef[1] = eq.beta * dt * dt;
   coef[2] = 1.0 / eq.am;
-  coef[3] = eq.af*coef[0]*coef[2];
+  coef[3] = eq.af * coef[0] * coef[2];
 
-  #ifdef debug_picc
+#ifdef debug_picc
   dmsg << "cEq: " << cEq;
   dmsg << "s: " << s;
   dmsg << "e: " << e;
-  dmsg << "coef: " << coef[0] << " " << coef[1] << " " << coef[2] << " " << coef[3];
+  dmsg << "coef: " << coef[0] << " " << coef[1] << " " << coef[2] << " "
+       << coef[3];
   dmsg << "sstEq: " << com_mod.sstEq;
   dmsg << "An nrows: " << An.nrows_;
   dmsg << "   ncols: " << An.ncols_;
-  #endif
+#endif
 
   // ustruct, FSI (ustruct)
   //
   if (com_mod.sstEq) {
-    if (eq.phys == EquationType::phys_ustruct || eq.phys == EquationType::phys_FSI) {
+    if (eq.phys == EquationType::phys_ustruct ||
+        eq.phys == EquationType::phys_FSI) {
       Vector<double> dUl(nsd);
 
       for (int a = 0; a < tnNo; a++) {
-        for (int i = 0; i < e-s+1; i++) {
-          An(i+s,a) = An(i+s,a) - R(i,a);
-          Yn(i+s,a) = Yn(i+s,a) - R(i,a)*coef[0];
+        for (int i = 0; i < e - s + 1; i++) {
+          An(i + s, a) = An(i + s, a) - R(i, a);
+          Yn(i + s, a) = Yn(i + s, a) - R(i, a) * coef[0];
         }
 
-        for (int i = 0; i < e-s; i++) {
-          dUl(i) = Rd(i,a)*coef[2] + R(i,a)*coef[3];
-          Ad(i,a) = Ad(i,a) - dUl(i);
-          Dn(i+s,a) = Dn(i+s,a) - dUl(i)*coef[0];
+        for (int i = 0; i < e - s; i++) {
+          dUl(i) = Rd(i, a) * coef[2] + R(i, a) * coef[3];
+          Ad(i, a) = Ad(i, a) - dUl(i);
+          Dn(i + s, a) = Dn(i + s, a) - dUl(i) * coef[0];
         }
       }
 
     } else if (eq.phys == EquationType::phys_mesh) {
       for (int a = 0; a < tnNo; a++) {
-        for (int i = 0; i < e-s+1; i++) {
-          An(i+s,a) = An(i+s,a) - R(i,a);
-          Yn(i+s,a) = Yn(i+s,a) - R(i,a)*coef[0];
-          Dn(i+s,a) = Dn(i+s,a) - R(i,a)*coef[1];
+        for (int i = 0; i < e - s + 1; i++) {
+          An(i + s, a) = An(i + s, a) - R(i, a);
+          Yn(i + s, a) = Yn(i + s, a) - R(i, a) * coef[0];
+          Dn(i + s, a) = Dn(i + s, a) - R(i, a) * coef[1];
         }
       }
     }
 
   } else {
     for (int a = 0; a < tnNo; a++) {
-      for (int i = 0; i < e-s+1; i++) {
-        An(i+s,a) = An(i+s,a) - R(i,a);
-        Yn(i+s,a) = Yn(i+s,a) - R(i,a)*coef[0];
-        Dn(i+s,a) = Dn(i+s,a) - R(i,a)*coef[1];
+      for (int i = 0; i < e - s + 1; i++) {
+        An(i + s, a) = An(i + s, a) - R(i, a);
+        Yn(i + s, a) = Yn(i + s, a) - R(i, a) * coef[0];
+        Dn(i + s, a) = Dn(i + s, a) - R(i, a) * coef[1];
       }
     }
   }
 
-  if (std::set<EquationType>{Equation_stokes, Equation_fluid, Equation_ustruct, Equation_FSI}.count(eq.phys) != 0) {
+  if (std::set<EquationType>{Equation_stokes, Equation_fluid, Equation_ustruct,
+                             Equation_FSI}
+          .count(eq.phys) != 0) {
     pic_eth(simulation);
   }
 
   if (eq.phys == Equation_FSI) {
     int s = com_mod.eq[1].s;
     int e = com_mod.eq[1].e;
-    #ifdef debug_picc
+#ifdef debug_picc
     dmsg << "eq.phys == Equation_FSI ";
     dmsg << "com_mod.eq[1].sym: " << com_mod.eq[1].sym;
     dmsg << "s: " << s;
     dmsg << "e: " << e;
-    #endif
+#endif
 
     for (int Ac = 0; Ac < tnNo; Ac++) {
-      if (all_fun::is_domain(com_mod, eq, Ac, Equation_struct) || 
-          all_fun::is_domain(com_mod, eq, Ac, Equation_ustruct) || 
+      if (all_fun::is_domain(com_mod, eq, Ac, Equation_struct) ||
+          all_fun::is_domain(com_mod, eq, Ac, Equation_ustruct) ||
           all_fun::is_domain(com_mod, eq, Ac, Equation_lElas)) {
-        for (int i = 0; i < e-s+1; i++) {
-          An(i+s,Ac) = An(i,Ac);
-          Yn(i+s,Ac) = Yn(i,Ac);
-          Dn(i+s,Ac) = Dn(i,Ac);
+        for (int i = 0; i < e - s + 1; i++) {
+          An(i + s, Ac) = An(i, Ac);
+          Yn(i + s, Ac) = Yn(i, Ac);
+          Dn(i + s, Ac) = Dn(i, Ac);
         }
       }
     }
   }
 
   // Update Xion for cardiac electrophysiology
-  //  
+  //
   if (eq.phys == Equation_CEP) {
     int s = eq.s;
     for (int a = 0; a < tnNo; a++) {
-      Xion(0,a) = Yn(s,a);
+      Xion(0, a) = Yn(s, a);
     }
   }
 
@@ -170,7 +173,7 @@ void picc(Simulation* simulation)
     for (int a = 0; a < tnNo; a++) {
       if (!utils::is_zero(pSa(a))) {
         for (int i = 0; i < pSn.nrows(); i++) {
-          pSn(i,a) = pSn(i,a) / pSa(a);
+          pSn(i, a) = pSn(i, a) / pSa(a);
         }
       }
     }
@@ -183,14 +186,14 @@ void picc(Simulation* simulation)
   if (eq.phys == Equation_CMM && !com_mod.cmmInit) {
     for (int a = 0; a < tnNo; a++) {
       double r1 = static_cast<double>(com_mod.cmmBdry(a));
-      for (int i = 0; i < e-s; i++) {
-        Dn(i+s,a) = Dn(i+s,a)*r1;
+      for (int i = 0; i < e - s; i++) {
+        Dn(i + s, a) = Dn(i + s, a) * r1;
       }
     }
   }
 
   // IB treatment
-  //if (ibFlag) CALL IB_PICC()
+  // if (ibFlag) CALL IB_PICC()
 
   double eps = std::numeric_limits<double>::epsilon();
 
@@ -200,26 +203,26 @@ void picc(Simulation* simulation)
 
   if (utils::is_zero(eq.iNorm)) {
     eq.iNorm = eq.FSILS.RI.iNorm;
-    #ifdef debug_picc
+#ifdef debug_picc
     dmsg << "eq.iNorm: " << eq.iNorm;
-    #endif
+#endif
   }
 
   if (eq.itr == 1) {
-     eq.pNorm = eq.FSILS.RI.iNorm / eq.iNorm;
-    #ifdef debug_picc
+    eq.pNorm = eq.FSILS.RI.iNorm / eq.iNorm;
+#ifdef debug_picc
     dmsg << "eq.itr: " << eq.itr;
     dmsg << "eq.pNorm: " << eq.pNorm;
-    #endif
+#endif
   }
 
   double r1 = eq.FSILS.RI.iNorm / eq.iNorm;
   bool l1 = (eq.itr >= eq.maxItr);
   bool l2 = (r1 <= eq.tol);
-  bool l3 = (r1 <= eq.tol*eq.pNorm);
+  bool l3 = (r1 <= eq.tol * eq.pNorm);
   bool l4 = (eq.itr >= eq.minItr);
 
-  #ifdef debug_picc
+#ifdef debug_picc
   dmsg << "eq.itr: " << eq.itr;
   dmsg << "eq.minItr: " << eq.minItr;
   dmsg << "r1: " << r1;
@@ -227,35 +230,39 @@ void picc(Simulation* simulation)
   dmsg << "l2: " << l2;
   dmsg << "l3: " << l3;
   dmsg << "l4: " << l4;
-  #endif
+#endif
 
   if (l1 || ((l2 || l3) && l4)) {
     eq.ok = true;
-    #ifdef debug_picc
+#ifdef debug_picc
     dmsg << "eq.ok: " << eq.ok;
     dmsg << "com_mod.eq[0].ok: " << com_mod.eq[0].ok;
     dmsg << "com_mod.eq[1].ok: " << com_mod.eq[1].ok;
-    #endif
+#endif
   }
 
   auto& eqs = com_mod.eq;
-  if (std::count_if(eqs.begin(),eqs.end(),[](eqType& eq){return eq.ok;}) == eqs.size()) {
-    #ifdef debug_picc
+  if (std::count_if(eqs.begin(), eqs.end(), [](eqType& eq) { return eq.ok; }) ==
+      eqs.size()) {
+#ifdef debug_picc
     dmsg << "all ok";
-    #endif
+#endif
     return;
   }
-  //if (ALL(eq.ok)) RETURN
+  // if (ALL(eq.ok)) RETURN
 
   if (eq.coupled) {
     cEq = cEq + 1;
-    #ifdef debug_picc
-    dmsg << "eq " << " coupled ";
+#ifdef debug_picc
+    dmsg << "eq "
+         << " coupled ";
     dmsg << "1st update cEq: " << cEq;
-    #endif
+#endif
 
     auto& eqs = com_mod.eq;
-    if (std::count_if(eqs.begin(),eqs.end(),[](eqType& eq){return !eq.coupled || eq.ok;}) == eqs.size()) {
+    if (std::count_if(eqs.begin(), eqs.end(), [](eqType& eq) {
+          return !eq.coupled || eq.ok;
+        }) == eqs.size()) {
       while (cEq < com_mod.nEq) {
         if (!eqs[cEq].coupled) {
           break;
@@ -281,10 +288,11 @@ void picc(Simulation* simulation)
       cEq = cEq + 1;
     }
   }
- #ifdef debug_picc
- dmsg << "eq " << " coupled ";
- dmsg << "2nd update cEq: " << cEq;
- #endif
+#ifdef debug_picc
+  dmsg << "eq "
+       << " coupled ";
+  dmsg << "2nd update cEq: " << cEq;
+#endif
 }
 
 //---------
@@ -298,8 +306,7 @@ void picc(Simulation* simulation)
 //
 // Modifies: com_mod.Yn
 //
-void pic_eth(Simulation* simulation)
-{
+void pic_eth(Simulation* simulation) {
   using namespace consts;
 
   auto& com_mod = simulation->com_mod;
@@ -322,7 +329,7 @@ void pic_eth(Simulation* simulation)
     if (com_mod.msh[iM].nFs == 2) {
       THflag = true;
       break;
-     }
+    }
   }
 
   if (!THflag) {
@@ -342,40 +349,40 @@ void pic_eth(Simulation* simulation)
     int eNoN = msh.fs[0].eNoN;
     int eNoNq = msh.fs[1].eNoN;
 
-    Array<double> xl(nsd,eNoN), xql(nsd,eNoNq), Nqx(nsd,eNoNq);
-    Vector<double> pl(eNoNq), Nq(eNoNq); 
+    Array<double> xl(nsd, eNoN), xql(nsd, eNoNq), Nqx(nsd, eNoNq);
+    Vector<double> pl(eNoNq), Nq(eNoNq);
 
-    Vector<double> xp(nsd), xi0(nsd), xi(nsd); 
-    Array<double> ksix(nsd,nsd);
+    Vector<double> xp(nsd), xi0(nsd), xi(nsd);
+    Array<double> ksix(nsd, nsd);
 
     for (int g = 0; g < msh.fs[1].nG; g++) {
       for (int i = 0; i < nsd; i++) {
-        xi0(i) = xi0(i) + msh.fs[1].xi(i,g);
+        xi0(i) = xi0(i) + msh.fs[1].xi(i, g);
       }
     }
 
     xi0 = xi0 / static_cast<double>(msh.fs[1].nG);
 
     for (int e = 0; e < msh.nEl; e++) {
-      cDmn = all_fun::domain(com_mod, msh, cEq, e);       // setting global cDmn
-      if ((eq.dmn[cDmn].phys != Equation_stokes) && 
-          (eq.dmn[cDmn].phys != Equation_fluid)  && 
+      cDmn = all_fun::domain(com_mod, msh, cEq, e);  // setting global cDmn
+      if ((eq.dmn[cDmn].phys != Equation_stokes) &&
+          (eq.dmn[cDmn].phys != Equation_fluid) &&
           (eq.dmn[cDmn].phys != Equation_ustruct)) {
         continue;
       }
 
       for (int a = 0; a < eNoN; a++) {
-        int Ac = msh.IEN(a,e);
+        int Ac = msh.IEN(a, e);
         for (int i = 0; i < nsd; i++) {
-          xl(i,a) = com_mod.x(i,Ac);
+          xl(i, a) = com_mod.x(i, Ac);
         }
       }
 
       for (int a = 0; a < eNoNq; a++) {
-        int Ac = msh.IEN(a,e);
-        pl(a) = Yn(s+nsd,Ac);
+        int Ac = msh.IEN(a, e);
+        pl(a) = Yn(s + nsd, Ac);
         for (int i = 0; i < nsd; i++) {
-          xql(i,a) = xl(i,a);
+          xql(i, a) = xl(i, a);
         }
       }
 
@@ -388,38 +395,40 @@ void pic_eth(Simulation* simulation)
           nn::gnn(eNoNq, nsd, nsd, Nx, xql, Nqx, Jac, ksix);
 
           if (utils::is_zero(Jac)) {
-            throw std::runtime_error("[pic_eth] Jacobian for element " + std::to_string(e) + " is < 0.");
+            throw std::runtime_error("[pic_eth] Jacobian for element " +
+                                     std::to_string(e) + " is < 0.");
           }
         }
 
-        eVol = eVol + msh.fs[1].w(g)*Jac;
+        eVol = eVol + msh.fs[1].w(g) * Jac;
       }
 
       for (int a = eNoNq; a < eNoN; a++) {
-        int Ac = msh.IEN(a,e);
+        int Ac = msh.IEN(a, e);
         for (int i = 0; i < nsd; i++) {
-          xp(i) = xl(i,a);
+          xp(i) = xl(i, a);
         }
         xi = xi0;
-        nn::get_nnx(nsd, eType, eNoNq, xql, msh.fs[1].xib, msh.fs[1].Nb, xp, xi, Nq, Nqx);
+        nn::get_nnx(nsd, eType, eNoNq, xql, msh.fs[1].xib, msh.fs[1].Nb, xp, xi,
+                    Nq, Nqx);
 
         double p = 0.0;
         for (int b = 0; b < eNoNq; b++) {
-          p = p + pl(b)*Nq(b);
+          p = p + pl(b) * Nq(b);
         }
 
-        sF(Ac) = sF(Ac) + p*eVol;
+        sF(Ac) = sF(Ac) + p * eVol;
         sA(Ac) = sA(Ac) + eVol;
       }
-    } // e-loop
-  } // iM-loop
+    }  // e-loop
+  }    // iM-loop
 
   all_fun::commu(com_mod, sA);
   all_fun::commu(com_mod, sF);
 
   for (int a = 0; a < tnNo; a++) {
     if (!utils::is_zero(sA(a))) {
-      Yn(s+nsd,a) = sF(a) / sA(a);
+      Yn(s + nsd, a) = sF(a) / sA(a);
     }
   }
 }
@@ -427,31 +436,31 @@ void pic_eth(Simulation* simulation)
 //------
 // pici
 //------
-// This is the initiator.  
+// This is the initiator.
 //
 // Uses Generalized α− Method for time stepping.
 //
-// Modifes Ag from combination of An and Ao defined by coefs from eq.am, eq.af, 
+// Modifes Ag from combination of An and Ao defined by coefs from eq.am, eq.af,
 //   Ag = (1 - eq.am) * Ao  +  eq.am * An
 //   Yg = (1 - eq.af) * Yo  +  eq.af * Yn
 //   Dg = (1 - eq.af) * Do  +  eq.af * Dn
 //
 // Modifies:
-//   Ag -  
+//   Ag -
 //   Yg -
 //   Dg -
 //
-void pici(Simulation* simulation, Array<double>& Ag, Array<double>& Yg, Array<double>& Dg)
-{
+void pici(Simulation* simulation, Array<double>& Ag, Array<double>& Yg,
+          Array<double>& Dg) {
   using namespace consts;
 
   auto& com_mod = simulation->com_mod;
 
-  #define n_debug_pici
-  #ifdef debug_pici
+#define n_debug_pici
+#ifdef debug_pici
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
-  #endif
+#endif
 
   const int cEq = com_mod.cEq;
   const int tnNo = com_mod.tnNo;
@@ -461,13 +470,13 @@ void pici(Simulation* simulation, Array<double>& Ag, Array<double>& Yg, Array<do
 
   // [NOTE] Setting gobal variable 'dof'.
   dof = eq.dof;
-  #ifdef debug_pici
+#ifdef debug_pici
   dmsg << "cEq: " << cEq;
   dmsg << "eq.itr: " << eq.itr;
   dmsg << "dof: " << dof;
   dmsg << "tnNo: " << tnNo;
   dmsg << "com_mod.pstEq: " << com_mod.pstEq;
-  #endif
+#endif
 
   const auto& Ao = com_mod.Ao;
   const auto& An = com_mod.An;
@@ -485,17 +494,18 @@ void pici(Simulation* simulation, Array<double>& Ag, Array<double>& Yg, Array<do
     coef(1) = eq.am;
     coef(2) = 1.0 - eq.af;
     coef(3) = eq.af;
-    #ifdef debug_pici
+#ifdef debug_pici
     dmsg << "s: " << s;
     dmsg << "e: " << e;
-    dmsg << "coef: " << coef[0] << " " << coef[1] << " " << coef[2] << " " << coef[3];
-    #endif
+    dmsg << "coef: " << coef[0] << " " << coef[1] << " " << coef[2] << " "
+         << coef[3];
+#endif
 
     for (int a = 0; a < tnNo; a++) {
       for (int j = s; j <= e; j++) {
-        Ag(j,a) = Ao(j,a)*coef(0) + An(j,a)*coef(1);
-        Yg(j,a) = Yo(j,a)*coef(2) + Yn(j,a)*coef(3);
-        Dg(j,a) = Do(j,a)*coef(2) + Dn(j,a)*coef(3);
+        Ag(j, a) = Ao(j, a) * coef(0) + An(j, a) * coef(1);
+        Yg(j, a) = Yo(j, a) * coef(2) + Yn(j, a) * coef(3);
+        Dg(j, a) = Do(j, a) * coef(2) + Dn(j, a) * coef(3);
       }
     }
   }
@@ -512,27 +522,26 @@ void pici(Simulation* simulation, Array<double>& Ag, Array<double>& Yg, Array<do
 // This is the predictor.
 //
 // Modifies:
-//   pS0 
-//   Ad 
-//   Ao 
-//   Yo 
-//   Do 
-//   An 
-//   Yn 
-//   Dn 
+//   pS0
+//   Ad
+//   Ao
+//   Yo
+//   Do
+//   An
+//   Yn
+//   Dn
 //
-void picp(Simulation* simulation)
-{
+void picp(Simulation* simulation) {
   using namespace consts;
 
   auto& com_mod = simulation->com_mod;
 
-  #define n_debug_picp
-  #ifdef debug_picp
+#define n_debug_picp
+#ifdef debug_picp
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
   dmsg << "pstEq: " << com_mod.pstEq;
-  #endif
+#endif
 
   auto& pS0 = com_mod.pS0;
   auto& pSn = com_mod.pSn;
@@ -547,10 +556,10 @@ void picp(Simulation* simulation)
 
   // Prestress initialization
   if (com_mod.pstEq) {
-     pS0 = pS0 + pSn;
-     Ao = 0.0;
-     Yo = 0.0;
-     Do = 0.0;
+    pS0 = pS0 + pSn;
+    Ao = 0.0;
+    Yo = 0.0;
+    Do = 0.0;
   }
 
   // IB treatment: Set dirichlet BC and update traces. For explicit
@@ -582,10 +591,10 @@ void picp(Simulation* simulation)
   */
 
   const auto& dt = com_mod.dt;
-  #ifdef debug_picp
+#ifdef debug_picp
   dmsg << "dt: " << dt;
   dmsg << "dFlag: " << com_mod.dFlag;
-  #endif
+#endif
 
   for (int iEq = 0; iEq < com_mod.nEq; iEq++) {
     auto& eq = com_mod.eq[iEq];
@@ -593,18 +602,18 @@ void picp(Simulation* simulation)
     int e = eq.e;
     double coef = (eq.gam - 1.0) / eq.gam;
 
-    #ifdef debug_picp
+#ifdef debug_picp
     dmsg << "----- iEq " << iEq << " -----";
     dmsg << "s: " << s;
     dmsg << "e: " << e;
     dmsg << "eq.gam: " << eq.gam;
     dmsg << "coef: " << coef;
-    #endif
+#endif
 
     // [TODO:DaveP] careful here with s amd e.
     for (int i = s; i <= e; i++) {
       for (int j = 0; j < Ao.ncols(); j++) {
-        An(i,j) = Ao(i,j) * coef;
+        An(i, j) = Ao(i, j) * coef;
       }
     }
 
@@ -613,34 +622,33 @@ void picp(Simulation* simulation)
       cep_ion::cep_integ(simulation, iEq, e, Do);
     }
 
-    Yn.set_rows(s,e, Yo.rows(s,e));
+    Yn.set_rows(s, e, Yo.rows(s, e));
 
     if (com_mod.dFlag) {
-
       // struct, lElas, FSI (struct, mesh)
       if (!com_mod.sstEq) {
-        double coef = dt*dt*(0.5*eq.gam - eq.beta) / (eq.gam - 1.0);
-        Dn.set_rows(s,e, Do.rows(s,e) + Yn.rows(s,e)*dt + An.rows(s,e)*coef);
+        double coef = dt * dt * (0.5 * eq.gam - eq.beta) / (eq.gam - 1.0);
+        Dn.set_rows(s, e,
+                    Do.rows(s, e) + Yn.rows(s, e) * dt + An.rows(s, e) * coef);
 
-      // ustruct, FSI
-      //
+        // ustruct, FSI
+        //
       } else {
-
         if (eq.phys == Equation_ustruct || eq.phys == Equation_FSI) {
           double coef = (eq.gam - 1.0) / eq.gam;
-          Ad = Ad*coef;
-          Dn.set_rows(s,e, Do.rows(s,e));
+          Ad = Ad * coef;
+          Dn.set_rows(s, e, Do.rows(s, e));
 
         } else if (eq.phys == Equation_mesh) {
-          double coef = dt*dt*(0.5*eq.gam - eq.beta) / (eq.gam - 1.0);
-          Dn.set_rows(s,e, Do.rows(s,e) + Yn.rows(s,e)*dt + An.rows(s,e)*coef);
+          double coef = dt * dt * (0.5 * eq.gam - eq.beta) / (eq.gam - 1.0);
+          Dn.set_rows(
+              s, e, Do.rows(s, e) + Yn.rows(s, e) * dt + An.rows(s, e) * coef);
         }
       }
     } else {
-      Dn.set_rows(s,e, Do.rows(s,e));
+      Dn.set_rows(s, e, Do.rows(s, e));
     }
   }
 }
 
-};
-
+};  // namespace pic

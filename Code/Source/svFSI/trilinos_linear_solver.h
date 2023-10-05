@@ -41,36 +41,38 @@
 /**************************************************************/
 
 #include <stdio.h>
-#include <vector>
-#include <iostream>
-#include "mpi.h"
 #include <time.h>
+
+#include <iostream>
 #include <numeric>
+#include <vector>
+
+#include "mpi.h"
 
 // Epetra includes
-#include "Epetra_MpiComm.h" //include MPI communication
-#include "Epetra_Map.h" //need to create block map
-#include "Epetra_FEVbrMatrix.h" //sparse matrix for FE
-#include "Epetra_FEVector.h"
 #include "Epetra_FECrsGraph.h"
 #include "Epetra_FECrsMatrix.h"
+#include "Epetra_FEVbrMatrix.h"  //sparse matrix for FE
+#include "Epetra_FEVector.h"
 #include "Epetra_Import.h"
+#include "Epetra_Map.h"      //need to create block map
+#include "Epetra_MpiComm.h"  //include MPI communication
 
 // AztecOO includes
 #include "AztecOO.h"
 #include "AztecOO_StatusTestResNorm.h"
 
 // ML includes
-#include "ml_include.h"
 #include "ml_MultiLevelPreconditioner.h"
+#include "ml_include.h"
 
 // Ifpack includes
 #include "Ifpack.h"
-#include "Ifpack_ConfigDefs.h"
 #include "Ifpack_AdditiveSchwarz.h"
-#include "Ifpack_ILUT.h"
+#include "Ifpack_ConfigDefs.h"
 #include "Ifpack_IC.h"
 #include "Ifpack_ICT.h"
+#include "Ifpack_ILUT.h"
 
 /**************************************************************/
 /*                      Macro Definitions                     */
@@ -92,8 +94,7 @@
 #define TRILINOS_ML_PRECONDITIONER 708
 
 /// @brief Initialize all Epetra types we need separate from Fortran
-struct Trilinos
-{
+struct Trilinos {
   static Epetra_BlockMap *blockMap;
   static Epetra_FEVector *F;
   static Epetra_FEVbrMatrix *K;
@@ -111,10 +112,8 @@ struct Trilinos
  *        AztecOO iterative solve which only uses the Apply() method to compute
  *        the matrix vector product
  */
-class TrilinosMatVec: public virtual Epetra_Operator
-{
-public:
-
+class TrilinosMatVec : public virtual Epetra_Operator {
+ public:
   /** Define matrix vector operation at each iteration of the linear solver
    *  adds on the coupled neuman boundary contribution to the matrix
    *
@@ -125,72 +124,53 @@ public:
 
   /** Tells whether to use the transpose of the matrix in each matrix
    * vector product */
-  int SetUseTranspose(bool use_transpose)
-  {
+  int SetUseTranspose(bool use_transpose) {
     return Trilinos::K->SetUseTranspose(use_transpose);
   }
 
   /// Computes A_inv*x
-  int ApplyInverse(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
-  {
-    return Trilinos::K->ApplyInverse(X,Y);
+  int ApplyInverse(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const {
+    return Trilinos::K->ApplyInverse(X, Y);
   }
 
   /// Infinity norm for global stiffness does not add in the boundary term
-  double NormInf() const
-  {
-    return Trilinos::K->NormInf();
-  }
+  double NormInf() const { return Trilinos::K->NormInf(); }
 
   /// Returns a character string describing the operator
-  const char * Label() const
-  {
-    return Trilinos::K->Label();
-  }
+  const char *Label() const { return Trilinos::K->Label(); }
 
   /// Returns current UseTranspose setting
-  bool UseTranspose() const
-  {
-    return Trilinos::K->UseTranspose();
-  }
+  bool UseTranspose() const { return Trilinos::K->UseTranspose(); }
 
   /// Returns true if this object can provide an approx Inf-norm false otherwise
-  bool HasNormInf() const
-  {
-    return Trilinos::K->HasNormInf();
-  }
+  bool HasNormInf() const { return Trilinos::K->HasNormInf(); }
 
   /// Returns pointer to Epetra_Comm communicator associated with this operator
-  const Epetra_Comm &Comm() const
-  {
-    return Trilinos::K->Comm();
-  }
+  const Epetra_Comm &Comm() const { return Trilinos::K->Comm(); }
 
   /// Returns Epetra_Map object assoicated with domain of this operator
-  const Epetra_Map &OperatorDomainMap() const
-  {
+  const Epetra_Map &OperatorDomainMap() const {
     return Trilinos::K->OperatorDomainMap();
   }
 
   /// Returns the Epetra_Map object associated with teh range of this operator
-  const Epetra_Map &OperatorRangeMap() const
-  {
+  const Epetra_Map &OperatorRangeMap() const {
     return Trilinos::K->OperatorRangeMap();
   }
 
-};// class TrilinosMatVec
+};  // class TrilinosMatVec
 
 //  --- Functions to be called in fortran -------------------------------------
 
 #ifdef __cplusplus
-  extern "C"
-  {
+extern "C" {
 #endif
-  /// Give function definitions which will be called through fortran
-  void trilinos_lhs_create_(int& numGlobalNodes, int& numLocalNodes,
-          int& numGhostAndLocalNodes, int& nnz, const int *ltgSorted,
-          const int *ltgUnsorted, const int *rowPtr, const int *colInd,
-          int &dof, int& cpp_index, int& proc_id);
+/// Give function definitions which will be called through fortran
+void trilinos_lhs_create_(int &numGlobalNodes, int &numLocalNodes,
+                          int &numGhostAndLocalNodes, int &nnz,
+                          const int *ltgSorted, const int *ltgUnsorted,
+                          const int *rowPtr, const int *colInd, int &dof,
+                          int &cpp_index, int &proc_id);
 /*
   void trilinos_lhs_create_(unsigned &numGlobalNodes, unsigned &numLocalNodes,
           unsigned &numGhostAndLocalNodes, unsigned &nnz, const int *ltgSorted,
@@ -198,30 +178,32 @@ public:
           int &dof);
 */
 
-  /**
-   * \param v           coeff in the scalar product
-   * \param isCoupledBC determines if coupled resistance BC is turned on
-   */
-  void trilinos_bc_create_(const double *v, bool &isCoupledBC);
+/**
+ * \param v           coeff in the scalar product
+ * \param isCoupledBC determines if coupled resistance BC is turned on
+ */
+void trilinos_bc_create_(const double *v, bool &isCoupledBC);
 
-  void trilinos_doassem_(int &numNodesPerElement, const int *eqN,
-          const double *lK, double *lR);
+void trilinos_doassem_(int &numNodesPerElement, const int *eqN,
+                       const double *lK, double *lR);
 
-  void trilinos_global_solve_(const double *Val, const double *RHS,
-          double *x, const double *dirW, double &resNorm, double &initNorm,
-          int &numIters, double &solverTime, double &dB, bool &converged,
-          int &lsType, double &relTol, int &maxIters, int &kspace,
-          int &precondType);
+void trilinos_global_solve_(const double *Val, const double *RHS, double *x,
+                            const double *dirW, double &resNorm,
+                            double &initNorm, int &numIters, double &solverTime,
+                            double &dB, bool &converged, int &lsType,
+                            double &relTol, int &maxIters, int &kspace,
+                            int &precondType);
 
-  void trilinos_solve_(double *x, const double *dirW, double &resNorm,
-          double &initNorm, int &numIters, double &solverTime,
-          double &dB, bool &converged, int &lsType, double &relTol,
-          int &maxIters, int &kspace, int &precondType, bool &isFassem);
+void trilinos_solve_(double *x, const double *dirW, double &resNorm,
+                     double &initNorm, int &numIters, double &solverTime,
+                     double &dB, bool &converged, int &lsType, double &relTol,
+                     int &maxIters, int &kspace, int &precondType,
+                     bool &isFassem);
 
-  void trilinos_lhs_free_();
+void trilinos_lhs_free_();
 
-#ifdef __cplusplus  /* this brace matches the one on the extern "C" line */
-  }
+#ifdef __cplusplus /* this brace matches the one on the extern "C" line */
+}
 #endif
 
 // --- Define functions to only be called in C++ ------------------------------
@@ -233,8 +215,7 @@ void setIFPACKPrec(AztecOO &Solver);
 
 void checkDiagonalIsZero();
 
-void constructJacobiScaling(const double *dirW,
-              Epetra_Vector &diagonal);
+void constructJacobiScaling(const double *dirW, Epetra_Vector &diagonal);
 
 // --- Debugging functions ----------------------------------------------------
 void printMatrixToFile();
@@ -243,4 +224,4 @@ void printRHSToFile();
 
 void printSolutionToFile();
 
-#endif //TRILINOS_LINEAR_SOLVER_H
+#endif  // TRILINOS_LINEAR_SOLVER_H

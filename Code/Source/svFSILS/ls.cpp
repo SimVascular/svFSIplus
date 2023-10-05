@@ -1,16 +1,19 @@
 
-#include "fsils_api.hpp"
 #include "fils_struct.hpp"
+#include "fsils_api.hpp"
 
 namespace fsi_linear_solver {
 
 /// @brief Set solver parameters.
 ///
-/// Reproduces 'SUBROUTINE FSILS_LS_CREATE(ls, LS_type, relTol, absTol, maxItr, dimKry, relTolIn, absTolIn, maxItrIn)'.
+/// Reproduces 'SUBROUTINE FSILS_LS_CREATE(ls, LS_type, relTol, absTol, maxItr,
+/// dimKry, relTolIn, absTolIn, maxItrIn)'.
 //
-void fsils_ls_create(FSILS_lsType& ls, LinearSolverType LS_type, double relTol, double absTol, int maxItr, int dimKry, 
-  std::array<double,2> relTolIn, std::array<double,2> absTolIn, std::array<int,2> maxItrIn)
-{
+void fsils_ls_create(FSILS_lsType& ls, LinearSolverType LS_type, double relTol,
+                     double absTol, int maxItr, int dimKry,
+                     std::array<double, 2> relTolIn,
+                     std::array<double, 2> absTolIn,
+                     std::array<int, 2> maxItrIn) {
   using namespace consts;
   ls.foC = true;
   ls.LS_type = LS_type;
@@ -18,7 +21,6 @@ void fsils_ls_create(FSILS_lsType& ls, LinearSolverType LS_type, double relTol, 
   // Set default parameters for each solver type.
   //
   switch (LS_type) {
-
     case LinearSolverType::LS_TYPE_NS:
       ls.RI.relTol = 0.4;
       ls.GM.relTol = 1.E-2;
@@ -26,28 +28,28 @@ void fsils_ls_create(FSILS_lsType& ls, LinearSolverType LS_type, double relTol, 
       ls.RI.mItr = 10;
       ls.GM.mItr = 2;
       ls.CG.mItr = 500;
-      ls.GM.sD   = 100;
-      ls.RI.sD   = 100;
-    break;
+      ls.GM.sD = 100;
+      ls.RI.sD = 100;
+      break;
 
     case LinearSolverType::LS_TYPE_GMRES:
       ls.RI.relTol = 0.1;
-      ls.RI.mItr   = 4;
-      ls.RI.sD     = 250;
-    break;
+      ls.RI.mItr = 4;
+      ls.RI.sD = 250;
+      break;
 
     case LinearSolverType::LS_TYPE_CG:
       ls.RI.relTol = 1.E-2;
-      ls.RI.mItr   = 1000;
-    break;
+      ls.RI.mItr = 1000;
+      break;
 
     case LinearSolverType::LS_TYPE_BICGS:
       ls.RI.relTol = 1.E-2;
-      ls.RI.mItr   = 500;
-    break;
+      ls.RI.mItr = 500;
+      break;
 
     default:
-    break;
+      break;
   }
 
   ls.RI.absTol = 1.E-10;
@@ -87,8 +89,6 @@ void fsils_ls_create(FSILS_lsType& ls, LinearSolverType LS_type, double relTol, 
     ls.GM.mItr = maxItrIn[0];
     ls.CG.mItr = maxItrIn[1];
   }
-
 }
 
-};
-
+};  // namespace fsi_linear_solver

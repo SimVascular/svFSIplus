@@ -3,13 +3,16 @@
 
 #include "initialize.h"
 
-#include "distribute.h"
-
+#include "CmMod.h"
 #include "all_fun.h"
 #include "baf_ini.h"
 #include "cep_ion.h"
+#include "commu.h"
 #include "consts.h"
+#include "distribute.h"
 #include "fs.h"
+#include "fsils.hpp"
+#include "lhs.h"
 #include "lhsa.h"
 #include "mat_fun.h"
 #include "nn.h"
@@ -20,41 +23,34 @@
 #include "utils.h"
 #include "vtk_xml.h"
 
-#include "commu.h"
-#include "fsils.hpp"
-#include "lhs.h"
+// #include "set_equation_dof.h"
 
-#include "CmMod.h"
-
-//#include "set_equation_dof.h"
-
-#include "mpi.h"
+#include <math.h>
 
 #include <fstream>
 #include <iostream>
-#include <math.h>
+
+#include "mpi.h"
 
 /// @brief This seems to deallocate a bunch of arrys.
 ///
 /// \todo [TODO:DaveP] not implemented.
 //
-void finalize(Simulation* simulation)
-{
-}
+void finalize(Simulation* simulation) {}
 
 /// @brief Using the svFSI specific format binary file for initialization
 ///
 /// Reprodices 'SUBROUTINE INITFROMBIN(fName, timeP)' defined in INITIALIZE.f.
 //
-void init_from_bin(Simulation* simulation, const std::string& fName, std::array<double,3>& timeP)
-{
+void init_from_bin(Simulation* simulation, const std::string& fName,
+                   std::array<double, 3>& timeP) {
   auto& com_mod = simulation->com_mod;
   auto& cm = com_mod.cm;
   int task_id = cm.idcm();
-  #ifdef debug_init_from_bin 
+#ifdef debug_init_from_bin
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
-  #endif
+#endif
 
   auto const recLn = com_mod.recLn;
   auto& cm_mod = simulation->cm_mod;
@@ -71,24 +67,24 @@ void init_from_bin(Simulation* simulation, const std::string& fName, std::array<
   com_mod.timeP[1] = timeP[1];
   com_mod.timeP[2] = timeP[2];
 
-  #ifdef debug_init_from_bin 
+#ifdef debug_init_from_bin
   dmsg << "dFlag: " << dFlag;
   dmsg << "sstEq: " << sstEq;
   dmsg << "pstEq: " << pstEq;
   dmsg << "cepEq: " << cepEq;
-  dmsg << "cm.tF(): " << cm.tF(cm_mod); 
-  #endif
+  dmsg << "cm.tF(): " << cm.tF(cm_mod);
+#endif
 
   // Open file and position at the location in the file
   // for the current process.
   //
   std::ifstream bin_file(fName, std::ios::binary | std::ios::in);
   int process_id = cm.tF(cm_mod);
-  std::streampos write_pos = (process_id  - 1) * recLn;
+  std::streampos write_pos = (process_id - 1) * recLn;
   bin_file.seekg(write_pos);
-  //OPEN(fid, FILE=fName, ACCESS='DIRECT', RECL=recLn)
+  // OPEN(fid, FILE=fName, ACCESS='DIRECT', RECL=recLn)
 
-  std::array<int,7> tStamp;
+  std::array<int, 7> tStamp;
   auto& cplBC = com_mod.cplBC;
   auto& Ad = com_mod.Ad;
   auto& Ao = com_mod.Ao;
@@ -103,7 +99,6 @@ void init_from_bin(Simulation* simulation, const std::string& fName, std::array<
   bin_file.read((char*)Ao.data(), Ao.msize());
 
   if (!ibFlag) {
-
     // Update mesh and Dn-Do variables
     //
     if (dFlag) {
@@ -128,33 +123,38 @@ void init_from_bin(Simulation* simulation, const std::string& fName, std::array<
           bin_file.read((char*)Xion.data(), Xion.msize());
           bin_file.read((char*)cem.Ya.data(), cem.Ya.msize());
         } else {
-          //READ(fid,REC=cm.tF()) tStamp, cTS, time, timeP(1), eq.iNorm, cplBC.xo, Yo, Ao, Do
+          // READ(fid,REC=cm.tF()) tStamp, cTS, time, timeP(1), eq.iNorm,
+          // cplBC.xo, Yo, Ao, Do
         }
       }
 
-    // Mesh and Dn-Do variables not updated.
-    //
+      // Mesh and Dn-Do variables not updated.
+      //
     } else {
       if (cepEq) {
         bin_file.read((char*)Xion.data(), Xion.msize());
       } else {
-        //READ(fid,REC=cm.tF()) tStamp, cTS, time, timeP(1), eq.iNorm, cplBC.xo, Yo, Ao
+        // READ(fid,REC=cm.tF()) tStamp, cTS, time, timeP(1), eq.iNorm,
+        // cplBC.xo, Yo, Ao
       }
     }
 
-  // ibFlag
-  //
-  // [TODO:DaveP] not implemented.
-  //
+    // ibFlag
+    //
+    // [TODO:DaveP] not implemented.
+    //
   } else {
     if (dFlag) {
       if (pstEq) {
-        //READ(fid,REC=cm.tF()) tStamp, cTS, time, timeP(1), eq.iNorm, cplBC.xo, Yo, Ao, Do, pS0, ib.Yb, ib.Auo, ib.Ubo
+        // READ(fid,REC=cm.tF()) tStamp, cTS, time, timeP(1), eq.iNorm,
+        // cplBC.xo, Yo, Ao, Do, pS0, ib.Yb, ib.Auo, ib.Ubo
       } else {
-         //READ(fid,REC=cm.tF()) tStamp, cTS, time, timeP(1), eq.iNorm, cplBC.xo, Yo, Ao, Do, ib.Yb, ib.Auo, ib.Ubo
+        // READ(fid,REC=cm.tF()) tStamp, cTS, time, timeP(1), eq.iNorm,
+        // cplBC.xo, Yo, Ao, Do, ib.Yb, ib.Auo, ib.Ubo
       }
     } else {
-      //READ(fid,REC=cm.tF()) tStamp, cTS, time, timeP(1), eq.iNorm, cplBC.xo, Yo, Ao, ib.Yb, ib.Auo, ib.Ubo
+      // READ(fid,REC=cm.tF()) tStamp, cTS, time, timeP(1), eq.iNorm, cplBC.xo,
+      // Yo, Ao, ib.Yb, ib.Auo, ib.Ubo
     }
 
     /*
@@ -174,14 +174,10 @@ void init_from_bin(Simulation* simulation, const std::string& fName, std::array<
   if (cm.mas(cm_mod)) {
     auto stamp = com_mod.stamp;
     std::vector<std::string> error_msgs = {
-      "The number of processors ",
-      "The number of equations ",
-      "The number of meshes ",
-      "The number of nodes ",
-      "The number of ncplBC.x ",
-      "The number of dof ",
-      "The dFlag specification "
-    };
+        "The number of processors ", "The number of equations ",
+        "The number of meshes ",     "The number of nodes ",
+        "The number of ncplBC.x ",   "The number of dof ",
+        "The dFlag specification "};
 
     std::string error_msg;
 
@@ -193,7 +189,7 @@ void init_from_bin(Simulation* simulation, const std::string& fName, std::array<
       }
     }
 
-    if (error_msg != "") { 
+    if (error_msg != "") {
       error_msg += "read from '" + fName + "' don't match.";
       throw std::runtime_error(error_msg);
     }
@@ -202,29 +198,30 @@ void init_from_bin(Simulation* simulation, const std::string& fName, std::array<
   int i = 0;
   cm.bcast(cm_mod, &i);
 
-  #ifdef debug_init_from_bin 
-  dmsg << "cTS: " << com_mod.cTS; 
-  dmsg << "time: " << com_mod.time; 
-  dmsg << "timeP(1): " << timeP[0]; 
-  #endif
+#ifdef debug_init_from_bin
+  dmsg << "cTS: " << com_mod.cTS;
+  dmsg << "time: " << com_mod.time;
+  dmsg << "timeP(1): " << timeP[0];
+#endif
 
-  // if (ANY(tStamp != stamp)) err = "Simulation stamp"// " does not match with "//fName
+  // if (ANY(tStamp != stamp)) err = "Simulation stamp"// " does not match with
+  // "//fName
 }
 
 /// @brief Using the saved VTU files for initialization
 ///
 /// Reproduces the Fortran 'INITFROMVTU' subroutine.
 //
-void init_from_vtu(Simulation* simulation, const std::string& fName, std::array<double,3>& timeP)
-{
+void init_from_vtu(Simulation* simulation, const std::string& fName,
+                   std::array<double, 3>& timeP) {
   auto& com_mod = simulation->com_mod;
   auto& cm_mod = simulation->cm_mod;
   auto& cm = com_mod.cm;
 
-  #ifdef debug_init_from_vtu
+#ifdef debug_init_from_vtu
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
-  #endif
+#endif
 
   com_mod.cTS = 0;
   com_mod.time = 0.0;
@@ -240,13 +237,13 @@ void init_from_vtu(Simulation* simulation, const std::string& fName, std::array<
   Array<double> tmpA, tmpY, tmpD;
 
   if (cm.mas(cm_mod)) {
-    tmpA.resize(tDof,gtnNo); 
-    tmpY.resize(tDof,gtnNo); 
-    tmpD.resize(tDof,gtnNo);
+    tmpA.resize(tDof, gtnNo);
+    tmpY.resize(tDof, gtnNo);
+    tmpD.resize(tDof, gtnNo);
     vtk_xml::read_vtus(simulation, tmpA, tmpY, tmpD, fName);
-  } else { 
-    //ALLOCATE(tmpA(0,0), tmpY(0,0), tmpD(0,0))
-  } 
+  } else {
+    // ALLOCATE(tmpA(0,0), tmpY(0,0), tmpD(0,0))
+  }
 
   com_mod.Ao = all_fun::local(com_mod, cm_mod, cm, tmpA);
   com_mod.Yo = all_fun::local(com_mod, cm_mod, cm, tmpY);
@@ -279,29 +276,29 @@ void init_from_vtu(Simulation* simulation, const std::string& fName, std::array<
 ///   com_mod.Dn = com_mod.Do;
 /// \endcode
 ///
-/// This function replicates the Fortran 'SUBROUTINE INITIALIZE(timeP)' in INITIALIZE.f.
+/// This function replicates the Fortran 'SUBROUTINE INITIALIZE(timeP)' in
+/// INITIALIZE.f.
 //
-void initialize(Simulation* simulation, Vector<double>& timeP)
-{
+void initialize(Simulation* simulation, Vector<double>& timeP) {
   using namespace consts;
 
   auto& com_mod = simulation->com_mod;
   auto& cm = com_mod.cm;
   auto& cm_mod = simulation->cm_mod;
-  auto& cep_mod = simulation->cep_mod; 
+  auto& cep_mod = simulation->cep_mod;
   auto& chnl_mod = simulation->chnl_mod;
   int nsd = com_mod.nsd;
-  #include "set_equation_dof.h"
+#include "set_equation_dof.h"
 
-  #define n_debug_initialize
-  #ifdef debug_initialize
+#define n_debug_initialize
+#ifdef debug_initialize
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
-  #endif
+#endif
 
   std::string hist_file_name;
 
-  if (chnl_mod.appPath != "") { 
+  if (chnl_mod.appPath != "") {
     auto mkdir_arg = std::string("mkdir -p ") + chnl_mod.appPath;
     std::system(mkdir_arg.c_str());
     hist_file_name = chnl_mod.appPath + "/" + simulation->history_file_name;
@@ -313,18 +310,18 @@ void initialize(Simulation* simulation, Vector<double>& timeP)
   bool output_to_cout = true;
   simulation->logger.initialize(hist_file_name, output_to_cout);
 
-  #ifdef debug_initialize
+#ifdef debug_initialize
   dmsg << "Set time " << std::endl;
   dmsg << "com_mod.timeP[0]: " << com_mod.timeP[0] << std::endl;
-  #endif
+#endif
   com_mod.timeP[0] = timeP[0];
   com_mod.timeP[1] = timeP[1];
   com_mod.timeP[2] = timeP[2];
 
-  // These are global variables that are set later in this function.
-  #ifdef debug_initialize
+// These are global variables that are set later in this function.
+#ifdef debug_initialize
   dmsg << "Get globals " << std::endl;
-  #endif
+#endif
   auto& tDof = com_mod.tDof;
   auto& dFlag = com_mod.dFlag;
   auto& nFacesLS = com_mod.nFacesLS;
@@ -333,20 +330,20 @@ void initialize(Simulation* simulation, Vector<double>& timeP)
   tDof = 0;
   dFlag = false;
 
-  // Set faces for linear solver
-  //
-  #ifdef debug_initialize
+// Set faces for linear solver
+//
+#ifdef debug_initialize
   dmsg << "Set faces for linear solver " << std::endl;
-  #endif
+#endif
   nFacesLS = 0;
   for (auto& eq : com_mod.eq) {
     nFacesLS += eq.nBc;
   }
 
-  // Remove LS pointer for faces with weakly applied Dir. BC
-  #ifdef debug_initialize
+// Remove LS pointer for faces with weakly applied Dir. BC
+#ifdef debug_initialize
   dmsg << "Remove LS pointer for faces" << std::endl;
-  #endif
+#endif
   for (int iEq = 0; iEq < com_mod.nEq; iEq++) {
     auto& eq = com_mod.eq[iEq];
     for (int i = 0; i < eq.nBc; i++) {
@@ -367,16 +364,16 @@ void initialize(Simulation* simulation, Vector<double>& timeP)
   }
 
   for (auto& bc : com_mod.eq[0].bc) {
-    if (bc.cplBCptr != -1) { 
+    if (bc.cplBCptr != -1) {
       com_mod.cplBC.coupled = true;
-      break; 
+      break;
     }
   }
 
-  #ifdef debug_initialize
+#ifdef debug_initialize
   dmsg << "nFacesLS: " << nFacesLS;
   dmsg << "com_mod.cplBC.coupled: " << com_mod.cplBC.coupled;
-  #endif
+#endif
   bool flag = false;
 
   for (int iEq = 0; iEq < com_mod.nEq; iEq++) {
@@ -388,20 +385,24 @@ void initialize(Simulation* simulation, Vector<double>& timeP)
     //
     std::tie(eq.dof, eq.sym) = equation_dof_map.at(eq.phys);
 
-    if (std::set<EquationType>{Equation_fluid, Equation_heatF, Equation_heatS, Equation_CEP, Equation_stokes}.count(eq.phys) == 0) {
+    if (std::set<EquationType>{Equation_fluid, Equation_heatF, Equation_heatS,
+                               Equation_CEP, Equation_stokes}
+            .count(eq.phys) == 0) {
       dFlag = true;
     }
 
-    // For second order eqs. 
-    if (std::set<EquationType>{Equation_lElas, Equation_struct, Equation_shell, Equation_mesh}.count(eq.phys) != 0) {
+    // For second order eqs.
+    if (std::set<EquationType>{Equation_lElas, Equation_struct, Equation_shell,
+                               Equation_mesh}
+            .count(eq.phys) != 0) {
       eq.am = (2.0 - eq.roInf) / (1.0 + eq.roInf);
 
-    // first order equations.
+      // first order equations.
     } else {
       eq.am = 0.5 * (3.0 - eq.roInf) / (1.0 + eq.roInf);
     }
 
-    if ((eq.phys == Equation_CMM) && com_mod.cmmInit) { 
+    if ((eq.phys == Equation_CMM) && com_mod.cmmInit) {
       eq.dof = nsd;
     }
 
@@ -419,7 +420,7 @@ void initialize(Simulation* simulation, Vector<double>& timeP)
       flag = true;
     }
 
-    #ifdef debug_initialize
+#ifdef debug_initialize
     dmsg << "dFlag: " << dFlag;
     dmsg << "eq.dof: " << eq.dof;
     dmsg << "eq.sym: " << eq.sym;
@@ -429,7 +430,7 @@ void initialize(Simulation* simulation, Vector<double>& timeP)
     dmsg << "eq.beta: " << eq.beta;
     dmsg << "eq.gam: " << eq.gam;
     dmsg << "tDof: " << tDof;
-    #endif
+#endif
   }
 
   int ierr = 0;
@@ -442,13 +443,14 @@ void initialize(Simulation* simulation, Vector<double>& timeP)
     i = com_mod.cplBC.nX;
   }
 
-  com_mod.stamp = {cm.np(), com_mod.nEq, com_mod.nMsh, com_mod.tnNo, i, tDof, ierr};
+  com_mod.stamp = {cm.np(), com_mod.nEq, com_mod.nMsh, com_mod.tnNo,
+                   i,       tDof,        ierr};
 
   // Calculating the record length
   //
 
-  i = 2*tDof;
-  if (dFlag) i = 3*tDof;
+  i = 2 * tDof;
+  if (dFlag) i = 3 * tDof;
   if (com_mod.pstEq) i = i + com_mod.nsymd;
   if (com_mod.sstEq) i = i + nsd;
   if (cep_mod.cepEq) {
@@ -456,15 +458,16 @@ void initialize(Simulation* simulation, Vector<double>& timeP)
     if (cep_mod.cem.cpld) i = i + 1;
   }
 
-  i = sizeof(int)*(1+com_mod.stamp.size()) + sizeof(double)*(2 + com_mod.nEq + com_mod.cplBC.nX + i*com_mod.tnNo);
+  i = sizeof(int) * (1 + com_mod.stamp.size()) +
+      sizeof(double) * (2 + com_mod.nEq + com_mod.cplBC.nX + i * com_mod.tnNo);
 
   if (com_mod.ibFlag) {
-    i = i + sizeof(double)*(3*nsd + 1) * com_mod.ib.tnNo;
+    i = i + sizeof(double) * (3 * nsd + 1) * com_mod.ib.tnNo;
   }
 
   if (cm.seq()) {
     recLn = i;
-  } else { 
+  } else {
     MPI_Allreduce(&i, &recLn, 1, cm_mod::mpint, MPI_MAX, cm.com());
   }
 
@@ -474,17 +477,17 @@ void initialize(Simulation* simulation, Vector<double>& timeP)
   // [TODO:DaveP] this is not implemented.
   //
   if (com_mod.shlEq) {
-    for (int iM = 0; iM < com_mod.nMsh; iM++) { 
+    for (int iM = 0; iM < com_mod.nMsh; iM++) {
       auto& msh = com_mod.msh[iM];
       if (msh.lShl) {
         if (msh.eType == ElementType::NRB) {
           msh.sbc.resize(msh.eNoN, msh.nEl);
-          //ALLOCATE(msh(iM)%eIEN(0,0))
-          //ALLOCATE(msh(iM)%sbc(msh(iM)%eNoN,msh(iM)%nEl))
+          // ALLOCATE(msh(iM)%eIEN(0,0))
+          // ALLOCATE(msh(iM)%sbc(msh(iM)%eNoN,msh(iM)%nEl))
           msh.sbc = 0;
         } else if (msh.eType == ElementType::TRI3) {
           baf_ini_ns::set_shl_xien(simulation, msh);
-          //CALL SETSHLXIEN(msh(iM))
+          // CALL SETSHLXIEN(msh(iM))
         }
       }
     }
@@ -518,8 +521,9 @@ void initialize(Simulation* simulation, Vector<double>& timeP)
 
   fsi_linear_solver::fsils_commu_create(communicator, cm.com());
 
-  fsi_linear_solver::fsils_lhs_create(com_mod.lhs, communicator, com_mod.gtnNo, com_mod.tnNo, nnz, 
-      com_mod.ltg, com_mod.rowPtr, com_mod.colPtr, nFacesLS);
+  fsi_linear_solver::fsils_lhs_create(com_mod.lhs, communicator, com_mod.gtnNo,
+                                      com_mod.tnNo, nnz, com_mod.ltg,
+                                      com_mod.rowPtr, com_mod.colPtr, nFacesLS);
 
   // Initialize Trilinos data structure
   //
@@ -528,42 +532,42 @@ void initialize(Simulation* simulation, Vector<double>& timeP)
     for (int a = 0; a < com_mod.tnNo; a++) {
       com_mod.tls.ltg(com_mod.lhs.map(a)) = com_mod.ltg(a);
     }
-  } 
+  }
 
   // Variable allocation and initialization
-  int tnNo = com_mod.tnNo; 
-  com_mod.Ao.resize(tDof,tnNo); 
-  com_mod.An.resize(tDof,tnNo); 
-  com_mod.Yo.resize(tDof,tnNo); 
-  com_mod.Yn.resize(tDof,tnNo); 
-  com_mod.Do.resize(tDof,tnNo); 
-  com_mod.Dn.resize(tDof,tnNo); 
-  com_mod.Bf.resize(nsd,tnNo);
+  int tnNo = com_mod.tnNo;
+  com_mod.Ao.resize(tDof, tnNo);
+  com_mod.An.resize(tDof, tnNo);
+  com_mod.Yo.resize(tDof, tnNo);
+  com_mod.Yn.resize(tDof, tnNo);
+  com_mod.Do.resize(tDof, tnNo);
+  com_mod.Dn.resize(tDof, tnNo);
+  com_mod.Bf.resize(nsd, tnNo);
 
   // [TODO] DaveP not implemented?
-  // IF (ibFlag) CALL IB_MEMALLOC() 
+  // IF (ibFlag) CALL IB_MEMALLOC()
 
   // Additional physics dependent variables
   // USTRUCT phys
   //
-  if (com_mod.sstEq) { 
-    com_mod.Ad.resize(nsd,tnNo); 
-    com_mod.Rd.resize(nsd,tnNo); 
-    com_mod.Kd.resize((nsd+1)*nsd, nnz); 
+  if (com_mod.sstEq) {
+    com_mod.Ad.resize(nsd, tnNo);
+    com_mod.Rd.resize(nsd, tnNo);
+    com_mod.Kd.resize((nsd + 1) * nsd, nnz);
   }
 
   // PRESTRESS
   if (com_mod.pstEq) {
-    int nsymd = com_mod.nsymd; 
-    com_mod.pS0.resize(nsymd,tnNo); 
-    com_mod.pSn.resize(nsymd,tnNo); 
-    com_mod.pSa.resize(tnNo); 
-  } 
+    int nsymd = com_mod.nsymd;
+    com_mod.pS0.resize(nsymd, tnNo);
+    com_mod.pSn.resize(nsymd, tnNo);
+    com_mod.pSa.resize(tnNo);
+  }
 
   // Electrophysiology
   //
   if (cep_mod.cepEq) {
-    cep_mod.Xion.resize(cep_mod.nXion,tnNo);
+    cep_mod.Xion.resize(cep_mod.nXion, tnNo);
     cep_ion::cep_init(simulation);
 
     // Electro-Mechanics
@@ -585,40 +589,42 @@ void initialize(Simulation* simulation, Vector<double>& timeP)
     rmsh.fTS = rmsh.freq;
 
     if (rmsh.isReqd) {
-      rmsh.A0.resize(com_mod.tDof,com_mod.tnNo);
-      rmsh.Y0.resize(com_mod.tDof,com_mod.tnNo);
-      rmsh.D0.resize(com_mod.tDof,com_mod.tnNo);
+      rmsh.A0.resize(com_mod.tDof, com_mod.tnNo);
+      rmsh.Y0.resize(com_mod.tDof, com_mod.tnNo);
+      rmsh.D0.resize(com_mod.tDof, com_mod.tnNo);
       rmsh.iNorm.resize(com_mod.nEq);
     }
 
-    if (FILE *file = fopen(com_mod.iniFilePath.c_str(), "r")) {
+    if (FILE* file = fopen(com_mod.iniFilePath.c_str(), "r")) {
       fclose(file);
       flag = true;
     } else {
       flag = false;
     }
 
-    if (flag) { 
+    if (flag) {
       auto& iniFilePath = com_mod.iniFilePath;
       auto& timeP = com_mod.timeP;
 
-      if (iniFilePath.find(".bin") != std::string::npos) { 
+      if (iniFilePath.find(".bin") != std::string::npos) {
         init_from_bin(simulation, iniFilePath, timeP);
       } else {
         init_from_vtu(simulation, iniFilePath, timeP);
-     }
+      }
 
     } else {
       if (com_mod.stFileFlag) {
         std::string fTmp = com_mod.stFileName + "_last_cpp.bin";
 
-        if (FILE *file = fopen(fTmp.c_str(), "r")) {
+        if (FILE* file = fopen(fTmp.c_str(), "r")) {
           fclose(file);
           auto& timeP = com_mod.timeP;
           init_from_bin(simulation, fTmp, timeP);
         } else {
           if (cm.mas(cm_mod)) {
-            std::cout << "WARNING: No '" + fTmp + "' file to restart simulation from; Resetting restart flag to false";
+            std::cout << "WARNING: No '" + fTmp +
+                             "' file to restart simulation from; Resetting "
+                             "restart flag to false";
           }
           com_mod.stFileFlag = false;
           zero_init(simulation);
@@ -626,7 +632,7 @@ void initialize(Simulation* simulation, Vector<double>& timeP)
 
         if (rmsh.isReqd) {
           auto& cTS = com_mod.cTS;
-          rmsh.fTS = (cTS/rmsh.fTS + 1)*rmsh.freq;
+          rmsh.fTS = (cTS / rmsh.fTS + 1) * rmsh.freq;
           rmsh.rTS = cTS;
           rmsh.time = com_mod.time;
           for (int i = 0; i < rmsh.iNorm.size(); i++) {
@@ -639,13 +645,13 @@ void initialize(Simulation* simulation, Vector<double>& timeP)
 
       } else {
         zero_init(simulation);
-      } 
+      }
     }
 
     com_mod.rsTS = com_mod.cTS;
 
   } else {
-    com_mod.cTS  = rmsh.rTS;
+    com_mod.cTS = rmsh.rTS;
     com_mod.time = rmsh.time;
     for (int i = 0; i < com_mod.eq.size(); i++) {
       com_mod.eq[i].iNorm = rmsh.iNorm[i];
@@ -655,15 +661,15 @@ void initialize(Simulation* simulation, Vector<double>& timeP)
     com_mod.Yo = all_fun::local(com_mod, cm_mod, cm, rmsh.Y0);
     com_mod.Do = all_fun::local(com_mod, cm_mod, cm, rmsh.D0);
 
-    rmsh.A0.resize(tDof,tnNo); 
+    rmsh.A0.resize(tDof, tnNo);
     rmsh.A0 = com_mod.Ao;
 
-    rmsh.Y0.resize(tDof,tnNo); 
+    rmsh.Y0.resize(tDof, tnNo);
     rmsh.Y0 = com_mod.Yo;
 
-    rmsh.D0.resize(tDof,tnNo); 
+    rmsh.D0.resize(tDof, tnNo);
     rmsh.D0 = com_mod.Do;
-  } // resetSim
+  }  // resetSim
 
   // Initialize new variables
   //
@@ -671,12 +677,15 @@ void initialize(Simulation* simulation, Vector<double>& timeP)
   com_mod.Yn = com_mod.Yo;
   com_mod.Dn = com_mod.Do;
 
-  for (int iM = 0; iM < nMsh; iM++) { 
+  for (int iM = 0; iM < nMsh; iM++) {
     if (cm.mas(cm_mod)) {
-      std::string fTmp = chnl_mod.appPath + "partitioning_" + com_mod.msh[iM].name + "_cpp.bin";
-      std::string sTmp = chnl_mod.appPath + "partitioning_" + com_mod.msh[iM].name + "_" + std::to_string(com_mod.cTS) + "_cpp.bin";
+      std::string fTmp = chnl_mod.appPath + "partitioning_" +
+                         com_mod.msh[iM].name + "_cpp.bin";
+      std::string sTmp = chnl_mod.appPath + "partitioning_" +
+                         com_mod.msh[iM].name + "_" +
+                         std::to_string(com_mod.cTS) + "_cpp.bin";
 
-      if (FILE *file = fopen(fTmp.c_str(), "r")) {
+      if (FILE* file = fopen(fTmp.c_str(), "r")) {
         fclose(file);
         std::ifstream src(fTmp, std::ios::binary);
         std::ofstream dest(sTmp, std::ios::binary);
@@ -685,12 +694,12 @@ void initialize(Simulation* simulation, Vector<double>& timeP)
     }
   }
 
-  // Initialize function spaces 
+  // Initialize function spaces
   //
-  for (int iM = 0; iM < nMsh; iM++) { 
+  for (int iM = 0; iM < nMsh; iM++) {
     auto& mesh = com_mod.msh[iM];
     fs::init_fs_msh(com_mod, mesh);
-    for (int iFa = 0; iFa < com_mod.msh[iM].nFa; iFa++) { 
+    for (int iFa = 0; iFa < com_mod.msh[iM].nFa; iFa++) {
       fs::init_fs_face(com_mod, mesh, mesh.fa[iFa]);
     }
   }
@@ -699,7 +708,7 @@ void initialize(Simulation* simulation, Vector<double>& timeP)
   // [TODO:DaveP] not implemented but still need to allocate iblank.
   //
   com_mod.iblank.resize(tnNo);
-  /* 
+  /*
   ALLOCATE(iblank(tnNo))
   iblank = 0
   IF (ibFlag) CALL IB_INIT(Do)
@@ -707,23 +716,24 @@ void initialize(Simulation* simulation, Vector<double>& timeP)
 
   // Calculating the volume of each domain
   //
-  Array<double> s(1,tnNo);
+  Array<double> s(1, tnNo);
   s = 1.0;
-  
+
   for (int iEq = 0; iEq < com_mod.nEq; iEq++) {
     auto& eq = com_mod.eq[iEq];
     if (!com_mod.shlEq && !com_mod.cmmInit) {
-      //std = " Eq. <"// CLR(eq(iEq)%sym, iEq)//">"
+      // std = " Eq. <"// CLR(eq(iEq)%sym, iEq)//">"
     }
 
     for (int iDmn = 0; iDmn < eq.nDmn; iDmn++) {
       int i = eq.dmn[iDmn].Id;
       eq.dmn[iDmn].v = all_fun::integ(com_mod, cm_mod, i, s, 0, 0);
       if (!com_mod.shlEq && !com_mod.cmmInit) {
-        //std = "    Volume of domain <"//STR(i)//"> is "// 2            STR(eq(iEq)%dmn(iDmn)%v)
-        //IF (ISZERO(eq(iEq)%dmn(iDmn)%v)) wrn = "<< Volume of "// "domain "//iDmn//" of equation "//iEq//" is zero >>"
-      }     
-    } 
+        // std = "    Volume of domain <"//STR(i)//"> is "// 2
+        // STR(eq(iEq)%dmn(iDmn)%v) IF (ISZERO(eq(iEq)%dmn(iDmn)%v)) wrn = "<<
+        // Volume of "// "domain "//iDmn//" of equation "//iEq//" is zero >>"
+      }
+    }
   }
 
   // Preparing faces and BCs
@@ -764,51 +774,49 @@ void initialize(Simulation* simulation, Vector<double>& timeP)
 //-----------
 // Initialize state variables Yo, Ao and Do.
 //
-void zero_init(Simulation* simulation)
-{
+void zero_init(Simulation* simulation) {
   auto& com_mod = simulation->com_mod;
   auto& cm = com_mod.cm;
   const int nsd = com_mod.nsd;
 
-  #define n_debug_zero_init
-  #ifdef debug_zero_init
+#define n_debug_zero_init
+#ifdef debug_zero_init
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
-  #endif
+#endif
 
   // Load any explicitly provided solution variables
   //
   if (com_mod.Vinit.size() != 0) {
-     #ifdef debug_zero_init
-     dmsg << "Initialize Yo to provided Vel solution";
-     #endif
-     for (int a = 0; a < com_mod.tnNo; a++) {
-       for (int i = 0; i < nsd; i++) {
-         com_mod.Yo(i,a) = com_mod.Vinit(i,a);
-       }
-     }
+#ifdef debug_zero_init
+    dmsg << "Initialize Yo to provided Vel solution";
+#endif
+    for (int a = 0; a < com_mod.tnNo; a++) {
+      for (int i = 0; i < nsd; i++) {
+        com_mod.Yo(i, a) = com_mod.Vinit(i, a);
+      }
+    }
   }
 
   if (com_mod.Pinit.size() != 0) {
-     #ifdef debug_zero_init
-     dmsg << "Initialize Yo to provided P solution";
-     #endif
-     for (int a = 0; a < com_mod.tnNo; a++) {
-       for (int i = 0; i < nsd; i++) {
-         com_mod.Yo(nsd,a) = com_mod.Pinit(a);
-       }
-     }
+#ifdef debug_zero_init
+    dmsg << "Initialize Yo to provided P solution";
+#endif
+    for (int a = 0; a < com_mod.tnNo; a++) {
+      for (int i = 0; i < nsd; i++) {
+        com_mod.Yo(nsd, a) = com_mod.Pinit(a);
+      }
+    }
   }
 
   if (com_mod.Dinit.size() != 0) {
-     #ifdef debug_zero_init
-     dmsg << "Initialize Do to provided D solution";
-     #endif
-     for (int a = 0; a < com_mod.tnNo; a++) {
-       for (int i = 0; i < nsd; i++) {
-         com_mod.Do(i,a) = com_mod.Dinit(i,a);
-       }
-     }
+#ifdef debug_zero_init
+    dmsg << "Initialize Do to provided D solution";
+#endif
+    for (int a = 0; a < com_mod.tnNo; a++) {
+      for (int i = 0; i < nsd; i++) {
+        com_mod.Do(i, a) = com_mod.Dinit(i, a);
+      }
+    }
   }
 }
-

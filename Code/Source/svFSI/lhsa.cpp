@@ -8,8 +8,8 @@
 
 namespace lhsa_ns {
 
-void add_col(const int tnNo, const int row, const int col, int& mnnzeic, Array<int>& uInd)
-{
+void add_col(const int tnNo, const int row, const int col, int& mnnzeic,
+             Array<int>& uInd) {
   int i = -1;
 
   while (true) {
@@ -19,18 +19,18 @@ void add_col(const int tnNo, const int row, const int col, int& mnnzeic, Array<i
     }
 
     // If current entry is zero, then  fill it up
-    if (uInd(i,row) == -1) {
-       uInd(i,row) = col;
-       break;
+    if (uInd(i, row) == -1) {
+      uInd(i, row) = col;
+      break;
     }
 
     // If current entry is still smaller, keep going
-    if (col > uInd(i,row)) { 
+    if (col > uInd(i, row)) {
       continue;
     }
 
     // If column entry already exists, exit
-    if (col == uInd(i,row)) { 
+    if (col == uInd(i, row)) {
       break;
     }
 
@@ -39,19 +39,19 @@ void add_col(const int tnNo, const int row, const int col, int& mnnzeic, Array<i
     // list is full, we request a larger list, otherwise we shift
     // and add the item at the current entry position.
     //
-    if (uInd(mnnzeic-1,row) != -1) {
+    if (uInd(mnnzeic - 1, row) != -1) {
       resiz(tnNo, mnnzeic, uInd);
     }
 
-    for (int j = mnnzeic - 1; j >= i+1; j--) {
-       uInd(j, row) = uInd(j-1, row);
+    for (int j = mnnzeic - 1; j >= i + 1; j--) {
+      uInd(j, row) = uInd(j - 1, row);
     }
-    uInd(i,row) = col;
+    uInd(i, row) = col;
     break;
-  } 
+  }
 }
 
-/// @brief This subroutine assembels the element stiffness matrix into the 
+/// @brief This subroutine assembels the element stiffness matrix into the
 /// global stiffness matrix (Val sparse matrix formatted as a vector)
 ///
 /// Paramters:
@@ -64,8 +64,8 @@ void add_col(const int tnNo, const int row, const int col, int& mnnzeic, Array<i
 ///
 /// Replicates 'SUBROUTINE DOASSEM (d, eqN, lK, lR)'.
 //
-void do_assem(ComMod& com_mod, const int d, const Vector<int>& eqN, const Array3<double>& lK, const Array<double>& lR)
-{
+void do_assem(ComMod& com_mod, const int d, const Vector<int>& eqN,
+              const Array3<double>& lK, const Array<double>& lR) {
   auto& R = com_mod.R;
   auto& Val = com_mod.Val;
   const auto& rowPtr = com_mod.rowPtr;
@@ -78,7 +78,7 @@ void do_assem(ComMod& com_mod, const int d, const Vector<int>& eqN, const Array3
     }
 
     for (int i = 0; i < R.nrows(); i++) {
-      R(i,rowN) = R(i,rowN) + lR(i,a);
+      R(i, rowN) = R(i, rowN) + lR(i, a);
     }
 
     for (int b = 0; b < d; b++) {
@@ -88,20 +88,20 @@ void do_assem(ComMod& com_mod, const int d, const Vector<int>& eqN, const Array3
       }
 
       int left = rowPtr(rowN);
-      int right = rowPtr(rowN+1);
+      int right = rowPtr(rowN + 1);
       int ptr = (right + left) / 2;
 
       while (colN != colPtr(ptr)) {
-        if (colN > colPtr(ptr)) { 
-          left  = ptr;
-        } else { 
+        if (colN > colPtr(ptr)) {
+          left = ptr;
+        } else {
           right = ptr;
         }
         ptr = (right + left) / 2;
       }
 
       for (int i = 0; i < Val.nrows(); i++) {
-        Val(i,ptr) = Val(i,ptr) + lK(i,a,b);
+        Val(i, ptr) = Val(i, ptr) + lK(i, a, b);
       }
     }
   }
@@ -114,11 +114,10 @@ void do_assem(ComMod& com_mod, const int d, const Vector<int>& eqN, const Array3
 //
 // Modifies:
 //   com_mod.idMap
-//   com_mod.colPtr.resize(nnz); 
+//   com_mod.colPtr.resize(nnz);
 //   com_mod.rowPtr.resize(tnNo+1);
 //
-void lhsa(Simulation* simulation, int& nnz)
-{
+void lhsa(Simulation* simulation, int& nnz) {
   using namespace consts;
 
   auto& com_mod = simulation->com_mod;
@@ -126,16 +125,16 @@ void lhsa(Simulation* simulation, int& nnz)
   int tnNo = com_mod.tnNo;
   idMap.resize(tnNo);
 
-  for (int a = 0; a < tnNo; a++) { 
+  for (int a = 0; a < tnNo; a++) {
     idMap[a] = a;
   }
 
   int max_enon = std::numeric_limits<int>::min();
-  for (auto& mesh : com_mod.msh) { 
+  for (auto& mesh : com_mod.msh) {
     max_enon = std::max(mesh.eNoN, max_enon);
   }
 
-  int mnnzeic = 10 * max_enon; 
+  int mnnzeic = 10 * max_enon;
 
   // First fill uInd array depending on mesh connectivity as is.
   //
@@ -151,10 +150,10 @@ void lhsa(Simulation* simulation, int& nnz)
       continue;
     }
     for (int e = 0; e < msh.nEl; e++) {
-      for (int a = 0; a < msh.eNoN; a++) { 
-        int rowN = msh.IEN(a,e);
+      for (int a = 0; a < msh.eNoN; a++) {
+        int rowN = msh.IEN(a, e);
         for (int b = 0; b < msh.eNoN; b++) {
-          int colN = msh.IEN(b,e);
+          int colN = msh.IEN(b, e);
           add_col(tnNo, rowN, colN, mnnzeic, uInd);
         }
       }
@@ -166,7 +165,7 @@ void lhsa(Simulation* simulation, int& nnz)
   for (int iM = 0; iM < nMsh; iM++) {
     auto& msh = com_mod.msh[iM];
 
-    if (!com_mod.shlEq || !msh.lShl) { 
+    if (!com_mod.shlEq || !msh.lShl) {
       continue;
     }
 
@@ -179,28 +178,28 @@ void lhsa(Simulation* simulation, int& nnz)
     }
 
     for (int e = 0; e < msh.nEl; e++) {
-      for (int a = 0; a < 2*msh.eNoN; a++) { 
+      for (int a = 0; a < 2 * msh.eNoN; a++) {
         int rowN;
 
         if (a < msh.eNoN) {
-          rowN = msh.IEN(a,e);
-        } else { 
-          rowN = msh.eIEN(a-msh.eNoN,e);
+          rowN = msh.IEN(a, e);
+        } else {
+          rowN = msh.eIEN(a - msh.eNoN, e);
         }
 
-        if (rowN == -1) { 
+        if (rowN == -1) {
           continue;
         }
 
         int colN;
 
-        for (int b = 0; b < 2*msh.eNoN; b++) {
+        for (int b = 0; b < 2 * msh.eNoN; b++) {
           if (b < msh.eNoN) {
-            colN = msh.IEN(b,e);
-          } else { 
-            colN = msh.eIEN(b-msh.eNoN,e);
+            colN = msh.IEN(b, e);
+          } else {
+            colN = msh.eIEN(b - msh.eNoN, e);
           }
-          if (colN == -1) { 
+          if (colN == -1) {
             continue;
           }
 
@@ -215,17 +214,18 @@ void lhsa(Simulation* simulation, int& nnz)
   // This step is performed even for ghost master nodes where the idMap
   // points to the ghost master node.
   //
-  bool flag = false; 
+  bool flag = false;
 
   for (int i = 0; i < com_mod.nEq; i++) {
     auto& eq = com_mod.eq[i];
 
-    for (int j = 0; j <  eq.nBc; j++) {
+    for (int j = 0; j < eq.nBc; j++) {
       auto& bc = eq.bc[j];
       int iM = bc.iM;
       int iFa = bc.iFa;
 
-      if (utils::btest(bc.bType, enum_int(BoundaryConditionType::bType_undefNeu))) {
+      if (utils::btest(bc.bType,
+                       enum_int(BoundaryConditionType::bType_undefNeu))) {
         int masN = bc.masN;
         if (masN == 0) {
           continue;
@@ -240,7 +240,7 @@ void lhsa(Simulation* simulation, int& nnz)
           add_col(tnNo, rowN, masN, mnnzeic, uInd);
         }
 
-        flag = true; 
+        flag = true;
       }
     }
   }
@@ -259,9 +259,9 @@ void lhsa(Simulation* simulation, int& nnz)
       if (rowN == a) {
         int i = -1;
 
-        while (true) { 
+        while (true) {
           i = i + 1;
-          int b = uInd(i,rowN);
+          int b = uInd(i, rowN);
           // Terminate if end of column entries are reached
           if (b == -1) {
             break;
@@ -279,20 +279,20 @@ void lhsa(Simulation* simulation, int& nnz)
           // it is not present. This step is performed to assemble
           // the Divergence (C) matrix
           add_col(tnNo, rowN, colN, mnnzeic, uInd);
-          if (i == mnnzeic-1) {
+          if (i == mnnzeic - 1) {
             break;
           }
         }
 
-      // If the row mapping is changed, insert the mapped/unmapped
-      // column entries of the old row into the new row if not
-      // already present.
+        // If the row mapping is changed, insert the mapped/unmapped
+        // column entries of the old row into the new row if not
+        // already present.
 
-      } else { 
+      } else {
         int i = -1;
-        while (true) { 
+        while (true) {
           i = i + 1;
-          int b = uInd(i,a);
+          int b = uInd(i, a);
           // Terminate if end of column entries are reached
           if (b == -1) {
             break;
@@ -307,7 +307,7 @@ void lhsa(Simulation* simulation, int& nnz)
           if (b != colN) {
             add_col(tnNo, rowN, colN, mnnzeic, uInd);
           }
-          if (i == mnnzeic-1) {
+          if (i == mnnzeic - 1) {
             break;
           }
         }
@@ -317,12 +317,13 @@ void lhsa(Simulation* simulation, int& nnz)
 
   // Finding number of non-zeros in colPtr vector
   nnz = 0;
-  for (int rowN = 0; rowN < tnNo; rowN++) { 
-    if (uInd(0,rowN) == -1) {
-      throw std::runtime_error("An isolated node " + std::to_string(rowN) + " has been found during assambly");
+  for (int rowN = 0; rowN < tnNo; rowN++) {
+    if (uInd(0, rowN) == -1) {
+      throw std::runtime_error("An isolated node " + std::to_string(rowN) +
+                               " has been found during assambly");
     }
     for (int i = 0; i < mnnzeic; i++) {
-      if (uInd(i,rowN) != -1) {
+      if (uInd(i, rowN) != -1) {
         nnz = nnz + 1;
       }
     }
@@ -330,19 +331,19 @@ void lhsa(Simulation* simulation, int& nnz)
 
   // Now constructing compact form of rowPtr and colPtr
   //
-  com_mod.colPtr.resize(nnz); 
-  com_mod.rowPtr.resize(tnNo+1);
+  com_mod.colPtr.resize(nnz);
+  com_mod.rowPtr.resize(tnNo + 1);
   int j = 0;
   com_mod.rowPtr(0) = 0;
 
-  for (int rowN = 0; rowN < tnNo; rowN++) { 
+  for (int rowN = 0; rowN < tnNo; rowN++) {
     for (int i = 0; i < mnnzeic; i++) {
       if (uInd(i, rowN) != -1) {
         com_mod.colPtr(j) = uInd(i, rowN);
         j = j + 1;
       }
     }
-    com_mod.rowPtr(rowN+1) = j;
+    com_mod.rowPtr(rowN + 1) = j;
   }
 }
 
@@ -350,29 +351,26 @@ void lhsa(Simulation* simulation, int& nnz)
 // resiz
 //-------
 //
-void resiz(const int tnNo, int& mnnzeic, Array<int>& uInd)
-{
+void resiz(const int tnNo, int& mnnzeic, Array<int>& uInd) {
   int n = mnnzeic;
   Array<int> tmp(n, tnNo);
   tmp = -1;
 
   for (int i = 0; i < uInd.nrows(); i++) {
     for (int j = 0; j < uInd.ncols(); j++) {
-      tmp(i,j) = uInd(i,j);
+      tmp(i, j) = uInd(i, j);
     }
   }
 
-  mnnzeic = n + std::max(5, n/5);
+  mnnzeic = n + std::max(5, n / 5);
   uInd.resize(mnnzeic, tnNo);
   uInd = -1;
 
   for (int i = 0; i < tmp.nrows(); i++) {
     for (int j = 0; j < tmp.ncols(); j++) {
-      uInd(i,j) = tmp(i,j);
+      uInd(i, j) = tmp(i, j);
     }
   }
 }
 
-};
-
-
+};  // namespace lhsa_ns

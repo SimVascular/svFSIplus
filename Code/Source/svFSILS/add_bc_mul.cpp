@@ -12,10 +12,10 @@ namespace add_bc_mul {
 ///
 /// Reproduces code in ADDBCMUL.f.
 //
-void add_bc_mul(FSILS_lhsType& lhs, const BcopType op_Type, const int dof, const Array<double>& X, Array<double>& Y)
-{
-  Vector<double> coef(lhs.nFaces); 
-  Array<double> v(dof,lhs.nNo);
+void add_bc_mul(FSILS_lhsType& lhs, const BcopType op_Type, const int dof,
+                const Array<double>& X, Array<double>& Y) {
+  Vector<double> coef(lhs.nFaces);
+  Array<double> v(dof, lhs.nNo);
 
   if (op_Type == BcopType::BCOP_TYPE_ADD) {
     for (int i = 0; i < lhs.nFaces; i++) {
@@ -23,11 +23,11 @@ void add_bc_mul(FSILS_lhsType& lhs, const BcopType op_Type, const int dof, const
     }
   } else if (op_Type == BcopType::BCOP_TYPE_PRE) {
     for (int i = 0; i < lhs.nFaces; i++) {
-      coef(i) = -lhs.face[i].res / (1.0 + (lhs.face[i].res*lhs.face[i].nS));
+      coef(i) = -lhs.face[i].res / (1.0 + (lhs.face[i].res * lhs.face[i].nS));
     }
-  } else { 
-    //PRINT *, "FSILS: op_Type is not defined"
-    //STOP "FSILS: FATAL ERROR"
+  } else {
+    // PRINT *, "FSILS: op_Type is not defined"
+    // STOP "FSILS: FATAL ERROR"
   }
 
   for (int faIn = 0; faIn < lhs.nFaces; faIn++) {
@@ -41,25 +41,26 @@ void add_bc_mul(FSILS_lhsType& lhs, const BcopType op_Type, const int dof, const
         for (int a = 0; a < face.nNo; a++) {
           int Ac = face.glob(a);
           for (int i = 0; i < nsd; i++) {
-            v(i,Ac) = face.valM(i,a);
+            v(i, Ac) = face.valM(i, a);
           }
         }
 
-        double S = coef(faIn) * dot::fsils_dot_v(dof, lhs.mynNo, lhs.commu, v, X);
+        double S =
+            coef(faIn) * dot::fsils_dot_v(dof, lhs.mynNo, lhs.commu, v, X);
 
         for (int a = 0; a < face.nNo; a++) {
           int Ac = face.glob(a);
           for (int i = 0; i < nsd; i++) {
-            Y(i,Ac) = Y(i,Ac) + v(i,Ac)*S;
+            Y(i, Ac) = Y(i, Ac) + v(i, Ac) * S;
           }
         }
 
-      } else  {
+      } else {
         double S = 0.0;
         for (int a = 0; a < face.nNo; a++) {
           int Ac = face.glob(a);
           for (int i = 0; i < nsd; i++) {
-            S = S + face.valM(i,a)*X(i,Ac);
+            S = S + face.valM(i, a) * X(i, Ac);
           }
         }
 
@@ -68,13 +69,12 @@ void add_bc_mul(FSILS_lhsType& lhs, const BcopType op_Type, const int dof, const
         for (int a = 0; a < face.nNo; a++) {
           int Ac = face.glob(a);
           for (int i = 0; i < nsd; i++) {
-            Y(i,Ac) = Y(i,Ac) + face.valM(i,a)*S;
+            Y(i, Ac) = Y(i, Ac) + face.valM(i, a) * S;
           }
         }
       }
     }
   }
-
 }
 
-};
+};  // namespace add_bc_mul

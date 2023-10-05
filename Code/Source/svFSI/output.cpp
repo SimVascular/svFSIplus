@@ -3,9 +3,10 @@
 // desined to interface with user.
 
 #include "output.h"
-#include "utils.h"
 
 #include <math.h>
+
+#include "utils.h"
 
 namespace output {
 
@@ -15,12 +16,12 @@ namespace output {
 ///
 /// \todo NOTE: This is not fully implemented.
 //
-void output_result(Simulation* simulation,  std::array<double,3>& timeP, const int co, const int iEq)
-{
-  #ifdef debug_output_result
+void output_result(Simulation* simulation, std::array<double, 3>& timeP,
+                   const int co, const int iEq) {
+#ifdef debug_output_result
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
-  #endif
+#endif
 
   auto& com_mod = simulation->com_mod;
   auto& cm_mod = simulation->cm_mod;
@@ -36,20 +37,23 @@ void output_result(Simulation* simulation,  std::array<double,3>& timeP, const i
 
   int fid = 1;
   double tmp = utils::cput();
-  std::string sepLine(69,'-');
+  std::string sepLine(69, '-');
 
   if (co == 1) {
-     timeP[0] = tmp - timeP[0];
-     timeP[1] = 0.0;
-     logger << sepLine << std::endl;
-     logger << " Eq     N-i     T       dB  Ri/R1   Ri/R0    R/Ri     lsIt   dB  %t" << std::endl;
-     //std::cout << sepLine << std::endl;
-     //std::cout << " Eq     N-i     T       dB  Ri/R1   Ri/R0    R/Ri     lsIt   dB  %t" << std::endl;
-     if (com_mod.nEq == 1) {
-       logger << sepLine << std::endl;
-       //std::cout << sepLine << std::endl;
-     }
-     return;
+    timeP[0] = tmp - timeP[0];
+    timeP[1] = 0.0;
+    logger << sepLine << std::endl;
+    logger
+        << " Eq     N-i     T       dB  Ri/R1   Ri/R0    R/Ri     lsIt   dB  %t"
+        << std::endl;
+    // std::cout << sepLine << std::endl;
+    // std::cout << " Eq     N-i     T       dB  Ri/R1   Ri/R0    R/Ri     lsIt
+    // dB  %t" << std::endl;
+    if (com_mod.nEq == 1) {
+      logger << sepLine << std::endl;
+      // std::cout << sepLine << std::endl;
+    }
+    return;
   }
 
   if ((com_mod.nEq > 1) && (iEq == 0) && (eq.itr == 1)) {
@@ -69,14 +73,15 @@ void output_result(Simulation* simulation,  std::array<double,3>& timeP, const i
   timeP[2] = tmp - timeP[0];
   char time_str[20];
   sprintf(time_str, "%4.3e", timeP[2]);
-  std::string sOut = " " + eq.sym + " " + std::to_string(cTS) + "-" + std::to_string(eq.itr) + c1 + " " + time_str;
+  std::string sOut = " " + eq.sym + " " + std::to_string(cTS) + "-" +
+                     std::to_string(eq.itr) + c1 + " " + time_str;
 
   int i;
   double tmp1 = 1.0;
   double tmp2 = 1.0;
 
   if (utils::is_zero(eq.iNorm)) {
-    tmp  = 1.0;
+    tmp = 1.0;
     tmp1 = 1.0;
     tmp2 = 1.0;
     i = 0;
@@ -84,14 +89,14 @@ void output_result(Simulation* simulation,  std::array<double,3>& timeP, const i
     tmp = eq.FSILS.RI.iNorm / eq.iNorm;
     tmp1 = tmp / eq.pNorm;
     tmp2 = eq.FSILS.RI.fNorm / eq.FSILS.RI.iNorm;
-    i = static_cast<int>(20.0*log10(tmp1));
+    i = static_cast<int>(20.0 * log10(tmp1));
   }
 
   if (i > 20) {
-    c1 = "!"; 
+    c1 = "!";
     c2 = "!";
   } else {
-    c1 = "["; 
+    c1 = "[";
     c2 = "]";
   }
 
@@ -100,12 +105,13 @@ void output_result(Simulation* simulation,  std::array<double,3>& timeP, const i
   sprintf(norm2_str, "%4.3e", tmp1);
   sprintf(norm3_str, "%4.3e", tmp2);
 
-  // NS     1-2  3.82E1  [ -62 7.92E-4 7.92E-4 3.60E-4]  [   5  -15  23] 
+  // NS     1-2  3.82E1  [ -62 7.92E-4 7.92E-4 3.60E-4]  [   5  -15  23]
   //                       ----------------------------
-  sOut += "  " + c1 + std::to_string(i) + " " + norm2_str  + " " + norm1_str + " " + norm3_str + c2;
+  sOut += "  " + c1 + std::to_string(i) + " " + norm2_str + " " + norm1_str +
+          " " + norm3_str + c2;
   double eps = std::numeric_limits<double>::epsilon();
 
-  if (utils::is_zero(timeP[2],timeP[1])) {
+  if (utils::is_zero(timeP[2], timeP[1])) {
     timeP[2] = (1.0 + eps) * timeP[1] + eps;
   }
 
@@ -118,18 +124,19 @@ void output_result(Simulation* simulation,  std::array<double,3>& timeP, const i
   }
 
   if (eq.FSILS.RI.suc) {
-     c1 = "["; 
-     c2 = "]";
+    c1 = "[";
+    c2 = "]";
   } else {
-     c1 = "!";  
-     c2 = "!";
+    c1 = "!";
+    c2 = "!";
   }
 
-  // NS     1-2  3.82E1  [ -62 7.92E-4 7.92E-4 3.60E-4]  [   5  -15  23] 
+  // NS     1-2  3.82E1  [ -62 7.92E-4 7.92E-4 3.60E-4]  [   5  -15  23]
   //                                                      -------------
   auto db_str = std::to_string(static_cast<int>(round(eq.FSILS.RI.dB)));
   auto calld_str = std::to_string(static_cast<int>(round(tmp)));
-  sOut += "  " + c1 + std::to_string(eq.FSILS.RI.itr) + " " + db_str + " " + calld_str + c2;
+  sOut += "  " + c1 + std::to_string(eq.FSILS.RI.itr) + " " + db_str + " " +
+          calld_str + c2;
 
   if (com_mod.nEq > 1) {
     logger << sOut << std::endl;
@@ -138,8 +145,8 @@ void output_result(Simulation* simulation,  std::array<double,3>& timeP, const i
   }
 }
 
-void read_restart_header(ComMod& com_mod, std::array<int,7>& tStamp, double& timeP, std::ifstream& restart_file)
-{
+void read_restart_header(ComMod& com_mod, std::array<int, 7>& tStamp,
+                         double& timeP, std::ifstream& restart_file) {
   auto& cTS = com_mod.cTS;
   auto& time = com_mod.time;
 
@@ -155,15 +162,14 @@ void read_restart_header(ComMod& com_mod, std::array<int,7>& tStamp, double& tim
 
 /// @brief Reproduces the Fortran 'WRITERESTART' subroutine.
 //
-void write_restart(Simulation* simulation, std::array<double,3>& timeP)
-{
+void write_restart(Simulation* simulation, std::array<double, 3>& timeP) {
   auto& com_mod = simulation->com_mod;
-  #define n_debug_write_restart
-  #ifdef debug_write_restart
+#define n_debug_write_restart
+#ifdef debug_write_restart
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
   dmsg << "timeP: " << timeP[0] << " " << timeP[1] << " " << timeP[2];
-  #endif
+#endif
 
   auto& cm_mod = simulation->cm_mod;
   auto& cm = com_mod.cm;
@@ -176,7 +182,7 @@ void write_restart(Simulation* simulation, std::array<double,3>& timeP)
 
   const bool ibFlag = com_mod.ibFlag;
   const bool dFlag = com_mod.dFlag;
-  const bool sstEq = com_mod.sstEq; 
+  const bool sstEq = com_mod.sstEq;
   const bool pstEq = com_mod.pstEq;
   const bool cepEq = cep_mod.cepEq;
   const auto& stFileName = com_mod.stFileName;
@@ -190,7 +196,7 @@ void write_restart(Simulation* simulation, std::array<double,3>& timeP)
   auto& Xion = cep_mod.Xion;
   auto& cem = cep_mod.cem;
 
-  #ifdef debug_write_restart
+#ifdef debug_write_restart
   dmsg << "stFileName: " << stFileName;
   dmsg << "dFlag: " << dFlag;
   dmsg << "sstEq: " << sstEq;
@@ -198,14 +204,14 @@ void write_restart(Simulation* simulation, std::array<double,3>& timeP)
   dmsg << "cepEq: " << cepEq;
   dmsg << "stFileName: " << stFileName;
   dmsg << "stFileRepl: " << stFileRepl;
-  #endif 
+#endif
 
   int fid = 27;
   int myID = cm.tF(cm_mod);
 
   auto fName = stFileName + "_last_cpp.bin";
   auto tmpS = fName;
-  #ifdef debug_write_restart
+#ifdef debug_write_restart
   dmsg;
   dmsg << "cTS: " << cTS;
   dmsg << "time: " << time;
@@ -217,7 +223,7 @@ void write_restart(Simulation* simulation, std::array<double,3>& timeP)
     std::cout << value << " ";
   }
   std::cout;
-  #endif 
+#endif
 
   if (!com_mod.stFileRepl) {
     char fName_num[100];
@@ -236,7 +242,7 @@ void write_restart(Simulation* simulation, std::array<double,3>& timeP)
     std::ofstream restart_file(fName, std::ios::out | std::ios::binary);
     char data{0};
     for (int i = 0; i < np * recLn; i++) {
-      //restart_file.write((char*)&data, sizeof(char));
+      // restart_file.write((char*)&data, sizeof(char));
     }
     restart_file.close();
   }
@@ -244,7 +250,8 @@ void write_restart(Simulation* simulation, std::array<double,3>& timeP)
   // This call is to block all processors
   cm.bcast(cm_mod, &fid);
 
-  std::ofstream restart_file(fName, std::ios::out | std::ios::binary | std::ios::in);
+  std::ofstream restart_file(fName,
+                             std::ios::out | std::ios::binary | std::ios::in);
   std::streampos write_pos = (myID - 1) * recLn;
   restart_file.seekp(write_pos);
 
@@ -284,23 +291,27 @@ void write_restart(Simulation* simulation, std::array<double,3>& timeP)
       if (cepEq) {
         restart_file.write((char*)Xion.data(), Xion.msize());
       } else {
-        //WRITE(fid, REC=myID) stamp, cTS, time, CPUT()-timeP(1), eq%iNorm, cplBC%xn, Yn, An
+        // WRITE(fid, REC=myID) stamp, cTS, time, CPUT()-timeP(1), eq%iNorm,
+        // cplBC%xn, Yn, An
       }
     }
 
-  // ibFlag = true
-  //
-  // [NOTE] not implemented.
-  //
+    // ibFlag = true
+    //
+    // [NOTE] not implemented.
+    //
   } else {
     if (dFlag) {
       if (pstEq) {
-        //WRITE(fid, REC=myID) stamp, cTS, time, CPUT()-timeP(1), eq.iNorm, cplBC.xn, Yn, An, Dn, pS0, ib.Yb, ib.Auo, ib.Ubo
+        // WRITE(fid, REC=myID) stamp, cTS, time, CPUT()-timeP(1), eq.iNorm,
+        // cplBC.xn, Yn, An, Dn, pS0, ib.Yb, ib.Auo, ib.Ubo
       } else {
-        //WRITE(fid, REC=myID) stamp, cTS, time, CPUT()-timeP(1), eq.iNorm, cplBC.xn, Yn, An, Dn, ib.Yb, ib.Auo, ib.Ubo
+        // WRITE(fid, REC=myID) stamp, cTS, time, CPUT()-timeP(1), eq.iNorm,
+        // cplBC.xn, Yn, An, Dn, ib.Yb, ib.Auo, ib.Ubo
       }
     } else {
-      //WRITE(fid, REC=myID) stamp, cTS, time, CPUT()-timeP(1), eq.iNorm, cplBC.xn, Yn, An, ib.Yb, ib.Auo, ib.Ubo
+      // WRITE(fid, REC=myID) stamp, cTS, time, CPUT()-timeP(1), eq.iNorm,
+      // cplBC.xn, Yn, An, ib.Yb, ib.Auo, ib.Ubo
     }
   }
 
@@ -314,8 +325,8 @@ void write_restart(Simulation* simulation, std::array<double,3>& timeP)
   }
 }
 
-void write_restart_header(ComMod& com_mod, std::array<double,3>& timeP, std::ofstream& restart_file)
-{
+void write_restart_header(ComMod& com_mod, std::array<double, 3>& timeP,
+                          std::ofstream& restart_file) {
   auto const cTS = com_mod.cTS;
   auto const time = com_mod.time;
   auto& stamp = com_mod.stamp;
@@ -333,10 +344,11 @@ void write_restart_header(ComMod& com_mod, std::array<double,3>& timeP, std::ofs
 
 /// \todo [NOTE] not fully implemented.
 ///
-/// Reproduces: WRITE(fid, REC=myID) stamp, cTS, time,CPUT()-timeP(1), eq.iNorm, cplBC.xn, Yn, An, Dn
+/// Reproduces: WRITE(fid, REC=myID) stamp, cTS, time,CPUT()-timeP(1), eq.iNorm,
+/// cplBC.xn, Yn, An, Dn
 //
-void write_results(ComMod& com_mod, const std::array<double,3>& timeP, const std::string& fName, const bool sstEq)
-{
+void write_results(ComMod& com_mod, const std::array<double, 3>& timeP,
+                   const std::string& fName, const bool sstEq) {
   int cTS = com_mod.cTS;
 
   auto& An = com_mod.An;
@@ -354,5 +366,4 @@ void write_results(ComMod& com_mod, const std::array<double,3>& timeP, const std
   fclose(fp);
 }
 
-};
-
+};  // namespace output
