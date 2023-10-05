@@ -154,8 +154,8 @@ set(SDIR ${PROJECT_SOURCE_DIR}/Code/Source/svFSI*/)
 
 # format the code
 add_custom_target(codeformat
-  COMMAND find ${SDIR}/*.h ${SDIR}/*.cpp | xargs ${FORMAT} -style=file ${PROJECT_SOURCE_DIR}/.clang-format -i)
+  COMMAND find ${SDIR}/*.h ${SDIR}/*.cpp | xargs ${FORMAT} -style=file:${PROJECT_SOURCE_DIR}/.clang-format -i)
 
 # check code format
 add_custom_target(codecheck
-  COMMAND find ${SDIR}/*.h ${SDIR}/*.cpp | xargs ${FORMAT} -style=file ${PROJECT_SOURCE_DIR}/.clang-format --dry-run --Werror)
+  COMMAND find ${SDIR}/*.h ${SDIR}/*.cpp | xargs ${FORMAT} -style=file:${PROJECT_SOURCE_DIR}/.clang-format --dry-run --Werror)
