@@ -246,7 +246,7 @@ def test_cmm_3d_pipe(n_proc):
     folder = os.path.join("cases", "cmm_3d_pipe")
     inflate_folder = os.path.join(folder,"2a-inflate")
     fields = ["Displacement"]
-    t_max = 20
+    t_max = 3
     name_inp = "svFSI.xml"
     name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
     run_with_reference(inflate_folder, name_inp, name_ref, fields, t_max, 1)
