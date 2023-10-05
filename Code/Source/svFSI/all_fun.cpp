@@ -536,7 +536,7 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, co
   dmsg << "lFa.name: " << lFa.name;
   dmsg << "lFa.eType: " << lFa.eType;
   #endif 
-
+  std::cout << "Integrate with Flag" << std::endl;
   bool flag = pFlag; 
   int nsd = com_mod.nsd;
   int insd = nsd - 1;
@@ -620,6 +620,29 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, co
   dmsg << "fs.w: " << fs.w;
   #endif
   double result = 0.0;
+
+  std::cout << "lFa.gN" << std::endl;
+  std::cout << lFa.gN << std::endl;
+  std::cout << "lFa.gE" << std::endl;
+  std::cout << lFa.gE << std::endl;
+  std::cout << "lFa.IEN" << std::endl;
+  for (int i = 0; i < lFa.nEl; i++) {
+      std::cout << i << " - ";
+      for (int j = 0; j < lFa.eNoN; j++) {
+          std::cout << lFa.IEN(j, i) << " ";
+      }
+      std::cout << std::endl;
+  }
+  std::cout << std::endl;
+  std::cout << "msh.IEN" << std::endl;
+  for (int i = 0; i < com_mod.msh[lFa.iM].nEl; i++) {
+      std::cout << i << " - ";
+      for (int j = 0; j < com_mod.msh[lFa.iM].eNoN; j++) {
+          std::cout << com_mod.msh[lFa.iM].IEN(j,i) << " ";
+      }
+    std::cout << std::endl;
+  }
+
 
   for (int e = 0; e < lFa.nEl; e++) {
     // [TODO:DaveP] not implemented.
@@ -713,7 +736,6 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, co
   }
 
   double result =  0.0;
-
   for (int e = 0; e < lFa.nEl; e++) {
     //dmsg << "----- e " << e+1 << " -----";
     //  Updating the shape functions, if this is a NURB

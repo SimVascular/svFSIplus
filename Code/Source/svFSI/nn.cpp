@@ -561,6 +561,7 @@ void gnnb(const ComMod& com_mod, const faceType& lFa, const int e, const int g, 
   auto& msh = com_mod.msh[iM];
   int eNoN = msh.eNoN;
 
+
   #ifdef debug_gnnb 
   dmsg << "iM: " << iM+1;
   dmsg << "Ec: " << Ec+1;
@@ -582,18 +583,32 @@ void gnnb(const ComMod& com_mod, const faceType& lFa, const int e, const int g, 
   for (int a = 0; a < eNoNb; a++) {
     int Ac = lFa.IEN(a,e);
     int b = 0;
-
+    bool match = false;
     for (int ib = 0; ib < eNoN; ib++) {
       b = ib;
       if (setIt[ib]) {
         int Bc = msh.IEN(ib,Ec);
         if (Bc == Ac) {
+            //std::cout << "Match! " << Ac << std::endl;
+            match = true;
           break;
+        } else {
+            //std::cout << "No match! " << "Ac: " << Ac << " Bc: " << Bc << std::endl;
+            match = false;
         }
       }
     }
 
-    if (b > eNoN) {
+    if (!match) {
+        std::cout << "Face element: " << e << std::endl;
+        std::cout << "Global Node : " << Ac << std::endl;
+        std::cout << "Mesh element: " << Ec << std::endl;
+
+        //std::cout << "Global Nodes in Mesh Element: IEN(" << ib << "," << Ec << ")" << std::endl;
+        for (int ib = 0; ib < eNoN; ib++) {
+            std::cout << msh.IEN(ib,Ec) << " ";
+        }
+        std::cout << std::endl;
       throw std::runtime_error("could not find matching face nodes");
     }
 
@@ -609,14 +624,21 @@ void gnnb(const ComMod& com_mod, const faceType& lFa, const int e, const int g, 
       a = a + 1;
     }
   }
-
+  //std::cout << "ptr("<< Ec << ")" << std::endl;
+  for (int i = 0; i < eNoN; i++) {
+    //std::cout << ptr(i) << " ";
+  }
+  //std::cout << std::endl;
   // Correcting the position vector if mesh is moving
   //
+  //std::cout << "lX("<< Ec << ")" << std::endl;
   for (int a = 0; a < eNoN; a++) {
     int Ac = msh.IEN(a,Ec);
     for (int i = 0; i < lX.nrows(); i++) {
       lX(i,a) = com_mod.x(i,Ac);
+      //std::cout << lX(i,a) << " ";
     }
+    //std::cout << std::endl;
 
     if (com_mod.mvMsh) {
       for (int i = 0; i < lX.nrows(); i++) {
@@ -646,6 +668,7 @@ void gnnb(const ComMod& com_mod, const faceType& lFa, const int e, const int g, 
         }
       }
     }
+
 
     auto v = utils::cross(xXi);
     for (int i = 0; i < nsd; i++) {
@@ -690,16 +713,43 @@ void gnnb(const ComMod& com_mod, const faceType& lFa, const int e, const int g, 
 
     Array<double> xXi(nsd,insd);
 
+    //std::cout << "Nx: " << std::endl;
+    for (int i = 0; i<nsd; i++){
+        for (int a = 0; a < eNoNb; a++) {
+            //std::cout << Nx(i,a) << " ";
+        }
+        //std::cout << std::endl;
+    }
+    //std::cout << std::endl;
+    //std::cout << "lX: " << std::endl;
+    for (int a = 0; a < eNoN; a++) {
+        int b = ptr(a);
+        for (int j = 0; j<nsd; j++) {
+            //std::cout << lX(j,a) << " ";
+        }
+        //std::cout << std::endl;
+    }
+    //std::cout << std::endl;
     for (int a = 0; a < eNoNb; a++) {
       int b = ptr(a);
       for (int i = 0; i < insd; i++) {
         for (int j = 0; j < nsd; j++) {
+            //std::cout << "xXi(" << j << "," << i << ") = " << xXi(j,i) << " + " << Nx(i,a) << " * " << lX(j,b) << std::endl;
           xXi(j,i) = xXi(j,i) + Nx(i,a)*lX(j,b);
         }
       }
     }
-
+    //std::cout << std::endl;
+    //std::cout << "xXi: " << std::endl;
+    for (int i = 0; i<insd; i++){
+        for (int j = 0; j<nsd; j++){
+            //std::cout << xXi(i,j) << " ";
+        }
+        //std::cout << std::endl;
+    }
+    //std::cout << std::endl;
     n = utils::cross(xXi);
+    //std::cout << "n: " << n(0) << ", " << n(1) << ", " << n(2) << std::endl;
   }
 
   // Changing the sign if neccessary. 'a' locates on the face and 'b'

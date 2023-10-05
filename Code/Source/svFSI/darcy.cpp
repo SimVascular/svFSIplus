@@ -142,17 +142,16 @@ namespace darcy {
                     throw std::runtime_error("[construct_darcy] nsd must be 2 or 3.");
                 }
             }
-        }
 
-        // Assembly
+            // Assembly
 #ifdef WITH_TRILINOS
-        if (eq.assmTLS) {
-            trilinos_doassem_(const_cast<int&>(eNoN), const_cast<int*>(ptr.data()), lK.data(), lR.data());
-        }
+            if (eq.assmTLS) {
+                trilinos_doassem_(const_cast<int&>(eNoN), const_cast<int*>(ptr.data()), lK.data(), lR.data());
+            }
 #endif
-        lhsa_ns::do_assem(com_mod, eNoN, ptr, lK, lR);
+            lhsa_ns::do_assem(com_mod, eNoN, ptr, lK, lR);
+        }
     }
-
     //----------
     // darcy_2d
     //----------
@@ -214,10 +213,11 @@ namespace darcy {
 #endif
 
         for (int a = 0; a < eNoN; a++) {
-            lR(0,a) = lR(0,a) + w*(N(a)*Td + (Nx(0,a)*Tx(0) + Nx(1,a)*Tx(1))*k);
-            //std::cout << "lR(0, a): " << lR(0, a) << std::endl;
+            lR(0,a) = lR(0,a) + w*(N(a)*Td +
+                    (Nx(0,a)*Tx(0) + Nx(1,a)*Tx(1))*k);
             for (int b = 0; b < eNoN; b++) {
-                lK(0,a,b) = lK(0,a,b) + wl*(N(a)*N(b)*amd + k*(Nx(0,a)*Nx(0,b) + Nx(1,a)*Nx(1,b)));
+                lK(0,a,b) = lK(0,a,b) + wl*(N(a)*N(b)*amd +
+                        k*(Nx(0,a)*Nx(0,b) + Nx(1,a)*Nx(1,b)));
             }
         }
     }

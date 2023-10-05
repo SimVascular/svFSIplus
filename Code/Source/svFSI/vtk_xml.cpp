@@ -426,9 +426,10 @@ void read_vtp(const std::string& file_name, faceType& face)
   } else {
     for (int e = 0; e < face.nEl; e++) {
       for (int a = 0; a < face.eNoN; a++) {
-        int Ac = face.IEN(a,e);
-        Ac = face.gN(Ac);
-        face.IEN(a,e) = Ac;
+        //int Ac = face.IEN(a,e);
+        //Ac = face.gN(Ac);
+        //face.IEN(a,e) = Ac;
+        //std::cout << "[read_vtp] IEN(" << a << "," << e << "): " << face.IEN(a,e) << std::endl;
       }
     }
   }
@@ -451,6 +452,7 @@ void read_vtp(const std::string& file_name, faceType& face)
       //std::cout << std::endl; 
     }
   }
+
 }
 
 //----------------

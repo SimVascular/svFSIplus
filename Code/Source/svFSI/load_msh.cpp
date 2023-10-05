@@ -161,7 +161,7 @@ void read_sv(Simulation* simulation, mshType& mesh, const MeshParameters* mesh_p
       // If node IDs were not read then create them.
       if (face.gN.size() == 0) {
         read_msh_ns::calc_nbc(mesh, face);
-
+        std::cout << "creating node ids!" << std::endl;
         // Reset the connecttivity with the new node IDs?
         for (int e = 0; e < face.nEl; e++) {
           for (int a = 0; a < face.eNoN; a++) {
@@ -174,6 +174,7 @@ void read_sv(Simulation* simulation, mshType& mesh, const MeshParameters* mesh_p
     }
 
     nn::select_eleb(simulation, mesh, face);
+    std::cout << "Done face.nEl: " << face.nEl << std::endl;
   }
 
 }
