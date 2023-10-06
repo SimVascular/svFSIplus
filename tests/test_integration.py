@@ -286,3 +286,19 @@ def test_cmm_3d_pipe(n_proc):
     name_inp = "svFSI.xml"
     name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
     run_with_reference(inflate_cmm_folder, name_inp, name_ref, fields, t_max, n_proc)
+
+    prestress_folder = os.path.join(folder,"2b-prestress")
+    fields = ["Stress"]
+    t_max = 3
+    name_inp = "svFSI.xml"
+    name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
+    run_with_reference(prestress_folder, name_inp, name_ref, fields, t_max, 1)
+
+    prestress_cmm_folder = os.path.join(folder,"3b-prestress-cmm")
+    fields = ["Displacement", "Stress", "Pressure", "Velocity"]
+    t_max = 5
+    name_inp = "svFSI.xml"
+    name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
+    run_with_reference(prestress_cmm_folder, name_inp, name_ref, fields, t_max, n_proc)   
+
+

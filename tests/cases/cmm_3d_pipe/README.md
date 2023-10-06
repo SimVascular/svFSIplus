@@ -1,7 +1,7 @@
 
 # **Problem Description**
 
-This example simulates pulsatile flow in a pipe with a deformable wall using coupled momentum method (CMM). Pusaltile inflow and RCR are used as the inflow and outflow boundary conditions (BCs), respectively.
+This example simulates pulsatile flow in a pipe with a deformable wall using coupled momentum method (CMM) for continuous testing. Only a few time steps are tested and compared. Pusaltile inflow and RCR are used as the inflow and outflow boundary conditions (BCs), respectively. 
 
 ## Solution workflow
 
@@ -70,7 +70,7 @@ Note that because the wall is modeled as a shell surface, the above setting appl
 
 
 ## FSI using CMM (Step 3)
-To run a CMM simulation, complete mesh files (instead of a wall surface mesh) are added into the solver input file. The parameters (<Prestress> and <Initialize>) for **Step 2** need to be removed including. 
+To run a CMM simulation, complete mesh files (instead of a wall surface mesh) are added into the solver input file. The parameters including <Prestress> and <Initialize> for **Step 2** need to be removed. 
  
 ### (I) Initialize flow field
 
@@ -91,7 +91,7 @@ Results from **Step 2** will be used for the wall BC. If an inflation procedure 
 
 <Add_BC name="lumen_wall" > 
   <Type> CMM </Type> 
-  <Initial_displacements_file_path> ../2a-inflate/result_020.vtu </Initial_displacements_file_path>
+  <Initial_displacements_file_path> ../2a-inflate/result_003.vtu </Initial_displacements_file_path>
 </Add_BC>
 
 
@@ -99,7 +99,7 @@ If the prestress procedure is employed in **Step 2**, replace <Initial_displacem
 
 <Add_BC name="lumen_wall" > 
   <Type> CMM </Type> 
-  <Prestress_file_path> ../2a-prestress/result_020.vtu </Prestress_file_path>
+  <Prestress_file_path> ../2b-prestress/result_003.vtu </Prestress_file_path>
 </Add_BC> 
 
 
