@@ -9,12 +9,14 @@ CepModAp::CepModAp() {}
 
 CepModAp::~CepModAp() {}
 
-/// @brief Compute activation force for electromechanics based on active stress model
+/// @brief Compute activation force for electromechanics based on active stress
+/// model
 ///
 /// Replicates 'SUBROUTINE AP_ACTVSTRS(X, dt, Tact, epsX)' defined in
 /// 'CEPMOD_AP.f'.
 void CepModAp::actv_strs(const double X, const double dt, double& Tact,
-                         double& epsX) {
+                         double& epsX)
+{
   epsX = exp(-exp(-xi_T * (X - Vcrit)));
   epsX = eps_0 + (eps_i - eps_0) * epsX;
   double nr = Tact + epsX * dt * eta_T * (X - Vrest);
@@ -22,14 +24,16 @@ void CepModAp::actv_strs(const double X, const double dt, double& Tact,
 }
 
 void CepModAp::getf(const int n, const Vector<double>& X, Vector<double>& f,
-                    const double fext) {
+                    const double fext)
+{
   f(0) = X(0) * (c * (X(0) - alpha) * (1.0 - X(0)) - X(1)) + fext;
   f(1) =
       (a + mu1 * X(1) / (mu2 + X(0))) * (-X(1) - c * X(0) * (X(0) - b - 1.0));
 }
 
 void CepModAp::getj(const int n, const Vector<double>& X, Array<double>& JAC,
-                    const double Ksac) {
+                    const double Ksac)
+{
   JAC = 0.0;
 
   double n1 = X(0) - alpha;
@@ -51,7 +55,8 @@ void CepModAp::getj(const int n, const Vector<double>& X, Array<double>& JAC,
 }
 
 /// @brief SUBROUTINE AP_INIT0(nX, X)
-void CepModAp::init(const int nX, Vector<double>& X) {
+void CepModAp::init(const int nX, Vector<double>& X)
+{
   X = 1.e-3;
   X(0) = Voffset;
 }
@@ -60,7 +65,8 @@ void CepModAp::init(const int nX, Vector<double>& X) {
 void CepModAp::init(const int nX, Vector<double>& X, double X0) { X = X0; }
 
 /// @brief SUBROUTINE AP_INITV(nX, X, X0)
-void CepModAp::init(const int nX, Vector<double>& X, Vector<double>& X0) {
+void CepModAp::init(const int nX, Vector<double>& X, Vector<double>& X0)
+{
   X = X0;
 }
 
@@ -70,7 +76,8 @@ void CepModAp::init(const int nX, Vector<double>& X, Vector<double>& X0) {
 /// defined in 'CEPMOD_AP.f'.
 void CepModAp::integ_cn2(const int nX, Vector<double>& Xn, const double Ts,
                          const double Ti, const double Istim, const double Ksac,
-                         Vector<int>& IPAR, Vector<double>& RPAR) {
+                         Vector<int>& IPAR, Vector<double>& RPAR)
+{
   int itMax = IPAR(0);
   double atol = RPAR(0);
   double rtol = RPAR(1);
@@ -147,8 +154,8 @@ void CepModAp::integ_cn2(const int nX, Vector<double>& Xn, const double Ts,
 /// Replicates 'SUBROUTINE AP_INTEGFE(nX, X, Ts, Ti, Istim, Ksac)' defined in
 /// 'CEPMOD_AP.f'.
 void CepModAp::integ_fe(const int nX, Vector<double>& X, const double Ts,
-                        const double Ti, const double Istim,
-                        const double Ksac) {
+                        const double Ti, const double Istim, const double Ksac)
+{
   double t = Ts / Tscale;
   double dt = Ti / Tscale;
   double Isac = Ksac * (Vrest - X(0));
@@ -167,8 +174,8 @@ void CepModAp::integ_fe(const int nX, Vector<double>& X, const double Ts,
 /// Replicates 'SUBROUTINE AP_INTEGRK(nX, X, Ts, Ti, Istim, Ksac)' defined in
 /// 'CEPMOD_AP.f'.
 void CepModAp::integ_rk(const int nX, Vector<double>& X, const double Ts,
-                        const double Ti, const double Istim,
-                        const double Ksac) {
+                        const double Ti, const double Istim, const double Ksac)
+{
   double t = Ts / Tscale;
   double dt = Ti / Tscale;
   double dt6 = dt / 6.0;

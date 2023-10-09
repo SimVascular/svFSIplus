@@ -8,53 +8,54 @@
 #include "Parameters.h"
 #include "SimulationLogger.h"
 
-class Simulation {
- public:
-  Simulation();
-  ~Simulation();
+class Simulation
+{
+  public:
+    Simulation();
+    ~Simulation();
 
-  const mshType& get_msh(const std::string& name);
+    const mshType& get_msh(const std::string& name);
 
-  CepMod& get_cep_mod() { return cep_mod; };
-  ChnlMod& get_chnl_mod() { return chnl_mod; };
-  ComMod& get_com_mod() { return com_mod; };
+    CepMod& get_cep_mod() { return cep_mod; };
+    ChnlMod& get_chnl_mod() { return chnl_mod; };
+    ComMod& get_com_mod() { return com_mod; };
 
-  // Read a solver paramerer input XML file.
-  void read_parameters(const std::string& fileName);
+    // Read a solver paramerer input XML file.
+    void read_parameters(const std::string& fileName);
 
-  // Set simulation and module member data from Parameters.
-  void set_module_parameters();
+    // Set simulation and module member data from Parameters.
+    void set_module_parameters();
 
-  //----- Fortran subroutines -----//
-  // void read_msh();
+    //----- Fortran subroutines -----//
+    // void read_msh();
 
-  //----- Fortran modules -----//
-  CepMod cep_mod;
-  ChnlMod chnl_mod;
-  CmMod cm_mod;
-  ComMod com_mod;
+    //----- Fortran modules -----//
+    CepMod cep_mod;
+    ChnlMod chnl_mod;
+    CmMod cm_mod;
+    ComMod com_mod;
 
-  // Solver parameters read in from solver input XML file.
-  Parameters parameters;
+    // Solver parameters read in from solver input XML file.
+    Parameters parameters;
 
-  // Log solution information.
-  SimulationLogger logger;
+    // Log solution information.
+    SimulationLogger logger;
 
-  // Number of time steps
-  int nTs;
+    // Number of time steps
+    int nTs;
 
-  // Simulation initialization file path
-  std::string fTmp;
+    // Simulation initialization file path
+    std::string fTmp;
 
-  // Spectral radius of infinite time step; this is later used in equations.
-  double roInf;
+    // Spectral radius of infinite time step; this is later used in equations.
+    double roInf;
 
-  // Simulation requires remeshing
+    // Simulation requires remeshing
 
-  bool isReqd;
+    bool isReqd;
 
-  // Name of the history file.
-  std::string history_file_name;
+    // Name of the history file.
+    std::string history_file_name;
 };
 
 #endif

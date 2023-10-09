@@ -17,7 +17,8 @@ namespace bicgs {
 /// @brief Biconjugate-gradient algorithm, available for scaler and vectors.
 void bicgsv(fsi_linear_solver::FSILS_lhsType& lhs,
             fsi_linear_solver::FSILS_subLsType& ls, const int dof,
-            const Array<double>& K, Array<double>& R) {
+            const Array<double>& K, Array<double>& R)
+{
 #define n_debug_bicgsv
 #ifdef debug_bicgsv
   DebugMsg dmsg(__func__, lhs.commu.task);
@@ -117,7 +118,8 @@ void bicgsv(fsi_linear_solver::FSILS_lhsType& lhs,
 //
 void bicgss(fsi_linear_solver::FSILS_lhsType& lhs,
             fsi_linear_solver::FSILS_subLsType& ls, const Vector<double>& K,
-            Vector<double>& R) {
+            Vector<double>& R)
+{
 #define n_debug_bicgss
 #ifdef debug_bicgss
   DebugMsg dmsg(__func__, lhs.commu.task);

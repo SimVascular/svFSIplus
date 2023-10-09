@@ -18,7 +18,8 @@
 namespace norm {
 
 double fsi_ls_norms(const int nNo, FSILS_commuType& commu,
-                    const Vector<double>& U) {
+                    const Vector<double>& U)
+{
   double result = 0.0;
 
   for (int i = 0; i < nNo; i++) {
@@ -35,7 +36,8 @@ double fsi_ls_norms(const int nNo, FSILS_commuType& commu,
 }
 
 double fsi_ls_normv(const int dof, const int nNo, FSILS_commuType& commu,
-                    const Array<double>& U) {
+                    const Array<double>& U)
+{
   double result = 0.0;
 
   switch (dof) {

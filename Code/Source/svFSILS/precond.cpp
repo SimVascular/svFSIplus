@@ -16,7 +16,8 @@ namespace precond {
 //
 void pos_mul(const Array<int>& rowPtr, const Vector<int>& colPtr, const int nNo,
              const int nnz, const int dof, Array<double>& Val,
-             const Array<double>& W) {
+             const Array<double>& W)
+{
   switch (dof) {
     case 1: {
       for (int Ac = 0; Ac < nNo; Ac++) {
@@ -94,7 +95,8 @@ void pos_mul(const Array<int>& rowPtr, const Vector<int>& colPtr, const int nNo,
 void precond_diag(fsi_linear_solver::FSILS_lhsType& lhs,
                   const Array<int>& rowPtr, const Vector<int>& colPtr,
                   const Vector<int>& diagPtr, const int dof, Array<double>& Val,
-                  Array<double>& R, Array<double>& W) {
+                  Array<double>& R, Array<double>& W)
+{
 #define n_debug_precond_diag
 #ifdef debug_precond_diag
   DebugMsg dmsg(__func__, lhs.commu.task);
@@ -239,7 +241,8 @@ void precond_diag(fsi_linear_solver::FSILS_lhsType& lhs,
 void precond_rcs(fsi_linear_solver::FSILS_lhsType& lhs,
                  const Array<int>& rowPtr, const Vector<int>& colPtr,
                  const Vector<int>& diagPtr, const int dof, Array<double>& Val,
-                 Array<double>& R, Array<double>& W1, Array<double>& W2) {
+                 Array<double>& R, Array<double>& W1, Array<double>& W2)
+{
   const int nNo = lhs.nNo;
   int maxiter = 10;
   double tol = 2.0;
@@ -555,7 +558,8 @@ void precond_rcs(fsi_linear_solver::FSILS_lhsType& lhs,
 // W(dof,nNo)
 //
 void pre_mul(const Array<int>& rowPtr, const int nNo, const int nnz,
-             const int dof, Array<double>& Val, const Array<double>& W) {
+             const int dof, Array<double>& Val, const Array<double>& W)
+{
   switch (dof) {
     case 1: {
       for (int Ac = 0; Ac < nNo; Ac++) {

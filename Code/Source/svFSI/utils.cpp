@@ -21,7 +21,8 @@ namespace utils {
 
 /// @brief Count the number of bits in an int.
 //
-int CountBits(int n) {
+int CountBits(int n)
+{
   int count = 0;
   while (n) {
     count += n & 1;
@@ -30,7 +31,8 @@ int CountBits(int n) {
   return count;
 }
 
-double cput() {
+double cput()
+{
   auto now = std::chrono::system_clock::now();
   auto now_ms = std::chrono::time_point_cast<std::chrono::milliseconds>(now);
 
@@ -39,7 +41,8 @@ double cput() {
   return static_cast<double>(duration);
 }
 
-Vector<double> cross(const Array<double>& V) {
+Vector<double> cross(const Array<double>& V)
+{
   int num_rows = V.nrows();
   Vector<double> U(num_rows);
 
@@ -57,7 +60,8 @@ Vector<double> cross(const Array<double>& V) {
 
 bool btest(int value, int pos) { return value & (1 << pos); }
 
-bool dequeue(queueType& que, int& iVal) {
+bool dequeue(queueType& que, int& iVal)
+{
   int i;
   bool flag;
 
@@ -76,7 +80,8 @@ bool dequeue(queueType& que, int& iVal) {
   return flag;
 }
 
-void enqueue(queueType& que, int iVal) {
+void enqueue(queueType& que, int iVal)
+{
   if (que.maxN == 0) {
     que.n = 1;
     que.maxN = 8;
@@ -123,7 +128,8 @@ int ibclr(int value, int pos) { return value & ~(1UL << pos); }
 //
 int ibset(int value, int pos) { return value | 1UL << pos; }
 
-bool is_zero(double value1, double value2) {
+bool is_zero(double value1, double value2)
+{
   double a = std::abs(value1);
   double b = std::abs(value2);
 
@@ -143,7 +149,8 @@ bool is_zero(double value1, double value2) {
   return false;
 }
 
-double mem_usage(const bool print_usage, const std::string& prefix) {
+double mem_usage(const bool print_usage, const std::string& prefix)
+{
   int who = RUSAGE_SELF;
   struct rusage usage;
   int ret;
@@ -197,7 +204,8 @@ double mem_usage(const bool print_usage, const std::string& prefix) {
 ///
 /// Replicates 'PURE FUNCTION NORMS(U, V)' defined in UTIL.f.
 //
-double norm(const Vector<double>& U) {
+double norm(const Vector<double>& U)
+{
   double norm = 0.0;
   for (int i = 0; i < U.size(); i++) {
     norm += U(i) * U(i);
@@ -205,7 +213,8 @@ double norm(const Vector<double>& U) {
   return norm;
 }
 
-double norm(const Vector<double>& U, const Vector<double>& V) {
+double norm(const Vector<double>& U, const Vector<double>& V)
+{
   double norm = 0.0;
   for (int i = 0; i < U.size(); i++) {
     norm += U(i) * V(i);
@@ -213,7 +222,8 @@ double norm(const Vector<double>& U, const Vector<double>& V) {
   return norm;
 }
 
-double norm(const Array<double>& U) {
+double norm(const Array<double>& U)
+{
   int m = U.nrows();
   int n = U.ncols();
   double norm = 0.0;
@@ -257,7 +267,8 @@ double norm(const Array<double>& U) {
 }
 
 void print_mem(const std::string& type, const std::string& prefix,
-               const double memory_in_use, const double memory_returned) {
+               const double memory_in_use, const double memory_returned)
+{
   double s = (1024.0);
   double s2 = (1024.0 * 1024.0);
   int muse = static_cast<int>(round(memory_in_use / s));
@@ -291,7 +302,8 @@ void print_mem(const std::string& type, const std::string& prefix,
 }
 
 void print_stats(const std::string& type, const std::string& prefix,
-                 const int allocated, const int active) {
+                 const int allocated, const int active)
+{
   std::string pr_prefix = "[" + type + "] ";
   if (prefix != "") {
     pr_prefix += ": " + prefix + " ";
@@ -313,7 +325,8 @@ void print_stats(const std::string& type, const std::string& prefix,
             << std::endl;
 }
 
-bool pull_stack(stackType& stk, int& iVal) {
+bool pull_stack(stackType& stk, int& iVal)
+{
   bool flag;
 
   if (stk.n == 0) {
@@ -330,7 +343,8 @@ bool pull_stack(stackType& stk, int& iVal) {
 
 /// @brief Push a list of values onto the stack.
 //
-void push_stack(stackType& stk, std::initializer_list<int> values) {
+void push_stack(stackType& stk, std::initializer_list<int> values)
+{
   for (int value : values) {
     push_stack(stk, value);
   }
@@ -338,7 +352,8 @@ void push_stack(stackType& stk, std::initializer_list<int> values) {
 
 /// @brief Push a single value onto the stack.
 //
-void push_stack(stackType& stk, int iVal) {
+void push_stack(stackType& stk, int iVal)
+{
   // This is a new stack
   if (stk.maxN == 0) {
     stk.maxN = 1000;
@@ -354,7 +369,8 @@ void push_stack(stackType& stk, int iVal) {
   }
 }
 
-int sign(double value) {
+int sign(double value)
+{
   int result = -1;
 
   if (is_zero(value)) {

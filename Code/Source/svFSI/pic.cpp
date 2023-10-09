@@ -16,7 +16,8 @@
 
 namespace pic {
 
-/// @brief This is the corrector. Decision for next eqn is also made here (modifies cEq global).
+/// @brief This is the corrector. Decision for next eqn is also made here
+/// (modifies cEq global).
 ///
 /// Modifies:
 /// \code {.cpp}
@@ -34,7 +35,8 @@ namespace pic {
 ///   eq.pNorm
 /// \endcode
 //
-void picc(Simulation* simulation) {
+void picc(Simulation* simulation)
+{
   using namespace consts;
 
   auto& com_mod = simulation->com_mod;
@@ -306,7 +308,8 @@ void picc(Simulation* simulation) {
 //
 // Modifies: com_mod.Yn
 //
-void pic_eth(Simulation* simulation) {
+void pic_eth(Simulation* simulation)
+{
   using namespace consts;
 
   auto& com_mod = simulation->com_mod;
@@ -451,7 +454,8 @@ void pic_eth(Simulation* simulation) {
 //   Dg -
 //
 void pici(Simulation* simulation, Array<double>& Ag, Array<double>& Yg,
-          Array<double>& Dg) {
+          Array<double>& Dg)
+{
   using namespace consts;
 
   auto& com_mod = simulation->com_mod;
@@ -531,7 +535,8 @@ void pici(Simulation* simulation, Array<double>& Ag, Array<double>& Yg,
 //   Yn
 //   Dn
 //
-void picp(Simulation* simulation) {
+void picp(Simulation* simulation)
+{
   using namespace consts;
 
   auto& com_mod = simulation->com_mod;

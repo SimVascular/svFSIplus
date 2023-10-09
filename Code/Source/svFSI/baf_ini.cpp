@@ -37,7 +37,8 @@ namespace baf_ini_ns {
 ///
 /// Replicates 'SUBROUTINE BAFINI()' defined in BAFINIT.f
 //
-void baf_ini(Simulation* simulation) {
+void baf_ini(Simulation* simulation)
+{
   using namespace consts;
   using namespace fsi_linear_solver;
 
@@ -217,7 +218,8 @@ void baf_ini(Simulation* simulation) {
 //---------
 //
 void bc_ini(const ComMod& com_mod, const CmMod& cm_mod, bcType& lBc,
-            faceType& lFa) {
+            faceType& lFa)
+{
   using namespace consts;
   using namespace utils;
 
@@ -410,7 +412,8 @@ void bc_ini(const ComMod& com_mod, const CmMod& cm_mod, bcType& lBc,
 // face_ini
 //----------
 //
-void face_ini(Simulation* simulation, mshType& lM, faceType& lFa) {
+void face_ini(Simulation* simulation, mshType& lM, faceType& lFa)
+{
   using namespace consts;
   auto& com_mod = simulation->com_mod;
   auto& cm = com_mod.cm;
@@ -662,7 +665,8 @@ void face_ini(Simulation* simulation, mshType& lM, faceType& lFa) {
 // Replicates 'SUBROUTINE FSILSINI'.
 //
 void fsi_ls_ini(ComMod& com_mod, const CmMod& cm_mod, bcType& lBc,
-                const faceType& lFa, int& lsPtr) {
+                const faceType& lFa, int& lsPtr)
+{
   using namespace consts;
   using namespace utils;
   using namespace fsi_linear_solver;
@@ -808,7 +812,8 @@ void fsi_ls_ini(ComMod& com_mod, const CmMod& cm_mod, bcType& lBc,
 //--------------
 // Compute shell extended IEN for triangular elements.
 //
-void set_shl_xien(Simulation* simulation, mshType& lM) {
+void set_shl_xien(Simulation* simulation, mshType& lM)
+{
   using namespace consts;
 
   auto& com_mod = simulation->com_mod;
@@ -868,7 +873,8 @@ void set_shl_xien(Simulation* simulation, mshType& lM) {
 // Reproduces 'SUBROUTINE SHLBCINI(lBc, lFa, lM)'.
 //
 void shl_bc_ini(const ComMod& com_mod, const CmMod& cm_mod, bcType& lBc,
-                faceType& lFa, mshType& lM) {
+                faceType& lFa, mshType& lM)
+{
   using namespace consts;
   using namespace utils;
 
@@ -929,7 +935,8 @@ void shl_bc_ini(const ComMod& com_mod, const CmMod& cm_mod, bcType& lBc,
 //---------
 // Reproduces 'SUBROUTINE SHLINI(lM)'
 //
-void shl_ini(const ComMod& com_mod, const CmMod& cm_mod, mshType& lM) {
+void shl_ini(const ComMod& com_mod, const CmMod& cm_mod, mshType& lM)
+{
   using namespace consts;
   using namespace utils;
 

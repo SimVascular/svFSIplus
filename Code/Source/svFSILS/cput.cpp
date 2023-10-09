@@ -5,7 +5,8 @@
 
 namespace fsi_linear_solver {
 
-double fsils_cpu_t() {
+double fsils_cpu_t()
+{
   // auto now = std::chrono::system_clock::now();
   // return static_cast<double>(std::chrono::system_clock::to_time_t(now));
 

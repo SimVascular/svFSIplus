@@ -38,18 +38,20 @@
 #include "tetgen.h"
 
 /// @brief Interface to Tetgen for remeshing purposes.
-class tetOptions {
- public:
-  double maxRadRatio;
-  double minDihedAng;
-  double maxEdgeSize;
-  int optimLevel;
-  int optimScheme;
-  tetOptions();
-  double maxTetVol(double r) { return (pow(r, 3) / (6.0 * sqrt(2))); }
+class tetOptions
+{
+  public:
+    double maxRadRatio;
+    double minDihedAng;
+    double maxEdgeSize;
+    int optimLevel;
+    int optimScheme;
+    tetOptions();
+    double maxTetVol(double r) { return (pow(r, 3) / (6.0 * sqrt(2))); }
 };
 
-tetOptions::tetOptions() {
+tetOptions::tetOptions()
+{
   maxRadRatio = 1.15;
   minDihedAng = 10.0;
   maxEdgeSize = 0.15;
@@ -59,7 +61,8 @@ tetOptions::tetOptions() {
 
 void remesh3d_tetgen(const int nPoints, const int nFacets,
                      const double* pointList, const int* facetList,
-                     const std::array<double, 3>& params, int* pOK) {
+                     const std::array<double, 3>& params, int* pOK)
+{
   // std::cout << "========== remesh3d_tetgen ==========" << std::endl;
   tetgenio in, out;
   tetgenio::facet* f;

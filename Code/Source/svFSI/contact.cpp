@@ -16,7 +16,8 @@ namespace contact {
 /// Reproduces Fortran CONSTRUCT_CONTACTPNLTY.
 //
 void construct_contact_pnlty(ComMod& com_mod, CmMod& cm_mod,
-                             const Array<double>& Dg) {
+                             const Array<double>& Dg)
+{
   using namespace consts;
 
   const int nsd = com_mod.nsd;

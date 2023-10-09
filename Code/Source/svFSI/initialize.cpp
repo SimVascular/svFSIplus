@@ -43,7 +43,8 @@ void finalize(Simulation* simulation) {}
 /// Reprodices 'SUBROUTINE INITFROMBIN(fName, timeP)' defined in INITIALIZE.f.
 //
 void init_from_bin(Simulation* simulation, const std::string& fName,
-                   std::array<double, 3>& timeP) {
+                   std::array<double, 3>& timeP)
+{
   auto& com_mod = simulation->com_mod;
   auto& cm = com_mod.cm;
   int task_id = cm.idcm();
@@ -213,7 +214,8 @@ void init_from_bin(Simulation* simulation, const std::string& fName,
 /// Reproduces the Fortran 'INITFROMVTU' subroutine.
 //
 void init_from_vtu(Simulation* simulation, const std::string& fName,
-                   std::array<double, 3>& timeP) {
+                   std::array<double, 3>& timeP)
+{
   auto& com_mod = simulation->com_mod;
   auto& cm_mod = simulation->cm_mod;
   auto& cm = com_mod.cm;
@@ -279,7 +281,8 @@ void init_from_vtu(Simulation* simulation, const std::string& fName,
 /// This function replicates the Fortran 'SUBROUTINE INITIALIZE(timeP)' in
 /// INITIALIZE.f.
 //
-void initialize(Simulation* simulation, Vector<double>& timeP) {
+void initialize(Simulation* simulation, Vector<double>& timeP)
+{
   using namespace consts;
 
   auto& com_mod = simulation->com_mod;
@@ -774,7 +777,8 @@ void initialize(Simulation* simulation, Vector<double>& timeP) {
 //-----------
 // Initialize state variables Yo, Ao and Do.
 //
-void zero_init(Simulation* simulation) {
+void zero_init(Simulation* simulation)
+{
   auto& com_mod = simulation->com_mod;
   auto& cm = com_mod.cm;
   const int nsd = com_mod.nsd;

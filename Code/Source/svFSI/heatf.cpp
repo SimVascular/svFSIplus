@@ -17,7 +17,8 @@ namespace heatf {
 
 void b_heatf(ComMod& com_mod, const int eNoN, const double w,
              const Vector<double>& N, const Vector<double>& y, const double h,
-             const Vector<double>& nV, Array<double>& lR, Array3<double>& lK) {
+             const Vector<double>& nV, Array<double>& lR, Array3<double>& lK)
+{
   const int nsd = com_mod.nsd;
   const int cEq = com_mod.cEq;
   const auto& eq = com_mod.eq[cEq];
@@ -44,7 +45,8 @@ void b_heatf(ComMod& com_mod, const int eNoN, const double w,
 }
 
 void construct_heatf(ComMod& com_mod, const mshType& lM,
-                     const Array<double>& Ag, const Array<double>& Yg) {
+                     const Array<double>& Ag, const Array<double>& Yg)
+{
 #define n_debug_construct_heatf
 #ifdef debug_construct_heatf
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
@@ -146,8 +148,8 @@ void construct_heatf(ComMod& com_mod, const mshType& lM,
 void heatf_2d(ComMod& com_mod, const int eNoN, const double w,
               const Vector<double>& N, const Array<double>& Nx,
               const Array<double>& al, const Array<double>& yl,
-              const Array<double>& ksix, Array<double>& lR,
-              Array3<double>& lK) {
+              const Array<double>& ksix, Array<double>& lR, Array3<double>& lK)
+{
 #define n_debug_heatf_2d
 #ifdef debug_heatf_2d
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
@@ -241,8 +243,8 @@ void heatf_2d(ComMod& com_mod, const int eNoN, const double w,
 void heatf_3d(ComMod& com_mod, const int eNoN, const double w,
               const Vector<double>& N, const Array<double>& Nx,
               const Array<double>& al, const Array<double>& yl,
-              const Array<double>& ksix, Array<double>& lR,
-              Array3<double>& lK) {
+              const Array<double>& ksix, Array<double>& lR, Array3<double>& lK)
+{
 #define n_debug_heatf_3d
 #ifdef debug_heatf_3d
   DebugMsg dmsg(__func__, com_mod.cm.idcm());

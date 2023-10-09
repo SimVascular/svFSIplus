@@ -21,7 +21,8 @@ namespace fluid {
 
 void b_fluid(ComMod& com_mod, const int eNoN, const double w,
              const Vector<double>& N, const Vector<double>& y, const double h,
-             const Vector<double>& nV, Array<double>& lR, Array3<double>& lK) {
+             const Vector<double>& nV, Array<double>& lR, Array3<double>& lK)
+{
   using namespace consts;
 
 #define n_debug_b_fluid
@@ -110,7 +111,8 @@ void bw_fluid_2d(ComMod& com_mod, const int eNoNw, const int eNoNq,
                  const Vector<double>& Nq, const Array<double>& Nwx,
                  const Array<double>& yl, const Vector<double>& ub,
                  const Vector<double>& nV, const Vector<double>& tauB,
-                 Array<double>& lR, Array3<double>& lK) {
+                 Array<double>& lR, Array3<double>& lK)
+{
   using namespace consts;
 
 #define n_debug_bw_fluid_2d
@@ -284,7 +286,8 @@ void bw_fluid_3d(ComMod& com_mod, const int eNoNw, const int eNoNq,
                  const Vector<double>& Nq, const Array<double>& Nwx,
                  const Array<double>& yl, const Vector<double>& ub,
                  const Vector<double>& nV, const Vector<double>& tauB,
-                 Array<double>& lR, Array3<double>& lK) {
+                 Array<double>& lR, Array3<double>& lK)
+{
   using namespace consts;
 
   int cEq = com_mod.cEq;
@@ -457,7 +460,8 @@ void bw_fluid_3d(ComMod& com_mod, const int eNoNw, const int eNoNq,
 /// strongly or weakly.
 //
 void construct_fluid(ComMod& com_mod, const mshType& lM,
-                     const Array<double>& Ag, const Array<double>& Yg) {
+                     const Array<double>& Ag, const Array<double>& Yg)
+{
 #define n_debug_construct_fluid
 #ifdef debug_construct_fluid
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
@@ -703,7 +707,8 @@ void fluid_2d_c(ComMod& com_mod, const int vmsFlag, const int eNoNw,
                 const Array<double>& Nwx, const Array<double>& Nqx,
                 const Array<double>& Nwxx, const Array<double>& al,
                 const Array<double>& yl, const Array<double>& bfl,
-                Array<double>& lR, Array3<double>& lK) {
+                Array<double>& lR, Array3<double>& lK)
+{
   using namespace consts;
 
 #define n_debug_fluid_2d_c
@@ -956,7 +961,8 @@ void fluid_2d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw,
                 const Array<double>& Nwx, const Array<double>& Nqx,
                 const Array<double>& Nwxx, const Array<double>& al,
                 const Array<double>& yl, const Array<double>& bfl,
-                Array<double>& lR, Array3<double>& lK) {
+                Array<double>& lR, Array3<double>& lK)
+{
   using namespace consts;
 
 #define n_debug_fluid_2d_m
@@ -1232,7 +1238,8 @@ void fluid_3d_c(ComMod& com_mod, const int vmsFlag, const int eNoNw,
                 const Array<double>& Nwx, const Array<double>& Nqx,
                 const Array<double>& Nwxx, const Array<double>& al,
                 const Array<double>& yl, const Array<double>& bfl,
-                Array<double>& lR, Array3<double>& lK) {
+                Array<double>& lR, Array3<double>& lK)
+{
 #define n_debug_fluid3d_c
 #ifdef debug_fluid3d_c
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
@@ -1557,7 +1564,8 @@ void fluid_3d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw,
                 const Array<double>& Nwx, const Array<double>& Nqx,
                 const Array<double>& Nwxx, const Array<double>& al,
                 const Array<double>& yl, const Array<double>& bfl,
-                Array<double>& lR, Array3<double>& lK) {
+                Array<double>& lR, Array3<double>& lK)
+{
 #define n_debug_fluid_3d_m
 #ifdef debug_fluid_3d_m
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
@@ -2010,7 +2018,8 @@ void fluid_3d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw,
 }
 
 void get_viscosity(const ComMod& com_mod, const dmnType& lDmn, double& gamma,
-                   double& mu, double& mu_s, double& mu_x) {
+                   double& mu, double& mu_s, double& mu_x)
+{
   using namespace consts;
 
   mu = 0.0;

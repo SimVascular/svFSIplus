@@ -24,13 +24,15 @@ const int int_inf = std::numeric_limits<int>::infinity();
 const double double_inf = std::numeric_limits<double>::infinity();
 
 template <typename T>
-int enum_int(T value) {
+int enum_int(T value)
+{
   return static_cast<int>(value);
 }
 
 /// Check if a value is set to infinity.
 template <typename T>
-bool present(T value) {
+bool present(T value)
+{
   return (value != std::numeric_limits<T>::infinity());
 }
 
@@ -421,7 +423,8 @@ extern const std::map<std::string, FluidViscosityModelType>
 template <typename T>
 std::ostream& operator<<(
     typename std::enable_if<std::is_enum<T>::value, std::ostream>::type& stream,
-    const T& e) {
+    const T& e)
+{
   return stream << static_cast<typename std::underlying_type<T>::type>(e);
 }
 

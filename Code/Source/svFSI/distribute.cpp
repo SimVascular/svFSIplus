@@ -25,7 +25,8 @@ int split_(int* nElptr, int* eNoNptr, int* eNoNbptr, int* IEN, int* nPartsPtr,
 /// This function replicates the Fortran 'SUBROUTINE DISTRIBUTE' in
 /// DISTRIBUTE.f.
 //
-void distribute(Simulation* simulation) {
+void distribute(Simulation* simulation)
+{
   auto& cm_mod = simulation->cm_mod;
   auto& chnl_mod = simulation->chnl_mod;
   auto& com_mod = simulation->com_mod;
@@ -531,7 +532,8 @@ void distribute(Simulation* simulation) {
 
 void dist_bc(ComMod& com_mod, const CmMod& cm_mod, const cmType& cm,
              bcType& lBc, const std::vector<mshType>& tMs,
-             const Vector<int>& gmtl) {
+             const Vector<int>& gmtl)
+{
   using namespace consts;
 
 #define n_debug_dist_bc
@@ -781,7 +783,8 @@ void dist_bc(ComMod& com_mod, const CmMod& cm_mod, const cmType& cm,
 //---------
 //
 void dist_bf(ComMod& com_mod, const CmMod& cm_mod, const cmType& cm,
-             bfType& lBf) {
+             bfType& lBf)
+{
   using namespace consts;
 
 #define n_dist_bf
@@ -915,7 +918,8 @@ void dist_bf(ComMod& com_mod, const CmMod& cm_mod, const cmType& cm,
 
 void dist_eq(ComMod& com_mod, const CmMod& cm_mod, const cmType& cm,
              const std::vector<mshType>& tMs, const Vector<int>& gmtl,
-             CepMod& cep_mod, eqType& lEq) {
+             CepMod& cep_mod, eqType& lEq)
+{
   using namespace consts;
 
 #define n_dist_eq
@@ -1134,7 +1138,8 @@ void dist_eq(ComMod& com_mod, const CmMod& cm_mod, const cmType& cm,
 /// @brief Distribute material properties to all processors.
 //
 void dist_mat_consts(const ComMod& com_mod, const CmMod& cm_mod,
-                     const cmType& cm, stModelType& lStM) {
+                     const cmType& cm, stModelType& lStM)
+{
   using namespace consts;
 
 #define n_debug_dist_mat_consts
@@ -1197,7 +1202,8 @@ void dist_mat_consts(const ComMod& com_mod, const CmMod& cm_mod,
 }
 
 void dist_visc_model(const ComMod& com_mod, const CmMod& cm_mod,
-                     const cmType& cm, viscModelType& lVis) {
+                     const cmType& cm, viscModelType& lVis)
+{
   using namespace consts;
 
   cm.bcast_enum(cm_mod, &lVis.viscType);
@@ -1209,7 +1215,8 @@ void dist_visc_model(const ComMod& com_mod, const CmMod& cm_mod,
 }
 
 void part_face(Simulation* simulation, mshType& lM, faceType& lFa,
-               faceType& gFa, Vector<int>& gmtl) {
+               faceType& gFa, Vector<int>& gmtl)
+{
 #ifdef debug_part_face
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
@@ -1408,7 +1415,8 @@ void part_face(Simulation* simulation, mshType& lM, faceType& lFa,
 /// @brief Reproduces the Fortran 'PARTMSH' subroutine.
 //
 void part_msh(Simulation* simulation, int iM, mshType& lM, Vector<int>& gmtl,
-              int nP, Vector<float>& wgt) {
+              int nP, Vector<float>& wgt)
+{
   auto& cm_mod = simulation->cm_mod;
   auto& com_mod = simulation->com_mod;
   auto& chnl_mod = simulation->chnl_mod;

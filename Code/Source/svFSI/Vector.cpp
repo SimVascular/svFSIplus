@@ -18,12 +18,14 @@ template <>
 bool Vector<double>::write_enabled = false;
 
 template <>
-void Vector<double>::memory(const std::string& prefix) {
+void Vector<double>::memory(const std::string& prefix)
+{
   utils::print_mem("Vector<double>", prefix, memory_in_use, memory_returned);
 }
 
 template <>
-void Vector<double>::stats(const std::string& prefix) {
+void Vector<double>::stats(const std::string& prefix)
+{
   utils::print_stats("Vector<double>", prefix, num_allocated, active);
 }
 
@@ -47,12 +49,14 @@ template <>
 bool Vector<int>::write_enabled = false;
 
 template <>
-void Vector<int>::memory(const std::string& prefix) {
+void Vector<int>::memory(const std::string& prefix)
+{
   utils::print_mem("Vector<int>", prefix, memory_in_use, memory_returned);
 }
 
 template <>
-void Vector<int>::stats(const std::string& prefix) {
+void Vector<int>::stats(const std::string& prefix)
+{
   utils::print_stats("Vector<int>", prefix, num_allocated, active);
 }
 
@@ -88,9 +92,11 @@ int Vector<float>::active = 0;
 template <>
 bool Vector<float>::write_enabled = false;
 
-/// @brief Build a prefix for a file name from label which may be from a debugging message.
+/// @brief Build a prefix for a file name from label which may be from a
+/// debugging message.
 //
-std::string build_file_prefix(const std::string& label) {
+std::string build_file_prefix(const std::string& label)
+{
   std::string file_prefix;
 
   for (auto c : label) {

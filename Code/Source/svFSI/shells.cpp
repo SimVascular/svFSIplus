@@ -25,7 +25,8 @@ namespace shells {
 //
 void construct_shell(ComMod& com_mod, const mshType& lM,
                      const Array<double>& Ag, const Array<double>& Yg,
-                     const Array<double>& Dg) {
+                     const Array<double>& Dg)
+{
   using namespace consts;
 
 #define n_debug_construct_shell
@@ -187,7 +188,8 @@ void shell_3d(ComMod& com_mod, const mshType& lM, const int g, const int eNoN,
               const int nFn, const Array<double>& fN, const Array<double>& al,
               const Array<double>& yl, const Array<double>& dl,
               const Array<double>& xl, const Array<double>& bfl,
-              Array<double>& lR, Array3<double>& lK) {
+              Array<double>& lR, Array3<double>& lK)
+{
   std::cout << "========== shell_3d ==========" << std::endl;
   std::cout << "[shell_3d] g: " << g << std::endl;
 
@@ -609,7 +611,8 @@ void shell_3d(ComMod& com_mod, const mshType& lM, const int g, const int eNoN,
 void shell_bend_cst(ComMod& com_mod, const mshType& lM, const int e,
                     const Vector<int>& ptr, Array<double>& x0,
                     Array<double>& xc, double bb_0[2][2], double bb_x[2][2],
-                    Array3<double>& Bb, const bool vflag) {
+                    Array3<double>& Bb, const bool vflag)
+{
   using namespace consts;
   using namespace mat_fun;
   using namespace utils;
@@ -1186,7 +1189,8 @@ void shell_bend_cst(ComMod& com_mod, const mshType& lM, const int e,
 void shell_bf(ComMod& com_mod, const int eNoN, const double w,
               const Vector<double>& N, const Array<double>& Nx,
               const Array<double>& dl, const Array<double>& xl,
-              const Array<double>& tfl, Array<double>& lR, Array3<double>& lK) {
+              const Array<double>& tfl, Array<double>& lR, Array3<double>& lK)
+{
   using namespace consts;
 
   const int nsd = com_mod.nsd;
@@ -1268,7 +1272,8 @@ void shell_cst(ComMod& com_mod, const mshType& lM, const int e, const int eNoN,
                const int nFn, const Array<double>& fN, const Array<double>& al,
                const Array<double>& yl, const Array<double>& dl,
                const Array<double>& xl, const Array<double>& bfl,
-               const Vector<int>& ptr) {
+               const Vector<int>& ptr)
+{
   using namespace consts;
 
   const int nsd = com_mod.nsd;
@@ -1783,7 +1788,8 @@ void shell_cst(ComMod& com_mod, const mshType& lM, const int e, const int eNoN,
 void shell_fp(ComMod& com_mod, const int eNoN, const double w,
               const Vector<double>& N, const Array<double>& Nx,
               const Array<double>& dl, const Array<double>& xl,
-              const Array<double>& tfl, Array<double>& lR, Array3<double>& lK) {
+              const Array<double>& tfl, Array<double>& lR, Array3<double>& lK)
+{
   int nsd = com_mod.nsd;
   int dof = com_mod.dof;
   double dt = com_mod.dt;
@@ -1858,7 +1864,8 @@ void shl_strs_res(const ComMod& com_mod, const dmnType& lDmn, const int nFn,
                   const Array<double>& fNa0, const double aa_0[2][2],
                   const double aa_x[2][2], const double bb_0[2][2],
                   const double bb_x[2][2], double& lam3, Array<double>& Sm,
-                  Array3<double>& Dm) {
+                  Array3<double>& Dm)
+{
   using namespace consts;
 
 #define n_debug_shl_strs_res

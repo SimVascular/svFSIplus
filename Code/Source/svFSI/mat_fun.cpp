@@ -19,7 +19,8 @@ Array<int> t_ind;
 
 /// @brief Double dot product of 2 square matrices
 //
-double mat_ddot(const Array<double>& A, const Array<double>& B, const int nd) {
+double mat_ddot(const Array<double>& A, const Array<double>& B, const int nd)
+{
   double s = 0.0;
 
   for (int j = 0; j < nd; j++) {
@@ -31,7 +32,8 @@ double mat_ddot(const Array<double>& A, const Array<double>& B, const int nd) {
   return s;
 }
 
-double mat_det(const Array<double>& A, const int nd) {
+double mat_det(const Array<double>& A, const int nd)
+{
   double D = 0.0;
 
   if (nd == 2) {
@@ -62,7 +64,8 @@ double mat_det(const Array<double>& A, const int nd) {
   return D;
 }
 
-Array<double> mat_dev(const Array<double>& A, const int nd) {
+Array<double> mat_dev(const Array<double>& A, const int nd)
+{
   Array<double> result(nd, nd);
 
   double trA = mat_trace(A, nd);
@@ -75,7 +78,8 @@ Array<double> mat_dev(const Array<double>& A, const int nd) {
 /// @brief Create a matrix from outer product of two vectors.
 //
 Array<double> mat_dyad_prod(const Vector<double>& u, const Vector<double>& v,
-                            const int nd) {
+                            const int nd)
+{
   Array<double> result(nd, nd);
 
   for (int j = 0; j < nd; j++) {
@@ -87,7 +91,8 @@ Array<double> mat_dyad_prod(const Vector<double>& u, const Vector<double>& v,
   return result;
 }
 
-Array<double> mat_id(const int nd) {
+Array<double> mat_id(const int nd)
+{
   Array<double> A(nd, nd);
 
   for (int i = 0; i < nd; i++) {
@@ -99,7 +104,8 @@ Array<double> mat_id(const int nd) {
 
 /// @brief This function computes inverse of a square matrix
 //
-Array<double> mat_inv(const Array<double>& A, const int nd, bool debug) {
+Array<double> mat_inv(const Array<double>& A, const int nd, bool debug)
+{
   int iok = 0;
   Array<double> Ainv(nd, nd);
 
@@ -152,9 +158,11 @@ Array<double> mat_inv(const Array<double>& A, const int nd, bool debug) {
   return Ainv;
 }
 
-/// @brief This function computes inverse of a square matrix using Gauss Elimination method
+/// @brief This function computes inverse of a square matrix using Gauss
+/// Elimination method
 //
-Array<double> mat_inv_ge(const Array<double>& Ain, const int n, bool debug) {
+Array<double> mat_inv_ge(const Array<double>& Ain, const int n, bool debug)
+{
   Array<double> A(n, n);
   Array<double> B(n, n);
   A = Ain;
@@ -287,12 +295,13 @@ Array<double> mat_inv_ge(const Array<double>& Ain, const int n, bool debug) {
   return B;
 }
 
-/// @brief This function computes inverse of a square matrix using Gauss Elimination method
+/// @brief This function computes inverse of a square matrix using Gauss
+/// Elimination method
 ///
 /// \todo [TODO:DaveP] The original version sometimes produced NaNs.
 //
-Array<double> mat_inv_ge_orig(const Array<double>& A, const int nd,
-                              bool debug) {
+Array<double> mat_inv_ge_orig(const Array<double>& A, const int nd, bool debug)
+{
   Array<double> B(nd, 2 * nd);
   Array<double> Ainv(nd, nd);
 
@@ -380,11 +389,13 @@ Array<double> mat_inv_ge_orig(const Array<double>& A, const int nd,
   return Ainv;
 }
 
-/// @brief This function computes inverse of a square matrix using Lapack functions (DGETRF + DGETRI)
+/// @brief This function computes inverse of a square matrix using Lapack
+/// functions (DGETRF + DGETRI)
 ///
 /// Replaces 'FUNCTION MAT_INV_LP(A, nd) RESULT(Ainv)' defined in MATFUN.f.
 //
-Array<double> mat_inv_lp(const Array<double>& A, const int nd) {
+Array<double> mat_inv_lp(const Array<double>& A, const int nd)
+{
   Vector<int> IPIV(nd);
   int iok;
   int n = nd;
@@ -418,7 +429,8 @@ Array<double> mat_inv_lp(const Array<double>& A, const int nd) {
 
 /// @brief not used, just a test.
 //
-Array<double> mat_inv_lp_eigen(const Array<double>& A, const int nd) {
+Array<double> mat_inv_lp_eigen(const Array<double>& A, const int nd)
+{
 #ifdef use_eigen
   typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> MatrixType;
 
@@ -450,7 +462,8 @@ Array<double> mat_inv_lp_eigen(const Array<double>& A, const int nd) {
 ///
 /// Reproduces Fortran MATMUL.
 //
-Vector<double> mat_mul(const Array<double>& A, const Vector<double>& v) {
+Vector<double> mat_mul(const Array<double>& A, const Vector<double>& v)
+{
   int num_rows = A.nrows();
   int num_cols = A.ncols();
 
@@ -479,7 +492,8 @@ Vector<double> mat_mul(const Array<double>& A, const Vector<double>& v) {
 ///
 /// Reproduces Fortran MATMUL.
 //
-Array<double> mat_mul(const Array<double>& A, const Array<double>& B) {
+Array<double> mat_mul(const Array<double>& A, const Array<double>& B)
+{
   int A_num_rows = A.nrows();
   int A_num_cols = A.ncols();
   int B_num_rows = B.nrows();
@@ -512,7 +526,8 @@ Array<double> mat_mul(const Array<double>& A, const Array<double>& B) {
 /// Compute result directly into the passed argument.
 //
 void mat_mul(const Array<double>& A, const Array<double>& B,
-             Array<double>& result) {
+             Array<double>& result)
+{
   int A_num_rows = A.nrows();
   int A_num_cols = A.ncols();
   int B_num_rows = B.nrows();
@@ -540,7 +555,8 @@ void mat_mul(const Array<double>& A, const Array<double>& B,
 
 /// @brief Symmetric part of a matrix, S = (A + A.T)/2
 //
-Array<double> mat_symm(const Array<double>& A, const int nd) {
+Array<double> mat_symm(const Array<double>& A, const int nd)
+{
   Array<double> S(nd, nd);
 
   for (int i = 0; i < nd; i++) {
@@ -555,7 +571,8 @@ Array<double> mat_symm(const Array<double>& A, const int nd) {
 /// @brief Create a matrix from symmetric product of two vectors
 //
 Array<double> mat_symm_prod(const Vector<double>& u, const Vector<double>& v,
-                            const int nd) {
+                            const int nd)
+{
   Array<double> result(nd, nd);
 
   for (int i = 0; i < nd; i++) {
@@ -569,7 +586,8 @@ Array<double> mat_symm_prod(const Vector<double>& u, const Vector<double>& v,
 
 /// @brief Trace of second order matrix of rank nd
 //
-double mat_trace(const Array<double>& A, const int nd) {
+double mat_trace(const Array<double>& A, const int nd)
+{
   double result = 0.0;
 
   for (int i = 0; i < nd; i++) {
@@ -585,7 +603,8 @@ double mat_trace(const Array<double>& A, const int nd) {
 ///   Cijkl = Aij*Bkl-Ail*Bjk
 //
 Tensor4<double> ten_asym_prod12(const Array<double>& A, const Array<double>& B,
-                                const int nd) {
+                                const int nd)
+{
   Tensor4<double> C(nd, nd, nd, nd);
 
   int nn = pow(nd, 4);
@@ -606,7 +625,8 @@ Tensor4<double> ten_asym_prod12(const Array<double>& A, const Array<double>& B,
 /// Reproduces 'FUNCTION TEN_DDOT_3434(A, B, nd) RESULT(C)'.
 //
 Tensor4<double> ten_ddot(const Tensor4<double>& A, const Tensor4<double>& B,
-                         const int nd) {
+                         const int nd)
+{
   int nn = pow(nd, 4);
   Tensor4<double> C(nd, nd, nd, nd);
 
@@ -645,7 +665,8 @@ Tensor4<double> ten_ddot(const Tensor4<double>& A, const Tensor4<double>& B,
 /// @brief T_ijkl = A_imjn * B_mnkl
 //
 Tensor4<double> ten_ddot_2412(const Tensor4<double>& A,
-                              const Tensor4<double>& B, const int nd) {
+                              const Tensor4<double>& B, const int nd)
+{
   int nn = pow(nd, 4);
   Tensor4<double> C(nd, nd, nd, nd);
 
@@ -682,7 +703,8 @@ Tensor4<double> ten_ddot_2412(const Tensor4<double>& A,
 }
 
 Tensor4<double> ten_ddot_3424(const Tensor4<double>& A,
-                              const Tensor4<double>& B, const int nd) {
+                              const Tensor4<double>& B, const int nd)
+{
   int nn = pow(nd, 4);
   Tensor4<double> C(nd, nd, nd, nd);
 
@@ -720,7 +742,8 @@ Tensor4<double> ten_ddot_3424(const Tensor4<double>& A,
 
 /// @brief Initialize tensor index pointer
 //
-void ten_init(const int nd) {
+void ten_init(const int nd)
+{
   int nn = pow(nd, 4);
   t_ind.resize(4, nn);
 
@@ -743,7 +766,8 @@ void ten_init(const int nd) {
 /// @brief Create a 4th order tensor from outer product of two matrices.
 //
 Tensor4<double> ten_dyad_prod(const Array<double>& A, const Array<double>& B,
-                              const int nd) {
+                              const int nd)
+{
   int nn = pow(nd, 4);
   Tensor4<double> C(nd, nd, nd, nd);
 
@@ -760,7 +784,8 @@ Tensor4<double> ten_dyad_prod(const Array<double>& A, const Array<double>& B,
 
 /// @brief Create a 4th order order symmetric identity tensor
 //
-Tensor4<double> ten_ids(const int nd) {
+Tensor4<double> ten_ids(const int nd)
+{
   Tensor4<double> A(nd, nd, nd, nd);
 
   for (int i = 0; i < nd; i++) {
@@ -778,7 +803,8 @@ Tensor4<double> ten_ids(const int nd) {
 ///   C_ij = (A_ijkl * B_kl)
 //
 Array<double> ten_mddot(const Tensor4<double>& A, const Array<double>& B,
-                        const int nd) {
+                        const int nd)
+{
   Array<double> C(nd, nd);
 
   if (nd == 2) {
@@ -804,12 +830,14 @@ Array<double> ten_mddot(const Tensor4<double>& A, const Array<double>& B,
   return C;
 }
 
-/// @brief Create a 4th order tensor from symmetric outer product of two matrices.
+/// @brief Create a 4th order tensor from symmetric outer product of two
+/// matrices.
 ///
 /// Reproduces 'FUNCTION TEN_SYMMPROD(A, B, nd) RESULT(C)'.
 //
 Tensor4<double> ten_symm_prod(const Array<double>& A, const Array<double>& B,
-                              const int nd) {
+                              const int nd)
+{
   int nn = pow(nd, 4);
   Tensor4<double> C(nd, nd, nd, nd);
 
@@ -824,7 +852,8 @@ Tensor4<double> ten_symm_prod(const Array<double>& A, const Array<double>& B,
   return C;
 }
 
-Tensor4<double> ten_transpose(const Tensor4<double>& A, const int nd) {
+Tensor4<double> ten_transpose(const Tensor4<double>& A, const int nd)
+{
   int nn = pow(nd, 4);
   Tensor4<double> result(nd, nd, nd, nd);
 
@@ -841,7 +870,8 @@ Tensor4<double> ten_transpose(const Tensor4<double>& A, const int nd) {
 
 /// Reproduces Fortran TRANSPOSE.
 //
-Array<double> transpose(const Array<double>& A) {
+Array<double> transpose(const Array<double>& A)
+{
   int num_rows = A.nrows();
   int num_cols = A.ncols();
   Array<double> result(num_cols, num_rows);

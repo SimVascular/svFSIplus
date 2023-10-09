@@ -49,7 +49,8 @@ std::map<consts::ElementType, std::function<void(mshType&)>>
 /// @brief Calculate element Aspect Ratio of a given mesh
 //
 void calc_elem_ar(ComMod& com_mod, const CmMod& cm_mod, mshType& lM,
-                  bool& rflag) {
+                  bool& rflag)
+{
 #define n_debug_calc_elem_ar
 #ifdef debug_calc_elem_ar
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
@@ -144,7 +145,8 @@ void calc_elem_ar(ComMod& com_mod, const CmMod& cm_mod, mshType& lM,
 /// @brief Calculate element Jacobian of a given mesh.
 //
 void calc_elem_jac(ComMod& com_mod, const CmMod& cm_mod, mshType& lM,
-                   bool& rflag) {
+                   bool& rflag)
+{
 #define n_debug_calc_elem_jac
 #ifdef debug_calc_elem_jac
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
@@ -267,7 +269,8 @@ void calc_elem_jac(ComMod& com_mod, const CmMod& cm_mod, mshType& lM,
 /// @brief Calculate element Skewness of a given mesh.
 //
 void calc_elem_skew(ComMod& com_mod, const CmMod& cm_mod, mshType& lM,
-                    bool& rflag) {
+                    bool& rflag)
+{
 #define n_debug_calc_elem_skew
 #ifdef debug_calc_elem_skew
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
@@ -358,7 +361,8 @@ void calc_elem_skew(ComMod& com_mod, const CmMod& cm_mod, mshType& lM,
 }
 
 void calc_mesh_props(ComMod& com_mod, const CmMod& cm_mod, const int nMesh,
-                     std::vector<mshType>& mesh) {
+                     std::vector<mshType>& mesh)
+{
 #define n_debug_calc_mesh_props
 #ifdef debug_calc_mesh_props
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
@@ -451,7 +455,8 @@ void calc_mesh_props(ComMod& com_mod, const CmMod& cm_mod, const int nMesh,
 ///
 /// Reproduces 'SUBROUTINE CALCNBC(lM, lFa)'
 //
-void calc_nbc(mshType& mesh, faceType& face) {
+void calc_nbc(mshType& mesh, faceType& face)
+{
 #define n_debug_calc_nbc
 #ifdef debug_calc_nbc
   DebugMsg dmsg(__func__, 0);
@@ -527,7 +532,8 @@ void calc_nbc(mshType& mesh, faceType& face) {
 ///
 /// Replicates the Fortran CHECKIEN subroutine defined in READMSH.f.
 //
-void check_ien(Simulation* simulation, mshType& mesh) {
+void check_ien(Simulation* simulation, mshType& mesh)
+{
 #ifdef debug_check_ien
   DebugMsg dmsg(__func__, simulation->com_mod.cm.idcm());
   dmsg.banner();
@@ -591,7 +597,8 @@ void check_ien(Simulation* simulation, mshType& mesh) {
 //
 int find_blk(const int nsd, const int nBkd, const std::vector<bool>& nFlt,
              const Vector<double>& xMin, const Vector<double>& dx,
-             const Vector<double>& x) {
+             const Vector<double>& x)
+{
   int i = 0;
   int j = 0;
   int k = 0;
@@ -658,7 +665,8 @@ void check_quad4_conn(mshType& mesh) {}
 
 /// @brief Check and reorder tet connectivity if needed.
 //
-void check_tet_conn(mshType& mesh) {
+void check_tet_conn(mshType& mesh)
+{
   // std::cout << "[check_tet_conn] ========== check_tet_conn ========== " <<
   // std::endl;
   Vector<double> v1, v2, v3;
@@ -725,7 +733,8 @@ void check_tri6_conn(mshType& mesh) {}
 
 /// @brief Check and reorder wedge connectivity if needed.
 //
-void check_wedge_conn(mshType& mesh) {
+void check_wedge_conn(mshType& mesh)
+{
   Vector<double> v1, v2, v3;
   int num_elems = mesh.gnEl;
 
@@ -766,7 +775,8 @@ void check_wedge_conn(mshType& mesh) {
 ///
 /// Reproduces Fortran 'LOADVARINI'.
 //
-void load_var_ini(Simulation* simulation, ComMod& com_mod) {
+void load_var_ini(Simulation* simulation, ComMod& com_mod)
+{
   // Initialize mesh pressure from a file.
   //
   bool flag = false;
@@ -873,8 +883,8 @@ void load_var_ini(Simulation* simulation, ComMod& com_mod) {
 // Project nodes from two adjacent meshes to each other based on a L2 norm.
 //
 void match_faces(const ComMod& com_mod, const faceType& lFa,
-                 const faceType& pFa, const double ptol,
-                 utils::stackType& lPrj) {
+                 const faceType& pFa, const double ptol, utils::stackType& lPrj)
+{
 #define n_debug_match_faces
 #ifdef debug_match_faces
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
@@ -1059,7 +1069,8 @@ void match_faces(const ComMod& com_mod, const faceType& lFa,
 //
 void read_fib_nff(Simulation* simulation, mshType& mesh,
                   const std::string& fName, const std::string& kwrd,
-                  const int idx) {
+                  const int idx)
+{
   vtk_xml_parser::load_fiber_direction_vtu(fName, kwrd, idx,
                                            simulation->com_mod.nsd, mesh);
 }
@@ -1070,7 +1081,8 @@ void read_fib_nff(Simulation* simulation, mshType& mesh,
 ///
 ///   2) Read mesh nodal coordiantes and element connectivity
 //
-void read_msh(Simulation* simulation) {
+void read_msh(Simulation* simulation)
+{
   auto& com_mod = simulation->get_com_mod();
 
 #define n_debug_read_msh
@@ -1713,7 +1725,8 @@ void read_msh(Simulation* simulation) {
 /// Reproduces the Fortran 'SETDMNIDFF' subroutine.
 //
 void set_dmn_id_ff(Simulation* simulation, mshType& lM,
-                   const std::string& file_name) {
+                   const std::string& file_name)
+{
 #define n_debug_set_dmn_id_ff
 #ifdef debug_set_dmn_id_ff
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
@@ -1784,7 +1797,8 @@ void set_dmn_id_ff(Simulation* simulation, mshType& lM,
 /// \todo [NOTE] Not implemented.
 //
 void set_dmn_id_vtk(Simulation* simulation, mshType& mesh,
-                    const std::string& file_name, const std::string& kwrd) {
+                    const std::string& file_name, const std::string& kwrd)
+{
   int btSiz = std::numeric_limits<int>::digits;
 }
 
@@ -1798,7 +1812,8 @@ void set_dmn_id_vtk(Simulation* simulation, mshType& mesh,
 ///   com_mod.msh[].gN[]
 /// \endcode
 //
-void set_projector(Simulation* simulation, utils::stackType& avNds) {
+void set_projector(Simulation* simulation, utils::stackType& avNds)
+{
 #define n_debug_set_projector
 #ifdef debug_set_projector
   DebugMsg dmsg(__func__, simulation->com_mod.cm.idcm());

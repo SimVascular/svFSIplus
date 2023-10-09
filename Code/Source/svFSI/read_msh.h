@@ -11,10 +11,11 @@
 
 namespace read_msh_ns {
 
-class blkType {
- public:
-  int n = 0;
-  Vector<int> gN;
+class blkType
+{
+  public:
+    int n = 0;
+    Vector<int> gN;
 };
 
 void calc_elem_ar(ComMod& com_mod, const CmMod& cm_mod, mshType& lM,

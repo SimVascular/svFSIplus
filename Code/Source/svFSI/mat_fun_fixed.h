@@ -14,7 +14,8 @@ extern Array<int> t_ind;
 // static Array<int> t_ind;
 
 template <size_t N>
-double mat_det(const double A[N][N]) {
+double mat_det(const double A[N][N])
+{
   double D = 0.0;
 
   if (N == 2) {
@@ -45,14 +46,16 @@ double mat_det(const double A[N][N]) {
 }
 
 template <size_t N>
-void mat_id(double A[N][N]) {
+void mat_id(double A[N][N])
+{
   for (int i = 0; i < N; i++) {
     A[i][i] = 1.0;
   }
 }
 
 template <size_t N>
-void transpose(const double A[N][N], double result[N][N]) {
+void transpose(const double A[N][N], double result[N][N])
+{
   for (int i = 0; i < N; i++) {
     for (int j = 0; j < N; j++) {
       result[j][i] = A[i][j];
@@ -61,7 +64,8 @@ void transpose(const double A[N][N], double result[N][N]) {
 }
 
 template <size_t N>
-void mat_mul(const double A[N][N], const double B[N][N], double result[N][N]) {
+void mat_mul(const double A[N][N], const double B[N][N], double result[N][N])
+{
   for (int i = 0; i < N; i++) {
     for (int j = 0; j < N; j++) {
       double sum = 0.0;
@@ -76,7 +80,8 @@ void mat_mul(const double A[N][N], const double B[N][N], double result[N][N]) {
 }
 
 template <size_t N>
-void mat_mul(const double A[N][N], const Vector<double>& v, double result[N]) {
+void mat_mul(const double A[N][N], const Vector<double>& v, double result[N])
+{
   for (int i = 0; i < N; i++) {
     double sum = 0.0;
 
@@ -89,7 +94,8 @@ void mat_mul(const double A[N][N], const Vector<double>& v, double result[N]) {
 }
 
 template <size_t N>
-void mat_inv(const double A[N][N], double Ainv[N][N]) {
+void mat_inv(const double A[N][N], double Ainv[N][N])
+{
   int iok = 0;
 
   if (N == 2) {
@@ -125,7 +131,8 @@ void mat_inv(const double A[N][N], double Ainv[N][N]) {
 }
 
 template <size_t N>
-double mat_trace(const double A[N][N]) {
+double mat_trace(const double A[N][N])
+{
   double result = 0.0;
 
   for (int i = 0; i < N; i++) {
@@ -137,7 +144,8 @@ double mat_trace(const double A[N][N]) {
 
 template <size_t N>
 void ten_dyad_prod(const double A[N][N], const double B[N][N],
-                   double C[N][N][N][N]) {
+                   double C[N][N][N][N])
+{
   int nn = pow(N, 4);
 
   for (int ii = 0; ii < nn; ii++) {
@@ -150,7 +158,8 @@ void ten_dyad_prod(const double A[N][N], const double B[N][N],
 }
 
 template <size_t N>
-void ten_ids(double A[N][N][N][N]) {
+void ten_ids(double A[N][N][N][N])
+{
   A = {};
 
   for (int i = 0; i < N; i++) {
@@ -165,7 +174,8 @@ void ten_ids(double A[N][N][N][N]) {
 
 template <size_t N>
 void mat_dyad_prod(const Vector<double>& u, const Vector<double>& v,
-                   double result[N][N]) {
+                   double result[N][N])
+{
   for (int j = 0; j < N; j++) {
     for (int i = 0; i < N; i++) {
       result[i][j] = u(i) * v(j);
@@ -175,7 +185,8 @@ void mat_dyad_prod(const Vector<double>& u, const Vector<double>& v,
 
 template <size_t N>
 void ten_symm_prod(const double A[N][N], const double B[N][N],
-                   double C[N][N][N][N]) {
+                   double C[N][N][N][N])
+{
   int nn = pow(N, 4);
 
   for (int ii = 0; ii < nn; ii++) {
@@ -189,7 +200,8 @@ void ten_symm_prod(const double A[N][N], const double B[N][N],
 }
 
 template <size_t N>
-double mat_ddot(const double A[N][N], const double B[N][N]) {
+double mat_ddot(const double A[N][N], const double B[N][N])
+{
   double s = 0.0;
 
   for (int j = 0; j < N; j++) {
@@ -202,7 +214,8 @@ double mat_ddot(const double A[N][N], const double B[N][N]) {
 }
 
 template <size_t N>
-void ten_transpose(const double A[N][N][N][N], double result[N][N][N][N]) {
+void ten_transpose(const double A[N][N][N][N], double result[N][N][N][N])
+{
   int nn = pow(N, 4);
 
   for (int ii = 0; ii < nn; ii++) {
@@ -215,7 +228,8 @@ void ten_transpose(const double A[N][N][N][N], double result[N][N][N][N]) {
 }
 
 template <size_t N>
-void ten_init() {
+void ten_init()
+{
   int nn = pow(N, 4);
   t_ind.resize(4, nn);
   // ALLOCATE(t_ind(4,nn))
@@ -239,7 +253,8 @@ void ten_init() {
 
 template <size_t N>
 void ten_ddot(const double A[N][N][N][N], const double B[N][N][N][N],
-              double C[N][N][N][N]) {
+              double C[N][N][N][N])
+{
   int nn = pow(N, 4);
 
   if (N == 2) {
@@ -272,7 +287,8 @@ void ten_ddot(const double A[N][N][N][N], const double B[N][N][N][N],
 }
 
 template <size_t N>
-double norm(const Vector<double>& u, const double v[N]) {
+double norm(const Vector<double>& u, const double v[N])
+{
   double norm = 0.0;
   for (int i = 0; i < N; i++) {
     norm += u(i) * v[i];
@@ -281,7 +297,8 @@ double norm(const Vector<double>& u, const double v[N]) {
 }
 
 template <size_t N>
-void print(const std::string& name, const double A[N][N]) {
+void print(const std::string& name, const double A[N][N])
+{
   std::cout << name << ": ";
   for (int i = 0; i < N; i++) {
     for (int j = 0; j < N; j++) {

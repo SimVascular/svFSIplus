@@ -9,9 +9,11 @@ CepModTtp::CepModTtp() {}
 
 CepModTtp::~CepModTtp() {}
 
-/// @brief Compute macroscopic fiber strain based on sacromere force-length relationship and calcium concentration
+/// @brief Compute macroscopic fiber strain based on sacromere force-length
+/// relationship and calcium concentration
 void CepModTtp::actv_strn(const double c_Ca, const double I4f, const double dt,
-                          double& gf) {
+                          double& gf)
+{
   // fiber length
   double SL = I4f * SL0;
 
@@ -30,7 +32,8 @@ void CepModTtp::actv_strn(const double c_Ca, const double I4f, const double dt,
 }
 
 void CepModTtp::actv_strs(const double c_Ca, const double dt, double& Tact,
-                          double& epsX) {
+                          double& epsX)
+{
   epsX = exp(-exp(-xi_T * (c_Ca - Ca_crit)));
   epsX = eps_0 + (eps_i - eps_0) * epsX;
   double nr = Tact + epsX * dt * eta_T * (c_Ca - Ca_rest);
@@ -45,7 +48,8 @@ void CepModTtp::actv_strs(const double c_Ca, const double dt, double& Tact,
 void CepModTtp::getf(const int i, const int nX, const int nG,
                      const Vector<double>& X, const Vector<double>& Xg,
                      Vector<double>& dX, const double I_stim,
-                     const double K_sac, Vector<double>& RPAR) {
+                     const double K_sac, Vector<double>& RPAR)
+{
   // Local copies of state variables
   double V = X(0);
   double K_i = X(1);
@@ -208,7 +212,8 @@ void CepModTtp::getf(const int i, const int nX, const int nG,
 
 void CepModTtp::getj(const int i, const int nX, const int nG,
                      const Vector<double>& X, const Vector<double>& Xg,
-                     Array<double>& JAC, const double Ksac) {
+                     Array<double>& JAC, const double Ksac)
+{
   double RT, a, b, c, tau, sq5, e1, e2, e3, e4, n1, n2, d1, d2, d3;
 
   // Local copies of state variables
@@ -448,7 +453,8 @@ void CepModTtp::getj(const int i, const int nX, const int nG,
 }
 
 void CepModTtp::init(const int imyo, const int nX, const int nG,
-                     Vector<double>& X, Vector<double>& Xg) {
+                     Vector<double>& X, Vector<double>& Xg)
+{
   switch (imyo) {
     // epi
     case 1:
@@ -532,7 +538,8 @@ void CepModTtp::init(const int imyo, const int nX, const int nG,
 
 void CepModTtp::init(const int imyo, const int nX, const int nG,
                      Vector<double>& X, Vector<double>& Xg, Vector<double>& X0,
-                     Vector<double>& Xg0) {
+                     Vector<double>& Xg0)
+{
   init(imyo, nX, nG, X, Xg);
 
   if (X0.size() != 0) {
@@ -549,7 +556,8 @@ void CepModTtp::integ_cn2(const int imyo, const int nX, const int nG,
                           Vector<double>& Xn, Vector<double>& Xg,
                           const double Ts, const double dt, const double Istim,
                           const double Ksac, Vector<int>& IPAR,
-                          Vector<double>& RPAR) {
+                          Vector<double>& RPAR)
+{
   int itMax = IPAR(0);
   double atol = RPAR(0);
   double rtol = RPAR(1);
@@ -613,7 +621,8 @@ void CepModTtp::integ_cn2(const int imyo, const int nX, const int nG,
 void CepModTtp::integ_fe(const int imyo, const int nX, const int nG,
                          Vector<double>& X, Vector<double>& Xg, const double Ts,
                          const double dt, const double Istim, const double Ksac,
-                         Vector<double>& RPAR) {
+                         Vector<double>& RPAR)
+{
   Vector<double> f(nX);
 
   // Get time derivatives (RHS)
@@ -631,7 +640,8 @@ void CepModTtp::integ_fe(const int imyo, const int nX, const int nG,
 void CepModTtp::integ_rk(const int imyo, const int nX, const int nG,
                          Vector<double>& X, Vector<double>& Xg, const double Ts,
                          const double dt, const double Istim, const double Ksac,
-                         Vector<double>& RPAR) {
+                         Vector<double>& RPAR)
+{
   double dt6 = dt / 6.0;
 
   Vector<double> frk1(nX), frk2(nX), frk3(nX), frk4(nX);
@@ -667,7 +677,8 @@ void CepModTtp::integ_rk(const int imyo, const int nX, const int nG,
 /// @brief Update all the gating variables
 void CepModTtp::update_g(const int i, const double dt, const int n,
                          const int nG, const Vector<double>& X,
-                         Vector<double>& Xg) {
+                         Vector<double>& Xg)
+{
   V = X(0);
   Ca_ss = X(4);
 

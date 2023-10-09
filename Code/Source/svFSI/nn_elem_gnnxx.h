@@ -1,4 +1,5 @@
-/// @brief Define a map type used to compute 2nd direivatives of element shape function data.
+/// @brief Define a map type used to compute 2nd direivatives of element shape
+/// function data.
 ///
 /// Replicates 'SUBROUTINE GETGNNxx(insd, ind2, eType, eNoN, xi, Nxx)'
 //

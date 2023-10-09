@@ -39,12 +39,14 @@ template <>
 int Array<double>::active = 0;
 
 template <>
-void Array<double>::memory(const std::string& prefix) {
+void Array<double>::memory(const std::string& prefix)
+{
   utils::print_mem("Array<double>", prefix, memory_in_use, memory_returned);
 }
 
 template <>
-void Array<double>::stats(const std::string& prefix) {
+void Array<double>::stats(const std::string& prefix)
+{
   utils::print_stats("Array<double>", prefix, num_allocated, active);
 }
 
@@ -69,12 +71,14 @@ template <>
 int Array<int>::active = 0;
 
 template <>
-void Array<int>::memory(const std::string& prefix) {
+void Array<int>::memory(const std::string& prefix)
+{
   utils::print_mem("Array<int>", prefix, memory_in_use, memory_returned);
 }
 
 template <>
-void Array<int>::stats(const std::string& prefix) {
+void Array<int>::stats(const std::string& prefix)
+{
   utils::print_stats("Array<int>", prefix, num_allocated, active);
 }
 

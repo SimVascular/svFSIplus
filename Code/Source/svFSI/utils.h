@@ -5,23 +5,25 @@
 
 namespace utils {
 
-class stackType {
- public:
-  /// Maximum length of the stack
-  int maxN = 0;
+class stackType
+{
+  public:
+    /// Maximum length of the stack
+    int maxN = 0;
 
-  /// Current size of stack
-  int n = 0;
+    /// Current size of stack
+    int n = 0;
 
-  /// Values inside stack
-  Vector<int> v;
+    /// Values inside stack
+    Vector<int> v;
 };
 
-class queueType {
- public:
-  int n = 0;
-  int maxN = 0;
-  Vector<int> v;
+class queueType
+{
+  public:
+    int n = 0;
+    int maxN = 0;
+    Vector<int> v;
 };
 
 bool btest(int value, int pos);

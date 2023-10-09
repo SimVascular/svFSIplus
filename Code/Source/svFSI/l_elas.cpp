@@ -22,7 +22,8 @@ namespace l_elas {
 //
 void b_l_elas(ComMod& com_mod, const int eNoN, const double w,
               const Vector<double>& N, const double h, const Vector<double>& nV,
-              Array<double>& lR) {
+              Array<double>& lR)
+{
   const int nsd = com_mod.nsd;
   auto hc = h * nV;
 
@@ -36,7 +37,8 @@ void b_l_elas(ComMod& com_mod, const int eNoN, const double w,
 /// @brief Reproduces Fortran 'CONSTRUCT_LELAS'.
 //
 void construct_l_elas(ComMod& com_mod, const mshType& lM,
-                      const Array<double>& Ag, const Array<double>& Dg) {
+                      const Array<double>& Ag, const Array<double>& Dg)
+{
   using namespace consts;
 
 #define debug_construct_l_elas
@@ -161,7 +163,8 @@ void l_elas_2d(ComMod& com_mod, const int eNoN, const double w,
                const Vector<double>& N, const Array<double>& Nx,
                const Array<double>& al, const Array<double>& dl,
                const Array<double>& bfl, const Array<double>& pS0l,
-               Vector<double>& pSl, Array<double>& lR, Array3<double>& lK) {
+               Vector<double>& pSl, Array<double>& lR, Array3<double>& lK)
+{
   using namespace consts;
 
   const int dof = com_mod.dof;
@@ -270,7 +273,8 @@ void l_elas_3d(ComMod& com_mod, const int eNoN, const double w,
                const Vector<double>& N, const Array<double>& Nx,
                const Array<double>& al, const Array<double>& dl,
                const Array<double>& bfl, const Array<double>& pS0l,
-               Vector<double>& pSl, Array<double>& lR, Array3<double>& lK) {
+               Vector<double>& pSl, Array<double>& lR, Array3<double>& lK)
+{
   using namespace consts;
 
   const int dof = com_mod.dof;

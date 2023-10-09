@@ -4,7 +4,8 @@ using GetElementGausIntMapType =
     std::map<ElementType, std::function<void(const int, const int,
                                              Vector<double>&, Array<double>&)>>;
 
-/// @brief Replicates 'SUBROUTINE GETGIP(insd, eType, nG, w, xi)' defined in NN.f.
+/// @brief Replicates 'SUBROUTINE GETGIP(insd, eType, nG, w, xi)' defined in
+/// NN.f.
 //
 GetElementGausIntMapType get_element_gauss_int_data = {
 
@@ -422,7 +423,8 @@ GetElementGausIntMapType get_element_gauss_int_data = {
 using SetElementGausIntMapType =
     std::map<ElementType, std::function<void(mshType&)>>;
 
-/// @brief Replicates 'SUBROUTINE GETGIP(insd, eType, nG, w, xi)' defined in NN.f.
+/// @brief Replicates 'SUBROUTINE GETGIP(insd, eType, nG, w, xi)' defined in
+/// NN.f.
 ///
 /// \todo [TODO:DaveP] I screwed up here, should just have a single map for mesh
 /// and face types.

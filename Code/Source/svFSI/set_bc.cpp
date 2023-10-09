@@ -22,7 +22,8 @@
 
 namespace set_bc {
 
-void calc_der_cpl_bc(ComMod& com_mod, const CmMod& cm_mod) {
+void calc_der_cpl_bc(ComMod& com_mod, const CmMod& cm_mod)
+{
   using namespace consts;
 
 #define n_debug_calc_der_cpl_bc
@@ -157,7 +158,8 @@ void calc_der_cpl_bc(ComMod& com_mod, const CmMod& cm_mod) {
 
 /// @brief Interface to call 0D code (cplBC)
 //
-void cplBC_Integ_X(ComMod& com_mod, const CmMod& cm_mod, const bool RCRflag) {
+void cplBC_Integ_X(ComMod& com_mod, const CmMod& cm_mod, const bool RCRflag)
+{
   using namespace consts;
 
   int nsd = com_mod.nsd;
@@ -240,7 +242,8 @@ void cplBC_Integ_X(ComMod& com_mod, const CmMod& cm_mod, const bool RCRflag) {
 /// \todo [NOTE] not fully implemented.
 //
 void genBC_Integ_X(ComMod& com_mod, const CmMod& cm_mod,
-                   const std::string& genFlag) {
+                   const std::string& genFlag)
+{
   using namespace consts;
 
   int nDir = 0;
@@ -321,7 +324,8 @@ void genBC_Integ_X(ComMod& com_mod, const CmMod& cm_mod,
   }
 }
 
-void RCR_Integ_X(ComMod& com_mod, const CmMod& cm_mod, int istat) {
+void RCR_Integ_X(ComMod& com_mod, const CmMod& cm_mod, int istat)
+{
   using namespace consts;
   const int nTS = 100;
 
@@ -414,7 +418,8 @@ void RCR_Integ_X(ComMod& com_mod, const CmMod& cm_mod, int istat) {
 ///
 /// Replaces 'SUBROUTINE RCRINIT()'
 //
-void rcr_init(ComMod& com_mod, const CmMod& cm_mod) {
+void rcr_init(ComMod& com_mod, const CmMod& cm_mod)
+{
   using namespace consts;
 
   const int iEq = 0;
@@ -447,10 +452,12 @@ void rcr_init(ComMod& com_mod, const CmMod& cm_mod) {
   }
 }
 
-/// @brief Below defines the SET_BC methods for the Coupled Momentum Method (CMM)
+/// @brief Below defines the SET_BC methods for the Coupled Momentum Method
+/// (CMM)
 //
 void set_bc_cmm(ComMod& com_mod, const CmMod& cm_mod, const Array<double>& Ag,
-                const Array<double>& Dg) {
+                const Array<double>& Dg)
+{
   using namespace consts;
 
   int cEq = com_mod.cEq;
@@ -478,7 +485,8 @@ void set_bc_cmm(ComMod& com_mod, const CmMod& cm_mod, const Array<double>& Ag,
 }
 
 void set_bc_cmm_l(ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa,
-                  const Array<double>& Ag, const Array<double>& Dg) {
+                  const Array<double>& Ag, const Array<double>& Dg)
+{
   using namespace consts;
 
   const int nsd = com_mod.nsd;
@@ -535,7 +543,8 @@ void set_bc_cmm_l(ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa,
 
 /// @brief Reproduces the Fortran 'SETBCCPL()' subrotutine.
 //
-void set_bc_cpl(ComMod& com_mod, CmMod& cm_mod) {
+void set_bc_cpl(ComMod& com_mod, CmMod& cm_mod)
+{
   static double absTol = 1.E-8, relTol = 1.E-5;
 
   using namespace consts;
@@ -622,7 +631,8 @@ void set_bc_cpl(ComMod& com_mod, CmMod& cm_mod) {
 /// Reproduces 'SUBROUTINE SETBCDIR(lA, lY, lD)'
 //
 void set_bc_dir(ComMod& com_mod, Array<double>& lA, Array<double>& lY,
-                Array<double>& lD) {
+                Array<double>& lD)
+{
   using namespace consts;
 
 #define n_set_bc_dir
@@ -843,7 +853,8 @@ void set_bc_dir(ComMod& com_mod, Array<double>& lA, Array<double>& lY,
 /// Reproduces 'SUBROUTINE SETBCDIRL(lBc, lFa, lA, lY, lDof)'
 //
 void set_bc_dir_l(ComMod& com_mod, const bcType& lBc, const faceType& lFa,
-                  Array<double>& lA, Array<double>& lY, int lDof) {
+                  Array<double>& lA, Array<double>& lY, int lDof)
+{
   using namespace consts;
 
 #define n_debug_set_bc_dir_l
@@ -905,7 +916,8 @@ void set_bc_dir_l(ComMod& com_mod, const bcType& lBc, const faceType& lFa,
 /// @brief Weak treatment of Dirichlet boundary conditions
 //
 void set_bc_dir_w(ComMod& com_mod, const Array<double>& Yg,
-                  const Array<double>& Dg) {
+                  const Array<double>& Dg)
+{
   using namespace consts;
 
   const int cEq = com_mod.cEq;
@@ -927,7 +939,8 @@ void set_bc_dir_w(ComMod& com_mod, const Array<double>& Yg,
 //
 void set_bc_dir_wl(ComMod& com_mod, const bcType& lBc, const mshType& lM,
                    const faceType& lFa, const Array<double>& Yg,
-                   const Array<double>& Dg) {
+                   const Array<double>& Dg)
+{
   using namespace consts;
 
 #define n_debug_set_bc_dir_wl
@@ -1169,7 +1182,8 @@ void set_bc_dir_wl(ComMod& com_mod, const bcType& lBc, const mshType& lM,
 /// @brief Set outlet BCs.
 //
 void set_bc_neu(ComMod& com_mod, const CmMod& cm_mod, const Array<double>& Yg,
-                const Array<double>& Dg) {
+                const Array<double>& Dg)
+{
   using namespace consts;
 
 #define n_debug_set_bc_neu
@@ -1210,7 +1224,8 @@ void set_bc_neu(ComMod& com_mod, const CmMod& cm_mod, const Array<double>& Yg,
 //
 void set_bc_neu_l(ComMod& com_mod, const CmMod& cm_mod, const bcType& lBc,
                   const faceType& lFa, const Array<double>& Yg,
-                  const Array<double>& Dg) {
+                  const Array<double>& Dg)
+{
   using namespace consts;
 
 #define n_debug_set_bc_neu_l
@@ -1317,7 +1332,8 @@ void set_bc_neu_l(ComMod& com_mod, const CmMod& cm_mod, const bcType& lBc,
 //
 void set_bc_rbnl(ComMod& com_mod, const faceType& lFa, const double ks,
                  const double cs, const bool isN, const Array<double>& Yg,
-                 const Array<double>& Dg) {
+                 const Array<double>& Dg)
+{
   using namespace consts;
 
   const int cEq = com_mod.cEq;
@@ -1539,7 +1555,8 @@ void set_bc_rbnl(ComMod& com_mod, const faceType& lFa, const double ks,
 /// @brief Set Traction BC
 //
 void set_bc_trac_l(ComMod& com_mod, const CmMod& cm_mod, const bcType& lBc,
-                   const faceType& lFa) {
+                   const faceType& lFa)
+{
   using namespace consts;
 
 #define n_debug_set_bc_trac_l
@@ -1664,7 +1681,8 @@ void set_bc_trac_l(ComMod& com_mod, const CmMod& cm_mod, const bcType& lBc,
 /// the LHS matrix. Make the diagonal elements of the LHS matrix equal
 /// to 1 and the column entry corresponding to the master node, -1
 //
-void set_bc_undef_neu(ComMod& com_mod) {
+void set_bc_undef_neu(ComMod& com_mod)
+{
   using namespace consts;
 
   const int cEq = com_mod.cEq;
@@ -1683,8 +1701,8 @@ void set_bc_undef_neu(ComMod& com_mod) {
 
 /// Modifies: com_mod.R, com_mod.Val
 //
-void set_bc_undef_neu_l(ComMod& com_mod, const bcType& lBc,
-                        const faceType& lFa) {
+void set_bc_undef_neu_l(ComMod& com_mod, const bcType& lBc, const faceType& lFa)
+{
   using namespace consts;
 
   const int cEq = com_mod.cEq;

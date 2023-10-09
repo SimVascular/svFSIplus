@@ -22,7 +22,8 @@ namespace load_msh {
 /// [NOTE] Not imiplemented.
 //
 void read_ccne(Simulation* simulation, mshType& mesh,
-               const MeshParameters* mesh_param) {
+               const MeshParameters* mesh_param)
+{
   auto mesh_path = mesh_param->mesh_file_path();
   auto mesh_name = mesh_param->name();
   throw std::runtime_error("[read_ccne] read_ccne() is not implemented.");
@@ -38,7 +39,8 @@ void read_ccne(Simulation* simulation, mshType& mesh,
 ///   face.eNoN
 /// \endcode
 //
-void read_ndnlff(const std::string& file_name, faceType& face) {
+void read_ndnlff(const std::string& file_name, faceType& face)
+{
   std::ifstream end_nodes_file;
   end_nodes_file.open(file_name);
   if (!end_nodes_file.is_open()) {
@@ -89,7 +91,8 @@ void read_ndnlff(const std::string& file_name, faceType& face) {
 ///   SUBROUTINE READSV(list, lM)
 //
 void read_sv(Simulation* simulation, mshType& mesh,
-             const MeshParameters* mesh_param) {
+             const MeshParameters* mesh_param)
+{
   auto mesh_path = mesh_param->mesh_file_path();
   auto mesh_name = mesh_param->get_name();
 #define n_dbg_read_sv

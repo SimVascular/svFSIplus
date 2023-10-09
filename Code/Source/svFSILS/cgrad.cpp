@@ -21,7 +21,8 @@ namespace cgrad {
 //
 void schur(FSILS_lhsType& lhs, FSILS_subLsType& ls, const int dof,
            const Array<double>& D, const Array<double>& G,
-           const Vector<double>& L, Vector<double>& R) {
+           const Vector<double>& L, Vector<double>& R)
+{
 #define n_debug_schur
 #ifdef debug_schur
   DebugMsg dmsg(__func__, lhs.commu.task);
@@ -136,7 +137,8 @@ void schur(FSILS_lhsType& lhs, FSILS_subLsType& ls, const int dof,
 //---------
 //
 void cgrad_v(FSILS_lhsType& lhs, FSILS_subLsType& ls, const int dof,
-             const Array<double>& K, Array<double>& R) {
+             const Array<double>& K, Array<double>& R)
+{
 #define n_debug_cgrad_v
 #ifdef debug_cgrad_v
   DebugMsg dmsg(__func__, lhs.commu.task);
@@ -222,7 +224,8 @@ void cgrad_v(FSILS_lhsType& lhs, FSILS_subLsType& ls, const int dof,
 //---------
 //
 void cgrad_s(FSILS_lhsType& lhs, FSILS_subLsType& ls, const Vector<double>& K,
-             Vector<double>& R) {
+             Vector<double>& R)
+{
 #define n_debug_cgrad_s
 #ifdef debug_cgrad_s
   DebugMsg dmsg(__func__, lhs.commu.task);

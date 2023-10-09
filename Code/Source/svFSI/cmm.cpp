@@ -22,7 +22,8 @@ void cmm_3d(ComMod& com_mod, const int eNoN, const double w,
             const Vector<double>& N, const Array<double>& Nx,
             const Array<double>& al, const Array<double>& yl,
             const Array<double>& bfl, const Array<double>& Kxi,
-            Array<double>& lR, Array3<double>& lK) {
+            Array<double>& lR, Array3<double>& lK)
+{
   using namespace consts;
 
 #define n_debug_cmm_3d
@@ -290,7 +291,8 @@ void cmm_b(ComMod& com_mod, const faceType& lFa, const int e,
            const Array<double>& al, const Array<double>& dl,
            const Array<double>& xl, const Array<double>& bfl,
            const Vector<double>& pS0l, const Vector<double>& vwp,
-           const Vector<int>& ptr) {
+           const Vector<int>& ptr)
+{
   const int nsd = com_mod.nsd;
   const int dof = com_mod.dof;
   const int cEq = com_mod.cEq;
@@ -332,8 +334,8 @@ void cmm_b(ComMod& com_mod, const faceType& lFa, const int e,
 
 void bcmmi(ComMod& com_mod, const int eNoN, const int idof, const double w,
            const Vector<double>& N, const Array<double>& Nxi,
-           const Array<double>& xl, const Array<double>& tfl,
-           Array<double>& lR) {
+           const Array<double>& xl, const Array<double>& tfl, Array<double>& lR)
+{
 #define n_debug_bcmmi
 #ifdef debug_bcmmi
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
@@ -388,7 +390,8 @@ void bcmmi(ComMod& com_mod, const int eNoN, const int idof, const double w,
 void cmmi(ComMod& com_mod, const mshType& lM, const Array<double>& al,
           const Array<double>& dl, const Array<double>& xl,
           const Array<double>& bfl, const Vector<double>& pS0l,
-          const Vector<double>& vwp, const Vector<int>& ptr) {
+          const Vector<double>& vwp, const Vector<int>& ptr)
+{
 #define n_debug_cmmi
 #ifdef debug_cmmi
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
@@ -458,8 +461,8 @@ void cmmi(ComMod& com_mod, const mshType& lM, const Array<double>& al,
 
 void cmm_mass(ComMod& com_mod, const double w, const Vector<double>& N,
               const Array<double>& al, const Array<double>& bfl,
-              const Vector<double>& vwp, Array<double>& lR,
-              Array3<double>& lK) {
+              const Vector<double>& vwp, Array<double>& lR, Array3<double>& lK)
+{
   using namespace consts;
 
 #define n_debug_cmm_mass
@@ -530,7 +533,8 @@ void cmm_mass(ComMod& com_mod, const double w, const Vector<double>& N,
 void cmm_stiffness(ComMod& com_mod, const Array<double>& Nxi,
                    const Array<double>& xl, const Array<double>& dl,
                    const Vector<double>& pS0l, const Vector<double>& vwp,
-                   Vector<double>& pSl, Array<double>& lR, Array3<double>& lK) {
+                   Vector<double>& pSl, Array<double>& lR, Array3<double>& lK)
+{
   static const double kT = 5.0 / 6.0;
 
   using namespace consts;
@@ -804,7 +808,8 @@ void cmm_stiffness(ComMod& com_mod, const Array<double>& Nxi,
 /// @brief Reproduces Fortran 'CONSTRUCT_CMM'.
 //
 void construct_cmm(ComMod& com_mod, const mshType& lM, const Array<double>& Ag,
-                   const Array<double>& Yg, const Array<double>& Dg) {
+                   const Array<double>& Yg, const Array<double>& Dg)
+{
   using namespace consts;
 
 #define n_debug_construct_cmm

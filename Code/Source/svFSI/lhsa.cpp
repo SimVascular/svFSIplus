@@ -9,7 +9,8 @@
 namespace lhsa_ns {
 
 void add_col(const int tnNo, const int row, const int col, int& mnnzeic,
-             Array<int>& uInd) {
+             Array<int>& uInd)
+{
   int i = -1;
 
   while (true) {
@@ -65,7 +66,8 @@ void add_col(const int tnNo, const int row, const int col, int& mnnzeic,
 /// Replicates 'SUBROUTINE DOASSEM (d, eqN, lK, lR)'.
 //
 void do_assem(ComMod& com_mod, const int d, const Vector<int>& eqN,
-              const Array3<double>& lK, const Array<double>& lR) {
+              const Array3<double>& lK, const Array<double>& lR)
+{
   auto& R = com_mod.R;
   auto& Val = com_mod.Val;
   const auto& rowPtr = com_mod.rowPtr;
@@ -117,7 +119,8 @@ void do_assem(ComMod& com_mod, const int d, const Vector<int>& eqN,
 //   com_mod.colPtr.resize(nnz);
 //   com_mod.rowPtr.resize(tnNo+1);
 //
-void lhsa(Simulation* simulation, int& nnz) {
+void lhsa(Simulation* simulation, int& nnz)
+{
   using namespace consts;
 
   auto& com_mod = simulation->com_mod;
@@ -351,7 +354,8 @@ void lhsa(Simulation* simulation, int& nnz) {
 // resiz
 //-------
 //
-void resiz(const int tnNo, int& mnnzeic, Array<int>& uInd) {
+void resiz(const int tnNo, int& mnnzeic, Array<int>& uInd)
+{
   int n = mnnzeic;
   Array<int> tmp(n, tnNo);
   tmp = -1;

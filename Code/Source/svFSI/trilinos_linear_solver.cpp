@@ -110,7 +110,8 @@ bool coupledBC;
  * \param y result of sprase matrix vector multiplication
  */
 int TrilinosMatVec::Apply(const Epetra_MultiVector &x,
-                          Epetra_MultiVector &y) const {
+                          Epetra_MultiVector &y) const
+{
   // store initial matrix vector product result in Y
   Trilinos::K->Apply(x, y);  // K*x
   if (coupledBC) {
@@ -344,7 +345,8 @@ void trilinos_lhs_create_(unsigned &numGlobalNodes, unsigned &numLocalNodes,
  *                           (dof, numNodesPerElement)
  */
 void trilinos_doassem_(int &numNodesPerElement, const int *eqN,
-                       const double *lK, double *lR) {
+                       const double *lK, double *lR)
+{
   // dof values per global ID in the force vector
   int numValuesPerID = dof;
 
@@ -439,7 +441,8 @@ void trilinos_global_solve_(const double *Val, const double *RHS, double *x,
                             double &initNorm, int &numIters, double &solverTime,
                             double &dB, bool &converged, int &lsType,
                             double &relTol, int &maxIters, int &kspace,
-                            int &precondType) {
+                            int &precondType)
+{
   // std::cout << "[trilinos_global_solve] ========== trilinos_global_solve
   // ==========" << std::endl; std::cout << "[trilinos_global_solve]
   // ghostAndLocalNodes: " << ghostAndLocalNodes << std::endl;
@@ -544,7 +547,8 @@ void trilinos_solve_(double *x, const double *dirW, double &resNorm,
                      double &initNorm, int &numIters, double &solverTime,
                      double &dB, bool &converged, int &lsType, double &relTol,
                      int &maxIters, int &kspace, int &precondType,
-                     bool &isFassem) {
+                     bool &isFassem)
+{
 #define n_debug_trilinos_solve
 #ifdef debug_trilinos_solve
   std::cout << "[trilinos_solve] ========== trilinos_solve =========="
@@ -684,7 +688,8 @@ void trilinos_solve_(double *x, const double *dirW, double &resNorm,
 }  // trilinos_solve_
 
 // ----------------------------------------------------------------------------
-void setPreconditioner(int precondType, AztecOO &Solver) {
+void setPreconditioner(int precondType, AztecOO &Solver)
+{
   // initialize reordering for ILU/ILUT preconditioners
   Solver.SetAztecOption(AZ_reorder, 1);
   // solve precond structure into separate function
@@ -734,7 +739,8 @@ void setPreconditioner(int precondType, AztecOO &Solver) {
  * Tune parameters for htis and IFPACK
  * Ref: https://trilinos.org/oldsite/packages/ml/mlguide5.pdf
  */
-void setMLPrec(AztecOO &Solver) {
+void setMLPrec(AztecOO &Solver)
+{
   // break up into initializer
   Teuchos::ParameterList MLList;
   int *options = new int[AZ_OPTIONS_SIZE];
@@ -816,7 +822,8 @@ void setMLPrec(AztecOO &Solver) {
  * pass in IC, ICT
  * pass in string for which to turn on right now set to IC
  */
-void setIFPACKPrec(AztecOO &Solver) {
+void setIFPACKPrec(AztecOO &Solver)
+{
   // Ifpack Factory;
   // std::string PrecType = "ILUT"; // exact solve on each subdomain
   // int OverlapLevel = 0; // one row of overlap among the processes
@@ -847,7 +854,8 @@ void setIFPACKPrec(AztecOO &Solver) {
  * This routine is to be used with preconditioners such as ILUT which require
  * 1s on the diagonal
  */
-void checkDiagonalIsZero() {
+void checkDiagonalIsZero()
+{
   Epetra_Vector diagonal(*Trilinos::blockMap);
   Trilinos::K->ExtractDiagonalCopy(diagonal);
   bool isZeroDiag = false;  // initialize to false
@@ -868,7 +876,8 @@ void checkDiagonalIsZero() {
  * \param dirW    pass in array with Dirichlet boundary face nodes marked
  * \paramdiagonal diagonal scaling vector need to output to multiply solution by
  */
-void constructJacobiScaling(const double *dirW, Epetra_Vector &diagonal) {
+void constructJacobiScaling(const double *dirW, Epetra_Vector &diagonal)
+{
   // Loop over nodes owned by that processor
   //
   for (int i = 0; i < localNodes; ++i) {
@@ -918,7 +927,8 @@ void constructJacobiScaling(const double *dirW, Epetra_Vector &diagonal) {
  * \param  v            coupled boundary vector
  * \param  isCoupledBC  determines if coupled resistance BC is turned on
  */
-void trilinos_bc_create_(const double *v, bool &isCoupledBC) {
+void trilinos_bc_create_(const double *v, bool &isCoupledBC)
+{
   // store as global to determine which matvec multiply to use in solver
   coupledBC = isCoupledBC;
 
@@ -947,7 +957,8 @@ void trilinos_bc_create_(const double *v, bool &isCoupledBC) {
 /**
  * free the memory of the global data structures
  */
-void trilinos_lhs_free_() {
+void trilinos_lhs_free_()
+{
   if (MLPrec) {
     MLPrec->DestroyPreconditioner();
     delete MLPrec;
@@ -991,7 +1002,8 @@ void trilinos_lhs_free_() {
 /**
  * for debugging purposes here are routines to print the matrix and RHS vector
  */
-void printMatrixToFile() {
+void printMatrixToFile()
+{
   std::ofstream Kfile("K.txt");
   Kfile << std::scientific;
   Kfile.precision(17);
@@ -1026,7 +1038,8 @@ void printMatrixToFile() {
   Kfile.close();
 }  // printMatrixToFile()
 
-void printRHSToFile() {
+void printRHSToFile()
+{
   std::ofstream Ffile("F.txt");
   Ffile.precision(17);
   std::vector<double> F(Trilinos::F->MyLength());
@@ -1041,7 +1054,8 @@ void printRHSToFile() {
 // ----------------------------------------------------------------------------
 /**
  */
-void printSolutionToFile() {
+void printSolutionToFile()
+{
   std::ofstream Xfile("X.txt");
   Xfile.precision(17);
   std::vector<double> X(Trilinos::X->MyLength());

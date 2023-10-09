@@ -45,7 +45,8 @@ using namespace consts;
 #include "nn_elem_nn_bnds.h"
 
 void get_gip(const int insd, consts::ElementType eType, const int nG,
-             Vector<double>& w, Array<double>& xi) {
+             Vector<double>& w, Array<double>& xi)
+{
   try {
     get_element_gauss_int_data[eType](insd, nG, w, xi);
   } catch (const std::bad_function_call& exception) {
@@ -59,7 +60,8 @@ void get_gip(const int insd, consts::ElementType eType, const int nG,
 ///
 /// \todo [NOTE] There should just have a single map for mesh and face types.
 //
-void get_gip(mshType& mesh) {
+void get_gip(mshType& mesh)
+{
   try {
     set_element_gauss_int_data[mesh.eType](mesh);
   } catch (const std::bad_function_call& exception) {
@@ -69,7 +71,8 @@ void get_gip(mshType& mesh) {
   }
 }
 
-void get_gip(Simulation* simulation, faceType& face) {
+void get_gip(Simulation* simulation, faceType& face)
+{
   try {
     set_face_gauss_int_data[face.eType](face);
   } catch (const std::bad_function_call& exception) {
@@ -83,7 +86,8 @@ void get_gip(Simulation* simulation, faceType& face) {
 //
 void get_gnn(const int insd, consts::ElementType eType, const int eNoN,
              const int g, Array<double>& xi, Array<double>& N,
-             Array3<double>& Nx) {
+             Array3<double>& Nx)
+{
   try {
     get_element_shape_data[eType](insd, eNoN, g, xi, N, Nx);
   } catch (const std::bad_function_call& exception) {
@@ -93,11 +97,12 @@ void get_gnn(const int insd, consts::ElementType eType, const int eNoN,
   }
 }
 
-/// @brief A big fat hack because the Fortran GETNN() operates on primitive types but
-/// the C++ version does not, uses Array and Vector objects.
+/// @brief A big fat hack because the Fortran GETNN() operates on primitive
+/// types but the C++ version does not, uses Array and Vector objects.
 //
 void get_gnn(const int nsd, consts::ElementType eType, const int eNoN,
-             Vector<double>& xi, Vector<double>& N, Array<double>& Nx) {
+             Vector<double>& xi, Vector<double>& N, Array<double>& Nx)
+{
   int size = xi.size();
   Array<double> xi_a(size, 1);
   xi_a.set_col(0, xi);
@@ -111,7 +116,8 @@ void get_gnn(const int nsd, consts::ElementType eType, const int eNoN,
   Nx = Nx_a.slice(0);
 }
 
-void get_gnn(int gaus_pt, mshType& mesh) {
+void get_gnn(int gaus_pt, mshType& mesh)
+{
   try {
     set_element_shape_data[mesh.eType](gaus_pt, mesh);
   } catch (const std::bad_function_call& exception) {
@@ -121,7 +127,8 @@ void get_gnn(int gaus_pt, mshType& mesh) {
   }
 }
 
-void get_gnn(Simulation* simulation, int gaus_pt, faceType& face) {
+void get_gnn(Simulation* simulation, int gaus_pt, faceType& face)
+{
   try {
     set_face_shape_data[face.eType](gaus_pt, face);
   } catch (const std::bad_function_call& exception) {
@@ -137,7 +144,8 @@ void get_gnn(Simulation* simulation, int gaus_pt, faceType& face) {
 //
 void get_gn_nxx(const int insd, const int ind2, consts::ElementType eType,
                 const int eNoN, const int gaus_pt, const Array<double>& xi,
-                Array3<double>& Nxx) {
+                Array3<double>& Nxx)
+{
   using namespace consts;
 
   // Element types that don't have 2nd derivatives computed for them.
@@ -164,7 +172,8 @@ void get_gn_nxx(const int insd, const int ind2, consts::ElementType eType,
 /// Reproduces the Fortran 'GETNNBNDS' subroutine.
 //
 void get_nn_bnds(const int nsd, consts::ElementType eType, const int eNoN,
-                 Array<double>& xib, Array<double>& Nb) {
+                 Array<double>& xib, Array<double>& Nb)
+{
   using namespace consts;
 
   for (int i = 0; i < nsd; i++) {
@@ -281,7 +290,8 @@ void get_nn_bnds(const int nsd, consts::ElementType eType, const int eNoN,
 ///
 /// Replicates Fortran SUBROUTINE GETNNBNDS.
 //
-void get_nn_bnds(const ComMod& com_mod, mshType& mesh) {
+void get_nn_bnds(const ComMod& com_mod, mshType& mesh)
+{
   int nsd = com_mod.nsd;
   auto eType = mesh.eType;
   int eNoN = mesh.eNoN;
@@ -292,7 +302,8 @@ void get_nn_bnds(const ComMod& com_mod, mshType& mesh) {
 void get_nnx(const int nsd, const consts::ElementType eType, const int eNoN,
              const Array<double>& xl, const Array<double>& xib,
              const Array<double>& Nb, const Vector<double>& xp,
-             Vector<double>& xi, Vector<double>& N, Array<double>& Nx) {
+             Vector<double>& xi, Vector<double>& N, Array<double>& Nx)
+{
 #define n_debug_get_nnx
 #ifdef debug_get_nnx
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
@@ -342,11 +353,13 @@ void get_nnx(const int nsd, const consts::ElementType eType, const int eNoN,
   }
 }
 
-/// @brief Inverse maps {xp} to {$\xi$} in an element with coordinates {xl} using Newton's method
+/// @brief Inverse maps {xp} to {$\xi$} in an element with coordinates {xl}
+/// using Newton's method
 //
 void get_xi(const int nsd, consts::ElementType eType, const int eNoN,
             const Array<double>& xl, const Vector<double>& xp,
-            Vector<double>& xi, bool& flag) {
+            Vector<double>& xi, bool& flag)
+{
   static const int MAXITR = 5;
   static const double RTOL = 1.E-6;
   static const double ATOL = 1.E-12;
@@ -418,7 +431,8 @@ void get_xi(const int nsd, consts::ElementType eType, const int eNoN,
 }
 
 void gnn(const int eNoN, const int nsd, const int insd, Array<double>& Nxi,
-         Array<double>& x, Array<double>& Nx, double& Jac, Array<double>& ks) {
+         Array<double>& x, Array<double>& Nx, double& Jac, Array<double>& ks)
+{
   Array<double> xXi(nsd, insd);
   Array<double> xiX(insd, nsd);
 
@@ -523,7 +537,8 @@ void gnn(const int eNoN, const int nsd, const int insd, Array<double>& Nxi,
 //
 void gnnb(const ComMod& com_mod, const faceType& lFa, const int e, const int g,
           const int nsd, const int insd, const int eNoNb,
-          const Array<double>& Nx, Vector<double>& n) {
+          const Array<double>& Nx, Vector<double>& n)
+{
   auto& cm = com_mod.cm;
 
 #define n_debug_gnnb
@@ -698,13 +713,15 @@ void gnnb(const ComMod& com_mod, const faceType& lFa, const int e, const int g,
   }
 }
 
-/// @brief Compute shell kinematics: normal vector, covariant & contravariant basis vectors
+/// @brief Compute shell kinematics: normal vector, covariant & contravariant
+/// basis vectors
 ///
 /// Replicates 'SUBROUTINE GNNS(eNoN, Nxi, xl, nV, gCov, gCnv)' defined in NN.f.
 //
 void gnns(const int nsd, const int eNoN, const Array<double>& Nxi,
           Array<double>& xl, Vector<double>& nV, Array<double>& gCov,
-          Array<double>& gCnv) {
+          Array<double>& gCnv)
+{
   int insd = nsd - 1;
 
   Array<double> xXi(nsd, insd);
@@ -752,7 +769,8 @@ void gnns(const int nsd, const int eNoN, const Array<double>& Nxi,
 //
 void gn_nxx(const int l, const int eNoN, const int nsd, const int insd,
             Array<double>& Nxi, Array<double>& Nxi2, Array<double>& lx,
-            Array<double>& Nx, Array<double>& Nxx) {
+            Array<double>& Nx, Array<double>& Nxx)
+{
   Array<double> xXi(nsd, insd);
   Array<double> xXi2(nsd, l);
   Array<double> K(l, l);
@@ -883,7 +901,8 @@ void gn_nxx(const int l, const int eNoN, const int nsd, const int insd,
 ///   mesh % xib(2,nsd) - Bounds on Gauss integration points in parametric space
 ///   mesh % Nb(2,mesh % eNoN) - Bounds on shape functions
 //
-void select_ele(const ComMod& com_mod, mshType& mesh) {
+void select_ele(const ComMod& com_mod, mshType& mesh)
+{
   // Set integration dimension.
   int insd;
   if (mesh.lShl) {
@@ -937,7 +956,8 @@ void select_ele(const ComMod& com_mod, mshType& mesh) {
 /// Face data set
 ///   face % eType - element type (e.g. eType_TET4)
 //
-void select_eleb(Simulation* simulation, mshType& mesh, faceType& face) {
+void select_eleb(Simulation* simulation, mshType& mesh, faceType& face)
+{
   // Get the object storing global variables.
   auto& com_mod = simulation->get_com_mod();
 

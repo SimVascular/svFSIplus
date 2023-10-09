@@ -18,7 +18,8 @@ namespace txt_ns {
 //
 void cctxt(const ComMod& com_mod, CmMod& cm_mod, const eqType& lEq,
            const std::array<std::string, 2>& fName,
-           const std::vector<bool>& wtn) {
+           const std::vector<bool>& wtn)
+{
   int fid = 1;
 
   if (com_mod.cm.slv(cm_mod)) {
@@ -89,7 +90,8 @@ void cctxt(const ComMod& com_mod, CmMod& cm_mod, const eqType& lEq,
 
 /// \todo [NOTE] This is not fully implemented.
 //
-void txt(Simulation* simulation, const bool flag) {
+void txt(Simulation* simulation, const bool flag)
+{
   using namespace consts;
   using namespace utils;
 
@@ -408,7 +410,8 @@ void txt(Simulation* simulation, const bool flag) {
 //
 void wtxt(const ComMod& com_mod, CmMod& cm_mod, const eqType& lEq, const int m,
           const std::array<std::string, 2>& fName, const Array<double>& tmpV,
-          const std::vector<bool>& wtn, const bool div, const bool pFlag) {
+          const std::vector<bool>& wtn, const bool div, const bool pFlag)
+{
   return;
 
 #ifdef debug_wtxt

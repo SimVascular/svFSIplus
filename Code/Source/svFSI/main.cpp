@@ -32,7 +32,8 @@
 
 /// @brief Read in a solver XML file and all mesh and BC data.
 //
-void read_files(Simulation* simulation, const std::string& file_name) {
+void read_files(Simulation* simulation, const std::string& file_name)
+{
   simulation->com_mod.timer.set_time();
 
   if (simulation->com_mod.cm.slv(simulation->cm_mod)) {
@@ -57,7 +58,8 @@ void read_files(Simulation* simulation, const std::string& file_name) {
 ///
 /// Reproduces the outer and inner loops in Fortan MAIN.f.
 //
-void iterate_solution(Simulation* simulation) {
+void iterate_solution(Simulation* simulation)
+{
   using namespace consts;
 
   auto& com_mod = simulation->com_mod;
@@ -457,11 +459,11 @@ void iterate_solution(Simulation* simulation) {
 //
 /* [NOTE] Not implemented.
 if (ibFlag) {
-  CALL IB_INTERPYU(Yn, Dn)
-  if (ib.cpld == ibCpld_I) {
-    ib.Auo = ib.Aun
-    ib.Ubo = ib.Ubn
-  }
+        CALL IB_INTERPYU(Yn, Dn)
+        if (ib.cpld == ibCpld_I) {
+                ib.Auo = ib.Aun
+                ib.Ubo = ib.Ubn
+        }
 }
 */
 
@@ -604,10 +606,11 @@ if (ibFlag) {
 
 void run_simulation(Simulation* simulation) { iterate_solution(simulation); }
 
-/// @brief Run a simulation from the command line using the name of a solver input
-/// XML file as an argument.
+/// @brief Run a simulation from the command line using the name of a solver
+/// input XML file as an argument.
 //
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[])
+{
   if (argc != 2) {
     std::cout << "[svFSIplus:ERROR] The svFSIplus program requires the solver "
                  "input XML file name as an argument."

@@ -13,7 +13,8 @@ namespace add_bc_mul {
 /// Reproduces code in ADDBCMUL.f.
 //
 void add_bc_mul(FSILS_lhsType& lhs, const BcopType op_Type, const int dof,
-                const Array<double>& X, Array<double>& Y) {
+                const Array<double>& X, Array<double>& Y)
+{
   Vector<double> coef(lhs.nFaces);
   Array<double> v(dof, lhs.nNo);
 

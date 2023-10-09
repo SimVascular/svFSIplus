@@ -12,11 +12,13 @@
 
 namespace spar_mul {
 
-/// @brief Reproduces 'SUBROUTINE FSILS_SPARMULSS(lhs, rowPtr, colPtr, K, U, KU)'
+/// @brief Reproduces 'SUBROUTINE FSILS_SPARMULSS(lhs, rowPtr, colPtr, K, U,
+/// KU)'
 //
 void fsils_spar_mul_ss(FSILS_lhsType& lhs, const Array<int>& rowPtr,
                        const Vector<int>& colPtr, const Vector<double>& K,
-                       const Vector<double>& U, Vector<double>& KU) {
+                       const Vector<double>& U, Vector<double>& KU)
+{
   int nNo = lhs.nNo;
   KU = 0.0;
 
@@ -29,12 +31,14 @@ void fsils_spar_mul_ss(FSILS_lhsType& lhs, const Array<int>& rowPtr,
   fsils_commus(lhs, KU);
 }
 
-/// @brief Reproduces 'SUBROUTINE FSILS_SPARMULSV(lhs, rowPtr, colPtr, dof, K, U, KU)'.
+/// @brief Reproduces 'SUBROUTINE FSILS_SPARMULSV(lhs, rowPtr, colPtr, dof, K,
+/// U, KU)'.
 //
 void fsils_spar_mul_sv(FSILS_lhsType& lhs, const Array<int>& rowPtr,
                        const Vector<int>& colPtr, const int dof,
                        const Array<double>& K, const Vector<double>& U,
-                       Array<double>& KU) {
+                       Array<double>& KU)
+{
   int nNo = lhs.nNo;
   KU = 0.0;
 
@@ -95,12 +99,14 @@ void fsils_spar_mul_sv(FSILS_lhsType& lhs, const Array<int>& rowPtr,
   fsils_commuv(lhs, dof, KU);
 }
 
-/// @brief Reproduces 'SUBROUTINE FSILS_SPARMULVS(lhs, rowPtr, colPtr, dof, K, U, KU)'.
+/// @brief Reproduces 'SUBROUTINE FSILS_SPARMULVS(lhs, rowPtr, colPtr, dof, K,
+/// U, KU)'.
 //
 void fsils_spar_mul_vs(FSILS_lhsType& lhs, const Array<int>& rowPtr,
                        const Vector<int>& colPtr, const int dof,
                        const Array<double>& K, const Array<double>& U,
-                       Vector<double>& KU) {
+                       Vector<double>& KU)
+{
   int nNo = lhs.nNo;
   KU = 0.0;
 
@@ -159,12 +165,14 @@ void fsils_spar_mul_vs(FSILS_lhsType& lhs, const Array<int>& rowPtr,
   fsils_commus(lhs, KU);
 }
 
-/// @brief Reproduces 'SUBROUTINE FSILS_SPARMULVV(lhs, rowPtr, colPtr, dof, K, U, KU)'.
+/// @brief Reproduces 'SUBROUTINE FSILS_SPARMULVV(lhs, rowPtr, colPtr, dof, K,
+/// U, KU)'.
 //
 void fsils_spar_mul_vv(FSILS_lhsType& lhs, const Array<int>& rowPtr,
                        const Vector<int>& colPtr, const int dof,
                        const Array<double>& K, const Array<double>& U,
-                       Array<double>& KU) {
+                       Array<double>& KU)
+{
   int nNo = lhs.nNo;
   KU = 0.0;
 

@@ -17,7 +17,8 @@ namespace all_fun {
 //--------------
 //
 double aspect_ratio(ComMod& com_mod, const int nDim, const int eNoN,
-                    const Array<double>& x) {
+                    const Array<double>& x)
+{
   Array<int> rowM(eNoN, eNoN - 1);
   Array<int> colM(nDim, nDim - 1);
 
@@ -65,7 +66,8 @@ double aspect_ratio(ComMod& com_mod, const int nDim, const int eNoN,
 // commu
 //-------
 //
-void commu(const ComMod& com_mod, Vector<double>& U) {
+void commu(const ComMod& com_mod, Vector<double>& U)
+{
   if (com_mod.cm.seq()) {
     return;
   }
@@ -88,7 +90,8 @@ void commu(const ComMod& com_mod, Vector<double>& U) {
 // commu
 //-------
 //
-void commu(const ComMod& com_mod, Array<double>& U) {
+void commu(const ComMod& com_mod, Array<double>& U)
+{
   if (com_mod.cm.seq()) {
     return;
   }
@@ -114,8 +117,8 @@ void commu(const ComMod& com_mod, Array<double>& U) {
 ///
 /// Reproduces 'FUNCTION DOMAIN(lM, iEq, e)' defined in ALLFUN.f.
 //
-int domain(const ComMod& com_mod, const mshType& lM, const int iEq,
-           const int e) {
+int domain(const ComMod& com_mod, const mshType& lM, const int iEq, const int e)
+{
   int domain_id = -1;
   auto& eq = com_mod.eq[iEq];
 
@@ -145,7 +148,8 @@ int domain(const ComMod& com_mod, const mshType& lM, const int iEq,
 /// @brief Find the face ID and mesh ID based on the face name.
 //
 void find_face(const std::vector<mshType>& mesh_list,
-               const std::string& faceName, int& iM, int& iFa) {
+               const std::string& faceName, int& iM, int& iFa)
+{
   iFa = -1;
   iM = -1;
 
@@ -170,7 +174,8 @@ void find_face(const std::vector<mshType>& mesh_list,
 /// @brief Find the mesh ID based on the mesh name.
 //
 void find_msh(const std::vector<mshType>& mesh_list,
-              const std::string& mesh_name, int& iM) {
+              const std::string& mesh_name, int& iM)
+{
   iM = -1;
 
   for (int i = 0; i < mesh_list.size(); i++) {
@@ -184,7 +189,8 @@ void find_msh(const std::vector<mshType>& mesh_list,
 /// @brief Reproduces 'FUNCTION GLOBALRV(lM, U)' defined in ALLFUN.f.
 //
 Array<double> global(const ComMod& com_mod, const CmMod& cm_mod,
-                     const mshType& lM, const Array<double>& U) {
+                     const mshType& lM, const Array<double>& U)
+{
   auto& cm = com_mod.cm;
 
 #define n_debug_global_rv
@@ -271,7 +277,8 @@ Array<double> global(const ComMod& com_mod, const CmMod& cm_mod,
 /// Replicates 'FUNCTION vInteg(dId, s, l, u, pFlag)' defined in ALLFUN.f.
 //
 double integ(const ComMod& com_mod, const CmMod& cm_mod, int dId,
-             const Array<double>& s, int l, int u, bool pFlag) {
+             const Array<double>& s, int l, int u, bool pFlag)
+{
   using namespace consts;
 
 #define n_debug_integ_v
@@ -512,7 +519,8 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, int dId,
 /// Reproduces 'FUNCTION IntegS(lFa, s, pflag)'.
 //
 double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa,
-             const Vector<double>& s, bool pFlag) {
+             const Vector<double>& s, bool pFlag)
+{
   using namespace consts;
 #define n_debug_integ_s
 #ifdef debug_integ_s
@@ -655,7 +663,8 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa,
 /// Reproduces 'FUNCTION IntegV(lFa, s)'
 //
 double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa,
-             const Array<double>& s) {
+             const Array<double>& s)
+{
   using namespace consts;
 
 #define n_debug_integ_V
@@ -756,7 +765,8 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa,
 /// Reproduces 'FUNCTION IntegG(lFa, s, l, uo, THflag)'.
 //
 double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa,
-             const Array<double>& s, const int l, int uo, bool THflag) {
+             const Array<double>& s, const int l, int uo, bool THflag)
+{
   using namespace consts;
 
 #define n_debug_integ_g
@@ -815,7 +825,8 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa,
 }
 
 bool is_domain(const ComMod& com_mod, const eqType& eq, const int node,
-               const consts::EquationType phys) {
+               const consts::EquationType phys)
+{
   bool result = false;
 
   // Single domain is assumed and we only need to check that
@@ -850,7 +861,8 @@ bool is_domain(const ComMod& com_mod, const eqType& eq, const int node,
 /// @brief Computes the JACOBIAN of an element.
 //
 double jacobian(ComMod& com_mod, const int nDim, const int eNoN,
-                const Array<double>& x, const Array<double>& Nxi) {
+                const Array<double>& x, const Array<double>& Nxi)
+{
   double Jac = 0.0;
   Array<double> xXi(nDim, nDim);
 
@@ -873,7 +885,8 @@ double jacobian(ComMod& com_mod, const int nDim, const int eNoN,
 }
 
 Vector<int> local(const ComMod& com_mod, const CmMod& cm_mod, const cmType& cm,
-                  Vector<int>& U) {
+                  Vector<int>& U)
+{
   Vector<int> local_vector;
 
   if (com_mod.ltg.size() == 0) {
@@ -911,7 +924,8 @@ Vector<int> local(const ComMod& com_mod, const CmMod& cm_mod, const cmType& cm,
 }
 
 Array<double> local(const ComMod& com_mod, const CmMod& cm_mod,
-                    const cmType& cm, Array<double>& U) {
+                    const cmType& cm, Array<double>& U)
+{
   // int task_id = cm.idcm();
   // std::string msg_prefix = std::string("[local_rv:") +
   // std::to_string(task_id) + "] "; dmsg; dmsg << "========== local_rv
@@ -979,7 +993,8 @@ Array<double> local(const ComMod& com_mod, const CmMod& cm_mod,
   return local_array;
 }
 
-Vector<double> mkc(const ComMod& com_mod, Vector<double>& U) {
+Vector<double> mkc(const ComMod& com_mod, Vector<double>& U)
+{
   if (U.size() != com_mod.lhs.nNo) {
     throw std::runtime_error("MKC is only specified for vector with size nNo");
   }
@@ -997,7 +1012,8 @@ Vector<double> mkc(const ComMod& com_mod, Vector<double>& U) {
   return result;
 }
 
-Array<double> mkc(const ComMod& com_mod, Array<double>& U) {
+Array<double> mkc(const ComMod& com_mod, Array<double>& U)
+{
   int m = U.nrows();
   if (U.ncols() != com_mod.lhs.nNo) {
     throw std::runtime_error("MKC is only specified for vector with size nNo");
@@ -1018,7 +1034,8 @@ Array<double> mkc(const ComMod& com_mod, Array<double>& U) {
   return result;
 }
 
-void mkci(const ComMod& com_mod, Vector<double>& U) {
+void mkci(const ComMod& com_mod, Vector<double>& U)
+{
   if (com_mod.cm.seq()) {
     return;
   }
@@ -1035,7 +1052,8 @@ void mkci(const ComMod& com_mod, Vector<double>& U) {
   }
 }
 
-void mkci(const ComMod& com_mod, Array<double>& U) {
+void mkci(const ComMod& com_mod, Array<double>& U)
+{
   if (com_mod.cm.seq()) {
     return;
   }
@@ -1058,10 +1076,12 @@ void mkci(const ComMod& com_mod, Array<double>& U) {
   }
 }
 
-/// @brief Set domain ID to a given number for the entire or a range of elements in a mesh.
+/// @brief Set domain ID to a given number for the entire or a range of elements
+/// in a mesh.
 //
 void set_dmn_id(mshType& mesh, const int iDmn, const int ifirst,
-                const int ilast) {
+                const int ilast)
+{
   int first = 0;
   if (ifirst != consts::int_inf) {
     first = ifirst;
@@ -1095,7 +1115,8 @@ void set_dmn_id(mshType& mesh, const int iDmn, const int ifirst,
 /// @brief Computes the Skewness of an element.
 //
 double skewness(ComMod& com_mod, const int nDim, const int eNoN,
-                const Array<double>& x) {
+                const Array<double>& x)
+{
   Vector<double> coeff;
 
   if (nDim == 2) {
@@ -1164,7 +1185,8 @@ double skewness(ComMod& com_mod, const int nDim, const int eNoN,
 ///
 /// Replicates 'RECURSIVE SUBROUTINE SPLITJOBS(m, n, A, b)' in ALLFUN.f.
 //
-void split_jobs(int tid, int m, int n, Array<double>& A, Vector<double>& b) {
+void split_jobs(int tid, int m, int n, Array<double>& A, Vector<double>& b)
+{
 #define n_debug_split_jobs
 #ifdef debug_split_jobs
   DebugMsg dmsg(__func__, tid);

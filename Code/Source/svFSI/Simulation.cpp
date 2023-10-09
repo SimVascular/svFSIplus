@@ -7,7 +7,8 @@
 #include "load_msh.h"
 #include "mpi.h"
 
-Simulation::Simulation() {
+Simulation::Simulation()
+{
   roInf = 0.2;
   com_mod.cm.new_cm(MPI_COMM_WORLD);
 
@@ -16,7 +17,8 @@ Simulation::Simulation() {
 
 Simulation::~Simulation() {}
 
-const mshType& Simulation::get_msh(const std::string& name) {
+const mshType& Simulation::get_msh(const std::string& name)
+{
   for (auto& mesh : com_mod.msh) {
     if (mesh.name == name) {
       return mesh;
@@ -26,7 +28,8 @@ const mshType& Simulation::get_msh(const std::string& name) {
 
 /// @brief Read solver parameters.
 //
-void Simulation::read_parameters(const std::string& file_name) {
+void Simulation::read_parameters(const std::string& file_name)
+{
   parameters.read_xml(file_name);
 }
 
@@ -36,7 +39,8 @@ void Simulation::read_parameters(const std::string& file_name) {
 ///
 ///   lPtr => list%get(nTs,"Number of time steps",1,ll=1)
 //
-void Simulation::set_module_parameters() {
+void Simulation::set_module_parameters()
+{
   // Set ComMod module varliables.
   //
   auto& general = parameters.general_simulation_parameters;

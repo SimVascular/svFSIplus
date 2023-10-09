@@ -23,7 +23,8 @@ namespace vtk_xml {
 #define dbg_vtk_xml
 #define n_dbg_read_vtu_pdata
 
-void do_test() {
+void do_test()
+{
   std::string file_name_1 = "x_remesh_restart_0__cm.bin";
   std::string file_name_2 = "x_remesh_restart_1__cm.bin";
 
@@ -137,7 +138,8 @@ void do_test() {
 /// Reproduces 'SUBROUTINE INTMSHDATA(lM, d, outDof, nOute)'
 //
 void int_msh_data(const ComMod& com_mod, const CmMod& cm_mod, const mshType& lM,
-                  dataType& d, const int outDof, const int nOute) {
+                  dataType& d, const int outDof, const int nOute)
+{
   auto& cm = com_mod.cm;
 
 #define n_debug_int_msh_data
@@ -412,7 +414,8 @@ void int_msh_data(const ComMod& com_mod, const CmMod& cm_mod, const mshType& lM,
 //
 // Replicates Fortran READVTP subroutine defined in VTKXML.f.
 //
-void read_vtp(const std::string& file_name, faceType& face) {
+void read_vtp(const std::string& file_name, faceType& face)
+{
   using namespace vtk_xml_parser;
 
   if (FILE* file = fopen(file_name.c_str(), "r")) {
@@ -476,7 +479,8 @@ void read_vtp(const std::string& file_name, faceType& face) {
 // Reproduces Fortran 'SUBROUTINE READVTPPDATA(lFa, fName, kwrd, m, idx)'.
 //
 void read_vtp_pdata(const std::string& fName, const std::string& kwrd,
-                    const int nsd, const int m, const int idx, faceType& face) {
+                    const int nsd, const int m, const int idx, faceType& face)
+{
   if (FILE* file = fopen(fName.c_str(), "r")) {
     fclose(file);
   } else {
@@ -538,7 +542,8 @@ void read_vtp_pdata(const std::string& fName, const std::string& kwrd,
 //
 //   SUBROUTINE READVTU(lM, fName)
 //
-void read_vtu(const std::string& file_name, mshType& mesh) {
+void read_vtu(const std::string& file_name, mshType& mesh)
+{
   using namespace vtk_xml_parser;
 
   if (FILE* file = fopen(file_name.c_str(), "r")) {
@@ -591,7 +596,8 @@ void read_vtu(const std::string& file_name, mshType& mesh) {
 //   m - The number of data components (?)
 //
 void read_vtu_pdata(const std::string& fName, const std::string& kwrd,
-                    const int nsd, const int m, const int idx, mshType& mesh) {
+                    const int nsd, const int m, const int idx, mshType& mesh)
+{
   if (FILE* file = fopen(fName.c_str(), "r")) {
     fclose(file);
   } else {
@@ -644,7 +650,8 @@ void read_vtu_pdata(const std::string& fName, const std::string& kwrd,
 // Reproduces 'SUBROUTINE READVTUS(lA, lY, lD, fName)'
 //
 void read_vtus(Simulation* simulation, Array<double>& lA, Array<double>& lY,
-               Array<double>& lD, const std::string& fName) {
+               Array<double>& lD, const std::string& fName)
+{
   using namespace consts;
 
   auto& com_mod = simulation->com_mod;
@@ -755,7 +762,8 @@ void read_vtus(Simulation* simulation, Array<double>& lA, Array<double>& lY,
 //-----------
 // Reproduces Fortran 'SUBROUTINE WRITEVTP(lFa, fName)'
 //
-void write_vtp(ComMod& com_mod, faceType& lFa, const std::string& fName) {
+void write_vtp(ComMod& com_mod, faceType& lFa, const std::string& fName)
+{
   const int nsd = com_mod.nsd;
   // std::cout << "[write_vtp] ========== write_vtp ==========" << std::endl;
   // std::cout << "[write_vtp] lFa.x.size(): " << lFa.x.size() << std::endl;
@@ -782,7 +790,8 @@ void write_vtp(ComMod& com_mod, faceType& lFa, const std::string& fName) {
 //-----------
 // Reproduces Fortran 'SUBROUTINE WRITEVTU(lM, fName)'
 //
-void write_vtu(ComMod& com_mod, mshType& lM, const std::string& fName) {
+void write_vtu(ComMod& com_mod, mshType& lM, const std::string& fName)
+{
   const int nsd = com_mod.nsd;
   // std::cout << "[write_vtu] ========== write_vtu ==========" << std::endl;
   // std::cout << "[write_vtu] fName: " << fName << std::endl;
@@ -802,7 +811,8 @@ void write_vtu(ComMod& com_mod, mshType& lM, const std::string& fName) {
 // This function can be called withing the code for distributed meshes for
 // debugging.
 //
-void write_vtu_debug(ComMod& com_mod, mshType& lM, const std::string& fName) {
+void write_vtu_debug(ComMod& com_mod, mshType& lM, const std::string& fName)
+{
   const int nsd = com_mod.nsd;
   // std::cout << "[write_vtu_debug] ========== write_vtu_debug ==========" <<
   // std::endl; std::cout << "[write_vtu_debug] fName: " << fName << std::endl;
@@ -842,7 +852,8 @@ void write_vtu_debug(ComMod& com_mod, mshType& lM, const std::string& fName) {
 //
 void write_vtus(Simulation* simulation, const Array<double>& lA,
                 const Array<double>& lY, const Array<double>& lD,
-                const bool lAve) {
+                const bool lAve)
+{
 #define n_debug_write_vtus
 #ifdef debug_write_vtus
   DebugMsg dmsg(__func__, simulation->com_mod.cm.idcm());

@@ -22,7 +22,8 @@
 namespace stokes {
 
 void construct_stokes(ComMod& com_mod, const mshType& lM,
-                      const Array<double>& Ag, const Array<double>& Yg) {
+                      const Array<double>& Ag, const Array<double>& Yg)
+{
 #define n_debug_construct_stokes
 #ifdef debug_construct_stokes
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
@@ -234,7 +235,8 @@ void stokes_2d_c(ComMod& com_mod, const int lStab, const int eNoNw,
                  const Array<double>& Nwx, const Array<double>& Nqx,
                  const Array<double>& al, const Array<double>& yl,
                  const Array<double>& bfl, Array<double>& lR,
-                 Array3<double>& lK) {
+                 Array3<double>& lK)
+{
   using namespace consts;
 
 #define n_debug_stokes_2d_c
@@ -361,7 +363,8 @@ void stokes_2d_m(ComMod& com_mod, const int eNoNw, const int eNoNq,
                  const Vector<double>& Nq, const Array<double>& Nwx,
                  const Array<double>& al, const Array<double>& yl,
                  const Array<double>& bfl, Array<double>& lR,
-                 Array3<double>& lK) {
+                 Array3<double>& lK)
+{
   using namespace consts;
 
 #define n_debug_stokes_2d_m
@@ -476,7 +479,8 @@ void stokes_3d_c(ComMod& com_mod, const int lStab, const int eNoNw,
                  const Array<double>& Nwx, const Array<double>& Nqx,
                  const Array<double>& al, const Array<double>& yl,
                  const Array<double>& bfl, Array<double>& lR,
-                 Array3<double>& lK) {
+                 Array3<double>& lK)
+{
 #define n_debug_stokes3d_c
 #ifdef debug_stokes3d_c
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
@@ -599,7 +603,8 @@ void stokes_3d_m(ComMod& com_mod, const int eNoNw, const int eNoNq,
                  const Vector<double>& Nq, const Array<double>& Nwx,
                  const Array<double>& al, const Array<double>& yl,
                  const Array<double>& bfl, Array<double>& lR,
-                 Array3<double>& lK) {
+                 Array3<double>& lK)
+{
   using namespace consts;
 
 #define n_debug_stokes_3d_m

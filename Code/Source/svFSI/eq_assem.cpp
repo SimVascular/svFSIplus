@@ -29,7 +29,8 @@
 namespace eq_assem {
 
 void b_assem_neu_bc(ComMod& com_mod, const faceType& lFa,
-                    const Vector<double>& hg, const Array<double>& Yg) {
+                    const Vector<double>& hg, const Array<double>& Yg)
+{
 #define n_debug_b_assem_neu_bc
 #ifdef debug_b_assem_neu_bc
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
@@ -165,7 +166,8 @@ void b_assem_neu_bc(ComMod& com_mod, const faceType& lFa,
 /// Reproduces 'SUBROUTINE BNEUFOLWP(lFa, hg, Dg)'
 //
 void b_neu_folw_p(ComMod& com_mod, const faceType& lFa,
-                  const Vector<double>& hg, const Array<double>& Dg) {
+                  const Vector<double>& hg, const Array<double>& Dg)
+{
   using namespace consts;
 
 #define n_debug_b_neu_folw_p
@@ -299,7 +301,8 @@ void b_neu_folw_p(ComMod& com_mod, const faceType& lFa,
 //
 void global_eq_assem(ComMod& com_mod, CepMod& cep_mod, const mshType& lM,
                      const Array<double>& Ag, const Array<double>& Yg,
-                     const Array<double>& Dg) {
+                     const Array<double>& Dg)
+{
 #define n_debug_global_eq_assem
 #ifdef debug_global_eq_assem
   DebugMsg dmsg(__func__, com_mod.cm.idcm());

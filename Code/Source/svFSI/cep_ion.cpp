@@ -14,7 +14,8 @@ namespace cep_ion {
 ///   cep_mod.Xion
 /// \endcode
 //
-void cep_init(Simulation* simulation) {
+void cep_init(Simulation* simulation)
+{
   using namespace consts;
   auto& com_mod = simulation->com_mod;
 
@@ -114,7 +115,8 @@ void cep_init(Simulation* simulation) {
 //------------
 //
 void cep_init_l(CepMod& cep_mod, cepModelType& cep, int nX, int nG,
-                Vector<double>& X, Vector<double>& Xg) {
+                Vector<double>& X, Vector<double>& Xg)
+{
   switch (cep.cepType) {
     case ElectrophysiologyModelType::AP:
       cep_mod.ap.init(nX, X);
@@ -140,7 +142,8 @@ void cep_init_l(CepMod& cep_mod, cepModelType& cep, int nX, int nG,
 // State variable integration.
 //
 void cep_integ(Simulation* simulation, const int iEq, const int iDof,
-               const Array<double>& Dg) {
+               const Array<double>& Dg)
+{
   static bool IPASS = true;
 
   using namespace consts;
@@ -326,7 +329,8 @@ void cep_integ(Simulation* simulation, const int iEq, const int iDof,
 //
 void cep_integ_l(CepMod& cep_mod, cepModelType& cep, int nX, int nG,
                  Vector<double>& X, Vector<double>& Xg, const double t1,
-                 double& yl, const double I4f, const double dt) {
+                 double& yl, const double I4f, const double dt)
+{
   using namespace consts;
 
 #define n_debug_cep_integ_l

@@ -17,7 +17,8 @@ namespace mat_models {
 /// Reproduces Fortran 'ACTVSTRAIN'.
 //
 void actv_strain(const ComMod& com_mod, const CepMod& cep_mod, const double gf,
-                 const int nfd, const Array<double>& fl, Array<double>& Fa) {
+                 const int nfd, const Array<double>& fl, Array<double>& Fa)
+{
   using namespace mat_fun;
 
   int nsd = com_mod.nsd;
@@ -36,7 +37,8 @@ void actv_strain(const ComMod& com_mod, const CepMod& cep_mod, const double gf,
   Fa = IDm + gf * Hf + gs * Hs + gn * Hn;
 }
 
-void cc_to_voigt(const int nsd, const Tensor4<double>& CC, Array<double>& Dm) {
+void cc_to_voigt(const int nsd, const Tensor4<double>& CC, Array<double>& Dm)
+{
   if (nsd == 3) {
     Dm(0, 0) = CC(0, 0, 0, 0);
     Dm(0, 1) = CC(0, 0, 1, 1);
@@ -92,7 +94,8 @@ void cc_to_voigt(const int nsd, const Tensor4<double>& CC, Array<double>& Dm) {
 /// Reproduces Fortran 'GETFIBSTRESS' subroutine.
 //
 void get_fib_stress(const ComMod& com_mod, const CepMod& cep_mod,
-                    const fibStrsType& Tfl, double& g) {
+                    const fibStrsType& Tfl, double& g)
+{
   using namespace consts;
 
   g = 0.0;
@@ -114,7 +117,8 @@ void get_fib_stress(const ComMod& com_mod, const CepMod& cep_mod,
 void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod,
                const dmnType& lDmn, const Array<double>& F, const int nfd,
                const Array<double>& fl, const double ya, Array<double>& S,
-               Array<double>& Dm) {
+               Array<double>& Dm)
+{
   using namespace consts;
   using namespace mat_fun;
   using namespace utils;
@@ -479,14 +483,16 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod,
   cc_to_voigt(nsd, CC, Dm);
 }
 
-/// @brief Compute isochoric (deviatoric) component of 2nd Piola-Kirchhoff stress and material stiffness tensors.
+/// @brief Compute isochoric (deviatoric) component of 2nd Piola-Kirchhoff
+/// stress and material stiffness tensors.
 ///
 /// Reproduces 'SUBROUTINE GETPK2CCdev(lDmn, F, nfd, fl, ya, S, Dm, Ja)'.
 //
 void get_pk2cc_dev(const ComMod& com_mod, const CepMod& cep_mod,
                    const dmnType& lDmn, const Array<double>& F, const int nfd,
                    const Array<double>& fl, const double ya, Array<double>& S,
-                   Array<double>& Dm, double& Ja) {
+                   Array<double>& Dm, double& Ja)
+{
   using namespace consts;
   using namespace mat_fun;
   using namespace utils;
@@ -831,7 +837,8 @@ void get_pk2cc_dev(const ComMod& com_mod, const CepMod& cep_mod,
 void get_pk2cc_shlc(const ComMod& com_mod, const dmnType& lDmn, const int nfd,
                     const Array<double>& fNa0, const Array<double>& gg_0,
                     const Array<double>& gg_x, double& g33, Vector<double>& Sml,
-                    Array<double>& Dml) {
+                    Array<double>& Dml)
+{
   // [NOTE] The tolerance here is a bit larger than Fortran.
   const double ATOL = 1.0e-9;
   // const double ATOL = 1E-10;
@@ -1211,7 +1218,8 @@ void get_pk2cc_shlc(const ComMod& com_mod, const dmnType& lDmn, const int nfd,
 void get_pk2cc_shli(const ComMod& com_mod, const dmnType& lDmn, const int nfd,
                     const Array<double>& fNa0, const Array<double>& gg_0,
                     const Array<double>& gg_x, double& g33, Vector<double>& Sml,
-                    Array<double>& Dml) {
+                    Array<double>& Dml)
+{
   using namespace consts;
   using namespace mat_fun;
   using namespace utils;
@@ -1425,7 +1433,8 @@ void get_pk2cc_shli(const ComMod& com_mod, const dmnType& lDmn, const int nfd,
 /// @brief Reproduces Fortran 'GETSVOLP'.
 //
 void get_svol_p(const ComMod& com_mod, const CepMod& cep_mod,
-                const stModelType& stM, const double J, double& p, double& pl) {
+                const stModelType& stM, const double J, double& p, double& pl)
+{
   using namespace consts;
 
   double Kp = stM.Kpen;
@@ -1453,7 +1462,8 @@ void get_svol_p(const ComMod& com_mod, const CepMod& cep_mod,
 /// Reproduces Fortran 'GETTAU'.
 //
 void get_tau(const ComMod& com_mod, const dmnType& lDmn, const double detF,
-             const double Je, double& tauM, double& tauC) {
+             const double Je, double& tauM, double& tauC)
+{
   using namespace consts;
 
   double he = 0.50 * pow(Je, 1.0 / static_cast<double>(com_mod.nsd));
@@ -1479,7 +1489,8 @@ void get_tau(const ComMod& com_mod, const dmnType& lDmn, const double detF,
 
 void g_vol_pen(const ComMod& com_mod, const dmnType& lDmn, const double p,
                double& ro, double& bt, double& dro, double& dbt,
-               const double Ja) {
+               const double Ja)
+{
   using namespace consts;
 
   ro = lDmn.prop.at(PhysicalProperyType::solid_density) / Ja;

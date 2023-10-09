@@ -11,8 +11,8 @@ namespace fsi_linear_solver {
 ///   commu.task
 ///   commu.nTasks
 //
-void fsils_commu_create(FSILS_commuType& commu,
-                        cm_mod::MpiCommWorldType commi) {
+void fsils_commu_create(FSILS_commuType& commu, cm_mod::MpiCommWorldType commi)
+{
   // Some of these parameters are set for sequential version
   //
   commu.foC = true;
@@ -33,7 +33,8 @@ void fsils_commu_create(FSILS_commuType& commu,
   }
 }
 
-void fsils_commu_free(FSILS_commuType& commu) {
+void fsils_commu_free(FSILS_commuType& commu)
+{
   // IF (.NOT.commu%foC) STOP 'COMMU is not created yet to be freed'
 
   commu.foC = false;

@@ -16,7 +16,8 @@ void b_ustruct_2d(const ComMod& com_mod, const int eNoN, const double w,
                   const Vector<double>& N, const Array<double>& Nx,
                   const Array<double>& dl, const Vector<double>& hl,
                   const Vector<double>& nV, Array<double>& lR,
-                  Array3<double>& lK, Array3<double>& lKd) {
+                  Array3<double>& lK, Array3<double>& lKd)
+{
   int cEq = com_mod.cEq;
   auto& eq = com_mod.eq[cEq];
   double dt = com_mod.dt;
@@ -74,7 +75,8 @@ void b_ustruct_3d(const ComMod& com_mod, const int eNoN, const double w,
                   const Vector<double>& N, const Array<double>& Nx,
                   const Array<double>& dl, const Vector<double>& hl,
                   const Vector<double>& nV, Array<double>& lR,
-                  Array3<double>& lK, Array3<double>& lKd) {
+                  Array3<double>& lK, Array3<double>& lKd)
+{
   int cEq = com_mod.cEq;
   auto& eq = com_mod.eq[cEq];
   double dt = com_mod.dt;
@@ -160,7 +162,8 @@ void b_ustruct_3d(const ComMod& com_mod, const int eNoN, const double w,
 //
 void construct_usolid(ComMod& com_mod, CepMod& cep_mod, const mshType& lM,
                       const Array<double>& Ag, const Array<double>& Yg,
-                      const Array<double>& Dg) {
+                      const Array<double>& Dg)
+{
   using namespace consts;
 
 #define n_debug_construct_usolid
@@ -360,7 +363,8 @@ void construct_usolid(ComMod& com_mod, CepMod& cep_mod, const mshType& lM,
   }  // for e = 0 to lM.nEl
 }
 
-int get_col_ptr(ComMod& com_mod, const int rowN, const int colN) {
+int get_col_ptr(ComMod& com_mod, const int rowN, const int colN)
+{
   auto& rowPtr = com_mod.rowPtr;
   auto& colPtr = com_mod.colPtr;
 
@@ -389,7 +393,8 @@ void ustruct_2d_c(ComMod& com_mod, CepMod& cep_mod, const bool vmsFlag,
                   const Array<double>& Nqx, const Array<double>& al,
                   const Array<double>& yl, const Array<double>& dl,
                   const Array<double>& bfl, const Array<double>& Kxi,
-                  Array<double>& lR, Array3<double>& lK, Array3<double>& lKd) {
+                  Array<double>& lR, Array3<double>& lK, Array3<double>& lKd)
+{
   using namespace consts;
   using namespace mat_fun;
 
@@ -608,7 +613,8 @@ void ustruct_3d_c(ComMod& com_mod, CepMod& cep_mod, const bool vmsFlag,
                   const Array<double>& Nqx, const Array<double>& al,
                   const Array<double>& yl, const Array<double>& dl,
                   const Array<double>& bfl, const Array<double>& Kxi,
-                  Array<double>& lR, Array3<double>& lK, Array3<double>& lKd) {
+                  Array<double>& lR, Array3<double>& lK, Array3<double>& lKd)
+{
   using namespace consts;
   using namespace mat_fun;
 
@@ -882,7 +888,8 @@ void ustruct_2d_m(ComMod& com_mod, CepMod& cep_mod, const bool vmsFlag,
                   const Array<double>& al, const Array<double>& yl,
                   const Array<double>& dl, const Array<double>& bfl,
                   const Array<double>& fN, const Vector<double>& ya_l,
-                  Array<double>& lR, Array3<double>& lK, Array3<double>& lKd) {
+                  Array<double>& lR, Array3<double>& lK, Array3<double>& lKd)
+{
   using namespace consts;
   using namespace mat_fun;
 
@@ -1196,7 +1203,8 @@ void ustruct_3d_m(ComMod& com_mod, CepMod& cep_mod, const bool vmsFlag,
                   const Array<double>& al, const Array<double>& yl,
                   const Array<double>& dl, const Array<double>& bfl,
                   const Array<double>& fN, const Vector<double>& ya_l,
-                  Array<double>& lR, Array3<double>& lK, Array3<double>& lKd) {
+                  Array<double>& lR, Array3<double>& lK, Array3<double>& lKd)
+{
   using namespace consts;
   using namespace mat_fun;
 
@@ -1684,7 +1692,8 @@ void ustruct_3d_m(ComMod& com_mod, CepMod& cep_mod, const bool vmsFlag,
 //
 void ustruct_do_assem(ComMod& com_mod, const int d, const Vector<int>& eqN,
                       const Array3<double>& lKd, const Array3<double>& lK,
-                      const Array<double>& lR) {
+                      const Array<double>& lR)
+{
   const int nsd = com_mod.nsd;
   const auto& idMap = com_mod.idMap;
   auto& R = com_mod.R;
@@ -1828,7 +1837,8 @@ void ustruct_do_assem(ComMod& com_mod, const int d, const Vector<int>& eqN,
 /// Modifies:
 ///   com_mod.Rd
 //
-void ustruct_r(ComMod& com_mod, const Array<double>& Yg) {
+void ustruct_r(ComMod& com_mod, const Array<double>& Yg)
+{
   using namespace consts;
 
 #define n_debug_ustruct_r

@@ -54,7 +54,8 @@ const std::string ELEMENT_IDS_NAME("GlobalElementID");
 /// face.nEl).
 //
 void store_element_conn(vtkSmartPointer<vtkPolyData> vtk_polydata,
-                        faceType& face) {
+                        faceType& face)
+{
 #define n_debug_store_element_conn
 #ifdef debug_store_element_conn
   std::cout << "[store_element_conn(polydata)] " << std::endl;
@@ -93,7 +94,8 @@ void store_element_conn(vtkSmartPointer<vtkPolyData> vtk_polydata,
 }
 
 void store_element_conn(vtkSmartPointer<vtkPolyData> vtk_polydata,
-                        mshType& mesh) {
+                        mshType& mesh)
+{
 #ifdef debug_store_element_conn
   std::cout << "[store_element_conn(polydata,mesh)] " << std::endl;
   std::cout << "[store_element_conn(polydata,mesh)] ========== "
@@ -129,7 +131,8 @@ void store_element_conn(vtkSmartPointer<vtkPolyData> vtk_polydata,
   }
 }
 
-/// @brief Store VTK vtkUnstructuredGrid cell connectivity into a mesh element connectivity.
+/// @brief Store VTK vtkUnstructuredGrid cell connectivity into a mesh element
+/// connectivity.
 ///
 /// Mesh variables set
 ///   mesh.gnEl - number of elements
@@ -140,7 +143,8 @@ void store_element_conn(vtkSmartPointer<vtkPolyData> vtk_polydata,
 /// num_elems).
 //
 void store_element_conn(vtkSmartPointer<vtkUnstructuredGrid> vtk_ugrid,
-                        mshType& mesh) {
+                        mshType& mesh)
+{
 #ifdef debug_store_element_conn
   std::cout << "[store_element_conn(ugrid)] " << std::endl;
   std::cout << "[store_element_conn(ugrid)] ========== "
@@ -267,7 +271,8 @@ void store_element_conn(vtkSmartPointer<vtkUnstructuredGrid> vtk_ugrid,
 /// \todo [NOTE] Are element IDs used?
 //
 void store_element_ids(vtkSmartPointer<vtkUnstructuredGrid> vtk_ugrid,
-                       mshType& mesh) {
+                       mshType& mesh)
+{
   auto elem_ids = vtkIntArray::SafeDownCast(
       vtk_ugrid->GetCellData()->GetArray(ELEMENT_IDS_NAME.c_str()));
   if (elem_ids == nullptr) {
@@ -285,7 +290,8 @@ void store_element_ids(vtkSmartPointer<vtkUnstructuredGrid> vtk_ugrid,
 ///   face.gE
 //
 void store_element_ids(vtkSmartPointer<vtkPolyData> vtk_polydata,
-                       faceType& face) {
+                       faceType& face)
+{
   auto elem_ids = vtkIntArray::SafeDownCast(
       vtk_polydata->GetCellData()->GetArray(ELEMENT_IDS_NAME.c_str()));
   if (elem_ids == nullptr) {
@@ -309,7 +315,8 @@ void store_element_ids(vtkSmartPointer<vtkPolyData> vtk_polydata,
 ///   face.nNo - number of nodes
 ///   face.x - node coordinates
 //
-void store_nodal_coords(vtkPoints* points, faceType& face) {
+void store_nodal_coords(vtkPoints* points, faceType& face)
+{
   vtkIdType num_nodes = points->GetNumberOfPoints();
   face.nNo = num_nodes;
   face.x = Array<double>(3, num_nodes);
@@ -328,7 +335,8 @@ void store_nodal_coords(vtkPoints* points, faceType& face) {
 ///   mesh.gnNo - number of nodes
 ///   mesh.x - node coordinates
 //
-void store_nodal_coords(vtkPoints* points, mshType& mesh) {
+void store_nodal_coords(vtkPoints* points, mshType& mesh)
+{
   vtkIdType num_nodes = points->GetNumberOfPoints();
   mesh.gnNo = num_nodes;
   mesh.x = Array<double>(3, num_nodes);
@@ -350,7 +358,8 @@ void store_nodal_coords(vtkPoints* points, mshType& mesh) {
 ///   mesh.gN - nodal IDs
 //
 void store_nodal_ids(vtkSmartPointer<vtkUnstructuredGrid> vtk_ugrid,
-                     mshType& mesh) {
+                     mshType& mesh)
+{
   vtkIdType num_nodes = vtk_ugrid->GetNumberOfPoints();
   auto node_ids = vtkIntArray::SafeDownCast(
       vtk_ugrid->GetPointData()->GetArray(NODE_IDS_NAME.c_str()));
@@ -372,8 +381,8 @@ void store_nodal_ids(vtkSmartPointer<vtkUnstructuredGrid> vtk_ugrid,
 /// Face variables set
 ///   face.gN - nodal IDs
 //
-void store_nodal_ids(vtkSmartPointer<vtkPolyData> vtk_polydata,
-                     faceType& face) {
+void store_nodal_ids(vtkSmartPointer<vtkPolyData> vtk_polydata, faceType& face)
+{
   vtkIdType num_nodes = vtk_polydata->GetNumberOfPoints();
   auto node_ids = vtkIntArray::SafeDownCast(
       vtk_polydata->GetPointData()->GetArray(NODE_IDS_NAME.c_str()));
@@ -389,7 +398,8 @@ void store_nodal_ids(vtkSmartPointer<vtkPolyData> vtk_polydata,
   }
 }
 
-void store_nodal_ids(vtkSmartPointer<vtkPolyData> vtk_polydata, mshType& mesh) {
+void store_nodal_ids(vtkSmartPointer<vtkPolyData> vtk_polydata, mshType& mesh)
+{
   vtkIdType num_nodes = vtk_polydata->GetNumberOfPoints();
   auto node_ids = vtkIntArray::SafeDownCast(
       vtk_polydata->GetPointData()->GetArray(NODE_IDS_NAME.c_str()));
@@ -409,7 +419,8 @@ void store_nodal_ids(vtkSmartPointer<vtkPolyData> vtk_polydata, mshType& mesh) {
 //             E x p o s e d    U t i l i t i e s              //
 /////////////////////////////////////////////////////////////////
 
-/// @brief Read fiber direction data from a VTK VTU file and copy it into a mesh..
+/// @brief Read fiber direction data from a VTK VTU file and copy it into a
+/// mesh..
 ///
 /// Data is stored in the mesh for all fiber direction files.
 ///
@@ -425,7 +436,8 @@ void store_nodal_ids(vtkSmartPointer<vtkPolyData> vtk_polydata, mshType& mesh) {
 //
 void load_fiber_direction_vtu(const std::string& file_name,
                               const std::string& data_name, const int idx,
-                              const int nsd, mshType& mesh) {
+                              const int nsd, mshType& mesh)
+{
 #ifdef debug_load_fiber_direction_vtu
   std::cout << "[load_fiber_direction_vtu] " << std::endl;
   std::cout << "[load_fiber_direction_vtu] ===== "
@@ -490,7 +502,8 @@ void load_fiber_direction_vtu(const std::string& file_name,
 
 /// @brief Store a surface mesh read from a VTK .vtp file into a Face object.
 //
-void load_vtp(const std::string& file_name, faceType& face) {
+void load_vtp(const std::string& file_name, faceType& face)
+{
 #ifdef debug_load_vtp
   std::cout << "[load_vtp] " << std::endl;
   std::cout << "[load_vtp] ===== vtk_xml_parser.cpp::load_vtp ===== "
@@ -533,7 +546,8 @@ void load_vtp(const std::string& file_name, faceType& face) {
 
 /// @brief Store a surface mesh read from a VTK .vtp file into a Mesh object.
 //
-void load_vtp(const std::string& file_name, mshType& mesh) {
+void load_vtp(const std::string& file_name, mshType& mesh)
+{
 #ifdef debug_load_vtp
   std::cout << "[load_vtp] " << std::endl;
   std::cout << "[load_vtp] ===== vtk_xml_parser.cpp::load_vtp ===== "
@@ -587,7 +601,8 @@ void load_vtp(const std::string& file_name, mshType& mesh) {
 /// Replicates 'subroutine loadVTK(vtk,fName,istat)' defined in
 /// vtkXMLParser.f90.
 //
-void load_vtu(const std::string& file_name, mshType& mesh) {
+void load_vtu(const std::string& file_name, mshType& mesh)
+{
 #define n_debug_load_vtu
 #ifdef debug_load_vtu
   std::cout << "[load_vtu] " << std::endl;

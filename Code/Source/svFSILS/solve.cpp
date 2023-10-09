@@ -21,7 +21,8 @@ namespace fsi_linear_solver {
 void fsils_solve(FSILS_lhsType& lhs, FSILS_lsType& ls, const int dof,
                  Array<double>& Ri, Array<double>& Val,
                  const consts::PreconditionerType prec, const Vector<int>& incL,
-                 const Vector<double>& res) {
+                 const Vector<double>& res)
+{
   using namespace consts;
 
 #define n_debug_fsils_solve

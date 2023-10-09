@@ -8,10 +8,11 @@ namespace vtk_xml_parser {
 
 enum class VtkFileFormat { VTP, VTU };
 
-class VtkFileExtentions {
- public:
-  const static std::string VTK_VTU_EXTENSION;
-  const static std::string VTK_VTP_EXTENSION;
+class VtkFileExtentions
+{
+  public:
+    const static std::string VTK_VTU_EXTENSION;
+    const static std::string VTK_VTP_EXTENSION;
 };
 
 void load_fiber_direction_vtu(const std::string& file_name,

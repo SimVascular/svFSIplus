@@ -19,7 +19,8 @@ namespace remesh {
 /// @brief Distribute the new mesh elements to all processors
 //
 void distre(ComMod& com_mod, CmMod& cm_mod, mshType& lM, int& nEl,
-            Vector<int>& gE) {
+            Vector<int>& gE)
+{
   auto& cm = com_mod.cm;
   int gnEl = lM.gnEl;
   int eNoN = lM.eNoN;
@@ -63,7 +64,8 @@ void distre(ComMod& com_mod, CmMod& cm_mod, mshType& lM, int& nEl,
 /// @brief Reproduces Fortran 'SUBROUTINE DISTMSHSRF(lFa, lM, iOpt)'
 //
 void dist_msh_srf(ComMod& com_mod, ChnlMod& chnl_mod, faceType& lFa,
-                  mshType& lM, const int iOpt) {
+                  mshType& lM, const int iOpt)
+{
   const int nsd = com_mod.nsd;
   auto& rmsh = com_mod.rmsh;
 
@@ -171,7 +173,8 @@ void dist_msh_srf(ComMod& com_mod, ChnlMod& chnl_mod, faceType& lFa,
 //   lM.gpN - processor ID (1, 2, 3, ...) for each node
 //
 void distrn(ComMod& com_mod, CmMod& cm_mod, const int iM, mshType& lM,
-            Array<double>& Dg, int& nNo, Vector<int>& gN) {
+            Array<double>& Dg, int& nNo, Vector<int>& gN)
+{
   const int nsd = com_mod.nsd;
   auto& rmsh = com_mod.rmsh;
   auto& cm = com_mod.cm;
@@ -295,7 +298,8 @@ void distrn(ComMod& com_mod, CmMod& cm_mod, const int iM, mshType& lM,
 //
 void find_n(ComMod& com_mod, const Vector<double>& Xp, const int iM,
             const Array<double>& Dg, const Vector<int>& eList, int& Ec,
-            Vector<double>& Nsf, int pcount) {
+            Vector<double>& Nsf, int pcount)
+{
   const int nsd = com_mod.nsd;
   auto& msh = com_mod.msh[iM];
   int ne = eList.size();
@@ -350,7 +354,8 @@ void find_n(ComMod& com_mod, const Vector<double>& Xp, const int iM,
 ///
 /// Reproduces Fortran 'SUBROUTINE GETADJESRC(lM, kneList)'
 //
-void get_adj_esrc(ComMod& com_mod, mshType& lM, Array<int>& kneList) {
+void get_adj_esrc(ComMod& com_mod, mshType& lM, Array<int>& kneList)
+{
 #define n_debug_get_adj_esrc
 #ifdef debug_get_adj_esrc
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
@@ -454,7 +459,8 @@ get_elems:
 //
 void get_adj_ntgt(ComMod& com_mod, mshType& lM, const int nNo, const int nEl,
                   const Vector<int>& gN, const Vector<int>& gE,
-                  Array<int>& knnList) {
+                  Array<int>& knnList)
+{
   Vector<int> lN(lM.gnNo);
 
   for (int a = 0; a < nNo; a++) {
@@ -542,7 +548,8 @@ void get_adj_ntgt(ComMod& com_mod, mshType& lM, const int nNo, const int nEl,
 /// @brief Interpolation of data variables from source mesh to target mesh
 //
 void interp(ComMod& com_mod, CmMod& cm_mod, const int lDof, const int iM,
-            mshType& tMsh, Array<double>& sD, Array<double>& tgD) {
+            mshType& tMsh, Array<double>& sD, Array<double>& tgD)
+{
   const int nsd = com_mod.nsd;
   const int tnNo = com_mod.tnNo;
   auto& msh = com_mod.msh;
@@ -1241,7 +1248,8 @@ void interp(ComMod& com_mod, CmMod& cm_mod, const int lDof, const int iM,
 
 /// @brief Reproduces 'SUBROUTINE INTMSHSRF(lM, lFa)'
 //
-void int_msh_srf(ComMod& com_mod, CmMod& cm_mod, mshType& lM, faceType& lFa) {
+void int_msh_srf(ComMod& com_mod, CmMod& cm_mod, mshType& lM, faceType& lFa)
+{
   auto& cm = com_mod.cm;
 #define n_debug_int_msh_srf
 #ifdef debug_int_msh_srf
@@ -1316,7 +1324,8 @@ void int_msh_srf(ComMod& com_mod, CmMod& cm_mod, mshType& lM, faceType& lFa) {
 }
 
 void remesher_3d(ComMod& com_mod, CmMod& cm_mod, int iM, faceType& lFa,
-                 mshType& lM) {
+                 mshType& lM)
+{
   using namespace consts;
 
 #define n_debug_remesher_3d
@@ -1450,7 +1459,8 @@ void remesher_3d(ComMod& com_mod, CmMod& cm_mod, int iM, faceType& lFa,
 
 /// @brief Reproduces Fortran 'SUBROUTINE REMESHRESTART(timeP)'
 //
-void remesh_restart(Simulation* simulation) {
+void remesh_restart(Simulation* simulation)
+{
   using namespace consts;
 
   auto& com_mod = simulation->com_mod;
@@ -1950,7 +1960,8 @@ void remesh_restart(Simulation* simulation) {
   com_mod.pSa.clear();
 }
 
-void set_face_ebc(ComMod& com_mod, CmMod& cm_mod, faceType& lFa, mshType& lM) {
+void set_face_ebc(ComMod& com_mod, CmMod& cm_mod, faceType& lFa, mshType& lM)
+{
   const int nsd = com_mod.nsd;
 
   Vector<int> nAssocEl(lM.gnNo);

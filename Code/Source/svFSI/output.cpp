@@ -17,7 +17,8 @@ namespace output {
 /// \todo NOTE: This is not fully implemented.
 //
 void output_result(Simulation* simulation, std::array<double, 3>& timeP,
-                   const int co, const int iEq) {
+                   const int co, const int iEq)
+{
 #ifdef debug_output_result
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
@@ -146,7 +147,8 @@ void output_result(Simulation* simulation, std::array<double, 3>& timeP,
 }
 
 void read_restart_header(ComMod& com_mod, std::array<int, 7>& tStamp,
-                         double& timeP, std::ifstream& restart_file) {
+                         double& timeP, std::ifstream& restart_file)
+{
   auto& cTS = com_mod.cTS;
   auto& time = com_mod.time;
 
@@ -162,7 +164,8 @@ void read_restart_header(ComMod& com_mod, std::array<int, 7>& tStamp,
 
 /// @brief Reproduces the Fortran 'WRITERESTART' subroutine.
 //
-void write_restart(Simulation* simulation, std::array<double, 3>& timeP) {
+void write_restart(Simulation* simulation, std::array<double, 3>& timeP)
+{
   auto& com_mod = simulation->com_mod;
 #define n_debug_write_restart
 #ifdef debug_write_restart
@@ -326,7 +329,8 @@ void write_restart(Simulation* simulation, std::array<double, 3>& timeP) {
 }
 
 void write_restart_header(ComMod& com_mod, std::array<double, 3>& timeP,
-                          std::ofstream& restart_file) {
+                          std::ofstream& restart_file)
+{
   auto const cTS = com_mod.cTS;
   auto const time = com_mod.time;
   auto& stamp = com_mod.stamp;
@@ -348,7 +352,8 @@ void write_restart_header(ComMod& com_mod, std::array<double, 3>& timeP,
 /// cplBC.xn, Yn, An, Dn
 //
 void write_results(ComMod& com_mod, const std::array<double, 3>& timeP,
-                   const std::string& fName, const bool sstEq) {
+                   const std::string& fName, const bool sstEq)
+{
   int cTS = com_mod.cTS;
 
   auto& An = com_mod.An;

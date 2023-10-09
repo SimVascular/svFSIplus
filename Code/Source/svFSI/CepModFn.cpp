@@ -10,12 +10,14 @@ CepModFn::CepModFn() {}
 CepModFn::~CepModFn() {}
 
 void CepModFn::getf(const int n, const Vector<double>& X, Vector<double>& f,
-                    const double fext) {
+                    const double fext)
+{
   f(0) = c * (X(0) * (X(0) - alpha) * (1.0 - X(0)) - X(1)) + fext;
   f(1) = X(0) - b * X(1) + a;
 }
 
-void CepModFn::getj(const int n, const Vector<double>& X, Array<double>& JAC) {
+void CepModFn::getj(const int n, const Vector<double>& X, Array<double>& JAC)
+{
   JAC = 0.0;
 
   double n1 = -3.0 * pow(X(0), 2.0);
@@ -34,14 +36,16 @@ void CepModFn::init(const int nX, Vector<double>& X) { X = 1.e-3; }
 void CepModFn::init(const int nX, Vector<double>& X, double X0) { X = X0; }
 
 /// @brief SUBROUTINE FN_INITV(nX, X, X0)
-void CepModFn::init(const int nX, Vector<double>& X, Vector<double>& X0) {
+void CepModFn::init(const int nX, Vector<double>& X, Vector<double>& X0)
+{
   X = X0;
 }
 
 /// @brief Time integration performed using Crank-Nicholson method
 void CepModFn::integ_cn2(const int nX, Vector<double>& Xn, const double Ts,
                          const double Ti, const double Istim, Vector<int>& IPAR,
-                         Vector<double>& RPAR) {
+                         Vector<double>& RPAR)
+{
   int itMax = IPAR(0);
   double atol = RPAR(0);
   double rtol = RPAR(1);
@@ -99,7 +103,8 @@ void CepModFn::integ_cn2(const int nX, Vector<double>& Xn, const double Ts,
 
 /// @brief Time integration performed using Forward Euler method
 void CepModFn::integ_fe(const int nX, Vector<double>& X, const double Ts,
-                        const double Ti, const double Istim) {
+                        const double Ti, const double Istim)
+{
   double t = Ts / Tscale;
   double dt = Ti / Tscale;
   double fext = Istim * Tscale / Vscale;
@@ -117,7 +122,8 @@ void CepModFn::integ_fe(const int nX, Vector<double>& X, const double Ts,
 /// Replicates 'SUBROUTINE AP_INTEGRK(nX, X, Ts, Ti, Istim, Ksac)' defined in
 /// 'CEPMOD_AP.f'.
 void CepModFn::integ_rk(const int nX, Vector<double>& X, const double Ts,
-                        const double Ti, const double Istim) {
+                        const double Ti, const double Istim)
+{
   double t = Ts / Tscale;
   double dt = Ti / Tscale;
   double dt6 = dt / 6.0;

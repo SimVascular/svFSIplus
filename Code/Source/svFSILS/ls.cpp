@@ -13,7 +13,8 @@ void fsils_ls_create(FSILS_lsType& ls, LinearSolverType LS_type, double relTol,
                      double absTol, int maxItr, int dimKry,
                      std::array<double, 2> relTolIn,
                      std::array<double, 2> absTolIn,
-                     std::array<int, 2> maxItrIn) {
+                     std::array<int, 2> maxItrIn)
+{
   using namespace consts;
   ls.foC = true;
   ls.LS_type = LS_type;

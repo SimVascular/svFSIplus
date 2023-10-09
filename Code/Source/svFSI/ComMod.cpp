@@ -6,7 +6,8 @@
 // ComMod
 //--------
 //
-ComMod::ComMod() {
+ComMod::ComMod()
+{
   mvMsh = false;
 
   stFileFlag = false;
@@ -42,7 +43,8 @@ ComMod::~ComMod() {}
 //   a d j T y p e   //
 ///////////////////////
 
-void adjType::destroy() {
+void adjType::destroy()
+{
   nnz = 0;
 
   pcol.clear();
@@ -84,7 +86,8 @@ faceType::~faceType() {}
 ///
 /// This replicates the Fortran 'SUBROUTINE DESTROYFACE(lFa)'
 /// implemented in ALLFUN.f.
-void faceType::destroy() {
+void faceType::destroy()
+{
   gE.clear();
   gN.clear();
   lN.clear();
@@ -118,7 +121,8 @@ void faceType::destroy() {
 fsType::fsType() {}
 
 /// @brief SUBROUTINE DESTROYFS(fs)
-void fsType::destroy() {
+void fsType::destroy()
+{
   eType = consts::ElementType::NA;
 
   w.clear();
@@ -134,7 +138,8 @@ void fsType::destroy() {
 // m s h T y p e //
 ///////////////////
 
-mshType::mshType() {
+mshType::mshType()
+{
   // std::cout << "+ + + + +  mshType ctor + + + + + " << std::endl;
   eType = consts::ElementType::NA;
 }

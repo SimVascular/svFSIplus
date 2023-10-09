@@ -14,7 +14,8 @@ namespace fsi_linear_solver {
 //
 void fsils_bc_create(FSILS_lhsType& lhs, int faIn, int nNo, int dof,
                      BcType BC_type, const Vector<int>& gNodes,
-                     const Array<double>& Val) {
+                     const Array<double>& Val)
+{
   using namespace consts;
 
 #define n_debug_fsils_bc_create
@@ -103,12 +104,14 @@ void fsils_bc_create(FSILS_lhsType& lhs, int faIn, int nNo, int dof,
 /// @brief fsils_bc_create() without optional 'Val' parameter.
 //
 void fsils_bc_create(FSILS_lhsType& lhs, int faIn, int nNo, int dof,
-                     BcType BC_type, const Vector<int>& gNodes) {
+                     BcType BC_type, const Vector<int>& gNodes)
+{
   Array<double> Val;
   fsils_bc_create(lhs, faIn, nNo, dof, BC_type, gNodes, Val);
 }
 
-void fsils_bc_free(FSILS_lhsType& lhs, int faIn) {
+void fsils_bc_free(FSILS_lhsType& lhs, int faIn)
+{
   // IF (.NOT.lhs%face(faIn)%foC) THEN
   //        PRINT *, 'FSILS: Cannot free a face that is not created yet'
   //       STOP "FSILS: FATAL ERROR"

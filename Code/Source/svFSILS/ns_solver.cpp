@@ -23,7 +23,8 @@ namespace ns_solver {
 /// @brief Modifies: lhs.face[].nS
 //
 void bc_pre(fsi_linear_solver::FSILS_lhsType& lhs, const int nsd, const int dof,
-            const int nNo, const int mynNo) {
+            const int nNo, const int mynNo)
+{
   for (int faIn = 0; faIn < lhs.nFaces; faIn++) {
     auto& face = lhs.face[faIn];
 
@@ -60,7 +61,8 @@ void bc_pre(fsi_linear_solver::FSILS_lhsType& lhs, const int nsd, const int dof,
 void depart(fsi_linear_solver::FSILS_lhsType& lhs, const int nsd, const int dof,
             const int nNo, const int nnz, const Array<double>& Val,
             Array<double>& Gt, Array<double>& mK, Array<double>& mG,
-            Array<double>& mD, Vector<double>& mL) {
+            Array<double>& mD, Vector<double>& mL)
+{
   Vector<double> tmp((nsd + 1) * (nsd + 1));
 
   if (nsd == 2) {
@@ -135,7 +137,8 @@ void depart(fsi_linear_solver::FSILS_lhsType& lhs, const int nsd, const int dof,
 //
 void ns_solver(fsi_linear_solver::FSILS_lhsType& lhs,
                fsi_linear_solver::FSILS_lsType& ls, const int dof,
-               const Array<double>& Val, Array<double>& Ri) {
+               const Array<double>& Val, Array<double>& Ri)
+{
   using namespace consts;
   using namespace fsi_linear_solver;
 

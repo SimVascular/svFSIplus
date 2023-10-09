@@ -18,7 +18,8 @@ namespace ls_ns {
 /// @brief Reproduces Fortran 'SUBROUTINE INIT_DIR_AND_COUPNEU_BC(incL, res)'.
 //
 void init_dir_and_coup_neu(ComMod& com_mod, const Vector<int>& incL,
-                           const Vector<double>& res) {
+                           const Vector<double>& res)
+{
   using namespace consts;
   using namespace fsi_linear_solver;
 
@@ -105,7 +106,8 @@ void init_dir_and_coup_neu(ComMod& com_mod, const Vector<int>& incL,
 ///
 /// Reproduces 'SUBROUTINE LSALLOC(lEq)'.
 //
-void ls_alloc(ComMod& com_mod, eqType& lEq) {
+void ls_alloc(ComMod& com_mod, eqType& lEq)
+{
   int dof = com_mod.dof;
   int tnNo = com_mod.tnNo;
   int gtnNo = com_mod.gtnNo;
@@ -149,7 +151,8 @@ void ls_alloc(ComMod& com_mod, eqType& lEq) {
 /// Reproduces ' SUBROUTINE LSSOLVE(lEq, incL, res)'.
 //
 void ls_solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL,
-              const Vector<double>& res) {
+              const Vector<double>& res)
+{
 #define n_debug_ls_solve
 #ifdef debug_ls_solve
   DebugMsg dmsg(__func__, com_mod.cm.idcm());

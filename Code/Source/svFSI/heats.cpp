@@ -14,14 +14,16 @@
 namespace heats {
 
 void b_heats(ComMod& com_mod, const int eNoN, const double w,
-             const Vector<double>& N, const double h, Array<double>& lR) {
+             const Vector<double>& N, const double h, Array<double>& lR)
+{
   for (int a = 0; a < eNoN; a++) {
     lR(0, a) = lR(0, a) + w * N(a) * h;
   }
 }
 
 void construct_heats(ComMod& com_mod, const mshType& lM,
-                     const Array<double>& Ag, const Array<double>& Yg) {
+                     const Array<double>& Ag, const Array<double>& Yg)
+{
 #define n_debug_construct_heats
 #ifdef debug_construct_heats
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
@@ -122,7 +124,8 @@ void construct_heats(ComMod& com_mod, const mshType& lM,
 void heats_2d(ComMod& com_mod, const int eNoN, const double w,
               const Vector<double>& N, const Array<double>& Nx,
               const Array<double>& al, const Array<double>& yl,
-              Array<double>& lR, Array3<double>& lK) {
+              Array<double>& lR, Array3<double>& lK)
+{
 #define n_debug_heats_2d
 #ifdef debug_heats_2d
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
@@ -189,7 +192,8 @@ void heats_2d(ComMod& com_mod, const int eNoN, const double w,
 void heats_3d(ComMod& com_mod, const int eNoN, const double w,
               const Vector<double>& N, const Array<double>& Nx,
               const Array<double>& al, const Array<double>& yl,
-              Array<double>& lR, Array3<double>& lK) {
+              Array<double>& lR, Array3<double>& lK)
+{
 #define n_debug_heats_3d
 #ifdef debug_heats_3d
   DebugMsg dmsg(__func__, com_mod.cm.idcm());

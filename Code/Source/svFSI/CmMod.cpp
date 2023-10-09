@@ -21,7 +21,8 @@ cmType::~cmType() {}
 /// @brief Returns commu handle
 decltype(MPI_COMM_WORLD) cmType::com() const { return cHndl; }
 
-void cmType::new_cm(decltype(MPI_COMM_WORLD) comHandle) {
+void cmType::new_cm(decltype(MPI_COMM_WORLD) comHandle)
+{
   cHndl = comHandle;
   taskId = 0;
   nProcs = 1;
@@ -36,12 +37,14 @@ void cmType::new_cm(decltype(MPI_COMM_WORLD) comHandle) {
 }
 
 /// @brief bcast bool.
-void cmType::bcast(const CmMod& cm_mod, bool* data) const {
+void cmType::bcast(const CmMod& cm_mod, bool* data) const
+{
   MPI_Bcast(data, 1, cm_mod::mplog, cm_mod.master, com());
 }
 
 /// @brief bcast bool array
-void cmType::bcast(const CmMod& cm_mod, std::vector<bool>& data) const {
+void cmType::bcast(const CmMod& cm_mod, std::vector<bool>& data) const
+{
   static const int MAX_ARRAY_SIZE = 100;
 
   if (data.size() == 0) {
@@ -68,7 +71,8 @@ void cmType::bcast(const CmMod& cm_mod, std::vector<bool>& data) const {
 }
 
 /// @brief bcast char*
-void cmType::bcast(const CmMod& cm_mod, std::string& data) const {
+void cmType::bcast(const CmMod& cm_mod, std::string& data) const
+{
   static const int MAX_ARRAY_SIZE = 400;
 
   if (data.size() > MAX_ARRAY_SIZE) {
@@ -85,19 +89,22 @@ void cmType::bcast(const CmMod& cm_mod, std::string& data) const {
 }
 
 /// @brief bcast double
-void cmType::bcast(const CmMod& cm_mod, double* data) const {
+void cmType::bcast(const CmMod& cm_mod, double* data) const
+{
   MPI_Bcast(data, 1, cm_mod::mpreal, cm_mod.master, com());
 }
 
 /// @brief bcast double array
 void cmType::bcast(const CmMod& cm_mod, Array<double>& data,
-                   const std::string& name) const {
+                   const std::string& name) const
+{
   MPI_Bcast(data.data(), data.size(), cm_mod::mpreal, cm_mod.master, com());
 }
 
 /// @brief bcast double Vector
 void cmType::bcast(const CmMod& cm_mod, Vector<double>& data,
-                   const std::string& name) const {
+                   const std::string& name) const
+{
   if (data.size() == 0) {
     throw std::runtime_error(name + ":bcast double vector has size 0.");
   }
@@ -105,11 +112,13 @@ void cmType::bcast(const CmMod& cm_mod, Vector<double>& data,
 }
 
 /// @brief bcast int
-void cmType::bcast(const CmMod& cm_mod, int* data) const {
+void cmType::bcast(const CmMod& cm_mod, int* data) const
+{
   MPI_Bcast(data, 1, cm_mod::mpint, cm_mod.master, com());
 }
 
 /// @brief bcast int array
-void cmType::bcast(const CmMod& cm_mod, Vector<int>& data) const {
+void cmType::bcast(const CmMod& cm_mod, Vector<int>& data) const
+{
   MPI_Bcast(data.data(), data.size(), cm_mod::mpint, cm_mod.master, com());
 }

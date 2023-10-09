@@ -25,7 +25,8 @@ void b_struct_2d(const ComMod& com_mod, const int eNoN, const double w,
                  const Vector<double>& N, const Array<double>& Nx,
                  const Array<double>& dl, const Vector<double>& hl,
                  const Vector<double>& nV, Array<double>& lR,
-                 Array3<double>& lK) {
+                 Array3<double>& lK)
+{
   int cEq = com_mod.cEq;
   auto& eq = com_mod.eq[cEq];
   double dt = com_mod.dt;
@@ -81,7 +82,8 @@ void b_struct_3d(const ComMod& com_mod, const int eNoN, const double w,
                  const Vector<double>& N, const Array<double>& Nx,
                  const Array<double>& dl, const Vector<double>& hl,
                  const Vector<double>& nV, Array<double>& lR,
-                 Array3<double>& lK) {
+                 Array3<double>& lK)
+{
 #define n_debug_b_struct_3d
 #ifdef debug_b_struct_3d
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
@@ -178,7 +180,8 @@ void b_struct_3d(const ComMod& com_mod, const int eNoN, const double w,
 //
 void construct_dsolid(ComMod& com_mod, CepMod& cep_mod, const mshType& lM,
                       const Array<double>& Ag, const Array<double>& Yg,
-                      const Array<double>& Dg) {
+                      const Array<double>& Dg)
+{
   using namespace consts;
 
 #define n_debug_construct_dsolid
@@ -340,7 +343,8 @@ void struct_2d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn,
                const Array<double>& dl, const Array<double>& bfl,
                const Array<double>& fN, const Array<double>& pS0l,
                Vector<double>& pSl, const Vector<double>& ya_l,
-               Array<double>& lR, Array3<double>& lK) {
+               Array<double>& lR, Array3<double>& lK)
+{
   using namespace consts;
   using namespace mat_fun;
 
@@ -589,7 +593,8 @@ void struct_3d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn,
                const Array<double>& dl, const Array<double>& bfl,
                const Array<double>& fN, const Array<double>& pS0l,
                Vector<double>& pSl, const Vector<double>& ya_l,
-               Array<double>& lR, Array3<double>& lK) {
+               Array<double>& lR, Array3<double>& lK)
+{
   using namespace consts;
   using namespace mat_fun;
 

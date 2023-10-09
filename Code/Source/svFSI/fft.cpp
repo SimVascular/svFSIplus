@@ -11,7 +11,8 @@
 /// the temporal values file.
 //
 void fft(const int np, const std::vector<std::vector<double>>& temporal_values,
-         fcType& gt) {
+         fcType& gt)
+{
   using namespace consts;
 
 #define n_debug_fft
@@ -95,7 +96,8 @@ void fft(const int np, const std::vector<std::vector<double>>& temporal_values,
 /// @brief This is to calculate flow rate and flow acceleration (IFFT)
 //
 void ifft(const ComMod& com_mod, const fcType& gt, Vector<double>& Y,
-          Vector<double>& dY) {
+          Vector<double>& dY)
+{
   using namespace consts;
 #define n_debug_ifft
 #ifdef debug_ifft
@@ -161,7 +163,8 @@ void ifft(const ComMod& com_mod, const fcType& gt, Vector<double>& Y,
 /// @brief This routine is for calculating values by the inverse of general BC
 //
 void igbc(const ComMod& com_mod, const MBType& gm, Array<double>& Y,
-          Array<double>& dY) {
+          Array<double>& dY)
+{
   double t = fmod(com_mod.time, gm.period);
   int i = 0;
 

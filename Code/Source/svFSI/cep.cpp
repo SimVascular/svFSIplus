@@ -16,7 +16,8 @@
 namespace cep {
 
 void b_cep(ComMod& com_mod, const int eNoN, const double w,
-           const Vector<double>& N, const double h, Array<double>& lR) {
+           const Vector<double>& N, const double h, Array<double>& lR)
+{
   double f = w * h;
 
   // Here the loop is started for constructing left and right hand side
@@ -25,14 +26,16 @@ void b_cep(ComMod& com_mod, const int eNoN, const double w,
   }
 }
 
-/// @brief This is for solving 1D electrophysiology diffusion equation for Purkinje fibers
+/// @brief This is for solving 1D electrophysiology diffusion equation for
+/// Purkinje fibers
 ///
 /// Reproduces Fortran 'CEP1D' subroutine.
 //
 void cep_1d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn,
             const double w, const Vector<double>& N, const Array<double>& Nx,
             const Array<double>& al, const Array<double>& yl, Array<double>& lR,
-            Array3<double>& lK) {
+            Array3<double>& lK)
+{
 #define n_debug_cep_1d
 #ifdef debug_cep_1d
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
@@ -89,7 +92,8 @@ void cep_2d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn,
             const double w, const Vector<double>& N, const Array<double>& Nx,
             const Array<double>& al, const Array<double>& yl,
             const Array<double>& dl, const Array<double>& fN, Array<double>& lR,
-            Array3<double>& lK) {
+            Array3<double>& lK)
+{
 #define n_debug_cep_2d
 #ifdef debug_cep_2d
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
@@ -239,7 +243,8 @@ void cep_3d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn,
             const double w, const Vector<double>& N, const Array<double>& Nx,
             const Array<double>& al, const Array<double>& yl,
             const Array<double>& dl, const Array<double>& fN, Array<double>& lR,
-            Array3<double>& lK) {
+            Array3<double>& lK)
+{
 #define n_debug_cep_3d
 #ifdef debug_cep_3d
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
@@ -404,7 +409,8 @@ void cep_3d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn,
 //
 void construct_cep(ComMod& com_mod, CepMod& cep_mod, const mshType& lM,
                    const Array<double>& Ag, const Array<double>& Yg,
-                   const Array<double>& Dg) {
+                   const Array<double>& Dg)
+{
 #define n_debug_construct_cep
 #ifdef debug_construct_cep
   DebugMsg dmsg(__func__, com_mod.cm.idcm());

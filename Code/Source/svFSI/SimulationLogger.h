@@ -8,60 +8,66 @@
 /// @brief The SimulationLogger class is used to write information
 /// to a text file and optionally to cout.
 //
-class SimulationLogger {
- public:
-  SimulationLogger() {}
+class SimulationLogger
+{
+  public:
+    SimulationLogger() {}
 
-  SimulationLogger(const std::string& file_name, bool cout_write = false) {
-    this->initialize(file_name, cout_write);
-  }
-
-  void initialize(const std::string& file_name, bool cout_write = false) {
-    log_file_.open(file_name);
-    if (log_file_.fail()) {
-      throw std::runtime_error("[SimulationLogger] Unable to open the file '" +
-                               file_name + "' for writing.");
+    SimulationLogger(const std::string& file_name, bool cout_write = false)
+    {
+      this->initialize(file_name, cout_write);
     }
 
-    cout_write_ = cout_write;
-    file_name_ = file_name;
-  }
+    void initialize(const std::string& file_name, bool cout_write = false)
+    {
+      log_file_.open(file_name);
+      if (log_file_.fail()) {
+        throw std::runtime_error(
+            "[SimulationLogger] Unable to open the file '" + file_name +
+            "' for writing.");
+      }
 
-  ~SimulationLogger() { log_file_.close(); }
+      cout_write_ = cout_write;
+      file_name_ = file_name;
+    }
 
-  template <class T>
-  SimulationLogger& operator<<(const T& value) {
-    if (file_name_ == "") {
+    ~SimulationLogger() { log_file_.close(); }
+
+    template <class T>
+    SimulationLogger& operator<<(const T& value)
+    {
+      if (file_name_ == "") {
+        return *this;
+      }
+
+      log_file_ << value;
+
+      if (cout_write_) {
+        std::cout << value;
+      }
+
       return *this;
     }
 
-    log_file_ << value;
+    SimulationLogger& operator<<(std::ostream& (*value)(std::ostream& o))
+    {
+      if (file_name_ == "") {
+        return *this;
+      }
 
-    if (cout_write_) {
-      std::cout << value;
-    }
+      log_file_ << value;
 
-    return *this;
-  }
+      if (cout_write_) {
+        std::cout << value;
+      }
 
-  SimulationLogger& operator<<(std::ostream& (*value)(std::ostream& o)) {
-    if (file_name_ == "") {
       return *this;
-    }
+    };
 
-    log_file_ << value;
-
-    if (cout_write_) {
-      std::cout << value;
-    }
-
-    return *this;
-  };
-
- private:
-  bool cout_write_ = false;
-  std::string file_name_;
-  std::ofstream log_file_;
+  private:
+    bool cout_write_ = false;
+    std::string file_name_;
+    std::ofstream log_file_;
 };
 
 #endif

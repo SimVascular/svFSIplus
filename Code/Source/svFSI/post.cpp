@@ -18,7 +18,8 @@ namespace post {
 
 void all_post(Simulation* simulation, Array<double>& res,
               const Array<double>& lY, const Array<double>& lD,
-              consts::OutputType outGrp, const int iEq) {
+              consts::OutputType outGrp, const int iEq)
+{
   using namespace consts;
 
   auto& com_mod = simulation->com_mod;
@@ -88,7 +89,8 @@ void all_post(Simulation* simulation, Array<double>& res,
 //
 void bpost(Simulation* simulation, const mshType& lM, Array<double>& res,
            const Array<double>& lY, const Array<double>& lD,
-           consts::OutputType outGrp) {
+           consts::OutputType outGrp)
+{
   using namespace consts;
 
   auto& com_mod = simulation->com_mod;
@@ -338,7 +340,8 @@ void bpost(Simulation* simulation, const mshType& lM, Array<double>& res,
 }
 
 void div_post(Simulation* simulation, const mshType& lM, Array<double>& res,
-              const Array<double>& lY, const Array<double>& lD, const int iEq) {
+              const Array<double>& lY, const Array<double>& lD, const int iEq)
+{
   using namespace consts;
 
 #define n_debug_div_post
@@ -504,7 +507,8 @@ void div_post(Simulation* simulation, const mshType& lM, Array<double>& res,
 /// @brief Routine for post processing fiber alignment
 //
 void fib_algn_post(Simulation* simulation, const mshType& lM,
-                   Array<double>& res, const Array<double>& lD, const int iEq) {
+                   Array<double>& res, const Array<double>& lD, const int iEq)
+{
   using namespace consts;
 
   auto& com_mod = simulation->com_mod;
@@ -619,7 +623,8 @@ void fib_algn_post(Simulation* simulation, const mshType& lM,
 /// @brief Routine for post processing fiber directions.
 //
 void fib_dir_post(Simulation* simulation, const mshType& lM, const int nFn,
-                  Array<double>& res, const Array<double>& lD, const int iEq) {
+                  Array<double>& res, const Array<double>& lD, const int iEq)
+{
   using namespace consts;
 
   auto& com_mod = simulation->com_mod;
@@ -737,7 +742,8 @@ void fib_dir_post(Simulation* simulation, const mshType& lM, const int nFn,
 /// @brief Compute fiber stretch based on 4th invariant: I_{4,f}
 //
 void fib_strech(Simulation* simulation, const int iEq, const mshType& lM,
-                const Array<double>& lD, Vector<double>& res) {
+                const Array<double>& lD, Vector<double>& res)
+{
   using namespace consts;
 
   auto& com_mod = simulation->com_mod;
@@ -834,7 +840,8 @@ void fib_strech(Simulation* simulation, const int iEq, const mshType& lM,
 
 void post(Simulation* simulation, const mshType& lM, Array<double>& res,
           const Array<double>& lY, const Array<double>& lD,
-          consts::OutputType outGrp, const int iEq) {
+          consts::OutputType outGrp, const int iEq)
+{
   using namespace consts;
   auto& com_mod = simulation->com_mod;
   auto& cm = com_mod.cm;
@@ -1113,14 +1120,16 @@ void post(Simulation* simulation, const mshType& lM, Array<double>& res,
   }
 }
 
-/// @brief Postprocessing function - used to convert restart bin files into VTK format.
+/// @brief Postprocessing function - used to convert restart bin files into VTK
+/// format.
 ///
 /// Reproducces 'SUBROUTINE PPBIN2VTK()' defined in POST.f.
 ///
 /// \todo [NOTE] This is not fully implemeted and is not tested, there are
 /// no tests in 'svFSI-Tests' for this.
 //
-void ppbin2vtk(Simulation* simulation) {
+void ppbin2vtk(Simulation* simulation)
+{
   auto& com_mod = simulation->com_mod;
   auto& cm = com_mod.cm;
   auto& cm_mod = simulation->cm_mod;
@@ -1192,7 +1201,8 @@ void ppbin2vtk(Simulation* simulation) {
 //
 void shl_post(Simulation* simulation, const mshType& lM, const int m,
               Array<double>& res, Vector<double>& resE, const Array<double>& lD,
-              const int iEq, consts::OutputType outGrp) {
+              const int iEq, consts::OutputType outGrp)
+{
   using namespace consts;
   using namespace mat_fun;
   using namespace utils;
@@ -1626,7 +1636,8 @@ void shl_post(Simulation* simulation, const mshType& lM, const int m,
 //
 void tpost(Simulation* simulation, const mshType& lM, const int m,
            Array<double>& res, Vector<double>& resE, const Array<double>& lD,
-           const Array<double>& lY, const int iEq, consts::OutputType outGrp) {
+           const Array<double>& lY, const int iEq, consts::OutputType outGrp)
+{
   using namespace consts;
   using namespace mat_fun;
 

@@ -16,7 +16,8 @@
 
 namespace fsi_linear_solver {
 
-void fsils_commus(const FSILS_lhsType& lhs, Vector<double>& R) {
+void fsils_commus(const FSILS_lhsType& lhs, Vector<double>& R)
+{
   if (lhs.commu.nTasks == 1) {
     return;
   }
@@ -82,7 +83,8 @@ void fsils_commus(const FSILS_lhsType& lhs, Vector<double>& R) {
 /// 3 - rTmp {in master} = R          {from master}
 /// 4 - R    {in slave}  = rTmp       {from master}
 //
-void fsils_commuv(const FSILS_lhsType& lhs, int dof, Array<double>& R) {
+void fsils_commuv(const FSILS_lhsType& lhs, int dof, Array<double>& R)
+{
   if (lhs.commu.nTasks == 1) {
     return;
   }

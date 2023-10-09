@@ -17,7 +17,8 @@ namespace dot {
 /// @brief Reproduces 'FUNCTION FSILS_DOTS(nNo, commu, U, V)'.
 //
 double fsils_dot_s(const int nNo, FSILS_commuType& commu,
-                   const Vector<double>& U, const Vector<double>& V) {
+                   const Vector<double>& U, const Vector<double>& V)
+{
   double result = 0.0;
 
   for (int i = 0; i < nNo; i++) {
@@ -38,7 +39,8 @@ double fsils_dot_s(const int nNo, FSILS_commuType& commu,
 /// @brief Reproduces 'FUNCTION FSILS_DOTV(dof, nNo, commu, U, V)'.
 //
 double fsils_dot_v(const int dof, const int nNo, FSILS_commuType& commu,
-                   const Array<double>& U, const Array<double>& V) {
+                   const Array<double>& U, const Array<double>& V)
+{
   double result = 0.0;
 
   switch (dof) {
@@ -92,7 +94,8 @@ double fsils_dot_v(const int dof, const int nNo, FSILS_commuType& commu,
 /// @brief Reproduces Fortran 'FSILS_NCDOTS(nNo, , U, V)'.
 //
 double fsils_nc_dot_s(const int nNo, const Vector<double>& U,
-                      const Vector<double>& V) {
+                      const Vector<double>& V)
+{
   double result{0.0};
 
   for (int i = 0; i < nNo; i++) {
@@ -102,10 +105,12 @@ double fsils_nc_dot_s(const int nNo, const Vector<double>& U,
   return result;
 }
 
-/// @brief Reproduces 'FUNCTION FSILS_NCDOTV(dof, nNo, U, V) RESULT(FSILS_DOTV)'.
+/// @brief Reproduces 'FUNCTION FSILS_NCDOTV(dof, nNo, U, V)
+/// RESULT(FSILS_DOTV)'.
 //
 double fsils_nc_dot_v(const int dof, const int nNo, const Array<double>& U,
-                      const Array<double>& V) {
+                      const Array<double>& V)
+{
   double result = 0.0;
 
   switch (dof) {

@@ -95,15 +95,15 @@
 
 /// @brief Initialize all Epetra types we need separate from Fortran
 struct Trilinos {
-  static Epetra_BlockMap *blockMap;
-  static Epetra_FEVector *F;
-  static Epetra_FEVbrMatrix *K;
-  static Epetra_Vector *X;
-  static Epetra_Vector *ghostX;
-  static Epetra_Import *Importer;
-  static Epetra_FEVector *bdryVec;
-  static Epetra_MpiComm *comm;
-  static Epetra_FECrsGraph *K_graph;
+    static Epetra_BlockMap *blockMap;
+    static Epetra_FEVector *F;
+    static Epetra_FEVbrMatrix *K;
+    static Epetra_Vector *X;
+    static Epetra_Vector *ghostX;
+    static Epetra_Import *Importer;
+    static Epetra_FEVector *bdryVec;
+    static Epetra_MpiComm *comm;
+    static Epetra_FECrsGraph *K_graph;
 };
 
 /**
@@ -112,51 +112,58 @@ struct Trilinos {
  *        AztecOO iterative solve which only uses the Apply() method to compute
  *        the matrix vector product
  */
-class TrilinosMatVec : public virtual Epetra_Operator {
- public:
-  /** Define matrix vector operation at each iteration of the linear solver
-   *  adds on the coupled neuman boundary contribution to the matrix
-   *
-   *  \param x vector to be applied on the operator
-   *  \param y result of sprase matrix vector multiplication
-   */
-  int Apply(const Epetra_MultiVector &x, Epetra_MultiVector &y) const;
+class TrilinosMatVec : public virtual Epetra_Operator
+{
+  public:
+    /** Define matrix vector operation at each iteration of the linear solver
+     *  adds on the coupled neuman boundary contribution to the matrix
+     *
+     *  \param x vector to be applied on the operator
+     *  \param y result of sprase matrix vector multiplication
+     */
+    int Apply(const Epetra_MultiVector &x, Epetra_MultiVector &y) const;
 
-  /** Tells whether to use the transpose of the matrix in each matrix
-   * vector product */
-  int SetUseTranspose(bool use_transpose) {
-    return Trilinos::K->SetUseTranspose(use_transpose);
-  }
+    /** Tells whether to use the transpose of the matrix in each matrix
+     * vector product */
+    int SetUseTranspose(bool use_transpose)
+    {
+      return Trilinos::K->SetUseTranspose(use_transpose);
+    }
 
-  /// Computes A_inv*x
-  int ApplyInverse(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const {
-    return Trilinos::K->ApplyInverse(X, Y);
-  }
+    /// Computes A_inv*x
+    int ApplyInverse(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
+    {
+      return Trilinos::K->ApplyInverse(X, Y);
+    }
 
-  /// Infinity norm for global stiffness does not add in the boundary term
-  double NormInf() const { return Trilinos::K->NormInf(); }
+    /// Infinity norm for global stiffness does not add in the boundary term
+    double NormInf() const { return Trilinos::K->NormInf(); }
 
-  /// Returns a character string describing the operator
-  const char *Label() const { return Trilinos::K->Label(); }
+    /// Returns a character string describing the operator
+    const char *Label() const { return Trilinos::K->Label(); }
 
-  /// Returns current UseTranspose setting
-  bool UseTranspose() const { return Trilinos::K->UseTranspose(); }
+    /// Returns current UseTranspose setting
+    bool UseTranspose() const { return Trilinos::K->UseTranspose(); }
 
-  /// Returns true if this object can provide an approx Inf-norm false otherwise
-  bool HasNormInf() const { return Trilinos::K->HasNormInf(); }
+    /// Returns true if this object can provide an approx Inf-norm false
+    /// otherwise
+    bool HasNormInf() const { return Trilinos::K->HasNormInf(); }
 
-  /// Returns pointer to Epetra_Comm communicator associated with this operator
-  const Epetra_Comm &Comm() const { return Trilinos::K->Comm(); }
+    /// Returns pointer to Epetra_Comm communicator associated with this
+    /// operator
+    const Epetra_Comm &Comm() const { return Trilinos::K->Comm(); }
 
-  /// Returns Epetra_Map object assoicated with domain of this operator
-  const Epetra_Map &OperatorDomainMap() const {
-    return Trilinos::K->OperatorDomainMap();
-  }
+    /// Returns Epetra_Map object assoicated with domain of this operator
+    const Epetra_Map &OperatorDomainMap() const
+    {
+      return Trilinos::K->OperatorDomainMap();
+    }
 
-  /// Returns the Epetra_Map object associated with teh range of this operator
-  const Epetra_Map &OperatorRangeMap() const {
-    return Trilinos::K->OperatorRangeMap();
-  }
+    /// Returns the Epetra_Map object associated with teh range of this operator
+    const Epetra_Map &OperatorRangeMap() const
+    {
+      return Trilinos::K->OperatorRangeMap();
+    }
 
 };  // class TrilinosMatVec
 

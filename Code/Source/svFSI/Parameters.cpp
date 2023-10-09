@@ -44,10 +44,12 @@
 #include <set>
 #include <sstream>
 
-/// @brief Set paramaters using a function pointing to the 'ParameterLists::set_parameter_value' method.
+/// @brief Set paramaters using a function pointing to the
+/// 'ParameterLists::set_parameter_value' method.
 void xml_util_set_parameters(
     std::function<void(const std::string&, const std::string&)> fn,
-    tinyxml2::XMLElement* xml_elem, const std::string& error_msg) {
+    tinyxml2::XMLElement* xml_elem, const std::string& error_msg)
+{
   auto item = xml_elem->FirstChildElement();
 
   while (item != nullptr) {
@@ -87,7 +89,8 @@ const std::set<std::string> Parameters::equation_names = {
 
 Parameters::Parameters() {}
 
-void Parameters::get_logging_levels(int& verbose, int& warning, int& debug) {
+void Parameters::get_logging_levels(int& verbose, int& warning, int& debug)
+{
   /*
   verbose = general_simulation_parameters_.verbose;
   warning = general_simulation_parameters_.warning;
@@ -95,7 +98,8 @@ void Parameters::get_logging_levels(int& verbose, int& warning, int& debug) {
   */
 }
 
-void Parameters::print_parameters() {
+void Parameters::print_parameters()
+{
   general_simulation_parameters.print_parameters();
 
   for (auto& mesh : mesh_parameters) {
@@ -108,7 +112,8 @@ void Parameters::print_parameters() {
 }
 
 /// @brief Set the simulation parameter values given in an XML format file.
-void Parameters::read_xml(std::string file_name) {
+void Parameters::read_xml(std::string file_name)
+{
   tinyxml2::XMLDocument doc;
 
   auto error = doc.LoadFile(file_name.c_str());
@@ -136,7 +141,8 @@ void Parameters::read_xml(std::string file_name) {
   set_equation_values(root_element);
 }
 
-void Parameters::set_contact_values(tinyxml2::XMLElement* root_element) {
+void Parameters::set_contact_values(tinyxml2::XMLElement* root_element)
+{
   auto item = root_element->FirstChildElement(
       ContactParameters::xml_element_name_.c_str());
 
@@ -147,7 +153,8 @@ void Parameters::set_contact_values(tinyxml2::XMLElement* root_element) {
   contact_parameters.set_values(item);
 }
 
-void Parameters::set_equation_values(tinyxml2::XMLElement* root_element) {
+void Parameters::set_equation_values(tinyxml2::XMLElement* root_element)
+{
   auto add_eq_item = root_element->FirstChildElement(
       EquationParameters::xml_element_name_.c_str());
 
@@ -165,7 +172,8 @@ void Parameters::set_equation_values(tinyxml2::XMLElement* root_element) {
   }
 }
 
-void Parameters::set_mesh_values(tinyxml2::XMLElement* root_element) {
+void Parameters::set_mesh_values(tinyxml2::XMLElement* root_element)
+{
   auto add_mesh_item = root_element->FirstChildElement(
       MeshParameters::xml_element_name_.c_str());
 
@@ -183,7 +191,8 @@ void Parameters::set_mesh_values(tinyxml2::XMLElement* root_element) {
   }
 }
 
-void Parameters::set_projection_values(tinyxml2::XMLElement* root_element) {
+void Parameters::set_projection_values(tinyxml2::XMLElement* root_element)
+{
   auto add_proj_item = root_element->FirstChildElement(
       ProjectionParameters::xml_element_name_.c_str());
 
@@ -210,7 +219,8 @@ void Parameters::set_projection_values(tinyxml2::XMLElement* root_element) {
 /// @brief Define the XML element name for boundary condition parameters.
 const std::string BodyForceParameters::xml_element_name_ = "Add_BF";
 
-BodyForceParameters::BodyForceParameters() {
+BodyForceParameters::BodyForceParameters()
+{
   // A parameter that must be defined.
   bool required = true;
 
@@ -233,7 +243,8 @@ BodyForceParameters::BodyForceParameters() {
   set_parameter("Value", 0.0, !required, value);
 }
 
-void BodyForceParameters::print_parameters() {
+void BodyForceParameters::print_parameters()
+{
   std::cout << std::endl;
   std::cout << "---------------------" << std::endl;
   std::cout << "Body Force Parameters" << std::endl;
@@ -246,7 +257,8 @@ void BodyForceParameters::print_parameters() {
   }
 }
 
-void BodyForceParameters::set_values(tinyxml2::XMLElement* xml_elem) {
+void BodyForceParameters::set_values(tinyxml2::XMLElement* xml_elem)
+{
   using namespace tinyxml2;
   std::string error_msg = "Unknown " + xml_element_name_ + " XML element '";
 
@@ -276,13 +288,15 @@ void BodyForceParameters::set_values(tinyxml2::XMLElement* xml_elem) {
 // The BoundaryConditionParameters stores paramaters for various
 // type of boundary conditions under the Add_BC XML element.
 
-/// @brief Define the XML element name for equation boundary condition parameters.
+/// @brief Define the XML element name for equation boundary condition
+/// parameters.
 const std::string BoundaryConditionParameters::xml_element_name_ = "Add_BC";
 const std::string BoundaryConditionRCRParameters::xml_element_name_ =
     "RCR_values";
 
 /// @brief RCR values for Neumann BC type.
-BoundaryConditionRCRParameters::BoundaryConditionRCRParameters() {
+BoundaryConditionRCRParameters::BoundaryConditionRCRParameters()
+{
   // A parameter that must be defined.
   bool required = true;
 
@@ -296,8 +310,8 @@ BoundaryConditionRCRParameters::BoundaryConditionRCRParameters() {
   set_parameter("Proximal_resistance", 0.0, required, proximal_resistance);
 }
 
-void BoundaryConditionRCRParameters::set_values(
-    tinyxml2::XMLElement* xml_elem) {
+void BoundaryConditionRCRParameters::set_values(tinyxml2::XMLElement* xml_elem)
+{
   std::string error_msg = "Unknown " + xml_element_name_ + " XML element '";
   using std::placeholders::_1;
   using std::placeholders::_2;
@@ -308,7 +322,8 @@ void BoundaryConditionRCRParameters::set_values(
   value_set = true;
 }
 
-void BoundaryConditionRCRParameters::print_parameters() {
+void BoundaryConditionRCRParameters::print_parameters()
+{
   std::cout << std::endl;
   std::cout << "---------------------------------" << std::endl;
   std::cout << "Boundary Condition RCR Parameters" << std::endl;
@@ -320,7 +335,8 @@ void BoundaryConditionRCRParameters::print_parameters() {
   }
 }
 
-BoundaryConditionParameters::BoundaryConditionParameters() {
+BoundaryConditionParameters::BoundaryConditionParameters()
+{
   // A parameter that must be defined.
   bool required = true;
 
@@ -382,7 +398,8 @@ BoundaryConditionParameters::BoundaryConditionParameters() {
   set_parameter("Zero_out_perimeter", false, !required, zero_out_perimeter);
 }
 
-void BoundaryConditionParameters::print_parameters() {
+void BoundaryConditionParameters::print_parameters()
+{
   std::cout << std::endl;
   std::cout << "-----------------------------" << std::endl;
   std::cout << "Boundary Condition Parameters" << std::endl;
@@ -397,7 +414,8 @@ void BoundaryConditionParameters::print_parameters() {
   rcr.print_parameters();
 }
 
-void BoundaryConditionParameters::set_values(tinyxml2::XMLElement* xml_elem) {
+void BoundaryConditionParameters::set_values(tinyxml2::XMLElement* xml_elem)
+{
   using namespace tinyxml2;
   std::string error_msg = "Unknown " + xml_element_name_ + " XML element '";
 
@@ -520,7 +538,8 @@ PrintConstitutiveModelParamMapType PrintConstitutiveModelParamMap = {
      [](CmpType cp) -> void { cp->stvenant_kirchhoff.print_parameters(); }},
 };
 
-GuccioneParameters::GuccioneParameters() {
+GuccioneParameters::GuccioneParameters()
+{
   // A parameter that must be defined.
   bool required = true;
 
@@ -532,7 +551,8 @@ GuccioneParameters::GuccioneParameters() {
   set_xml_element_name("Constitutive_model type=Guccione");
 }
 
-void GuccioneParameters::set_values(tinyxml2::XMLElement* xml_elem) {
+void GuccioneParameters::set_values(tinyxml2::XMLElement* xml_elem)
+{
   std::string error_msg =
       "Unknown Constitutive_model type=Guccione XML element '";
 
@@ -546,7 +566,8 @@ void GuccioneParameters::set_values(tinyxml2::XMLElement* xml_elem) {
   value_set = true;
 }
 
-void GuccioneParameters::print_parameters() {
+void GuccioneParameters::print_parameters()
+{
   std::cout << "Guccione: " << std::endl;
   auto params_name_value = get_parameter_list();
   for (auto& [key, value] : params_name_value) {
@@ -554,7 +575,8 @@ void GuccioneParameters::print_parameters() {
   }
 }
 
-HolzapfelParameters::HolzapfelParameters() {
+HolzapfelParameters::HolzapfelParameters()
+{
   // A parameter that must be defined.
   bool required = true;
 
@@ -573,7 +595,8 @@ HolzapfelParameters::HolzapfelParameters() {
   set_xml_element_name("Constitutive_model type=Holzapfel");
 }
 
-void HolzapfelParameters::set_values(tinyxml2::XMLElement* xml_elem) {
+void HolzapfelParameters::set_values(tinyxml2::XMLElement* xml_elem)
+{
   std::string error_msg =
       "Unknown Constitutive_model type=Holzapfel XML element '";
 
@@ -587,14 +610,16 @@ void HolzapfelParameters::set_values(tinyxml2::XMLElement* xml_elem) {
   value_set = true;
 }
 
-void HolzapfelParameters::print_parameters() {
+void HolzapfelParameters::print_parameters()
+{
   auto params_name_value = get_parameter_list();
   for (auto& [key, value] : params_name_value) {
     std::cout << key << ": " << value << std::endl;
   }
 }
 
-HolzapfelGasserOgdenParameters::HolzapfelGasserOgdenParameters() {
+HolzapfelGasserOgdenParameters::HolzapfelGasserOgdenParameters()
+{
   // A parameter that must be defined.
   bool required = true;
 
@@ -607,8 +632,8 @@ HolzapfelGasserOgdenParameters::HolzapfelGasserOgdenParameters() {
   set_xml_element_name("Constitutive_model type=HGO");
 }
 
-void HolzapfelGasserOgdenParameters::set_values(
-    tinyxml2::XMLElement* xml_elem) {
+void HolzapfelGasserOgdenParameters::set_values(tinyxml2::XMLElement* xml_elem)
+{
   std::string error_msg = "Unknown Constitutive_model type=HGO XML element '";
 
   using std::placeholders::_1;
@@ -620,14 +645,16 @@ void HolzapfelGasserOgdenParameters::set_values(
   value_set = true;
 }
 
-void HolzapfelGasserOgdenParameters::print_parameters() {
+void HolzapfelGasserOgdenParameters::print_parameters()
+{
   auto params_name_value = get_parameter_list();
   for (auto& [key, value] : params_name_value) {
     std::cout << key << ": " << value << std::endl;
   }
 }
 
-LeeSacksParameters::LeeSacksParameters() {
+LeeSacksParameters::LeeSacksParameters()
+{
   // A parameter that must be defined.
   bool required = true;
 
@@ -640,7 +667,8 @@ LeeSacksParameters::LeeSacksParameters() {
   set_xml_element_name("Constitutive_model type=Lee-Sacks");
 }
 
-void LeeSacksParameters::set_values(tinyxml2::XMLElement* xml_elem) {
+void LeeSacksParameters::set_values(tinyxml2::XMLElement* xml_elem)
+{
   std::string error_msg =
       "Unknown Constitutive_model type=Lee-Sacks XML element '";
 
@@ -654,7 +682,8 @@ void LeeSacksParameters::set_values(tinyxml2::XMLElement* xml_elem) {
   value_set = true;
 }
 
-void LeeSacksParameters::print_parameters() {
+void LeeSacksParameters::print_parameters()
+{
   std::cout << "Lee-Sacks: " << std::endl;
   auto params_name_value = get_parameter_list();
   for (auto& [key, value] : params_name_value) {
@@ -662,7 +691,8 @@ void LeeSacksParameters::print_parameters() {
   }
 }
 
-MooneyRivlinParameters::MooneyRivlinParameters() {
+MooneyRivlinParameters::MooneyRivlinParameters()
+{
   // A parameter that must be defined.
   bool required = true;
 
@@ -672,7 +702,8 @@ MooneyRivlinParameters::MooneyRivlinParameters() {
   set_xml_element_name("Constitutive_model type=Mooney-Rivlin");
 }
 
-void MooneyRivlinParameters::set_values(tinyxml2::XMLElement* xml_elem) {
+void MooneyRivlinParameters::set_values(tinyxml2::XMLElement* xml_elem)
+{
   std::string error_msg =
       "Unknown Constitutive_model type=Mooney-Rivlin  XML element '";
 
@@ -686,7 +717,8 @@ void MooneyRivlinParameters::set_values(tinyxml2::XMLElement* xml_elem) {
   value_set = true;
 }
 
-void MooneyRivlinParameters::print_parameters() {
+void MooneyRivlinParameters::print_parameters()
+{
   std::cout << "MooneyRivlin: " << std::endl;
   std::cout << c1.name() << ": " << c1.value() << std::endl;
   ;
@@ -697,7 +729,8 @@ void MooneyRivlinParameters::print_parameters() {
 /// @brief There are no parameters associated with a Neohookean model.
 NeoHookeanParameters::NeoHookeanParameters() {}
 
-void NeoHookeanParameters::set_values(tinyxml2::XMLElement* con_params) {
+void NeoHookeanParameters::set_values(tinyxml2::XMLElement* con_params)
+{
   value_set = true;
 }
 
@@ -706,13 +739,15 @@ void NeoHookeanParameters::print_parameters() {}
 /// @brief There are no parameters associated with a StVenantKirchhoff model.
 StVenantKirchhoffParameters::StVenantKirchhoffParameters() { value_set = true; }
 
-void StVenantKirchhoffParameters::set_values(tinyxml2::XMLElement* con_params) {
+void StVenantKirchhoffParameters::set_values(tinyxml2::XMLElement* con_params)
+{
   value_set = true;
 }
 
 void StVenantKirchhoffParameters::print_parameters() {}
 
-ConstitutiveModelParameters::ConstitutiveModelParameters() {
+ConstitutiveModelParameters::ConstitutiveModelParameters()
+{
   // A parameter that must be defined.
   bool required = true;
 
@@ -720,7 +755,8 @@ ConstitutiveModelParameters::ConstitutiveModelParameters() {
   type = Parameter<std::string>("type", "", required);
 }
 
-void ConstitutiveModelParameters::print_parameters() {
+void ConstitutiveModelParameters::print_parameters()
+{
   if (!value_set) {
     return;
   }
@@ -733,7 +769,8 @@ void ConstitutiveModelParameters::print_parameters() {
   PrintConstitutiveModelParamMap[type.value()](this);
 }
 
-void ConstitutiveModelParameters::set_values(tinyxml2::XMLElement* xml_elem) {
+void ConstitutiveModelParameters::set_values(tinyxml2::XMLElement* xml_elem)
+{
   using namespace tinyxml2;
   std::string error_msg = "Unknown " + xml_element_name_ + " XML element '";
 
@@ -776,7 +813,8 @@ void ConstitutiveModelParameters::set_values(tinyxml2::XMLElement* xml_elem) {
 /// Define the XML element name for equation Couple_to_genBC parameters.
 const std::string CoupleCplBCParameters::xml_element_name_ = "Couple_to_cplBC";
 
-CoupleCplBCParameters::CoupleCplBCParameters() {
+CoupleCplBCParameters::CoupleCplBCParameters()
+{
   // A parameter that must be defined.
   bool required = true;
 
@@ -795,7 +833,8 @@ CoupleCplBCParameters::CoupleCplBCParameters() {
   set_parameter("ZeroD_code_file_path", "", required, zerod_code_file_path);
 }
 
-void CoupleCplBCParameters::set_values(tinyxml2::XMLElement* xml_elem) {
+void CoupleCplBCParameters::set_values(tinyxml2::XMLElement* xml_elem)
+{
   std::string error_msg = "Unknown Couple_to_cplBC type=TYPE XML element '";
 
   // Get the 'type' from the <Couple_to_cplBC type=TYPE> element.
@@ -818,7 +857,8 @@ void CoupleCplBCParameters::set_values(tinyxml2::XMLElement* xml_elem) {
   value_set = true;
 }
 
-void CoupleCplBCParameters::print_parameters() {
+void CoupleCplBCParameters::print_parameters()
+{
   if (!value_set) {
     return;
   }
@@ -843,7 +883,8 @@ void CoupleCplBCParameters::print_parameters() {
 /// Define the XML element name for equation Couple_to_genBC parameters.
 const std::string CoupleGenBCParameters::xml_element_name_ = "Couple_to_genBC";
 
-CoupleGenBCParameters::CoupleGenBCParameters() {
+CoupleGenBCParameters::CoupleGenBCParameters()
+{
   // A parameter that must be defined.
   bool required = true;
 
@@ -852,7 +893,8 @@ CoupleGenBCParameters::CoupleGenBCParameters() {
   set_parameter("ZeroD_code_file_path", "", required, zerod_code_file_path);
 };
 
-void CoupleGenBCParameters::set_values(tinyxml2::XMLElement* xml_elem) {
+void CoupleGenBCParameters::set_values(tinyxml2::XMLElement* xml_elem)
+{
   std::string error_msg = "Unknown Couple_to_genBC type=TYPE XML element '";
 
   // Get the 'type' from the <Couple_to_genBC type=TYPE> element.
@@ -885,7 +927,8 @@ void CoupleGenBCParameters::set_values(tinyxml2::XMLElement* xml_elem) {
 /// @brief Define the XML element name for equation output parameters.
 const std::string OutputParameters::xml_element_name_ = "Output";
 
-OutputParameters::OutputParameters() {
+OutputParameters::OutputParameters()
+{
   // A parameter that must be defined.
   bool required = true;
 
@@ -893,7 +936,8 @@ OutputParameters::OutputParameters() {
   type = Parameter<std::string>("type", "", required);
 }
 
-void OutputParameters::print_parameters() {
+void OutputParameters::print_parameters()
+{
   std::cout << std::endl;
   std::cout << "-----------------" << std::endl;
   std::cout << "Output Parameters" << std::endl;
@@ -901,7 +945,8 @@ void OutputParameters::print_parameters() {
   std::cout << type.name() << ": " << type.value() << std::endl;
 }
 
-void OutputParameters::set_values(tinyxml2::XMLElement* xml_elem) {
+void OutputParameters::set_values(tinyxml2::XMLElement* xml_elem)
+{
   std::string msg("[OutputParameters::set_values] ");
   std::string error_msg = "Unknown " + xml_element_name_ + " XML element '";
 
@@ -938,7 +983,8 @@ void OutputParameters::set_values(tinyxml2::XMLElement* xml_elem) {
 }
 
 /// @brief Get the value of an alias by name.
-std::string OutputParameters::get_alias_value(const std::string& name) {
+std::string OutputParameters::get_alias_value(const std::string& name)
+{
   for (auto& param : alias_list) {
     if (param.name_ == name) {
       return param.value();
@@ -949,7 +995,8 @@ std::string OutputParameters::get_alias_value(const std::string& name) {
 }
 
 /// @brief Get the value of an output by name.
-bool OutputParameters::get_output_value(const std::string& name) {
+bool OutputParameters::get_output_value(const std::string& name)
+{
   for (auto& param : output_list) {
     if (param.name_ == name) {
       return param.value();
@@ -970,7 +1017,8 @@ bool OutputParameters::get_output_value(const std::string& name) {
 const std::string VariableWallPropsParameters::xml_element_name_ =
     "Variable_wall_properties";
 
-VariableWallPropsParameters::VariableWallPropsParameters() {
+VariableWallPropsParameters::VariableWallPropsParameters()
+{
   // A parameter that must be defined.
   bool required = true;
 
@@ -980,7 +1028,8 @@ VariableWallPropsParameters::VariableWallPropsParameters() {
                 wall_properties_file_path);
 }
 
-void VariableWallPropsParameters::set_values(tinyxml2::XMLElement* xml_elem) {
+void VariableWallPropsParameters::set_values(tinyxml2::XMLElement* xml_elem)
+{
   using namespace tinyxml2;
   std::string error_msg = "Unknown " + xml_element_name_ + " XML element '";
 
@@ -1056,19 +1105,22 @@ PrintViscosityParamaMapType PrintViscosityModelParamsMap = {
      [](VpType vp) -> void { vp->newtonian_model.print_parameters(); }},
 };
 
-ViscosityNewtonianParameters::ViscosityNewtonianParameters() {
+ViscosityNewtonianParameters::ViscosityNewtonianParameters()
+{
   // A parameter that must be defined.
   bool required = true;
 
   set_parameter("Value", 0.0, !required, constant_value);
 }
 
-void ViscosityNewtonianParameters::print_parameters() {
+void ViscosityNewtonianParameters::print_parameters()
+{
   std::cout << constant_value.name_ << ": " << constant_value.value_
             << std::endl;
 }
 
-void ViscosityNewtonianParameters::set_values(tinyxml2::XMLElement* xml_elem) {
+void ViscosityNewtonianParameters::set_values(tinyxml2::XMLElement* xml_elem)
+{
   std::string error_msg =
       "Unknown Constitutive_model type=Newtonian XML element '";
 
@@ -1080,7 +1132,8 @@ void ViscosityNewtonianParameters::set_values(tinyxml2::XMLElement* xml_elem) {
   xml_util_set_parameters(ftpr, xml_elem, error_msg);
 }
 
-ViscosityCarreauYasudaParameters::ViscosityCarreauYasudaParameters() {
+ViscosityCarreauYasudaParameters::ViscosityCarreauYasudaParameters()
+{
   // A parameter that must be defined.
   bool required = true;
 
@@ -1097,7 +1150,8 @@ ViscosityCarreauYasudaParameters::ViscosityCarreauYasudaParameters() {
                 shear_rate_tensor_exponent);
 }
 
-void ViscosityCarreauYasudaParameters::print_parameters() {
+void ViscosityCarreauYasudaParameters::print_parameters()
+{
   std::cout << limiting_high_shear_rate_viscosity.name_ << ": "
             << limiting_high_shear_rate_viscosity.value_ << std::endl;
   std::cout << limiting_low_shear_rate_viscosity.name_ << ": "
@@ -1111,7 +1165,8 @@ void ViscosityCarreauYasudaParameters::print_parameters() {
 }
 
 void ViscosityCarreauYasudaParameters::set_values(
-    tinyxml2::XMLElement* xml_elem) {
+    tinyxml2::XMLElement* xml_elem)
+{
   std::string error_msg =
       "Unknown Constitutive_model type=CarreauYasuda XML element '";
   using std::placeholders::_1;
@@ -1122,7 +1177,8 @@ void ViscosityCarreauYasudaParameters::set_values(
   xml_util_set_parameters(ftpr, xml_elem, error_msg);
 }
 
-ViscosityCassonsParameters::ViscosityCassonsParameters() {
+ViscosityCassonsParameters::ViscosityCassonsParameters()
+{
   // A parameter that must be defined.
   bool required = true;
 
@@ -1133,7 +1189,8 @@ ViscosityCassonsParameters::ViscosityCassonsParameters() {
   set_parameter("Yield_stress_parameter", 0.0, !required, yield_stress);
 }
 
-void ViscosityCassonsParameters::print_parameters() {
+void ViscosityCassonsParameters::print_parameters()
+{
   std::cout << asymptotic_viscosity.name_ << ": " << asymptotic_viscosity.value_
             << std::endl;
   std::cout << low_shear_rate_threshold.name_ << ": "
@@ -1141,7 +1198,8 @@ void ViscosityCassonsParameters::print_parameters() {
   std::cout << yield_stress.name_ << ": " << yield_stress.value_ << std::endl;
 }
 
-void ViscosityCassonsParameters::set_values(tinyxml2::XMLElement* xml_elem) {
+void ViscosityCassonsParameters::set_values(tinyxml2::XMLElement* xml_elem)
+{
   std::string error_msg =
       "Unknown Constitutive_model type=Cassons XML element '";
 
@@ -1153,7 +1211,8 @@ void ViscosityCassonsParameters::set_values(tinyxml2::XMLElement* xml_elem) {
   xml_util_set_parameters(ftpr, xml_elem, error_msg);
 }
 
-ViscosityParameters::ViscosityParameters() {
+ViscosityParameters::ViscosityParameters()
+{
   // A parameter that must be defined.
   bool required = true;
 
@@ -1161,7 +1220,8 @@ ViscosityParameters::ViscosityParameters() {
   model = Parameter<std::string>("model", "", required);
 }
 
-void ViscosityParameters::print_parameters() {
+void ViscosityParameters::print_parameters()
+{
   std::cout << std::endl;
   std::cout << "--------------------" << std::endl;
   std::cout << "Viscosity Parameters" << std::endl;
@@ -1172,7 +1232,8 @@ void ViscosityParameters::print_parameters() {
   PrintViscosityModelParamsMap[model.value_](this);
 }
 
-void ViscosityParameters::set_values(tinyxml2::XMLElement* xml_elem) {
+void ViscosityParameters::set_values(tinyxml2::XMLElement* xml_elem)
+{
   using namespace tinyxml2;
 
   const char* smodel;
@@ -1204,7 +1265,8 @@ void ViscosityParameters::set_values(tinyxml2::XMLElement* xml_elem) {
 /// @brief Define the XML element name for domain parameters.
 const std::string DomainParameters::xml_element_name_ = "Domain";
 
-DomainParameters::DomainParameters() {
+DomainParameters::DomainParameters()
+{
   // A parameter that must be defined.
   bool required = true;
 
@@ -1267,7 +1329,8 @@ DomainParameters::DomainParameters() {
                 time_step_for_integration);
 }
 
-void DomainParameters::print_parameters() {
+void DomainParameters::print_parameters()
+{
   std::cout << std::endl;
   std::cout << "-----------------" << std::endl;
   std::cout << "Domain Parameters" << std::endl;
@@ -1288,7 +1351,8 @@ void DomainParameters::print_parameters() {
   viscosity.print_parameters();
 }
 
-void DomainParameters::set_values(tinyxml2::XMLElement* domain_elem) {
+void DomainParameters::set_values(tinyxml2::XMLElement* domain_elem)
+{
   using namespace tinyxml2;
   std::string error_msg = "Unknown " + xml_element_name_ + " XML element '";
 
@@ -1358,11 +1422,13 @@ void DomainParameters::set_values(tinyxml2::XMLElement* domain_elem) {
 // Process parameters for the fiber reinforcement stress
 // 'Fiber_reinforcement_stress` XML element.
 
-/// @brief Define the XML element name for fiber reinforcement stress parameters.
+/// @brief Define the XML element name for fiber reinforcement stress
+/// parameters.
 const std::string FiberReinforcementStressParameters::xml_element_name_ =
     "Fiber_reinforcement_stress";
 
-FiberReinforcementStressParameters::FiberReinforcementStressParameters() {
+FiberReinforcementStressParameters::FiberReinforcementStressParameters()
+{
   // A parameter that must be defined.
   bool required = true;
 
@@ -1376,7 +1442,8 @@ FiberReinforcementStressParameters::FiberReinforcementStressParameters() {
 }
 
 void FiberReinforcementStressParameters::set_values(
-    tinyxml2::XMLElement* xml_elem) {
+    tinyxml2::XMLElement* xml_elem)
+{
   using namespace tinyxml2;
   std::string error_msg = "Unknown " + xml_element_name_ + " XML element '";
 
@@ -1401,7 +1468,8 @@ void FiberReinforcementStressParameters::set_values(
   value_set = true;
 }
 
-void FiberReinforcementStressParameters::print_parameters() {
+void FiberReinforcementStressParameters::print_parameters()
+{
   if (!value_set) {
     return;
   }
@@ -1428,7 +1496,8 @@ void FiberReinforcementStressParameters::print_parameters() {
 /// @brief Define the XML element name for equation output parameters.
 const std::string StimulusParameters::xml_element_name_ = "Stimulus";
 
-StimulusParameters::StimulusParameters() {
+StimulusParameters::StimulusParameters()
+{
   // A parameter that must be defined.
   bool required = true;
 
@@ -1441,7 +1510,8 @@ StimulusParameters::StimulusParameters() {
   set_parameter("Start_time", 0.0, !required, start_time);
 }
 
-void StimulusParameters::set_values(tinyxml2::XMLElement* xml_elem) {
+void StimulusParameters::set_values(tinyxml2::XMLElement* xml_elem)
+{
   std::string error_msg = "Unknown " + xml_element_name_ + " XML element '";
 
   // Get the 'type' from the <LS type=TYPE> element.
@@ -1465,7 +1535,8 @@ void StimulusParameters::set_values(tinyxml2::XMLElement* xml_elem) {
   value_set = true;
 }
 
-void StimulusParameters::print_parameters() {
+void StimulusParameters::print_parameters()
+{
   if (!value_set) {
     return;
   }
@@ -1488,7 +1559,8 @@ void StimulusParameters::print_parameters() {
 /// @brief Define the XML element name for ECG leads parameters.
 const std::string ECGLeadsParameters::xml_element_name_ = "ECGLeads";
 
-ECGLeadsParameters::ECGLeadsParameters() {
+ECGLeadsParameters::ECGLeadsParameters()
+{
   // A parameter that must be defined.
   bool required = true;
 
@@ -1498,7 +1570,8 @@ ECGLeadsParameters::ECGLeadsParameters() {
   set_parameter("Z_coords_file_path", "", !required, z_coords_file_path);
 }
 
-void ECGLeadsParameters::set_values(tinyxml2::XMLElement* xml_elem) {
+void ECGLeadsParameters::set_values(tinyxml2::XMLElement* xml_elem)
+{
   std::string error_msg = "Unknown " + xml_element_name_ + " XML element '";
 
   using std::placeholders::_1;
@@ -1512,7 +1585,8 @@ void ECGLeadsParameters::set_values(tinyxml2::XMLElement* xml_elem) {
   value_set = true;
 }
 
-void ECGLeadsParameters::print_parameters() {
+void ECGLeadsParameters::print_parameters()
+{
   if (!value_set) {
     return;
   }
@@ -1537,7 +1611,8 @@ void ECGLeadsParameters::print_parameters() {
 /// Define the XML element name for contact parameters.
 const std::string ContactParameters::xml_element_name_ = "Contact";
 
-ContactParameters::ContactParameters() {
+ContactParameters::ContactParameters()
+{
   set_xml_element_name(xml_element_name_);
 
   // A parameter that must be defined.
@@ -1556,7 +1631,8 @@ ContactParameters::ContactParameters() {
   set_parameter("Penalty_constant", 1e5, !required, penalty_constant);
 }
 
-void ContactParameters::print_parameters() {
+void ContactParameters::print_parameters()
+{
   std::cout << std::endl;
   std::cout << "-------------------" << std::endl;
   std::cout << "Contact Parameters" << std::endl;
@@ -1569,7 +1645,8 @@ void ContactParameters::print_parameters() {
   }
 }
 
-void ContactParameters::set_values(tinyxml2::XMLElement* xml_elem) {
+void ContactParameters::set_values(tinyxml2::XMLElement* xml_elem)
+{
   using namespace tinyxml2;
   std::string error_msg = "Unknown " + xml_element_name_ + " XML element '";
 
@@ -1601,7 +1678,8 @@ void ContactParameters::set_values(tinyxml2::XMLElement* xml_elem) {
 /// @brief Define the XML element name for equation parameters.
 const std::string EquationParameters::xml_element_name_ = "Add_equation";
 
-EquationParameters::EquationParameters() {
+EquationParameters::EquationParameters()
+{
   set_xml_element_name(xml_element_name_);
 
   // A parameter that must be defined.
@@ -1628,7 +1706,8 @@ EquationParameters::EquationParameters() {
                 use_taylor_hood_type_basis);
 }
 
-void EquationParameters::print_parameters() {
+void EquationParameters::print_parameters()
+{
   std::cout << std::endl;
   std::cout << "-------------------" << std::endl;
   std::cout << "Equation Parameters" << std::endl;
@@ -1669,7 +1748,8 @@ void EquationParameters::print_parameters() {
   ecg_leads.print_parameters();
 }
 
-void EquationParameters::set_values(tinyxml2::XMLElement* eq_elem) {
+void EquationParameters::set_values(tinyxml2::XMLElement* eq_elem)
+{
   using namespace tinyxml2;
   default_domain = new DomainParameters();
   auto item = eq_elem->FirstChildElement();
@@ -1768,7 +1848,8 @@ void EquationParameters::set_values(tinyxml2::XMLElement* eq_elem) {
 //////////////////////////////////////////////////////////
 
 /// @brief Process paramaters for the 'GeneralSimulationParameters' XML element.
-GeneralSimulationParameters::GeneralSimulationParameters() {
+GeneralSimulationParameters::GeneralSimulationParameters()
+{
   int int_inf = std::numeric_limits<int>::infinity();
 
   // Define the XML element name for general simulation parameters.
@@ -1831,7 +1912,8 @@ GeneralSimulationParameters::GeneralSimulationParameters() {
   set_parameter("Warning", false, !required, warning);
 }
 
-void GeneralSimulationParameters::print_parameters() {
+void GeneralSimulationParameters::print_parameters()
+{
   std::cout << std::endl;
   std::cout << "-----------------------------" << std::endl;
   std::cout << "General Simulation Parameters" << std::endl;
@@ -1844,8 +1926,8 @@ void GeneralSimulationParameters::print_parameters() {
 }
 
 /// @brief Set general parameters values from XML.
-void GeneralSimulationParameters::set_values(
-    tinyxml2::XMLElement* xml_element) {
+void GeneralSimulationParameters::set_values(tinyxml2::XMLElement* xml_element)
+{
   using namespace tinyxml2;
 
   // Set parameter values from the XML elements.
@@ -1879,7 +1961,8 @@ void GeneralSimulationParameters::set_values(
 /// Define the XML element name for face parameters.
 const std::string FaceParameters::xml_element_name_ = "Add_face";
 
-FaceParameters::FaceParameters() {
+FaceParameters::FaceParameters()
+{
   set_xml_element_name(xml_element_name_);
 
   // A parameter that must be defined.
@@ -1895,7 +1978,8 @@ FaceParameters::FaceParameters() {
                 quadrature_modifier_TRI3);
 }
 
-void FaceParameters::print_parameters() {
+void FaceParameters::print_parameters()
+{
   std::cout << std::endl;
   std::cout << "---------------" << std::endl;
   std::cout << "Face Parameters" << std::endl;
@@ -1905,7 +1989,8 @@ void FaceParameters::print_parameters() {
             << std::endl;
 }
 
-void FaceParameters::set_values(tinyxml2::XMLElement* face_elem) {
+void FaceParameters::set_values(tinyxml2::XMLElement* face_elem)
+{
   using namespace tinyxml2;
 
   std::string error_msg = "Unknown " + xml_element_name_ + " XML element '";
@@ -1941,7 +2026,8 @@ void FaceParameters::set_values(tinyxml2::XMLElement* face_elem) {
 /// @brief Define the XML element name for mesh parameters.
 const std::string RemesherParameters::xml_element_name_ = "Remesher";
 
-RemesherParameters::RemesherParameters() {
+RemesherParameters::RemesherParameters()
+{
   bool required = true;
 
   type = Parameter<std::string>("type", "", required);
@@ -1953,7 +2039,8 @@ RemesherParameters::RemesherParameters() {
                 frequency_for_copying_data);
 }
 
-void RemesherParameters::print_parameters() {
+void RemesherParameters::print_parameters()
+{
   std::cout << std::endl;
   std::cout << "-------------------" << std::endl;
   std::cout << "Remesher Parameters" << std::endl;
@@ -1962,7 +2049,8 @@ void RemesherParameters::print_parameters() {
   std::cout << type.name() << ": " << type.value() << std::endl;
 }
 
-void RemesherParameters::set_values(tinyxml2::XMLElement* xml_elem) {
+void RemesherParameters::set_values(tinyxml2::XMLElement* xml_elem)
+{
   std::string error_msg = "Unknown " + xml_element_name + " XML element '";
 
   // Get the 'type' from the <Remesher type=TYPE> element.
@@ -2036,7 +2124,8 @@ void RemesherParameters::set_values(tinyxml2::XMLElement* xml_elem) {
 /// @brief Define the XML element name for mesh parameters.
 const std::string MeshParameters::xml_element_name_ = "Add_mesh";
 
-MeshParameters::MeshParameters() {
+MeshParameters::MeshParameters()
+{
   bool required = true;
 
   // Mesh name from Add_mesh element.
@@ -2069,7 +2158,8 @@ MeshParameters::MeshParameters() {
                 !required, quadrature_modifier_TET4);
 }
 
-void MeshParameters::print_parameters() {
+void MeshParameters::print_parameters()
+{
   std::cout << std::endl;
   std::cout << "---------------" << std::endl;
   std::cout << "Mesh Parameters" << std::endl;
@@ -2090,7 +2180,8 @@ void MeshParameters::print_parameters() {
   }
 }
 
-void MeshParameters::set_values(tinyxml2::XMLElement* mesh_elem) {
+void MeshParameters::set_values(tinyxml2::XMLElement* mesh_elem)
+{
   using namespace tinyxml2;
   std::string error_msg = "Unknown " + xml_element_name_ + " XML element '";
   auto item = mesh_elem->FirstChildElement();
@@ -2140,7 +2231,8 @@ void MeshParameters::set_values(tinyxml2::XMLElement* mesh_elem) {
 /// @brief Define the XML element name for mesh parameters.
 const std::string ProjectionParameters::xml_element_name_ = "Add_projection";
 
-ProjectionParameters::ProjectionParameters() {
+ProjectionParameters::ProjectionParameters()
+{
   // A parameter that must be defined.
   bool required = true;
 
@@ -2150,7 +2242,8 @@ ProjectionParameters::ProjectionParameters() {
   set_parameter("Projection_tolerance", 0.0, !required, projection_tolerance);
 }
 
-void ProjectionParameters::set_values(tinyxml2::XMLElement* xml_elem) {
+void ProjectionParameters::set_values(tinyxml2::XMLElement* xml_elem)
+{
   using namespace tinyxml2;
   std::string error_msg = "Unknown " + xml_element_name_ + " XML element '";
 
@@ -2182,7 +2275,8 @@ void ProjectionParameters::set_values(tinyxml2::XMLElement* xml_elem) {
 /// @brief Define the XML element name for equation output parameters.
 const std::string LinearSolverParameters::xml_element_name_ = "LS";
 
-LinearSolverParameters::LinearSolverParameters() {
+LinearSolverParameters::LinearSolverParameters()
+{
   // A parameter that must be defined.
   bool required = true;
 
@@ -2209,7 +2303,8 @@ LinearSolverParameters::LinearSolverParameters() {
                 use_trilinos_for_assembly);
 }
 
-void LinearSolverParameters::print_parameters() {
+void LinearSolverParameters::print_parameters()
+{
   std::cout << std::endl;
   std::cout << "------------------------" << std::endl;
   std::cout << "Linear Solver Parameters" << std::endl;
@@ -2223,7 +2318,8 @@ void LinearSolverParameters::print_parameters() {
   }
 }
 
-void LinearSolverParameters::set_values(tinyxml2::XMLElement* xml_elem) {
+void LinearSolverParameters::set_values(tinyxml2::XMLElement* xml_elem)
+{
   std::string error_msg = "Unknown " + xml_element_name + " XML element '";
 
   // Get the 'type' from the <LS type=TYPE> element.

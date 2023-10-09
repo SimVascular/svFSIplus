@@ -13,7 +13,8 @@ namespace fs {
 ///
 /// Replicates 'SUBROUTINE ALLOCFS(fs, insd)'.
 //
-void alloc_fs(fsType& fs, const int nsd, const int insd) {
+void alloc_fs(fsType& fs, const int nsd, const int insd)
+{
   int nG = fs.nG;
   int eNoN = fs.eNoN;
 
@@ -29,7 +30,8 @@ void alloc_fs(fsType& fs, const int nsd, const int insd) {
 }
 
 void get_thood_fs(ComMod& com_mod, std::array<fsType, 2>& fs, const mshType& lM,
-                  const bool lStab, const int iOpt) {
+                  const bool lStab, const int iOpt)
+{
 #define n_debug_get_thood_fs
 #ifdef debug_get_thood_fs
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
@@ -135,7 +137,8 @@ void get_thood_fs(ComMod& com_mod, std::array<fsType, 2>& fs, const mshType& lM,
   }
 }
 
-void init_fs(fsType& fs, const int nsd, const int insd) {
+void init_fs(fsType& fs, const int nsd, const int insd)
+{
   alloc_fs(fs, nsd, insd);
 
   // Get Gauss points and shape functions
@@ -153,7 +156,8 @@ void init_fs(fsType& fs, const int nsd, const int insd) {
   nn::get_nn_bnds(nsd, fs.eType, fs.eNoN, fs.xib, fs.Nb);
 }
 
-void init_fs_face(const ComMod& com_mod, mshType& lM, faceType& lFa) {
+void init_fs_face(const ComMod& com_mod, mshType& lM, faceType& lFa)
+{
   using namespace consts;
 
 #define n_debug_init_fs_face
@@ -224,7 +228,8 @@ void init_fs_face(const ComMod& com_mod, mshType& lM, faceType& lFa) {
 ///
 /// Replicates 'SUBROUTINE INITFSMSH(lM)'.
 //
-void init_fs_msh(const ComMod& com_mod, mshType& lM) {
+void init_fs_msh(const ComMod& com_mod, mshType& lM)
+{
   using namespace consts;
 
 #define n_debug_init_fs_msh
@@ -305,7 +310,8 @@ void init_fs_msh(const ComMod& com_mod, mshType& lM) {
 ///
 /// Replicates 'SUBROUTINE SETTHOODFS(fs, eType)'.
 //
-void set_thood_fs(fsType& fs, consts::ElementType eType) {
+void set_thood_fs(fsType& fs, consts::ElementType eType)
+{
   using namespace consts;
 
   switch (eType) {
@@ -361,7 +367,8 @@ void set_thood_fs(fsType& fs, consts::ElementType eType) {
 ///
 /// Reproduces 'SUBROUTINE THOOD_ValRC()'
 //
-void thood_val_rc(ComMod& com_mod) {
+void thood_val_rc(ComMod& com_mod)
+{
   using namespace consts;
 
 #define n_debug_thood_val_rc

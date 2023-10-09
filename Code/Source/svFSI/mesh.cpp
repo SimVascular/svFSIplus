@@ -23,7 +23,8 @@
 namespace mesh {
 
 void construct_mesh(ComMod& com_mod, CepMod& cep_mod, const mshType& lM,
-                    const Array<double>& Ag, const Array<double>& Dg) {
+                    const Array<double>& Ag, const Array<double>& Dg)
+{
 #define n_debug_construct_mesh
 #ifdef debug_construct_mesh
   DebugMsg dmsg(__func__, com_mod.cm.idcm());

@@ -27,7 +27,8 @@ namespace bf {
 void bf_construct(ComMod& com_mod, const mshType& lM, const int e,
                   const int eNoN, const int idof, Array<double>& xl,
                   const Array<double>& dl, const Array<double>& bfl,
-                  const Vector<int>& ptr) {
+                  const Vector<int>& ptr)
+{
   using namespace consts;
 
 #define n_debug_bf_construct
@@ -106,7 +107,8 @@ void bf_construct(ComMod& com_mod, const mshType& lM, const int e,
 
 /// @brief Modifes: com_mod.Bf, Dg
 //
-void set_bf(ComMod& com_mod, const Array<double>& Dg) {
+void set_bf(ComMod& com_mod, const Array<double>& Dg)
+{
 #define n_debug_set_bf
   auto& cm = com_mod.cm;
 #ifdef debug_set_bf
@@ -136,7 +138,8 @@ void set_bf(ComMod& com_mod, const Array<double>& Dg) {
 /// Reproduces 'SUBROUTINE SETBFL(lBf, lM, Dg)'.
 //
 void set_bf_l(ComMod& com_mod, bfType& lBf, mshType& lM,
-              const Array<double>& Dg) {
+              const Array<double>& Dg)
+{
 #define n_debug_set_bf_l
   auto& cm = com_mod.cm;
 #ifdef debug_set_bf_l

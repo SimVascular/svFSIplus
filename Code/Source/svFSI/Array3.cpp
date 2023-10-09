@@ -19,12 +19,14 @@ template <>
 bool Array3<double>::write_enabled = false;
 
 template <>
-void Array3<double>::memory(const std::string& prefix) {
+void Array3<double>::memory(const std::string& prefix)
+{
   utils::print_mem("Array3<double>", prefix, memory_in_use, memory_returned);
 }
 
 template <>
-void Array3<double>::stats(const std::string& prefix) {
+void Array3<double>::stats(const std::string& prefix)
+{
   utils::print_stats("Array3<double>", prefix, num_allocated, active);
 }
 

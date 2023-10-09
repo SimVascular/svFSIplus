@@ -27,7 +27,8 @@ namespace fsi_linear_solver {
 //
 void fsils_lhs_create(FSILS_lhsType& lhs, FSILS_commuType& commu, int gnNo,
                       int nNo, int nnz, Vector<int>& gNodes,
-                      Vector<int>& rowPtr, Vector<int>& colPtr, int nFaces) {
+                      Vector<int>& rowPtr, Vector<int>& colPtr, int nFaces)
+{
 #define n_debug_fsils_lhs_create
 #ifdef debug_fsils_lhs_create
   DebugMsg dmsg(__func__, lhs.commu.task);
@@ -355,7 +356,8 @@ void fsils_lhs_create(FSILS_lhsType& lhs, FSILS_commuType& commu, int gnNo,
 // fsils_lhs_free
 //----------------
 //
-void fsils_lhs_free(FSILS_lhsType& lhs) {
+void fsils_lhs_free(FSILS_lhsType& lhs)
+{
   for (int faIn = 0; faIn < lhs.nFaces; faIn++) {
     if (lhs.face[faIn].foC) {
       fsils_bc_free(lhs, faIn);
