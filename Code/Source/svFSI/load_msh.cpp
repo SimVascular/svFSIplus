@@ -154,8 +154,7 @@ void read_sv(Simulation* simulation, mshType& mesh, const MeshParameters* mesh_p
       // If node IDs were not read then create them.
       if (face.gN.size() == 0) {
         read_msh_ns::calc_nbc(mesh, face);
-
-        // Reset the connecttivity with the new node IDs?
+        // Reset the connectivity with the new node IDs?
         for (int e = 0; e < face.nEl; e++) {
           for (int a = 0; a < face.eNoN; a++) {
             int Ac = face.IEN(a,e);
@@ -166,6 +165,53 @@ void read_sv(Simulation* simulation, mshType& mesh, const MeshParameters* mesh_p
       }
     }
 
+    // Set face global node IDs
+    for (int a = 0; a<face.nNo; a++) {
+        bool found = false;
+        for (int b = 0; b<mesh.gnNo; b++) {
+            for (int d = 0; d<com_mod.nsd; d++) {
+                if (mesh.x(d, b) != face.x(d, a)) {
+                    found = false;
+                    break;
+                } else {
+                    found = true;
+                }
+            }
+            if (found) {
+                face.gN(a) = b;
+                break;
+            }
+        }
+    }
+
+    // Set face element IDs
+    for (int e = 0; e < face.nEl; e++) {
+        for (int b = 0; b < mesh.gnEl; b++) {
+            int foundN = 0;
+            for (int c = 0; c<mesh.eNoN; c++){
+                int Bc = mesh.gIEN(c,b);
+                for (int a = 0; a<face.eNoN; a++) {
+                    int Ac = face.IEN(a,e);
+                    Ac = face.gN(Ac);
+                    if (Ac == Bc) {
+                        foundN++;
+                    }
+                }
+            }
+            if (foundN == face.eNoN) {
+                face.gE(e) = b;
+                break;
+            }
+        }
+    }
+    // Reset face IEN with mesh global IDs
+    for (int e = 0; e < face.nEl; e++) {
+        for (int a = 0; a < face.eNoN; a++) {
+            int Ac = face.IEN(a,e);
+            Ac = face.gN(Ac);
+            face.IEN(a,e) = Ac;
+        }
+    }
     nn::select_eleb(simulation, mesh, face);
   }
 
