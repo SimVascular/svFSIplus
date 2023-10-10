@@ -420,15 +420,16 @@ void read_vtp(const std::string& file_name, faceType& face)
 
   if (face.gN.size() == 0) {
     std::cout << "[WARNING] No node IDs found in the '" << file_name << "' face file.";
-  } else {
-    for (int e = 0; e < face.nEl; e++) {
-      for (int a = 0; a < face.eNoN; a++) {
+  }
+  //else {
+  //  for (int e = 0; e < face.nEl; e++) {
+  //    for (int a = 0; a < face.eNoN; a++) {
         //int Ac = face.IEN(a,e);
         //Ac = face.gN(Ac);
         //face.IEN(a,e) = Ac;
-      }
-    }
-  }
+  //    }
+  //  }
+  //}
 
   // Create essential BC array.
   //
