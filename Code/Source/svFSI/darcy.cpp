@@ -176,10 +176,18 @@ namespace darcy {
         const double dt = com_mod.dt;
         const int i = eq.s;
 
-        double k = dmn.prop.at(PhysicalProperyType::permeability); // should be a tensor
+        Array<double> K = dmn.prop.at(PhysicalProperyType::permeability); // should be a tensor
         double source = dmn.prop.at(PhysicalProperyType::source_term); //is this just a double?
-        double rho = dmn.prop.at(PhysicalProperyType::solid_density); // not needed
+        double rho = dmn.prop.at(PhysicalProperyType::solid_density); // need fluid density instead
+        //double phi = dmn.prop.at(PhysicalProperyType::porosity);
+        //double p0 = dmn.prop.at(PhysicalProperyType::porosity_pressure);
+        //double beta = dmn.prop.at(PhysicalProperyType::compressibility);
+        //double p1 = dmn.prop.at(PhysicalProperyType::density_pressure);
+        //double gamma = dmn.prop.at(PhysicalProperyType::gamma);
+        //double B = dmn.prop.at(PhysicalProperyType::B);
+        //double mu = dmn.prop.at(PhysicalProperyType::viscosity);
 
+        // need to figure out how these are edited for the darcy case
         double T1 = eq.af * eq.gam * dt;
         double amd = eq.am * rho/ T1;
         double wl = w * T1;
@@ -193,18 +201,18 @@ namespace darcy {
         dmsg << "i: " << i;
         dmsg << "wl: " << wl;
 #endif
-        double Td = -source;
-        Vector<double> Tx(nsd);
+        double Pd = -source;
+        Vector<double> Px(nsd);
 
-
+        // need to formulate this for the compressible fluid/porous media with respect to pressure only
         for (int a = 0; a < eNoN; a++) {
-            Td = Td + N(a)*al(i,a);
-            Tx(0) = Tx(0) + Nx(0,a)*yl(i,a);
-            Tx(1) = Tx(1) + Nx(1,a)*yl(i,a);
+            Pd = Pd + N(a)*al(i,a);
+            Px(0) = Px(0) + Nx(0,a)*yl(i,a);
+            Px(1) = Px(1) + Nx(1,a)*yl(i,a);
         }
 
 
-        Td = Td * rho;
+        Pd = Pd * rho;
 
 #ifdef debug_darcy_2d
         dmsg;
@@ -213,11 +221,13 @@ namespace darcy {
 #endif
 
         for (int a = 0; a < eNoN; a++) {
-            lR(0,a) = lR(0,a) + w*(N(a)*Td +
-                    (Nx(0,a)*Tx(0) + Nx(1,a)*Tx(1))*k);
+            lR(0,a) = lR(0,a) + w*(N(a)*Pd +
+                    (Nx(0,a)*(K(0,0)*Px(0)+K(0,1)*Px(1)) +
+                     Nx(1,a)*(K(1,0)*Px(0)+K(1,1)*Px(1))));
             for (int b = 0; b < eNoN; b++) {
                 lK(0,a,b) = lK(0,a,b) + wl*(N(a)*N(b)*amd +
-                        k*(Nx(0,a)*Nx(0,b) + Nx(1,a)*Nx(1,b)));
+                        (Nx(0,a)*(K(0,0)*Nx(0,b) + K(0,1)*Nx(1,b)) +
+                         Nx(1,a)*(K(1,0)*Nx(0,b) + K(1,1)*Nx(1,b))));
             }
         }
     }
