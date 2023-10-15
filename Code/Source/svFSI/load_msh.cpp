@@ -11,6 +11,12 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <chrono>
+#include <unordered_map>
+#include <unordered_set>
+#include <string>
+#include <algorithm>
+
 
 namespace load_msh {
 
@@ -109,7 +115,43 @@ void read_sv(Simulation* simulation, mshType& mesh, const MeshParameters* mesh_p
   if (com_mod.ichckIEN) {
     read_msh_ns::check_ien(simulation, mesh);
   }
-
+  std::cout << "Hash Map Construction: Nodes " << std::endl;
+  auto start_time = std::chrono::high_resolution_clock::now();
+  // Create a hash map for nodes and elements.
+  std::unordered_map<std::string, int> mesh_node_map;
+  for (int i = 0; i<mesh.gnNo; i++){
+      std::string key = "";
+      for (int j = 0; j<com_mod.nsd; j++){
+          key += std::to_string(mesh.x(j,i)) + ",";
+      }
+      mesh_node_map[key] = i;
+  }
+  auto end_time = std::chrono::high_resolution_clock::now();
+  std::cout << "Time to set node hash map: " << std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count() << " ms" << std::endl;
+  std::cout << "Hash Map Construction: Nodes. Done." << std::endl;
+  std::cout << "Hash Map Construction: Elements " << std::endl;
+  start_time = std::chrono::high_resolution_clock::now();
+  // Create a hash map for elements IEN
+  std::unordered_map<std::string, int> mesh_element_set;
+  for (int i = 0; i<mesh.gnEl; i++) {
+      for (int j = 0; j < mesh.eNoN; j++) {
+          std::vector<int> element_nodes;
+          for (int k = 0; k < mesh.eNoN; k++) {
+              if (k != j) {
+                  element_nodes.push_back(mesh.gIEN(k, i));
+              }
+          }
+          std::sort(element_nodes.begin(), element_nodes.end());
+          std::string key = "";
+          for (int node: element_nodes) {
+              key += std::to_string(node) + ",";
+          }
+          mesh_element_set[key] = i;
+      }
+  }
+  end_time = std::chrono::high_resolution_clock::now();
+  std::cout << "Time to set element hash map: " << std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count() << " ms" << std::endl;
+  std::cout << "Hash Map Construction: Elements. Done." << std::endl;
   // Read face meshes. 
   //
   // Creates nodal coordinates and element connectivity data.
@@ -164,54 +206,37 @@ void read_sv(Simulation* simulation, mshType& mesh, const MeshParameters* mesh_p
         }
       }
     }
-
+    std::cout << "face.nNo: " << face.nNo << std::endl;
+    start_time = std::chrono::high_resolution_clock::now();
     // Set face global node IDs
     for (int a = 0; a<face.nNo; a++) {
-        bool found = false;
-        for (int b = 0; b<mesh.gnNo; b++) {
-            for (int d = 0; d<com_mod.nsd; d++) {
-                if (mesh.x(d, b) != face.x(d, a)) {
-                    found = false;
-                    break;
-                } else {
-                    found = true;
-                }
-            }
-            if (found) {
-                face.gN(a) = b;
-                break;
-            }
+        std::string key = "";
+        for (int j = 0; j<com_mod.nsd; j++) {
+            key += std::to_string(face.x(j,a)) + ",";
         }
+        face.gN(a) = mesh_node_map[key];
     }
-
+    end_time = std::chrono::high_resolution_clock::now();
+    std::cout << "Time to set face global IDs: " << std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count() << " ms" << std::endl;
+    std::cout << "face node set. Done" << std::endl;
     // Set face element IDs
     for (int e = 0; e < face.nEl; e++) {
-        for (int b = 0; b < mesh.gnEl; b++) {
-            int foundN = 0;
-            for (int c = 0; c<mesh.eNoN; c++){
-                int Bc = mesh.gIEN(c,b);
-                for (int a = 0; a<face.eNoN; a++) {
-                    int Ac = face.IEN(a,e);
-                    Ac = face.gN(Ac);
-                    if (Ac == Bc) {
-                        foundN++;
-                    }
-                }
-            }
-            if (foundN == face.eNoN) {
-                face.gE(e) = b;
-                break;
-            }
-        }
-    }
-    // Reset face IEN with mesh global IDs
-    for (int e = 0; e < face.nEl; e++) {
+        std::vector<int> element_nodes;
         for (int a = 0; a < face.eNoN; a++) {
             int Ac = face.IEN(a,e);
             Ac = face.gN(Ac);
             face.IEN(a,e) = Ac;
+            element_nodes.push_back(Ac);
         }
+        std::string key = "";
+        std::sort(element_nodes.begin(), element_nodes.end());
+        for (int a = 0; a<face.eNoN; a++) {
+            key += std::to_string(element_nodes[a]) + ",";
+        }
+        face.gE(e) = mesh_element_set[key];
     }
+    end_time = std::chrono::high_resolution_clock::now();
+    std::cout << "Time to set face global IDs: " << std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count() << " ms" << std::endl;
     nn::select_eleb(simulation, mesh, face);
   }
 
