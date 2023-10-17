@@ -16,7 +16,7 @@
 #include <unordered_set>
 #include <string>
 #include <algorithm>
-
+#include <math.h>
 
 namespace load_msh {
 
@@ -89,158 +89,170 @@ void read_ndnlff(const std::string& file_name, faceType& face)
 ///
 ///   SUBROUTINE READSV(list, lM)
 //
-void read_sv(Simulation* simulation, mshType& mesh, const MeshParameters* mesh_param)
-{
-  auto mesh_path = mesh_param->mesh_file_path();
-  auto mesh_name = mesh_param->get_name();
-  #define n_dbg_read_sv
-  #ifdef dbg_read_sv
-  DebugMsg dmsg(__func__, simulation->com_mod.cm.idcm());
-  dmsg.banner();
-  dmsg << "Mesh name: " << mesh_name;
-  dmsg << "Mesh path: " << mesh_path;
-  #endif
+void read_sv(Simulation* simulation, mshType& mesh, const MeshParameters* mesh_param) {
+        auto mesh_path = mesh_param->mesh_file_path();
+        auto mesh_name = mesh_param->get_name();
+#define n_dbg_read_sv
+#ifdef dbg_read_sv
+        DebugMsg dmsg(__func__, simulation->com_mod.cm.idcm());
+        dmsg.banner();
+        dmsg << "Mesh name: " << mesh_name;
+        dmsg << "Mesh path: " << mesh_path;
+#endif
 
-  // Read in volume mesh.
-  vtk_xml::read_vtu(mesh_path, mesh);
+        // Read in volume mesh.
+        vtk_xml::read_vtu(mesh_path, mesh);
 
-  // Set mesh element properites for the input element type.
-  nn::select_ele(simulation->com_mod, mesh);
+        // Set mesh element properites for the input element type.
+        nn::select_ele(simulation->com_mod, mesh);
 
-  // Check the mesh element node ordering.
-  //
-  // Note: This may change element node ordering.
-  //
-  auto& com_mod = simulation->get_com_mod();
-  if (com_mod.ichckIEN) {
-    read_msh_ns::check_ien(simulation, mesh);
-  }
-  std::cout << "Hash Map Construction: Nodes " << std::endl;
-  auto start_time = std::chrono::high_resolution_clock::now();
-  // Create a hash map for nodes and elements.
-  std::unordered_map<std::string, int> mesh_node_map;
-  for (int i = 0; i<mesh.gnNo; i++){
-      std::string key = "";
-      for (int j = 0; j<com_mod.nsd; j++){
-          key += std::to_string(mesh.x(j,i)) + ",";
-      }
-      mesh_node_map[key] = i;
-  }
-  auto end_time = std::chrono::high_resolution_clock::now();
-  std::cout << "Time to set node hash map: " << std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count() << " ms" << std::endl;
-  std::cout << "Hash Map Construction: Nodes. Done." << std::endl;
-  std::cout << "Hash Map Construction: Elements " << std::endl;
-  start_time = std::chrono::high_resolution_clock::now();
-  // Create a hash map for elements IEN
-  std::unordered_map<std::string, int> mesh_element_set;
-  for (int i = 0; i<mesh.gnEl; i++) {
-      for (int j = 0; j < mesh.eNoN; j++) {
-          std::vector<int> element_nodes;
-          for (int k = 0; k < mesh.eNoN; k++) {
-              if (k != j) {
-                  element_nodes.push_back(mesh.gIEN(k, i));
-              }
-          }
-          std::sort(element_nodes.begin(), element_nodes.end());
-          std::string key = "";
-          for (int node: element_nodes) {
-              key += std::to_string(node) + ",";
-          }
-          mesh_element_set[key] = i;
-      }
-  }
-  end_time = std::chrono::high_resolution_clock::now();
-  std::cout << "Time to set element hash map: " << std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count() << " ms" << std::endl;
-  std::cout << "Hash Map Construction: Elements. Done." << std::endl;
-  // Read face meshes. 
-  //
-  // Creates nodal coordinates and element connectivity data.
-  //
-  mesh.nFa = mesh_param->face_parameters.size();
-  mesh.fa.resize(mesh.nFa);
-
-  if (mesh.lFib && (mesh.nFa > 1)) {
-    throw std::runtime_error("There are " + std::to_string(mesh.nFa) + " faces defined for the '" +
-        mesh.name + "' mesh. Only one face is allowed for a 1D fiber-based mesh.");
-  }
-
-  for (int i = 0; i < mesh.nFa; i++) {
-    auto face_param = mesh_param->face_parameters[i];
-    auto& face = mesh.fa[i];
-    face.name = face_param->name();
-    #ifdef dbg_read_sv
-    dmsg << "face.name: " << face.name;
-    #endif
-
-    face.qmTRI3 = face_param->quadrature_modifier_TRI3();
-    if (face.qmTRI3 < (1.0/3.0) || face.qmTRI3 > 1.0) {
-      throw std::runtime_error("Quadrature_modifier_TRI3 must be in the range [1/3, 1].");
-    }
-
-    if (mesh.lFib) {
-      auto face_path = face_param->end_nodes_face_file_path();
-      #ifdef dbg_read_sv
-      dmsg << "Read end nodes face file ... " << " ";
-      dmsg << "face_path: " << face_path;
-      #endif
-      if (face_path == "") { 
-        throw std::runtime_error("No end nodes face file path provided.");
-      }
-
-      read_ndnlff(face_path, face);
-
-    } else {
-      auto face_path = face_param->face_file_path();
-      vtk_xml::read_vtp(face_path, face);
-
-      // If node IDs were not read then create them.
-      if (face.gN.size() == 0) {
-        read_msh_ns::calc_nbc(mesh, face);
-        // Reset the connectivity with the new node IDs?
-        for (int e = 0; e < face.nEl; e++) {
-          for (int a = 0; a < face.eNoN; a++) {
-            int Ac = face.IEN(a,e);
-            Ac = face.gN(Ac);
-            face.IEN(a,e) = Ac;
-          }
+        // Check the mesh element node ordering.
+        //
+        // Note: This may change element node ordering.
+        //
+        auto &com_mod = simulation->get_com_mod();
+        if (com_mod.ichckIEN) {
+            read_msh_ns::check_ien(simulation, mesh);
         }
-      }
-    }
-    std::cout << "face.nNo: " << face.nNo << std::endl;
-    start_time = std::chrono::high_resolution_clock::now();
-    // Set face global node IDs
-    for (int a = 0; a<face.nNo; a++) {
-        std::string key = "";
-        for (int j = 0; j<com_mod.nsd; j++) {
-            key += std::to_string(face.x(j,a)) + ",";
-        }
-        face.gN(a) = mesh_node_map[key];
-    }
-    end_time = std::chrono::high_resolution_clock::now();
-    std::cout << "Time to set face global IDs: " << std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count() << " ms" << std::endl;
-    std::cout << "face node set. Done" << std::endl;
-    // Set face element IDs
-    for (int e = 0; e < face.nEl; e++) {
-        std::vector<int> element_nodes;
-        for (int a = 0; a < face.eNoN; a++) {
-            int Ac = face.IEN(a,e);
-            Ac = face.gN(Ac);
-            face.IEN(a,e) = Ac;
-            element_nodes.push_back(Ac);
-        }
-        std::string key = "";
-        std::sort(element_nodes.begin(), element_nodes.end());
-        for (int a = 0; a<face.eNoN; a++) {
-            key += std::to_string(element_nodes[a]) + ",";
-        }
-        face.gE(e) = mesh_element_set[key];
-    }
-    end_time = std::chrono::high_resolution_clock::now();
-    std::cout << "Time to set face global IDs: " << std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count() << " ms" << std::endl;
-    nn::select_eleb(simulation, mesh, face);
-  }
+        // Read face meshes.
+        //
+        // Creates nodal coordinates and element connectivity data.
+        //
+        mesh.nFa = mesh_param->face_parameters.size();
+        mesh.fa.resize(mesh.nFa);
 
-}
+        if (mesh.lFib && (mesh.nFa > 1)) {
+            throw std::runtime_error("There are " + std::to_string(mesh.nFa) + " faces defined for the '" +
+                                     mesh.name + "' mesh. Only one face is allowed for a 1D fiber-based mesh.");
+        }
 
+        for (int i = 0; i < mesh.nFa; i++) {
+            auto face_param = mesh_param->face_parameters[i];
+            auto &face = mesh.fa[i];
+            face.name = face_param->name();
+#ifdef dbg_read_sv
+            dmsg << "face.name: " << face.name;
+#endif
+
+            face.qmTRI3 = face_param->quadrature_modifier_TRI3();
+            if (face.qmTRI3 < (1.0 / 3.0) || face.qmTRI3 > 1.0) {
+                throw std::runtime_error("Quadrature_modifier_TRI3 must be in the range [1/3, 1].");
+            }
+
+            if (mesh.lFib) {
+                auto face_path = face_param->end_nodes_face_file_path();
+#ifdef dbg_read_sv
+                dmsg << "Read end nodes face file ... " << " ";
+                dmsg << "face_path: " << face_path;
+#endif
+                if (face_path == "") {
+                    throw std::runtime_error("No end nodes face file path provided.");
+                }
+
+                read_ndnlff(face_path, face);
+
+            } else {
+                auto face_path = face_param->face_file_path();
+                vtk_xml::read_vtp(face_path, face);
+
+                // If node IDs were not read then create them.
+                if (face.gN.size() == 0) {
+                    read_msh_ns::calc_nbc(mesh, face);
+                    // Reset the connectivity with the new node IDs?
+                    for (int e = 0; e < face.nEl; e++) {
+                        for (int a = 0; a < face.eNoN; a++) {
+                            int Ac = face.IEN(a, e);
+                            Ac = face.gN(Ac);
+                            face.IEN(a, e) = Ac;
+                        }
+                    }
+                }
+            }
+        }
+        if (!mesh.lFib) {
+            // Create a hash map for nodes and elements.
+            std::unordered_map<std::string, int> mesh_node_map;
+            for (int i = 0; i < mesh.gnNo; i++) {
+                std::string key = "";
+                for (int j = 0; j < com_mod.nsd; j++) {
+                    key += std::to_string(mesh.x(j, i)) + ",";
+                }
+                mesh_node_map[key] = i;
+            }
+            // Create a hash map for elements IEN
+            std::unordered_map<std::string, int> mesh_element_set;
+            // Generate all possible combinations of element nodes for faces
+            std::vector<int> mask(mesh.eNoN);
+            Vector<int> face_nodes(mesh.eNoN);
+            for (int i = 0; i < mesh.eNoN; i++) {
+                face_nodes(i) = i;
+                mask[i] = 0;
+            }
+            // This line calculates the number of combinations of nodes composing unique faces
+            int n_comb = (std::tgamma(mesh.eNoN + 1) / std::tgamma(mesh.fa[0].eNoN + 1)) * std::tgamma(mesh.eNoN - mesh.fa[0].eNoN + 1);
+            Array<int> face_hash(mesh.fa[0].eNoN, n_comb);
+            for (int i = 0; i < mesh.fa[0].eNoN; i++) {
+                mask[i] = 1;
+            }
+            std::sort(mask.begin(), mask.end());
+            int count = 0;
+            do {
+                int j = 0;
+                for (int i = 0; i < mesh.eNoN; i++) {
+                    if (mask[i] == 1) {
+                        face_hash(j, count) = face_nodes(i);
+                        j++;
+                    }
+                }
+                count++;
+            } while (std::next_permutation(mask.begin(), mask.end()));
+
+            for (int i = 0; i < mesh.gnEl; i++) {
+                for (int j = 0; j < n_comb; j++) {
+                    std::vector<int> element_nodes;
+                    for (int k = 0; k < mesh.fa[0].eNoN; k++) {
+                        element_nodes.push_back(mesh.gIEN(face_hash(k, j), i));
+                    }
+                    std::sort(element_nodes.begin(), element_nodes.end());
+                    std::string key = "";
+                    for (int node: element_nodes) {
+                        key += std::to_string(node) + ",";
+                    }
+                    mesh_element_set[key] = i;
+                }
+            }
+
+        for (int i = 0; i < mesh.nFa; i++) {
+            auto &face = mesh.fa[i];
+            if (!mesh.lFib) {
+                // Set face global node IDs
+                for (int a = 0; a < face.nNo; a++) {
+                    std::string key = "";
+                    for (int j = 0; j < com_mod.nsd; j++) {
+                        key += std::to_string(face.x(j, a)) + ",";
+                    }
+                    face.gN(a) = mesh_node_map[key];
+                }
+                // Set face element IDs
+                for (int e = 0; e < face.nEl; e++) {
+                    std::vector<int> element_nodes;
+                    for (int a = 0; a < face.eNoN; a++) {
+                        int Ac = face.IEN(a, e);
+                        Ac = face.gN(Ac);
+                        face.IEN(a, e) = Ac;
+                        element_nodes.push_back(Ac);
+                    }
+                    std::string key = "";
+                    std::sort(element_nodes.begin(), element_nodes.end());
+                    for (int a = 0; a < face.eNoN; a++) {
+                        key += std::to_string(element_nodes[a]) + ",";
+                    }
+                    face.gE(e) = mesh_element_set[key];
+                }
+                nn::select_eleb(simulation, mesh, face);
+            }
+        }
+        }
+    }
 };
 
