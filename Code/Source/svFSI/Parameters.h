@@ -980,6 +980,9 @@ class DomainParameters : public ParameterLists
     Parameter<double> G_Ks;
     Parameter<double> G_to;
 
+    Parameter<double> tau_fi;
+    Parameter<double> tau_si;
+
     Parameter<std::string> ode_solver;
     Parameter<double> penalty_parameter;
     Parameter<double> poisson_ratio;

@@ -837,6 +837,10 @@ void read_cep_domain(Simulation* simulation, EquationParameters* eq_params, Doma
   if (domain_params->G_to.defined())  { cep_mod.ttp.G_to[lDmn.cep.imyo - 1] = domain_params->G_to.value(); }
   if (domain_params->G_CaL.defined()) { cep_mod.ttp.G_CaL = domain_params->G_CaL.value(); }
 
+  // Set Bo parameters.
+  //
+  if (domain_params->tau_si.defined())  { cep_mod.bo.tau_si[lDmn.cep.imyo - 1] = domain_params->tau_si.value(); }
+  if (domain_params->tau_fi.defined())  { cep_mod.bo.tau_fi[lDmn.cep.imyo - 1] = domain_params->tau_fi.value(); }
 
   // Set stimulus parameters. 
   //

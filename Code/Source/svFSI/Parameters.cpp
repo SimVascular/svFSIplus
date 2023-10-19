@@ -1204,6 +1204,9 @@ DomainParameters::DomainParameters()
   set_parameter("G_Ks", 0.392, !required, G_Ks);
   set_parameter("G_to", 0.294, !required, G_to);
 
+  set_parameter("tau_fi", 0.110, !required, tau_fi);
+  set_parameter("tau_si", 1.88750, !required, tau_si);
+
   set_parameter("ODE_solver", "euler", !required, ode_solver);
 
   set_parameter("Penalty_parameter", 0.0, !required, penalty_parameter);
