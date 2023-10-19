@@ -1,0 +1,10 @@
+# This workflow checks that all .h/.cpp files have the copyright at the top
+name: Copyright
+on: [push, pull_request]
+jobs:
+  check-license-lines:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: Check License
+      uses: kt3k/license_checker@v1.0.6
