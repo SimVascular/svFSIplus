@@ -833,6 +833,9 @@ class mshType
     /// @brief IB: Mesh size parameter
     double dx = 0.0;
 
+    /// @breif ordering: node ordering for boundaries
+    std::vector<std::vector<int>> ordering;
+
     /// @brief Element distribution between processors
     Vector<int> eDist;
 

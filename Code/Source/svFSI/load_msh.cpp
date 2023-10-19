@@ -188,30 +188,12 @@ void read_sv(Simulation* simulation, mshType& mesh, const MeshParameters* mesh_p
                 face_nodes(i) = i;
                 mask[i] = 0;
             }
-            // This line calculates the number of combinations of nodes composing unique faces
-            int n_comb = (std::tgamma(mesh.eNoN + 1) / std::tgamma(mesh.fa[0].eNoN + 1)) * std::tgamma(mesh.eNoN - mesh.fa[0].eNoN + 1);
-            Array<int> face_hash(mesh.fa[0].eNoN, n_comb);
-            for (int i = 0; i < mesh.fa[0].eNoN; i++) {
-                mask[i] = 1;
-            }
-            std::sort(mask.begin(), mask.end());
-            int count = 0;
-            do {
-                int j = 0;
-                for (int i = 0; i < mesh.eNoN; i++) {
-                    if (mask[i] == 1) {
-                        face_hash(j, count) = face_nodes(i);
-                        j++;
-                    }
-                }
-                count++;
-            } while (std::next_permutation(mask.begin(), mask.end()));
 
             for (int i = 0; i < mesh.gnEl; i++) {
-                for (int j = 0; j < n_comb; j++) {
+                for (unsigned int j = 0; j < mesh.ordering.size(); j++) {
                     std::vector<int> element_nodes;
-                    for (int k = 0; k < mesh.fa[0].eNoN; k++) {
-                        element_nodes.push_back(mesh.gIEN(face_hash(k, j), i));
+                    for (unsigned int k = 0; k < mesh.ordering[j].size(); k++) {
+                        element_nodes.push_back(mesh.gIEN(mesh.ordering[j][k], i));
                     }
                     std::sort(element_nodes.begin(), element_nodes.end());
                     std::string key = "";
@@ -249,9 +231,12 @@ void read_sv(Simulation* simulation, mshType& mesh, const MeshParameters* mesh_p
                     }
                     face.gE(e) = mesh_element_set[key];
                 }
-                nn::select_eleb(simulation, mesh, face);
             }
         }
+        }
+        for (int i = 0; i<mesh.nFa; i++){
+            auto &face = mesh.fa[i];
+            nn::select_eleb(simulation, mesh, face);
         }
     }
 };
