@@ -479,7 +479,6 @@ void read_vtp(const std::string& file_name, faceType& face)
       //std::cout << std::endl; 
     }
   }
-
 }
 
 //----------------

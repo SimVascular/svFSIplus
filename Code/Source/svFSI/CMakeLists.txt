@@ -106,7 +106,6 @@ set(CSRCS
   fft.h fft.cpp
   heatf.h heatf.cpp
   heats.h heats.cpp
-        darcy.h darcy.cpp
   initialize.h initialize.cpp
   l_elas.h l_elas.cpp
   lhsa.h lhsa.cpp

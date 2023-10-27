@@ -41,7 +41,6 @@ std::map<consts::EquationType, EquationDofType> equation_dof_map =
   {EquationType::phys_fluid,    std::make_tuple(nsd+1, "NS") },
   {EquationType::phys_heatF,    std::make_tuple(1,     "HF") },
   {EquationType::phys_heatS,    std::make_tuple(1,     "HS") },
-  {EquationType::phys_darcy,    std::make_tuple(1,     "HS") },
   {EquationType::phys_lElas,    std::make_tuple(nsd,   "LE") },
   {EquationType::phys_struct,   std::make_tuple(nsd,   "ST") },
   {EquationType::phys_ustruct,  std::make_tuple(nsd+1, "ST") },

@@ -43,7 +43,6 @@
 
 namespace heats {
 
-
 void b_heats(ComMod& com_mod, const int eNoN, const double w, const Vector<double>& N, const double h, Array<double>& lR)
 {
   for (int a = 0; a < eNoN; a++) {
@@ -205,7 +204,7 @@ void heats_2d(ComMod& com_mod, const int eNoN, const double w, const Vector<doub
 
   for (int a = 0; a < eNoN; a++) {
     lR(0,a) = lR(0,a) + w*(N(a)*Td + (Nx(0,a)*Tx(0) + Nx(1,a)*Tx(1))*nu);
-    //std::cout << "lR(0, a): " << lR(0, a) << std::endl;
+
     for (int b = 0; b < eNoN; b++) {
       lK(0,a,b) = lK(0,a,b) + wl*(N(a)*N(b)*amd + nu*(Nx(0,a)*Nx(0,b) + Nx(1,a)*Nx(1,b)));
     }

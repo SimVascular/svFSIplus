@@ -548,7 +548,7 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, co
   dmsg << "lFa.name: " << lFa.name;
   dmsg << "lFa.eType: " << lFa.eType;
   #endif 
-  std::cout << "Integrate with Flag" << std::endl;
+
   bool flag = pFlag; 
   int nsd = com_mod.nsd;
   int insd = nsd - 1;
@@ -632,29 +632,6 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, co
   dmsg << "fs.w: " << fs.w;
   #endif
   double result = 0.0;
-
-  std::cout << "lFa.gN" << std::endl;
-  std::cout << lFa.gN << std::endl;
-  std::cout << "lFa.gE" << std::endl;
-  std::cout << lFa.gE << std::endl;
-  std::cout << "lFa.IEN" << std::endl;
-  for (int i = 0; i < lFa.nEl; i++) {
-      std::cout << i << " - ";
-      for (int j = 0; j < lFa.eNoN; j++) {
-          std::cout << lFa.IEN(j, i) << " ";
-      }
-      std::cout << std::endl;
-  }
-  std::cout << std::endl;
-  std::cout << "msh.IEN" << std::endl;
-  for (int i = 0; i < com_mod.msh[lFa.iM].nEl; i++) {
-      std::cout << i << " - ";
-      for (int j = 0; j < com_mod.msh[lFa.iM].eNoN; j++) {
-          std::cout << com_mod.msh[lFa.iM].IEN(j,i) << " ";
-      }
-    std::cout << std::endl;
-  }
-
 
   for (int e = 0; e < lFa.nEl; e++) {
     // [TODO:DaveP] not implemented.
@@ -745,6 +722,7 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, co
   }
 
   double result =  0.0;
+
   for (int e = 0; e < lFa.nEl; e++) {
     //dmsg << "----- e " << e+1 << " -----";
     //  Updating the shape functions, if this is a NURB
@@ -918,49 +896,6 @@ double jacobian(ComMod& com_mod, const int nDim, const int eNoN, const Array<dou
 
   return Jac;
 }
-
-
-//----------
-// local
-//----------
-
-    Vector<double> //kmenon_perfusion
-    local(const ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, Vector<double>& U)
-    {
-        Vector<double> local_vector;
-
-        if (com_mod.ltg.size() == 0) {
-            throw std::runtime_error("ltg is not set yet");
-        }
-
-        if (cm.mas(cm_mod)) {
-            if (U.size() != com_mod.gtnNo) {
-                throw std::runtime_error("local_rs is only specified for vector with size gtnNo");
-            }
-        }
-
-        if (cm.seq()) {
-            local_vector.resize(com_mod.gtnNo);
-            local_vector = U;
-            return local_vector;
-        }
-
-        local_vector.resize(com_mod.tnNo);
-        Vector<double> tmpU(com_mod.gtnNo);
-
-        if (cm.mas(cm_mod)) {
-            tmpU = U;
-        }
-
-        cm.bcast(cm_mod, tmpU);
-
-        for (int a = 0; a < com_mod.tnNo; a++) {
-            int Ac = com_mod.ltg[a];
-            local_vector[a] = tmpU[Ac];
-        }
-
-        return local_vector;
-    }
 
 
 Vector<int> 
