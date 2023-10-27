@@ -175,21 +175,26 @@ namespace darcy {
         auto &dmn = eq.dmn[cDmn];
         const double dt = com_mod.dt;
         const int i = eq.s;
+        Array<double> K(nsd, nsd);
 
-        Array<double> K = dmn.prop.at(PhysicalProperyType::permeability); // should be a tensor
-        double source = dmn.prop.at(PhysicalProperyType::source_term); //is this just a double?
+        double k = dmn.prop.at(PhysicalProperyType::permeability); // should be a tensor
+        K(0,0) = k;
+        K(0,1) = 0.0;
+        K(1,0) = 0.0;
+        K(1,1) = k;
+        double source = dmn.prop.at(PhysicalProperyType::source_term); // is this just a double?
         double rho = dmn.prop.at(PhysicalProperyType::solid_density); // need fluid density instead
-        //double phi = dmn.prop.at(PhysicalProperyType::porosity);
-        //double p0 = dmn.prop.at(PhysicalProperyType::porosity_pressure);
-        //double beta = dmn.prop.at(PhysicalProperyType::compressibility);
-        //double p1 = dmn.prop.at(PhysicalProperyType::density_pressure);
-        //double gamma = dmn.prop.at(PhysicalProperyType::gamma);
-        //double B = dmn.prop.at(PhysicalProperyType::B);
-        //double mu = dmn.prop.at(PhysicalProperyType::viscosity);
+        double phi = dmn.prop.at(PhysicalProperyType::porosity); //
+        double p0 = dmn.prop.at(PhysicalProperyType::porosity_pressure);
+        double beta_0 = dmn.prop.at(PhysicalProperyType::media_compressibility);
+        double beta_1 = dmn.prop.at(PhysicalProperyType::fluid_compressibility);
+        double p1 = dmn.prop.at(PhysicalProperyType::density_pressure);
+        double rho_0 = dmn.prop.at(PhysicalProperyType::fluid_density);
+        double mu = dmn.prop.at(PhysicalProperyType::fluid_viscosity);
 
         // need to figure out how these are edited for the darcy case
         double T1 = eq.af * eq.gam * dt;
-        double amd = eq.am * rho/ T1;
+        double amd = eq.am / T1;
         double wl = w * T1;
 
 #ifdef debug_darcy_2d
@@ -212,8 +217,6 @@ namespace darcy {
         }
 
 
-        Pd = Pd * rho;
-
 #ifdef debug_darcy_2d
         dmsg;
         dmsg << "Td: " << Td;
@@ -221,13 +224,23 @@ namespace darcy {
 #endif
 
         for (int a = 0; a < eNoN; a++) {
-            lR(0,a) = lR(0,a) + w*(N(a)*Pd +
-                    (Nx(0,a)*(K(0,0)*Px(0)+K(0,1)*Px(1)) +
-                     Nx(1,a)*(K(1,0)*Px(0)+K(1,1)*Px(1))));
+            lR(0,a) = lR(0,a) + w*(N(a)*Pd*(rho_0*beta_0-2*beta_0*beta_1*yl(i,a)+beta_0*beta_1*(p0+p1) + phi*beta_1)+
+                                                    ((beta_1*yl(i,a))/mu)*(Nx(0,a)*(K(0,0)*Px(0)+K(0,1)*Px(1)) +
+                                                                                    Nx(1,a)*(K(1,0)*Px(0)+K(1,1)*Px(1))) -
+                                                    -rho_0/mu*(Nx(0,a)*(K(0,0)*Px(0)+K(0,1)*Px(1)) +
+                                                               Nx(1,a)*(K(1,0)*Px(0)+K(1,1)*Px(1))));
             for (int b = 0; b < eNoN; b++) {
-                lK(0,a,b) = lK(0,a,b) + wl*(N(a)*N(b)*amd +
-                        (Nx(0,a)*(K(0,0)*Nx(0,b) + K(0,1)*Nx(1,b)) +
-                         Nx(1,a)*(K(1,0)*Nx(0,b) + K(1,1)*Nx(1,b))));
+                lK(0,a,b) = lK(0,a,b) + wl*(N(a)*N(b)*(-rho_0*beta_0-phi*beta_1+
+                                                                                        2*beta_0*beta_1*yl(i,a)-
+                                                                                        beta_0*beta_1*(p0+p1)+
+                                                                                        2*beta_0*beta_1*N(b))*amd+
+                                                                                                Pd*N(a)*N(b)*2*beta_0*beta_1 -
+                        ((rho_0-beta_1*(N(b)-p1))/-mu)*(Nx(0,a)*(K(0,0)*Nx(0,b) + K(0,1)*Nx(1,b)) +
+                                                           Nx(1,a)*(K(1,0)*Nx(0,b) + K(1,1)*Nx(1,b))) -
+                        ((rho_0-beta_1*(N(b)-p1))/-mu)*(Nx(0,a)*(K(0,0)*Px(0) + K(0,1)*Px(1)) +
+                                                          Nx(1,a)*(K(1,0)*Px(0) + K(1,1)*Px(1))) -
+                        ((beta_1*yl(i,a))/mu)*(Nx(0,a)*(K(0,0)*Nx(0,b) + K(0,1)*Nx(1,b)) +
+                                                        Nx(1,a)*(K(1,0)*Nx(0,b) + K(1,1)*Nx(1,b))));
             }
         }
     }

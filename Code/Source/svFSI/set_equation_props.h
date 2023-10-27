@@ -279,6 +279,13 @@ SetEquationPropertiesMapType set_equation_props = {
     propL[0][0] = PhysicalProperyType::permeability;
     propL[1][0] = PhysicalProperyType::source_term;
     propL[2][0] = PhysicalProperyType::solid_density;
+    propL[3][0] = PhysicalProperyType::porosity;
+    propL[4][0] = PhysicalProperyType::fluid_density;
+    propL[5][0] = PhysicalProperyType::porosity_pressure;
+    propL[6][0] = PhysicalProperyType::media_compressibility;
+    propL[7][0] = PhysicalProperyType::fluid_compressibility;
+    propL[8][0] = PhysicalProperyType::fluid_viscosity;
+    propL[9][0] = PhysicalProperyType::density_pressure;
 
     read_domain(simulation, eq_params, lEq, propL);
 

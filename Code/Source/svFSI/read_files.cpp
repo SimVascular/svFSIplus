@@ -1159,6 +1159,31 @@ void read_domain(Simulation* simulation, EquationParameters* eq_params, eqType& 
 
           case PhysicalProperyType::permeability:
             rtmp = domain_params->permeability.value();
+            break;
+
+            case PhysicalProperyType::porosity:
+              rtmp = domain_params->porosity.value();
+              break;
+
+            case PhysicalProperyType::porosity_pressure:
+                rtmp = domain_params->porosity_pressure.value();
+              break;
+
+            case PhysicalProperyType::media_compressibility:
+                rtmp = domain_params->media_compressibility.value();
+              break;
+
+            case PhysicalProperyType::fluid_compressibility:
+                rtmp = domain_params->fluid_compressibility.value();
+              break;
+
+          case PhysicalProperyType::fluid_viscosity:
+            rtmp = domain_params->fluid_viscosity.value();
+            break;
+
+            case PhysicalProperyType::density_pressure:
+                rtmp = domain_params->density_pressure.value();
+              break;
         }
 
         lEq.dmn[iDmn].prop[prop] = rtmp;
