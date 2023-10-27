@@ -8,7 +8,7 @@
  * Started 8/27/94
  * George
  *
- * $Id: parmetislib.h,v 1.2 2003/07/21 17:50:22 karypis Exp $
+ * $Id: parmetislib.h 10379 2011-06-22 18:51:24Z benjamin $
  */
 
 /*
@@ -16,19 +16,17 @@
 #define DMALLOC			1
 */
 
-#include <parmetis_svfsi_stdheaders.h>
-
-// updated to place in current directory
+#include <mpi.h> 
+#include <GKlib.h>
 #include <parmetis_svfsi_parmetis.h>
-// #include "../parmetis_svfsi_parmetis.h"
 
-#ifdef DMALLOC
-#include <dmalloc.h>
-#endif
 
-#include <parmetis_svfsi_rename.h>
-#include <parmetis_svfsi_defs.h>
-#include <parmetis_svfsi_struct.h>
-#include <parmetis_svfsi_macros.h>
-#include <parmetis_svfsi_proto.h>
+#include "gklib_parmetis_svfsi_defs.h"
+#include "parmetis_svfsi_rename.h"
+#include "parmetis_svfsi_defs.h"
+#include "parmetis_svfsi_struct.h"
+#include "parmetis_svfsi_macros.h"
+#include "parmetis_svfsi_proto.h"
+
+#define MAXNCON         32
 

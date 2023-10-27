@@ -16,10 +16,10 @@
  * The meaning of invperm, and perm vectors is different from that
  * in genqmd_ of SparsPak
  *
- * $Id: mmd.c,v 1.1 2003/07/16 15:55:11 karypis Exp $
+ * $Id: mmd.c 22385 2019-06-03 22:08:48Z karypis $
  */
 
-#include <metis.h>
+#include "metislib.h"
 
 
 /*************************************************************************
@@ -50,33 +50,33 @@
 *     marker -- a temporary marker vector.
 *  Subroutines used -- mmdelm, mmdint, mmdnum, mmdupd.
 **************************************************************************/
-void genmmd(int neqns, idxtype *xadj, idxtype *adjncy, idxtype *invp, idxtype *perm,
-     int delta, idxtype *head, idxtype *qsize, idxtype *list, idxtype *marker,
-     int maxint, int *ncsub)
+void genmmd(idx_t neqns, idx_t *xadj, idx_t *adjncy, idx_t *invp, idx_t *perm,
+     idx_t delta, idx_t *head, idx_t *qsize, idx_t *list, idx_t *marker,
+     idx_t maxint, idx_t *ncsub)
 {
-    int  ehead, i, mdeg, mdlmt, mdeg_node, nextmd, num, tag;
+    idx_t  ehead, i, mdeg, mdlmt, mdeg_node, nextmd, num, tag;
 
     if (neqns <= 0)  
       return;
 
-    /* Adjust from C to Fortran */
+    /* adjust from C to Fortran */
     xadj--; adjncy--; invp--; perm--; head--; qsize--; list--; marker--;
 
-    /* initialization for the minimum degree algorithm. */
+    /* initialization for the minimum degree algorithm */
     *ncsub = 0;
     mmdint(neqns, xadj, adjncy, head, invp, perm, qsize, list, marker);
 
-    /*  'num' counts the number of ordered nodes plus 1. */
+    /* 'num' counts the number of ordered nodes plus 1 */
     num = 1;
 
-    /* eliminate all isolated nodes. */
+    /* eliminate all isolated nodes */
     nextmd = head[1];
     while (nextmd > 0) {
       mdeg_node = nextmd;
       nextmd = invp[mdeg_node];
       marker[mdeg_node] = maxint;
       invp[mdeg_node] = -num;
-      num = num + 1;
+      num++;
     }
 
     /* search for node of the minimum degree. 'mdeg' is the current */
@@ -87,14 +87,16 @@ void genmmd(int neqns, idxtype *xadj, idxtype *adjncy, idxtype *invp, idxtype *p
     head[1] = 0;
     mdeg = 2;
 
-    /* infinite loop here ! */
+    /* infinite loop here */
     while (1) {
       while (head[mdeg] <= 0) 
         mdeg++;
 
       /* use value of 'delta' to set up 'mdlmt', which governs */
       /* when a degree update is to be performed.              */
-      mdlmt = mdeg + delta;
+      //mdlmt = mdeg + delta;
+      // the need for gk_min() was identified by jsf67
+      mdlmt = gk_min(neqns, mdeg+delta);
       ehead = 0;
 
 n500:
@@ -107,7 +109,7 @@ n500:
         mdeg_node = head[mdeg];
       };
 
-      /*  remove 'mdeg_node' from the degree structure. */
+      /* remove 'mdeg_node' from the degree structure */
       nextmd = invp[mdeg_node];
       head[mdeg] = nextmd;
       if (nextmd > 0)  
@@ -140,7 +142,7 @@ n500:
       /* minimum degree nodes elimination.            */
       if (num > neqns)  
         goto n1000;
-      mmdupd( ehead, neqns, xadj, adjncy, delta, &mdeg, head, invp, perm, qsize, list, marker, maxint, &tag);
+      mmdupd(ehead, neqns, xadj, adjncy, delta, &mdeg, head, invp, perm, qsize, list, marker, maxint, &tag);
     }; /* end of -- while ( 1 ) -- */
 
 n1000:
@@ -168,10 +170,10 @@ n1000:
 *     marker -- marker vector.
 *     list -- temporary linked list of eliminated nabors.
 ***************************************************************************/
-void mmdelm(int mdeg_node, idxtype *xadj, idxtype *adjncy, idxtype *head, idxtype *forward,
-     idxtype *backward, idxtype *qsize, idxtype *list, idxtype *marker, int maxint,int tag)
+void mmdelm(idx_t mdeg_node, idx_t *xadj, idx_t *adjncy, idx_t *head, idx_t *forward,
+     idx_t *backward, idx_t *qsize, idx_t *list, idx_t *marker, idx_t maxint, idx_t tag)
 {
-    int   element, i,   istop, istart, j,
+    idx_t   element, i,   istop, istart, j,
           jstop, jstart, link,
           nabor, node, npv, nqnbrs, nxnode,
           pvnode, rlmt, rloc, rnode, xqnbr;
@@ -289,6 +291,7 @@ n1100:
       return;
  }
 
+
 /***************************************************************************
 *    mmdint ---- mult minimum degree initialization
 *    purpose -- this routine performs initialization for the
@@ -302,31 +305,32 @@ n1100:
 *       list -- linked list.
 *       marker -- marker vector.
 ****************************************************************************/
-int  mmdint(int neqns, idxtype *xadj, idxtype *adjncy, idxtype *head, idxtype *forward,
-     idxtype *backward, idxtype *qsize, idxtype *list, idxtype *marker)
+idx_t  mmdint(idx_t neqns, idx_t *xadj, idx_t *adjncy, idx_t *head, idx_t *forward,
+     idx_t *backward, idx_t *qsize, idx_t *list, idx_t *marker)
 {
-    int  fnode, ndeg, node;
+  idx_t fnode, ndeg, node;
 
-    for ( node = 1; node <= neqns; node++ ) {
-        head[node] = 0;
-        qsize[node] = 1;
-        marker[node] = 0;
-        list[node] = 0;
-    };
+  for (node=1; node<=neqns; node++) {
+    head[node] = 0;
+    qsize[node] = 1;
+    marker[node] = 0;
+    list[node] = 0;
+  };
 
-    /* initialize the degree doubly linked lists. */
-    for ( node = 1; node <= neqns; node++ ) {
-        ndeg = xadj[node+1] - xadj[node]/* + 1*/;   /* george */
-        if (ndeg == 0)
-          ndeg = 1;
-        fnode = head[ndeg];
-        forward[node] = fnode;
-        head[ndeg] = node;
-        if ( fnode > 0 ) backward[fnode] = node;
-        backward[node] = -ndeg;
-    };
-    return 0;
+  /* initialize the degree doubly linked lists. */
+  for (node=1; node<=neqns; node++) {
+    ndeg = xadj[node+1]-xadj[node]+1;
+    fnode = head[ndeg];
+    forward[node] = fnode;
+    head[ndeg] = node;
+    if (fnode > 0)
+      backward[fnode] = node;
+    backward[node] = -ndeg;
+  };
+
+  return 0;
 }
+
 
 /****************************************************************************
 * mmdnum --- multi minimum degree numbering
@@ -345,9 +349,9 @@ int  mmdint(int neqns, idxtype *xadj, idxtype *adjncy, idxtype *head, idxtype *f
 * output parameters --
 *     perm -- the permutation vector.
 ****************************************************************************/
-void mmdnum(int neqns, idxtype *perm, idxtype *invp, idxtype *qsize)
+void mmdnum(idx_t neqns, idx_t *perm, idx_t *invp, idx_t *qsize)
 {
-  int father, nextf, node, nqsize, num, root;
+  idx_t father, nextf, node, nqsize, num, root;
 
   for ( node = 1; node <= neqns; node++ ) {
       nqsize = qsize[node];
@@ -391,6 +395,7 @@ void mmdnum(int neqns, idxtype *perm, idxtype *invp, idxtype *qsize)
   return;
 }
 
+
 /****************************************************************************
 * mmdupd ---- multiple minimum degree update
 * purpose -- this routine updates the degrees of nodes after a
@@ -409,11 +414,11 @@ void mmdnum(int neqns, idxtype *perm, idxtype *invp, idxtype *qsize)
 *    list -- marker vector for degree update.
 *    *tag   -- tag value.
 ****************************************************************************/
-void mmdupd(int ehead, int neqns, idxtype *xadj, idxtype *adjncy, int delta, int *mdeg,
-     idxtype *head, idxtype *forward, idxtype *backward, idxtype *qsize, idxtype *list,
-     idxtype *marker, int maxint,int *tag)
+void mmdupd(idx_t ehead, idx_t neqns, idx_t *xadj, idx_t *adjncy, idx_t delta, idx_t *mdeg,
+     idx_t *head, idx_t *forward, idx_t *backward, idx_t *qsize, idx_t *list,
+     idx_t *marker, idx_t maxint, idx_t *tag)
 {
- int  deg, deg0, element, enode, fnode, i, iq2, istop,
+ idx_t  deg, deg0, element, enode, fnode, i, iq2, istop,
       istart, j, jstop, jstart, link, mdeg0, mtag, nabor,
       node, q2head, qxhead;
 
