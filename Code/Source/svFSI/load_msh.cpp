@@ -43,8 +43,8 @@
 #include <sstream>
 #include <chrono>
 #include <unordered_map>
-#include <unordered_set>
 #include <string>
+#include <iomanip>
 #include <algorithm>
 #include <math.h>
 
@@ -203,11 +203,12 @@ void read_sv(Simulation* simulation, mshType& mesh, const MeshParameters* mesh_p
             // Create a hash map for nodes and elements.
             std::unordered_map<std::string, int> mesh_node_map;
             for (int i = 0; i < mesh.gnNo; i++) {
-                std::string key = "";
+                std::ostringstream key;
+                key << std::scientific << std::setprecision(16);
                 for (int j = 0; j < com_mod.nsd; j++) {
-                    key += std::to_string(mesh.x(j, i)) + ",";
+                    key << mesh.x(j,i) <<",";
                 }
-                mesh_node_map[key] = i;
+                mesh_node_map[key.str()] = i;
             }
             // Create a hash map for elements IEN
             std::unordered_map<std::string, int> mesh_element_set;
@@ -239,11 +240,12 @@ void read_sv(Simulation* simulation, mshType& mesh, const MeshParameters* mesh_p
             if (!mesh.lFib) {
                 // Set face global node IDs
                 for (int a = 0; a < face.nNo; a++) {
-                    std::string key = "";
+                    std::ostringstream key;
+                    key << std::scientific << std::setprecision(16);
                     for (int j = 0; j < com_mod.nsd; j++) {
-                        key += std::to_string(face.x(j, a)) + ",";
+                        key << face.x(j, a) << ",";
                     }
-                    face.gN(a) = mesh_node_map[key];
+                    face.gN(a) = mesh_node_map[key.str()];
                 }
                 // Set face element IDs
                 for (int e = 0; e < face.nEl; e++) {
