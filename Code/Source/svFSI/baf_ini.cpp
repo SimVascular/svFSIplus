@@ -454,11 +454,12 @@ void face_ini(Simulation* simulation, mshType& lM, faceType& lFa)
   //
   Vector<double> sA(com_mod.tnNo);
   sA = 1.0;
+  std::cout << "Start Area Integration" << std::endl;
   double area = all_fun::integ(com_mod, cm_mod, lFa, sA);
+  std::cout << "Face '" << lFa.name << "' area: " << area << std::endl;
   #ifdef debug_face_ini
   dmsg << "Face '" << lFa.name << "' area: " << area;
   #endif
-
   if (utils::is_zero(area)) {
      if (cm.mas(cm_mod)) {
       throw std::runtime_error("Face '" + lFa.name + "' has zero area.");

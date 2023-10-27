@@ -679,7 +679,7 @@ void check_quad4_conn(mshType& mesh)
 //
 void check_tet_conn(mshType& mesh)
 {
-  //std::cout << "[check_tet_conn] ========== check_tet_conn ========== " << std::endl;
+  std::cout << "[check_tet_conn] ========== check_tet_conn ========== " << std::endl;
   Vector<double> v1, v2, v3;
   int num_elems = mesh.gnEl;
   int num_reorder = 0;
@@ -1117,6 +1117,7 @@ void read_msh(Simulation* simulation)
     //
     // READMSH - CALL READSV(lPM, msh(iM)) 
     //
+    std::cout << "Number of Mesh Elements: " << com_mod.nMsh << std::endl;
     for (int iM = 0; iM < com_mod.nMsh; iM++) {
       auto param = simulation->parameters.mesh_parameters[iM];
       auto& mesh = com_mod.msh[iM];
@@ -1153,9 +1154,11 @@ void read_msh(Simulation* simulation)
       #ifdef debug_read_msh 
       dmsg << "Check for unique face names " << " ....";
       #endif
+      std::cout << "Number of Faces: " << mesh.nFa << std::endl;
       for (int iFa = 0; iFa < mesh.nFa; iFa++) {
         mesh.fa[iFa].iM = iM;
         auto ctmp = mesh.fa[iFa].name;
+        std::cout << "Face Name: " << ctmp << std::endl;
         for (int i = 0; i < iM; i++) {
           for (int j = 0; j < com_mod.msh[i].nFa; j++) {
             if ((ctmp == com_mod.msh[i].fa[j].name) && ((i != iM || j != iFa))) { 
@@ -1164,7 +1167,7 @@ void read_msh(Simulation* simulation)
           }
         } 
       } 
-
+      std::cout << "Done Face Name Checking." << std::endl;
       // Global total number of nodes.
       com_mod.gtnNo += mesh.gnNo;
       #ifdef debug_read_msh 
@@ -1194,7 +1197,7 @@ void read_msh(Simulation* simulation)
       }
       mesh.x.clear();
     }
-
+    std::cout << "Done creating global nodal coordinate array." << std::endl;
     com_mod.x = gX;
 
     // Check for shell elements.
@@ -1241,6 +1244,7 @@ void read_msh(Simulation* simulation)
     dmsg << "Allocate new mesh nodes or something " << " ...";
     dmsg << "com_mod.gtnNo: " << com_mod.gtnNo;
     #endif
+    std::cout << "gX size: " << com_mod.nsd << ", " << com_mod.gtnNo << std::endl;
     gX.resize(com_mod.nsd,com_mod.gtnNo);
     gX = com_mod.x;
 
@@ -1257,7 +1261,8 @@ void read_msh(Simulation* simulation)
       msh.gN.resize(msh.gnNo);
       msh.gN = -1;
     }
-  } 
+  }
+  std::cout << "Done allocating new mesh nodes or something." << std::endl;
 
   // Examining the existance of projection faces and setting %gN.
   // Reseting gtnNo and recounting nodes that are not duplicated
@@ -1284,6 +1289,7 @@ void read_msh(Simulation* simulation)
       }
     }
   }
+  std::cout << "Done examining the existance of projection faces and setting %gN." << std::endl;
 
   #ifdef debug_read_msh 
   dmsg << "Allocate com_mod.x " << " ...";
@@ -1313,7 +1319,7 @@ void read_msh(Simulation* simulation)
       com_mod.msh[iM].lN[Ac] = a;
     }
   }
-
+  std::cout << "Done temporarily allocating msh%lN array." << std::endl;
   // Re-arranging x and finding the size of the entire domain
   // First rearrange 2D/3D mesh and then, 1D fiber mesh
   //
@@ -1356,13 +1362,12 @@ void read_msh(Simulation* simulation)
       } 
 
       b  = b + 1;
-    } 
-
+    }
     #ifdef debug_read_msh 
     dmsg << "b: " << b+1;
     #endif
-  } 
-
+  }
+  std::cout << "Done rearranging x." << std::endl;
   b = 0;
 
   for (int iM = 0; iM < com_mod.nMsh; iM++) {
@@ -1386,24 +1391,23 @@ void read_msh(Simulation* simulation)
       }
 
       for (int i = 0; i < com_mod.nsd; i++) {
-        com_mod.x(i,Ac) = gX(i,b);
+        //com_mod.x(i,Ac) = gX(i,b);
 
         if (maxX[i] < com_mod.x(i,Ac)) {
-          maxX[i] = com_mod.x(i,Ac);
+          //maxX[i] = com_mod.x(i,Ac);
         }
         if (minX[i] > com_mod.x(i,Ac)) {
-          minX[i] = com_mod.x(i,Ac);
+          //minX[i] = com_mod.x(i,Ac);
         }
       } 
 
       b  = b + 1;
     }
-
     #ifdef debug_read_msh 
     dmsg << "b: " << b+1;
     #endif
   }
-
+  std::cout << "Done rearranging x." << std::endl;
   #ifdef debug_read_msh 
   dmsg << "minX: " << minX;
   dmsg << "maxX: " << maxX;
@@ -1415,23 +1419,31 @@ void read_msh(Simulation* simulation)
   dmsg << "Rearrange " << " fa ... ";
   #endif
 
+
+  std::cout << "Number of Meshes: " << com_mod.nMsh << std::endl;
   for (int iM = 0; iM < com_mod.nMsh; iM++) {
     for (int iFa = 0; iFa < com_mod.msh[iM].nFa; iFa++) {
       for (int a = 0; a < com_mod.msh[iM].fa[iFa].nNo; a++) {
-        int Ac = com_mod.msh[iM].fa[iFa].gN[a];
-        Ac = com_mod.msh[iM].gN[Ac];
-        com_mod.msh[iM].fa[iFa].gN[a] = Ac;
+        //int Ac = com_mod.msh[iM].fa[iFa].gN[a];
+        //std::cout << "Ac: " << Ac << std::endl;
+        //Ac = com_mod.msh[iM].gN[Ac];
+        //com_mod.msh[iM].fa[iFa].gN[a] = Ac;
       }     
-
+      std::cout << "Done rearranging fa inner most loop 1." << std::endl;
       for (int e = 0; e < com_mod.msh[iM].fa[iFa].nEl; e++) {
         for (int a = 0; a < com_mod.msh[iM].fa[iFa].eNoN; a++) {
-          int Ac = com_mod.msh[iM].fa[iFa].IEN(a,e);
-          Ac = com_mod.msh[iM].gN[Ac];
-          com_mod.msh[iM].fa[iFa].IEN(a,e) = Ac;
+          //int Ac = com_mod.msh[iM].fa[iFa].IEN(a,e);
+          //Ac = com_mod.msh[iM].gN[Ac];
+          //std::cout << "IEN(" << a << "," << e << "): " << Ac << std::endl;
+          //com_mod.msh[iM].fa[iFa].IEN(a,e) = Ac;
+          //std::cout << "IEN(" << a << "," << e << "): " << Ac << " Done." << std::endl;
         }      
-      } 
+      }
+      std::cout << "Done rearranging fa inner most loop 2." << std::endl;
     }  
   }  
+
+  std::cout << "Done rearranging fa." << std::endl;
 
   if (com_mod.resetSim) {
     auto& rmsh = com_mod.rmsh;
@@ -1470,6 +1482,7 @@ void read_msh(Simulation* simulation)
     } 
   } 
 
+  std::cout << "Done resetSim." << std::endl;
   // Setting dmnId parameter here, if there is at least one mesh that
   // has defined eId.
   //

@@ -1541,6 +1541,18 @@ class ComMod {
     Array<double>  pSn;
     Vector<double>  pSa;
 
+
+    /// @breif Variables for perfusion simulations
+    Vector<double> perfusion_pressure_source;
+    Vector<double> perfusion_pressure_sink;
+    Vector<double> perfusion_beta0;
+    Vector<double> perfusion_beta1;
+    double permeability = 0.0;
+    double porosity = 0.0;
+    double media_compressibility = 0.0;
+    double fluid_compressibility = 0.0;
+    double fluid_viscosity = 1.0;
+
     /// @brief Temporary storage for initializing state variables
     Vector<double> Pinit;
     Array<double>  Vinit;

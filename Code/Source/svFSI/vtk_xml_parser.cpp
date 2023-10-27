@@ -137,14 +137,22 @@ void store_element_conn(vtkSmartPointer<vtkPolyData> vtk_polydata, faceType& fac
   face.eNoN = np_elem; 
   face.IEN = Array<int>(np_elem, num_elems);
 
+  auto global_node_ar = vtkIntArray::SafeDownCast(vtk_polydata->GetPointData()->GetArray(NODE_IDS_NAME.c_str()));
   for (int i = 0; i < num_elems; i++) {
     vtk_polydata->GetCell(i, cell);
+    // Map the Extracted Local Cell Point Ids to the Global Volume Mesh Node Ids
+    //std::cout << "Begin Safe Down Cast from the Data Storage" << std::endl;
+    //auto global_node_ar = vtkIntArray::SafeDownCast(vtk_polydata->GetPointData()->GetArray(NODE_IDS_NAME.c_str()));
     auto num_cell_pts = cell->GetNumberOfPoints();
+    //std::cout << "Success on DownCast Operation" << std::endl;
     for (int j = 0; j < num_cell_pts; j++) {
-      auto id = cell->PointIds->GetId(j);
+      auto id = global_node_ar->GetValue(cell->PointIds->GetId(j));
+      std::cout << "Id type: " << static_cast<int>(id) <<" id: " << id << std::endl;
       face.IEN(j,i) = id;
+      //std::cout << "face_" <<face.name <<" IEN(" << j << "," << i << "): " << fcd ace.IEN(j,i) << std::endl;
     }
   }
+  std::cout << face.IEN << std::endl;
 }
 
 void store_element_conn(vtkSmartPointer<vtkPolyData> vtk_polydata, mshType& mesh)
@@ -169,12 +177,15 @@ void store_element_conn(vtkSmartPointer<vtkPolyData> vtk_polydata, mshType& mesh
   std::cout << "[store_element_conn(polydata,mesh)] np_elem: " << np_elem << std::endl;
   #endif
 
+  auto global_node_ar = vtkIntArray::SafeDownCast(vtk_polydata->GetPointData()->GetArray(NODE_IDS_NAME.c_str()));
   for (int i = 0; i < num_elems; i++) {
-    //int elem_id = elem_ids->GetValue(i);
+    // int elem_id = elem_ids->GetValue(i);
+    // Node id's within the total mesh are the same since interior elements are not neglected
     vtk_polydata->GetCell(i, cell);
     auto num_cell_pts = cell->GetNumberOfPoints();
     for (int j = 0; j < num_cell_pts; j++) {
-      auto id = cell->PointIds->GetId(j);
+      //auto id = cell->PointIds->GetId(j);
+      auto id = global_node_ar->GetValue(cell->PointIds->GetId(j));
       mesh.gIEN(j,i) = id;
     }
   }
@@ -195,6 +206,7 @@ void store_element_conn(vtkSmartPointer<vtkUnstructuredGrid> vtk_ugrid, mshType&
   std::cout << "[store_element_conn(ugrid)] " << std::endl;
   std::cout << "[store_element_conn(ugrid)] ========== store_element_conn(ugrid) =========" << std::endl;
   #endif
+  std::cout << "[store_element_conn(polydata,mesh)] connecting mesh" << std::endl;
   vtkSmartPointer<vtkUnsignedCharArray> cell_types = vtk_ugrid->GetCellTypesArray();
   auto num_elems = vtk_ugrid->GetNumberOfCells();
   #ifdef debug_store_element_conn
@@ -290,7 +302,7 @@ void store_element_conn(vtkSmartPointer<vtkUnstructuredGrid> vtk_ugrid, mshType&
   std::cout << "[store_element_conn] Number of elements: " << num_elems <<  std::endl;
   std::cout << "[store_element_conn] Number of nodes per element: " << np_elem <<  std::endl;
   #endif
-
+  auto global_node_ar = vtkIntArray::SafeDownCast(vtk_ugrid->GetPointData()->GetArray(NODE_IDS_NAME.c_str()));
   auto cell = vtkGenericCell::New();
   for (int i = 0; i < num_elems; i++) {
     vtk_ugrid->GetCell(i, cell);
@@ -301,6 +313,9 @@ void store_element_conn(vtkSmartPointer<vtkUnstructuredGrid> vtk_ugrid, mshType&
     }
     for (int j = 0; j < num_cell_pts; j++) {
       auto id = cell->PointIds->GetId(j);
+      //auto id2 = global_node_ar->GetValue(id);
+      //std::cout << "mesh.gIEN("<< j << "," << i << ") = " << id << std::endl;
+      //  std::cout << "mesh.gIEN("<< j << "," << i << ") = " << id2 << std::endl;
       //mesh.gIEN(i,j) = id;
       mesh.gIEN(j,i) = id;
     }
@@ -341,7 +356,8 @@ void store_element_ids(vtkSmartPointer<vtkPolyData> vtk_polydata, faceType& face
   // [NOTE] It is not clear how these IDs are used but if they
   // index into arrays or vectors then they need to be offset by -1.
   for (int i = 0; i < num_elem_ids; i++) {
-    face.gE(i) = elem_ids->GetValue(i) - 1;
+    face.gE(i) = elem_ids->GetValue(i); // - 1; assume that the face meshes are zero indexed
+    //std::cout << "[store_element_ids] face.gE(" << i << "): " << face.gE(i) << std::endl;
   }
 }
 
@@ -417,14 +433,24 @@ void store_nodal_ids(vtkSmartPointer<vtkUnstructuredGrid> vtk_ugrid, mshType& me
 void store_nodal_ids(vtkSmartPointer<vtkPolyData> vtk_polydata, faceType& face)
 {
   vtkIdType num_nodes = vtk_polydata->GetNumberOfPoints();
+  vtkIdType num_pt_arrays = vtk_polydata->GetPointData()->GetNumberOfArrays();
+  vtkIdType num_cell_arrays = vtk_polydata->GetCellData()->GetNumberOfArrays();
   auto node_ids = vtkIntArray::SafeDownCast(vtk_polydata->GetPointData()->GetArray(NODE_IDS_NAME.c_str()));
+  //for (vtkIdType i = 0; i < num_pt_arrays; i++) {
+  //    if (vtk_polydata->GetPointData()->GetArrayName(i) == NODE_IDS_NAME){
+  //        //std::cout << "GlobalNodeID Array Number: " << i << std::endl;
+  //        node_ids = vtkIntArray::SafeDownCast(vtk_polydata->GetPointData()->GetArray(i));
+  //        //std::cout << node_ids << std::endl;
+  //    }
+  //}
   if (node_ids == nullptr) {
     return; 
   }
   face.gN = Vector<int>(num_nodes);
   for (int i = 0; i < num_nodes; i++) {
+      //std::cout << "[store_nodal_ids] node_ids->GetValue(" << i << "): " << std::endl;
     // [NOTE] It seems that face node IDs are 1 based.
-    face.gN(i) = node_ids->GetValue(i) - 1;
+    face.gN(i) = node_ids->GetValue(i); //- 1;
     //std::cout << "[store_nodal_ids] face.gN(" << i << "): " << face.gN(i) << std::endl;
   }
 }
@@ -439,7 +465,7 @@ void store_nodal_ids(vtkSmartPointer<vtkPolyData> vtk_polydata, mshType& mesh)
   mesh.gN = Vector<int>(num_nodes);
   for (int i = 0; i < num_nodes; i++) {
     // [NOTE] It seems that face node IDs are 1 based.
-    mesh.gN(i) = node_ids->GetValue(i) - 1;
+    mesh.gN(i) = node_ids->GetValue(i); // - 1;
     //std::cout << "[store_nodal_ids] face.gN(" << i << "): " << face.gN(i) << std::endl;
   }
 }
@@ -526,8 +552,10 @@ void load_vtp(const std::string& file_name, faceType& face)
   std::cout << "[load_vtp] ===== vtk_xml_parser.cpp::load_vtp ===== " << std::endl;
   #endif
   auto reader = vtkSmartPointer<vtkXMLPolyDataReader>::New();
+  std::cout << "[load_vtp] Reading VTK file '" << file_name << "' ... " << std::endl;
   reader->SetFileName(file_name.c_str());
   reader->Update();
+  std::cout << "[load_vtp] Done. " << std::endl;
   vtkSmartPointer<vtkPolyData> vtk_polydata = reader->GetOutput();
 
   vtkIdType num_nodes = vtk_polydata->GetNumberOfPoints();
@@ -536,6 +564,8 @@ void load_vtp(const std::string& file_name, faceType& face)
   }
 
   vtkIdType num_elems = vtk_polydata->GetNumberOfCells();
+  std::cout << "[load_vtp] Number of nodes: " << num_nodes << std::endl;
+  std::cout << "[load_vtp] Number of elements: " << num_elems << std::endl;
   #ifdef debug_load_vtp 
   std::cout << "[load_vtp] Number of nodes: " << num_nodes << std::endl;
   std::cout << "[load_vtp] Number of elements: " << num_elems << std::endl;
@@ -550,10 +580,27 @@ void load_vtp(const std::string& file_name, faceType& face)
 
   // Store element connectivity.
   store_element_conn(vtk_polydata, face);
-
+  //for (int e = 0; e < face.nEl; e++) {
+  //    for (int a = 0; a < face.eNoN; a++) {
+          //int Ac = face.IEN(a,e);
+          //Ac = face.gN(Ac);
+          //face.IEN(a,e) = Ac;
+  //        std::cout << "[read_vtp] IEN(" << a << "," << e << "): " << face.IEN(a,e) << std::endl;
+  //    }
+  //}
   // Store element IDs.
   store_element_ids(vtk_polydata, face);
-
+  /*
+  for (int e = 0; e < face.nEl; e++) {
+      for (int a = 0; a < face.eNoN; a++) {
+          int Ac = face.IEN(a,e);
+          Ac = face.gN(Ac);
+          face.IEN(a,e) = Ac;
+          std::cout << "[read_vtp] IEN(" << a << "," << e << "): " << face.IEN(a,e) << std::endl;
+      }
+  }
+   */
+  std::cout << "[store vtp] Complete. " << std::endl;
   #ifdef debug_load_vtp 
   std::cout << "[load_vtp] Done. " << std::endl;
   #endif
@@ -569,7 +616,9 @@ void load_vtp(const std::string& file_name, mshType& mesh)
   #endif
   auto reader = vtkSmartPointer<vtkXMLPolyDataReader>::New();
   reader->SetFileName(file_name.c_str());
+  std::cout << "[load_vtp] Reading VTK file '" << file_name << "' ... " << std::endl;
   reader->Update();
+  std::cout << "[load_vtp] Done. " << std::endl;
   vtkSmartPointer<vtkPolyData> vtk_polydata = reader->GetOutput();
 
   vtkIdType num_nodes = vtk_polydata->GetNumberOfPoints();
@@ -652,6 +701,7 @@ void load_vtu(const std::string& file_name, mshType& mesh)
 
   // Store element connectivity.
   store_element_conn(vtk_ugrid, mesh);
+
 }
 
 } // namespace vtk_utils

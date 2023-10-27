@@ -151,10 +151,12 @@ void read_sv(Simulation* simulation, mshType& mesh, const MeshParameters* mesh_p
         mesh.nFa = mesh_param->face_parameters.size();
         mesh.fa.resize(mesh.nFa);
 
+
         if (mesh.lFib && (mesh.nFa > 1)) {
             throw std::runtime_error("There are " + std::to_string(mesh.nFa) + " faces defined for the '" +
                                      mesh.name + "' mesh. Only one face is allowed for a 1D fiber-based mesh.");
         }
+
 
         for (int i = 0; i < mesh.nFa; i++) {
             auto face_param = mesh_param->face_parameters[i];

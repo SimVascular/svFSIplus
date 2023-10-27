@@ -298,7 +298,38 @@ SetEquationPropertiesMapType set_equation_props = {
 } },
 
 //---------------------------//
-//         phys_FSI          //
+//        phys_darcy         //
+//---------------------------//
+{consts::EquationType::phys_darcy, [](Simulation* simulation, EquationParameters* eq_params, eqType& lEq, EquationProps& propL,
+        EquationOutputs& outPuts, EquationNdop& nDOP) -> void
+{
+    using namespace consts;
+    auto& com_mod = simulation->get_com_mod();
+    lEq.phys = consts::EquationType::phys_darcy;
+
+    propL[0][0] = PhysicalProperyType::permeability;
+    propL[1][0] = PhysicalProperyType::source_term;
+    propL[2][0] = PhysicalProperyType::solid_density;
+    propL[3][0] = PhysicalProperyType::porosity;
+    propL[4][0] = PhysicalProperyType::fluid_density;
+    propL[5][0] = PhysicalProperyType::porosity_pressure;
+    propL[6][0] = PhysicalProperyType::media_compressibility;
+    propL[7][0] = PhysicalProperyType::fluid_compressibility;
+    propL[8][0] = PhysicalProperyType::fluid_viscosity;
+    propL[9][0] = PhysicalProperyType::density_pressure;
+
+    read_domain(simulation, eq_params, lEq, propL);
+
+    nDOP = {2,1,1,0};
+    outPuts = {OutputType::out_temperature, OutputType::out_heatFlux};
+
+    // Set solver parameters.
+    read_ls(simulation, eq_params, SolverType::lSolver_CG, lEq);
+} },
+
+
+//---------------------------//
+//         phys_FSI          //const
 //---------------------------//
 //
 {consts::EquationType::phys_FSI, [](Simulation* simulation, EquationParameters* eq_params, eqType& lEq, EquationProps& propL,
