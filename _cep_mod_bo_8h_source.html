@@ -108,7 +108,7 @@ $(function() {
 <div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="preprocessor">#include &quot;Vector.h&quot;</span></div>
 <div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="preprocessor">#include &lt;array&gt;</span></div>
 <div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160; </div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="keyword">using</span> BoModelParam = std::array&lt;double,3&gt;;</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="keyword">using</span> <a class="code" href="class_vector.html">BoModelParam</a> = <a class="code" href="class_vector.html">Vector&lt;double&gt;</a>;</div>
 <div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="comment"></span> </div>
 <div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="comment">/// @brief This module defines data structures for Bueno-Orovio cellular</span></div>
 <div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="comment">/// activation model for cardiac electrophysiology.</span></div>
@@ -133,34 +133,34 @@ $(function() {
 <div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="comment">    ///</span></div>
 <div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="comment">    /// \todo [TODO:DaveP] these guys should be maps map&lt;int,double&gt;.</span></div>
 <div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="comment">    ///</span></div>
-<div class="line"><a name="l00064"></a><span class="lineno"><a class="line" href="class_cep_mod_bo.html#a5c04dde57f665bda837eaddf642daf6f">   64</a></span>&#160;<span class="comment"></span>    BoModelParam <a class="code" href="class_cep_mod_bo.html#a5c04dde57f665bda837eaddf642daf6f">u_o</a> = {0.0, 0.0, 0.0};</div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    BoModelParam u_u = {1.550, 1.56, 1.61};</div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    BoModelParam theta_v = {0.30, 0.3, 0.3};</div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    BoModelParam theta_w = {0.130, 0.13, 0.13};</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    BoModelParam thetam_v = {6.E-3, 0.2, 0.1};</div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    BoModelParam theta_o = {6.E-3, 6.E-3, 5.E-3};</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    BoModelParam taum_v1 = {60.0, 75., 80.};</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;    BoModelParam taum_v2 = {1.15E3, 10., 1.4506};</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    BoModelParam taup_v = {1.45060, 1.4506, 1.4506};</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;    BoModelParam taum_w1 = {60.0, 6., 70.};</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    BoModelParam taum_w2 = {15.0, 140., 8.};</div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;    BoModelParam km_w = {65.0, 200., 200.};</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;    BoModelParam um_w = {3.E-2, 1.6E-2, 1.6E-2};</div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    BoModelParam taup_w = {200.0, 280., 280.};</div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;    BoModelParam tau_fi = {0.110, 0.1, 0.078};</div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    BoModelParam tau_o1 = {400.0, 470., 410.};</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;    BoModelParam tau_o2 = {6.0, 6., 7.};</div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;    BoModelParam tau_so1 = {30.01810, 40., 91.};</div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    BoModelParam tau_so2 = {0.99570, 1.2, 0.8};</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;    BoModelParam k_so = {2.04580, 2., 2.1};</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;    BoModelParam u_so = {0.650, 0.65, 0.6};</div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;    BoModelParam tau_s1 = {2.73420, 2.7342, 2.7342};</div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;    BoModelParam tau_s2 = {16.0, 2., 2.};</div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;    BoModelParam k_s = {2.09940, 2.0994, 2.0994};</div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;    BoModelParam u_s = {0.90870, 0.9087, 0.9087};</div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;    BoModelParam tau_si = {1.88750, 2.9013, 3.3849};</div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;    BoModelParam tau_winf = {7.E-2, 2.73E-2, 1.E-2};</div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;    BoModelParam ws_inf = {0.940, 0.78, 0.5};</div>
+<div class="line"><a name="l00064"></a><span class="lineno"><a class="line" href="class_cep_mod_bo.html#a5c04dde57f665bda837eaddf642daf6f">   64</a></span>&#160;<span class="comment"></span>    <a class="code" href="class_vector.html">BoModelParam</a> <a class="code" href="class_cep_mod_bo.html#a5c04dde57f665bda837eaddf642daf6f">u_o</a> = {0.0, 0.0, 0.0};</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    <a class="code" href="class_vector.html">BoModelParam</a> u_u = {1.550, 1.56, 1.61};</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    <a class="code" href="class_vector.html">BoModelParam</a> theta_v = {0.30, 0.3, 0.3};</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    <a class="code" href="class_vector.html">BoModelParam</a> theta_w = {0.130, 0.13, 0.13};</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    <a class="code" href="class_vector.html">BoModelParam</a> thetam_v = {6.E-3, 0.2, 0.1};</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    <a class="code" href="class_vector.html">BoModelParam</a> theta_o = {6.E-3, 6.E-3, 5.E-3};</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    <a class="code" href="class_vector.html">BoModelParam</a> taum_v1 = {60.0, 75., 80.};</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;    <a class="code" href="class_vector.html">BoModelParam</a> taum_v2 = {1.15E3, 10., 1.4506};</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    <a class="code" href="class_vector.html">BoModelParam</a> taup_v = {1.45060, 1.4506, 1.4506};</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;    <a class="code" href="class_vector.html">BoModelParam</a> taum_w1 = {60.0, 6., 70.};</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    <a class="code" href="class_vector.html">BoModelParam</a> taum_w2 = {15.0, 140., 8.};</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;    <a class="code" href="class_vector.html">BoModelParam</a> km_w = {65.0, 200., 200.};</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;    <a class="code" href="class_vector.html">BoModelParam</a> um_w = {3.E-2, 1.6E-2, 1.6E-2};</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    <a class="code" href="class_vector.html">BoModelParam</a> taup_w = {200.0, 280., 280.};</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;    <a class="code" href="class_vector.html">BoModelParam</a> tau_fi = {0.110, 0.1, 0.078};</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    <a class="code" href="class_vector.html">BoModelParam</a> tau_o1 = {400.0, 470., 410.};</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;    <a class="code" href="class_vector.html">BoModelParam</a> tau_o2 = {6.0, 6., 7.};</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;    <a class="code" href="class_vector.html">BoModelParam</a> tau_so1 = {30.01810, 40., 91.};</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    <a class="code" href="class_vector.html">BoModelParam</a> tau_so2 = {0.99570, 1.2, 0.8};</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;    <a class="code" href="class_vector.html">BoModelParam</a> k_so = {2.04580, 2., 2.1};</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;    <a class="code" href="class_vector.html">BoModelParam</a> u_so = {0.650, 0.65, 0.6};</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;    <a class="code" href="class_vector.html">BoModelParam</a> tau_s1 = {2.73420, 2.7342, 2.7342};</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;    <a class="code" href="class_vector.html">BoModelParam</a> tau_s2 = {16.0, 2., 2.};</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;    <a class="code" href="class_vector.html">BoModelParam</a> k_s = {2.09940, 2.0994, 2.0994};</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;    <a class="code" href="class_vector.html">BoModelParam</a> u_s = {0.90870, 0.9087, 0.9087};</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;    <a class="code" href="class_vector.html">BoModelParam</a> tau_si = {1.88750, 2.9013, 3.3849};</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;    <a class="code" href="class_vector.html">BoModelParam</a> tau_winf = {7.E-2, 2.73E-2, 1.E-2};</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;    <a class="code" href="class_vector.html">BoModelParam</a> ws_inf = {0.940, 0.78, 0.5};</div>
 <div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160; </div>
 <div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;    <span class="comment">// Electromechanics coupling parameters: active stress model</span><span class="comment"></span></div>
 <div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;<span class="comment">    /// Resting voltage (mV)</span></div>
