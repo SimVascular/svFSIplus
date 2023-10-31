@@ -36,7 +36,7 @@
 #include "Vector.h"
 #include <array>
 
-using BoModelParam = std::array<double,3>;
+using BoModelParam = Vector<double>;
 
 /// @brief This module defines data structures for Bueno-Orovio cellular
 /// activation model for cardiac electrophysiology.
