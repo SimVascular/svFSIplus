@@ -56,6 +56,13 @@ class MeshHashMaps {
 public:
     MeshHashMaps() {}
 
+    /// @brief Create a hash map for the global mesh nodes
+    ///
+    /// \code {.cpp}
+    /// mesh
+    /// nsd
+    /// \endcode
+    ///
     std::unordered_map<std::string, int> createNodeHashMap(const mshType& mesh, const int& nsd) {
         std::unordered_map<std::string, int> mesh_node_map;
         for (int i = 0; i < mesh.gnNo; i++) {
@@ -69,6 +76,12 @@ public:
         return mesh_node_map;
     }
 
+    /// @brief Create a hash map for the global mesh elements
+    ///
+    /// \code {.cpp}
+    /// mesh
+    /// \endcode
+    ///
     std::unordered_map<std::string, int> createElementHashMap(const mshType& mesh) {
         std::unordered_map<std::string, int> mesh_element_set;
         for (int i = 0; i < mesh.gnEl; i++) {
@@ -244,41 +257,6 @@ void read_sv(Simulation* simulation, mshType& mesh, const MeshParameters* mesh_p
             MeshHashMaps mesh_hash_maps;
             auto mesh_node_map = mesh_hash_maps.createNodeHashMap(mesh, com_mod.nsd);
             auto mesh_element_set = mesh_hash_maps.createElementHashMap(mesh);
-            /*
-            std::unordered_map<std::string, int> mesh_node_map;
-            for (int i = 0; i < mesh.gnNo; i++) {
-                std::ostringstream key;
-                key << std::scientific << std::setprecision(16);
-                for (int j = 0; j < com_mod.nsd; j++) {
-                    key << mesh.x(j,i) <<",";
-                }
-                mesh_node_map[key.str()] = i;
-            }
-            // Create a hash map for elements IEN
-            std::unordered_map<std::string, int> mesh_element_set;
-            // Generate all possible combinations of element nodes for faces
-            std::vector<int> mask(mesh.eNoN);
-            Vector<int> face_nodes(mesh.eNoN);
-            for (int i = 0; i < mesh.eNoN; i++) {
-                face_nodes(i) = i;
-                mask[i] = 0;
-            }
-
-            for (int i = 0; i < mesh.gnEl; i++) {
-                for (unsigned int j = 0; j < mesh.ordering.size(); j++) {
-                    std::vector<int> element_nodes;
-                    for (unsigned int k = 0; k < mesh.ordering[j].size(); k++) {
-                        element_nodes.push_back(mesh.gIEN(mesh.ordering[j][k], i));
-                    }
-                    std::sort(element_nodes.begin(), element_nodes.end());
-                    std::string key = "";
-                    for (int node: element_nodes) {
-                        key += std::to_string(node) + ",";
-                    }
-                    mesh_element_set[key] = i;
-                }
-                */
-            //}
 
         for (int i = 0; i < mesh.nFa; i++) {
             auto &face = mesh.fa[i];
