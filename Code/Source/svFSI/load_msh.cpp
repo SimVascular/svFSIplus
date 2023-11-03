@@ -50,6 +50,46 @@
 
 namespace load_msh {
 
+    /// @brief Generate hash maps for mesh nodes and elements
+
+class MeshHashMaps {
+public:
+    MeshHashMaps() {}
+
+    std::unordered_map<std::string, int> createNodeHashMap(const mshType& mesh, const int& nsd) {
+        std::unordered_map<std::string, int> mesh_node_map;
+        for (int i = 0; i < mesh.gnNo; i++) {
+            std::ostringstream key;
+            key << std::scientific << std::setprecision(16);
+            for (int j = 0; j < nsd; j++) {
+                key << mesh.x(j,i) <<",";
+            }
+            mesh_node_map[key.str()] = i;
+        }
+        return mesh_node_map;
+    }
+
+    std::unordered_map<std::string, int> createElementHashMap(const mshType& mesh) {
+        std::unordered_map<std::string, int> mesh_element_set;
+        for (int i = 0; i < mesh.gnEl; i++) {
+            for (unsigned int j = 0; j < mesh.ordering.size(); j++) {
+                std::vector<int> element_nodes;
+                for (unsigned int k = 0; k < mesh.ordering[j].size(); k++) {
+                    element_nodes.push_back(mesh.gIEN(mesh.ordering[j][k], i));
+                }
+                std::sort(element_nodes.begin(), element_nodes.end());
+                std::string key = "";
+                for (int node: element_nodes) {
+                    key += std::to_string(node) + ",";
+                }
+                mesh_element_set[key] = i;
+            }
+        }
+        return mesh_element_set;
+    }
+};
+
+
 #define ndbg_load_msh
 
 /// @brief Read mesh position coordinates and connectivity.
@@ -60,7 +100,7 @@ void read_ccne(Simulation* simulation, mshType& mesh, const MeshParameters* mesh
 {
   auto mesh_path = mesh_param->mesh_file_path();
   auto mesh_name = mesh_param->name();
-  throw std::runtime_error("[read_ccne] read_ccne() is not implemented."); 
+  throw std::runtime_error("[read_ccne] read_ccne() is not implemented.");
 }
 
 /// @brief Read list of end nodes from a file into the face data structure.
@@ -201,6 +241,10 @@ void read_sv(Simulation* simulation, mshType& mesh, const MeshParameters* mesh_p
         }
         if (!mesh.lFib) {
             // Create a hash map for nodes and elements.
+            MeshHashMaps mesh_hash_maps;
+            auto mesh_node_map = mesh_hash_maps.createNodeHashMap(mesh, com_mod.nsd);
+            auto mesh_element_set = mesh_hash_maps.createElementHashMap(mesh);
+            /*
             std::unordered_map<std::string, int> mesh_node_map;
             for (int i = 0; i < mesh.gnNo; i++) {
                 std::ostringstream key;
@@ -233,7 +277,8 @@ void read_sv(Simulation* simulation, mshType& mesh, const MeshParameters* mesh_p
                     }
                     mesh_element_set[key] = i;
                 }
-            }
+                */
+            //}
 
         for (int i = 0; i < mesh.nFa; i++) {
             auto &face = mesh.fa[i];
