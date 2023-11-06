@@ -73,6 +73,9 @@ public:
             }
             mesh_node_map[key.str()] = i;
         }
+        if (mesh_node_map.size() != mesh.gnNo) {
+            throw std::runtime_error("There may be a duplicate nodes within the mesh.");
+        }
         return mesh_node_map;
     }
 
