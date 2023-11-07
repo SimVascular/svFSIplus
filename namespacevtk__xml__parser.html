@@ -143,6 +143,8 @@ Variables</h2></td></tr>
 <tr class="memitem:a19b9502ac800082ab86579c2d23461ae"><td class="memItemLeft" align="right" valign="top">std::map&lt; unsigned char, int &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacevtk__xml__parser.html#a19b9502ac800082ab86579c2d23461ae">vtk_cell_to_elem</a></td></tr>
 <tr class="memdesc:a19b9502ac800082ab86579c2d23461ae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Map used to convert VTK cell types to number of nodes per element.  <a href="namespacevtk__xml__parser.html#a19b9502ac800082ab86579c2d23461ae">More...</a><br /></td></tr>
 <tr class="separator:a19b9502ac800082ab86579c2d23461ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6986979e22661fa7bc341eb1a48a90b7"><td class="memItemLeft" align="right" valign="top">std::map&lt; unsigned char, std::vector&lt; std::vector&lt; int &gt; &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>vtk_cell_ordering</b></td></tr>
+<tr class="separator:a6986979e22661fa7bc341eb1a48a90b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Copyright (c) Stanford University, The Regents of the University of California, and others.</p>
@@ -570,6 +572,46 @@ IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IM
 </div>
 </div>
 <h2 class="groupheader">Variable Documentation</h2>
+<a id="a6986979e22661fa7bc341eb1a48a90b7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6986979e22661fa7bc341eb1a48a90b7">&#9670;&nbsp;</a></span>vtk_cell_ordering</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::map&lt;unsigned char, std::vector&lt;std::vector&lt;int&gt; &gt; &gt; vtk_xml_parser::vtk_cell_ordering</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">{</div>
+<div class="line">  {VTK_HEXAHEDRON, {{0,3,2,1},</div>
+<div class="line">                    {4,5,6,7},</div>
+<div class="line">                    {0,1,5,4},</div>
+<div class="line">                    {1,2,6,5},</div>
+<div class="line">                    {2,3,7,6},</div>
+<div class="line">                    {3,0,4,7}}},</div>
+<div class="line">  {VTK_LINE, {{0},</div>
+<div class="line">              {1}}},</div>
+<div class="line">  {VTK_QUAD, {{0,1},</div>
+<div class="line">              {1,2},</div>
+<div class="line">              {2,3},</div>
+<div class="line">              {3,0}}},</div>
+<div class="line">  {VTK_TETRA, {{0,1,2},</div>
+<div class="line">               {0,1,3},</div>
+<div class="line">               {1,2,3},</div>
+<div class="line">               {2,0,3}}},</div>
+<div class="line">  {VTK_TRIANGLE, {{0,1},</div>
+<div class="line">                  {1,2},</div>
+<div class="line">                  {2,0}}},</div>
+<div class="line">  {VTK_WEDGE, {{0,1,2},</div>
+<div class="line">               {3,4,5},</div>
+<div class="line">               {0,1,4,3},</div>
+<div class="line">               {1,2,5,4},</div>
+<div class="line">               {2,0,3,5}}}</div>
+<div class="line">}</div>
+</div><!-- fragment -->
+</div>
+</div>
 <a id="a19b9502ac800082ab86579c2d23461ae"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a19b9502ac800082ab86579c2d23461ae">&#9670;&nbsp;</a></span>vtk_cell_to_elem</h2>
 
