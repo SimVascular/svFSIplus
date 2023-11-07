@@ -1,19 +1,17 @@
-include_directories(./)
-include_directories(${MPI_C_INCLUDE_PATH})
 
-set(CSRCS comm.c util.c debug.c setup.c grsetup.c timer.c
-       node_refine.c initmsection.c
-       xyzpart.c pspases.c frename.c
-       iintsort.c iidxsort.c ikeysort.c ikeyvalsort.c
-       kmetis.c gkmetis.c ometis.c
-       initpart.c match.c
-       kwayfm.c kwayrefine.c kwaybalance.c
-       remap.c stat.c fpqueue.c
-       ametis.c rmetis.c initbalance.c
-       mdiffusion.c diffutil.c wave.c
-       csrmatch.c redomylink.c balancemylink.c
-       selectq.c akwayfm.c serial.c move.c
-       mmetis.c mesh.c memory.c weird.c backcompat.c)
+#include_directories(./)
+#include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../gklib_svfsi/simvascular_gklib_svfsi)
+#include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../metis_svfsi/simvascular_metis_svfsi/METISLib)
+#include_directories(${MPI_C_INCLUDE_PATH})
+
+set(CSRCS akwayfm.c ametis.c balancemylink.c comm.c
+  csrmatch.c ctrl.c debug.c diffutil.c frename.c gklib.c
+  gkmetis.c gkmpi.c graph.c initbalance.c initmsection.c initpart.c
+  kmetis.c kwayrefine.c match.c mdiffusion.c mesh.c mmetis.c
+  move.c msetup.c node_refine.c ometis.c pspases.c redomylink.c
+  remap.c renumber.c rmetis.c selectq.c serial.c stat.c
+  timer.c util.c wave.c weird.c wspace.c xyzpart.c
+)
 
 if(SV_USE_THIRDPARTY_SHARED_LIBRARIES)
   add_library(${PARMETIS_SVFSI_LIBRARY_NAME} SHARED ${CSRCS})
@@ -21,7 +19,14 @@ else()
   add_library(${PARMETIS_SVFSI_LIBRARY_NAME} STATIC ${CSRCS})
 endif()
 
-target_link_libraries(${PARMETIS_SVFSI_LIBRARY_NAME} ${METIS_SVFSI_LIBRARY_NAME})
+set(third_party_dir ${CMAKE_CURRENT_SOURCE_DIR}/../../..)
+target_include_directories(${PARMETIS_SVFSI_LIBRARY_NAME} PUBLIC ./)
+target_include_directories(${PARMETIS_SVFSI_LIBRARY_NAME} PUBLIC ${third_party_dir}/gklib_svfsi/simvascular_gklib_svfsi)
+target_include_directories(${PARMETIS_SVFSI_LIBRARY_NAME} PUBLIC ${third_party_dir}/metis_svfsi/simvascular_metis_svfsi/METISLib)
+target_include_directories(${PARMETIS_SVFSI_LIBRARY_NAME} PUBLIC ${MPI_C_INCLUDE_PATH}) 
+
+
+target_link_libraries(${PARMETIS_SVFSI_LIBRARY_NAME} ${METIS_SVFSI_LIBRARY_NAME}  ${GKLIB_SVFSI_LIBRARY_NAME})
 
 if(SV_INSTALL_LIBS)
   install(TARGETS ${PARMETIS_SVFSI_LIBRARY_NAME}

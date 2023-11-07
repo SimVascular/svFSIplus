@@ -62,7 +62,7 @@ void distribute(Simulation* simulation)
   auto& com_mod = simulation->com_mod;
   auto& cm = com_mod.cm;
 
-  #define n_debug_distribute
+  #define debug_distribute
   #ifdef debug_distribute
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
@@ -1434,7 +1434,7 @@ void part_msh(Simulation* simulation, int iM, mshType& lM, Vector<int>& gmtl, in
   int num_proc = cm.np();
   int task_id = cm.idcm();
 
-  #define n_dbg_part_msh
+  #define dbg_part_msh
   #ifdef dbg_part_msh
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
