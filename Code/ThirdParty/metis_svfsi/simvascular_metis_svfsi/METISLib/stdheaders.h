@@ -8,9 +8,11 @@
  * Started 8/27/94
  * George
  *
- * $Id: stdheaders.h,v 1.2 2003/07/25 14:31:45 karypis Exp $
+ * $Id: stdheaders.h 5993 2009-01-07 02:09:57Z karypis $
  */
 
+#ifndef _LIBMETIS_STDHEADERS_H_
+#define _LIBMETIS_STDHEADERS_H_
 
 #include <stdio.h>
 #ifdef __STDC__
@@ -23,5 +25,5 @@
 #include <math.h>
 #include <stdarg.h>
 #include <time.h>
-#include <assert.h>
 
+#endif

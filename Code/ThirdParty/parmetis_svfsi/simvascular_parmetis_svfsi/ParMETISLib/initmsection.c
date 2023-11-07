@@ -8,14 +8,13 @@
  * Started 6/3/97
  * George
  *
- * $Id: initmsection.c,v 1.2 2003/07/21 17:18:49 karypis Exp $
+ * $Id: initmsection.c 10361 2011-06-21 19:16:22Z karypis $
  */
 
 #include <parmetislib.h>
 
 
 #define DEBUG_IPART_
-
 
 
 /************************************************************************************/
@@ -42,65 +41,49 @@
 
 */
 /************************************************************************************/
-void InitMultisection(CtrlType *ctrl, GraphType *graph, WorkSpaceType *wspace) 
+void InitMultisection(ctrl_t *ctrl, graph_t *graph) 
 { 
-  int i, lpecut[2], gpecut[2], mypart, moptions[10]; 
-  idxtype *vtxdist, *gwhere = NULL, *part, *label; 
-  GraphType *agraph; 
-  int *sendcounts, *displs; 
+  idx_t i, myrank, mypart, options[METIS_NOPTIONS]; 
+  idx_t *vtxdist, *gwhere = NULL, *part, *label; 
+  graph_t *agraph; 
+  idx_t *sendcounts, *displs; 
   MPI_Comm newcomm, labelcomm;
+  struct {
+    double cut;
+    int rank;
+  } lpecut, gpecut;
 
   IFSET(ctrl->dbglvl, DBG_TIME, starttimer(ctrl->InitPartTmr));
+  WCOREPUSH;
 
   /* Assemble the graph and do the necessary pre-processing */
-  agraph = AssembleMultisectedGraph(ctrl, graph, wspace);
-  part = agraph->where;
+  agraph = AssembleMultisectedGraph(ctrl, graph);
+  part   = agraph->where;
   agraph->where = NULL;
 
   /* Split the processors into groups so that each one can do a bisection */
   mypart = ctrl->mype%(ctrl->nparts/2);
-  MPI_Comm_split(ctrl->comm, mypart, 0, &newcomm);
+  gkMPI_Comm_split(ctrl->comm, mypart, 0, &newcomm);
+  gkMPI_Comm_rank(newcomm, &myrank);
 
   /* Each processor keeps the graph that it only needs and bisects it */
-  agraph->ncon = 1; /* needed for Mc_KeepPart */
-  Mc_KeepPart(agraph, wspace, part, mypart);
+  KeepPart(ctrl, agraph, part, mypart);
   label = agraph->label;  /* Save this because ipart may need it */
   agraph->label = NULL;
 
   /* Bisect the graph and construct the separator */
-  switch (ctrl->ipart) {
-    case ISEP_EDGE:
-      moptions[0] = 1;
-      moptions[1] = 3;
-      moptions[2] = 1;
-      moptions[3] = 1;
-      moptions[4] = 0;
-      moptions[7] = (ctrl->mype+8)*101;
+  METIS_SetDefaultOptions(options);
+  options[METIS_OPTION_SEED]    = (ctrl->mype+8)*101;
+  options[METIS_OPTION_NSEPS]   = 5;
+  options[METIS_OPTION_UFACTOR] = (idx_t)(1000.0*(ctrl->ubfrac - 1.0)); 
 
-      agraph->where = idxmalloc(agraph->nvtxs, "InitMultisection: agraph->where");
-
-      METIS_EdgeComputeSeparator(&agraph->nvtxs, agraph->xadj, agraph->adjncy,
-        agraph->vwgt, agraph->adjwgt, moptions, &agraph->mincut, agraph->where);
-      break;
-    case ISEP_NODE:
-      moptions[0] = 1;
-      moptions[1] = 3;
-      moptions[2] = 1;
-      moptions[3] = 2;
-      moptions[4] = 0;
-      moptions[7] = (ctrl->mype+8)*101;
-
-      agraph->where = idxmalloc(agraph->nvtxs, "InitMultisection: agraph->where");
-
-      METIS_NodeComputeSeparator(&agraph->nvtxs, agraph->xadj, agraph->adjncy, agraph->vwgt, 
-            agraph->adjwgt, &ctrl->ubfrac, moptions, &agraph->mincut, agraph->where);
-      break;
-    default:
-      errexit("Unknown ISEP type!\n");
-  }
+  WCOREPUSH;  /* for freeing agraph->where and gwhere */
+  agraph->where = iwspacemalloc(ctrl, agraph->nvtxs);
+  METIS_ComputeVertexSeparator(&agraph->nvtxs, agraph->xadj, agraph->adjncy, 
+        agraph->vwgt, options, &agraph->mincut, agraph->where);
 
   for (i=0; i<agraph->nvtxs; i++) {
-    ASSERT(ctrl, agraph->where[i]>=0 && agraph->where[i]<=2);
+    PASSERT(ctrl, agraph->where[i]>=0 && agraph->where[i]<=2);
     if (agraph->where[i] == 2)
       agraph->where[i] = ctrl->nparts+2*mypart;
     else
@@ -108,79 +91,80 @@ void InitMultisection(CtrlType *ctrl, GraphType *graph, WorkSpaceType *wspace)
   }
 
   /* Determine which PE got the minimum cut */
-  lpecut[0] = agraph->mincut;
-  MPI_Comm_rank(newcomm, lpecut+1);
-  MPI_Allreduce(lpecut, gpecut, 1, MPI_2INT, MPI_MINLOC, newcomm);
+  lpecut.cut  = agraph->mincut;
+  lpecut.rank = myrank;
+  gkMPI_Allreduce(&lpecut, &gpecut, 1, MPI_DOUBLE_INT, MPI_MINLOC, newcomm);
 
-  /* myprintf(ctrl, "Nvtxs: %d, Mincut: %d, GMincut: %d, %d\n", agraph->nvtxs, 
-         agraph->mincut, gpecut[0], gpecut[1]); */
+  /* myprintf(ctrl, "Nvtxs: %"PRIDX", Mincut: %"PRIDX", GMincut: %"PRIDX", %"PRIDX"\n", agraph->nvtxs, 
+         agraph->mincut, (idx_t)gpecut.cut, (idx_t)gpecut.rank); */
 
   /* Send the best where to the root processor of this partition */
-  if (lpecut[1] == gpecut[1] && gpecut[1] != 0) 
-    MPI_Send((void *)agraph->where, agraph->nvtxs, IDX_DATATYPE, 0, 1, newcomm);
-  if (lpecut[1] == 0 && gpecut[1] != 0)
-    MPI_Recv((void *)agraph->where, agraph->nvtxs, IDX_DATATYPE, gpecut[1], 1, newcomm, &ctrl->status);
+  if (myrank != 0 && myrank == gpecut.rank) 
+    gkMPI_Send((void *)agraph->where, agraph->nvtxs, IDX_T, 0, 1, newcomm);
+  if (myrank == 0 && myrank != gpecut.rank)
+    gkMPI_Recv((void *)agraph->where, agraph->nvtxs, IDX_T, gpecut.rank, 1, 
+        newcomm, &ctrl->status);
 
   /* Create a communicator that stores all the i-th processors of the newcomm */
-  MPI_Comm_split(ctrl->comm, lpecut[1], 0, &labelcomm);
+  gkMPI_Comm_split(ctrl->comm, myrank, 0, &labelcomm);
 
   /* Map the separator back to agraph. This is inefficient! */
-  if (lpecut[1] == 0) {
-    gwhere = idxsmalloc(graph->gnvtxs, 0, "InitMultisection: gwhere");
+  if (myrank == 0) {
+    gwhere = iset(graph->gnvtxs, 0, iwspacemalloc(ctrl, graph->gnvtxs));
     for (i=0; i<agraph->nvtxs; i++)
       gwhere[label[i]] = agraph->where[i];
-  }
 
-  GKfree((void **)&agraph->where, LTERM);
-  agraph->where = part;
-
-  if (lpecut[1] == 0) {
-    MPI_Reduce((void *)gwhere, (void *)agraph->where, graph->gnvtxs, IDX_DATATYPE, 
+    gkMPI_Reduce((void *)gwhere, (void *)part, graph->gnvtxs, IDX_T, 
         MPI_SUM, 0, labelcomm);
-    GKfree((void **)&gwhere, LTERM);
   }
+
+  WCOREPOP; /* free agraph->where & gwhere */
+
+  agraph->where = part;
 
   /* The minimum PE performs the Scatter */
   vtxdist = graph->vtxdist;
-  ASSERT(ctrl, graph->where != NULL);
-  GKfree((void **)&graph->where, LTERM);  /* Remove the propagated down where info */
-  graph->where = idxmalloc(graph->nvtxs+graph->nrecv, "InitPartition: where");
+  PASSERT(ctrl, graph->where != NULL);
+  gk_free((void **)&graph->where, LTERM);  /* Remove the propagated down where info */
+  graph->where = imalloc(graph->nvtxs+graph->nrecv, "InitPartition: where");
 
-  sendcounts = imalloc(ctrl->npes, "InitPartitionNew: sendcounts");
-  displs     = imalloc(ctrl->npes, "InitPartitionNew: displs");
+  sendcounts = iwspacemalloc(ctrl, ctrl->npes);
+  displs     = iwspacemalloc(ctrl, ctrl->npes);
 
   for (i=0; i<ctrl->npes; i++) {
     sendcounts[i] = vtxdist[i+1]-vtxdist[i];
     displs[i]     = vtxdist[i];
   }
 
-  MPI_Scatterv((void *)agraph->where, sendcounts, displs, IDX_DATATYPE, 
-               (void *)graph->where, graph->nvtxs, IDX_DATATYPE, 0, ctrl->comm);
+  gkMPI_Scatterv((void *)agraph->where, sendcounts, displs, IDX_T, 
+               (void *)graph->where, graph->nvtxs, IDX_T, 0, ctrl->comm);
 
-  GKfree((void **)&sendcounts, (void **)&displs, (void **)&label, LTERM);
-
+  agraph->label = label;
   FreeGraph(agraph);
 
-  MPI_Comm_free(&newcomm);
-  MPI_Comm_free(&labelcomm);
+  gkMPI_Comm_free(&newcomm);
+  gkMPI_Comm_free(&labelcomm);
+
+  WCOREPOP;
 
   IFSET(ctrl->dbglvl, DBG_TIME, stoptimer(ctrl->InitPartTmr));
-
 }
 
 
 
-/*************************************************************************
-* This function assembles the graph into a single processor
-**************************************************************************/
-GraphType *AssembleMultisectedGraph(CtrlType *ctrl, GraphType *graph, WorkSpaceType *wspace)
+/*************************************************************************/
+/*! This function assembles the graph into a single processor */
+/*************************************************************************/
+graph_t *AssembleMultisectedGraph(ctrl_t *ctrl, graph_t *graph)
 {
-  int i, j, k, l, gnvtxs, nvtxs, gnedges, nedges, gsize;
-  idxtype *xadj, *vwgt, *where, *adjncy, *adjwgt, *vtxdist, *imap;
-  idxtype *axadj, *aadjncy, *aadjwgt, *avwgt, *awhere, *alabel;
-  idxtype *mygraph, *ggraph;
-  int *recvcounts, *displs, mysize;
-  GraphType *agraph;
+  idx_t i, j, k, l, gnvtxs, nvtxs, gnedges, nedges, gsize;
+  idx_t *xadj, *vwgt, *where, *adjncy, *adjwgt, *vtxdist, *imap;
+  idx_t *axadj, *aadjncy, *aadjwgt, *avwgt, *awhere, *alabel;
+  idx_t *mygraph, *ggraph;
+  idx_t *recvcounts, *displs, mysize;
+  graph_t *agraph;
+
+  WCOREPUSH;
 
   gnvtxs  = graph->gnvtxs;
   nvtxs   = graph->nvtxs;
@@ -193,18 +177,23 @@ GraphType *AssembleMultisectedGraph(CtrlType *ctrl, GraphType *graph, WorkSpaceT
   vtxdist = graph->vtxdist;
   imap    = graph->imap;
 
-  /* Determine the # of idxtype to receive from each processor */
-  recvcounts = imalloc(ctrl->npes, "AssembleGraph: recvcounts");
+  /* Determine the # of idx_t to receive from each processor */
+  recvcounts = iwspacemalloc(ctrl, ctrl->npes);
   mysize = 3*nvtxs + 2*nedges;
-  MPI_Allgather((void *)(&mysize), 1, MPI_INT, (void *)recvcounts, 1, MPI_INT, ctrl->comm);
+  gkMPI_Allgather((void *)(&mysize), 1, IDX_T, (void *)recvcounts, 1, IDX_T, ctrl->comm);
   
-  displs = imalloc(ctrl->npes+1, "AssembleGraph: displs");
-  displs[0] = 0;
-  for (i=1; i<ctrl->npes+1; i++) 
+  displs = iwspacemalloc(ctrl, ctrl->npes+1);
+  for (displs[0]=0, i=1; i<ctrl->npes+1; i++) 
     displs[i] = displs[i-1] + recvcounts[i-1];
 
+  /* allocate memory for the recv buffer of the assembled graph */
+  gsize  = displs[ctrl->npes];
+  ggraph = iwspacemalloc(ctrl, gsize);
+
   /* Construct the one-array storage format of the assembled graph */
-  mygraph = (mysize <= wspace->maxcore ? wspace->core : idxmalloc(mysize, "AssembleGraph: mygraph"));
+  WCOREPUSH;  /* for freeing mygraph */
+  mygraph = iwspacemalloc(ctrl, mysize);
+
   for (k=i=0; i<nvtxs; i++) {
     mygraph[k++] = xadj[i+1]-xadj[i];
     mygraph[k++] = vwgt[i];
@@ -214,28 +203,27 @@ GraphType *AssembleMultisectedGraph(CtrlType *ctrl, GraphType *graph, WorkSpaceT
       mygraph[k++] = adjwgt[j];
     }
   }
-  ASSERT(ctrl, mysize == k);
+  PASSERT(ctrl, mysize == k);
 
   /* Assemble the entire graph */
-  gsize = displs[ctrl->npes];
-  ggraph = (gsize <= wspace->maxcore-mysize ? wspace->core+mysize : idxmalloc(gsize, "AssembleGraph: ggraph"));
-  MPI_Allgatherv((void *)mygraph, mysize, IDX_DATATYPE, (void *)ggraph, recvcounts, displs, IDX_DATATYPE, ctrl->comm);
+  gkMPI_Allgatherv((void *)mygraph, mysize, IDX_T, (void *)ggraph, 
+      recvcounts, displs, IDX_T, ctrl->comm);
 
-  GKfree((void **)&recvcounts, (void **)&displs, LTERM);
-  if (mysize > wspace->maxcore)
-    GKfree((void **)&mygraph, LTERM);
+  WCOREPOP;  /* free mygraph */
+
 
   agraph = CreateGraph();
-  agraph->nvtxs = gnvtxs;
+  agraph->nvtxs  = gnvtxs;
+  agraph->ncon   = 1;
   agraph->nedges = gnedges = (gsize-3*gnvtxs)/2;
 
   /* Allocate memory for the assembled graph */
-  axadj   = agraph->xadj   = idxmalloc(gnvtxs+1, "AssembleGraph: axadj");
-  avwgt   = agraph->vwgt   = idxmalloc(gnvtxs, "AssembleGraph: avwgt");
-  awhere  = agraph->where  = idxmalloc(gnvtxs, "AssembleGraph: awhere");
-  aadjncy = agraph->adjncy = idxmalloc(gnedges, "AssembleGraph: adjncy");
-  aadjwgt = agraph->adjwgt = idxmalloc(gnedges, "AssembleGraph: adjwgt");
-  alabel  = agraph->label  = idxmalloc(gnvtxs, "AssembleGraph: alabel");
+  axadj   = agraph->xadj   = imalloc(gnvtxs+1, "AssembleGraph: axadj");
+  avwgt   = agraph->vwgt   = imalloc(gnvtxs, "AssembleGraph: avwgt");
+  awhere  = agraph->where  = imalloc(gnvtxs, "AssembleGraph: awhere");
+  aadjncy = agraph->adjncy = imalloc(gnedges, "AssembleGraph: adjncy");
+  aadjwgt = agraph->adjwgt = imalloc(gnedges, "AssembleGraph: adjwgt");
+  alabel  = agraph->label  = imalloc(gnvtxs, "AssembleGraph: alabel");
 
   for (k=j=i=0; i<gnvtxs; i++) {
     axadj[i] = ggraph[k++];
@@ -251,11 +239,9 @@ GraphType *AssembleMultisectedGraph(CtrlType *ctrl, GraphType *graph, WorkSpaceT
   /* Now fix up the received graph */
   MAKECSR(i, gnvtxs, axadj);
 
-  for (i=0; i<gnvtxs; i++)
-    alabel[i] = i;
+  iincset(gnvtxs, 0, alabel);
 
-  if (gsize > wspace->maxcore-mysize)
-    GKfree((void **)&ggraph, LTERM);
+  WCOREPOP;
 
   return agraph;
 }
