@@ -1346,7 +1346,7 @@ void set_bc_rbnl(ComMod& com_mod, const faceType& lFa, const double ks, const do
     for (int a = 0; a < eNoN; a++) {
       int Ac = lFa.IEN(a,e);
       ptr(a) = Ac;
-      for (int i = 0; i < nsd; a++) {
+      for (int i = 0; i < nsd; i++) {
         xl(i,a) = com_mod.x(i,Ac);
         yl(i,a) = Yg(i+s,Ac);
         dl(i,a) = Dg(i+s,Ac);
