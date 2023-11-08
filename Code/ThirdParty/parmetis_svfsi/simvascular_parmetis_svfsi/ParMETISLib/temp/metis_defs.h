@@ -8,7 +8,7 @@
  * Started 8/27/94
  * George
  *
- * $Id: defs.h,v 1.4 2003/07/22 20:29:05 karypis Exp $
+ * $Id: defs.h 10543 2011-07-11 19:32:24Z karypis $
  *
  */
 
@@ -31,8 +31,6 @@
 #define REDIST_WGT              2.0
 #define MAXNVWGT_FACTOR         2.0
 
-#define MAXNCON                 12
-#define MAXNOBJ                 12
 #define N_MOC_REDO_PASSES       10
 #define N_MOC_GR_PASSES         8
 #define NREMAP_PASSES           8
@@ -46,10 +44,6 @@
 #define LTERM                   (void **) 0     /* List terminator for GKfree() */
 
 #define NGD_PASSES		20
-
-#define OPTION_IPART		1
-#define OPTION_FOLDF		2
-#define OPTION_DBGLVL		3
 
 #define PMV3_OPTION_DBGLVL	1
 #define PMV3_OPTION_SEED	2
@@ -75,10 +69,7 @@
 #define NLGR_PASSES		5	/* Number of GR refinement during IPartition */
 
 #define SMALLFLOAT		0.000001
-#define KEEP_BIT        ((idxtype)(1<<((sizeof(idxtype)*8)-2)))
 
-#define MAX_PES			8192
-#define MAX_NPARTS		67108864
 
 #define COARSEN_FRACTION	0.75	/* Node reduction between succesive coarsening levels */
 #define COARSEN_FRACTION2	0.55	/* Node reduction between succesive coarsening levels */

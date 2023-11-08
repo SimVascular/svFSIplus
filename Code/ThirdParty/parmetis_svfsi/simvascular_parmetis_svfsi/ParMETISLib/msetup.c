@@ -8,7 +8,7 @@
  * Started 10/19/96
  * George
  *
- * $Id: msetup.c,v 1.3 2003/07/31 06:14:01 karypis Exp $
+ * $Id: msetup.c 10057 2011-06-02 13:44:44Z karypis $
  *
  */
 
@@ -17,18 +17,18 @@
 
 
 /*************************************************************************
-* This function setsup the CtrlType structure
+* This function setsup the ctrl_t structure
 **************************************************************************/
-MeshType *SetUpMesh(int *etype, int *ncon, idxtype *elmdist, idxtype *elements,
-  idxtype *elmwgt, int *wgtflag, MPI_Comm *comm)
+mesh_t *SetUpMesh(idx_t *etype, idx_t *ncon, idx_t *elmdist, idx_t *elements,
+  idx_t *elmwgt, idx_t *wgtflag, MPI_Comm *comm)
 {
-  MeshType *mesh;
-  int i, npes, mype;
-  int esizes[5] = {-1, 3, 4, 8, 4};
-  int maxnode, gmaxnode, minnode, gminnode;
+  mesh_t *mesh;
+  idx_t i, npes, mype;
+  idx_t esizes[5] = {-1, 3, 4, 8, 4};
+  idx_t maxnode, gmaxnode, minnode, gminnode;
 
-  MPI_Comm_size(*comm, &npes);
-  MPI_Comm_rank(*comm, &mype);
+  gkMPI_Comm_size(*comm, &npes);
+  gkMPI_Comm_rank(*comm, &mype);
 
   mesh = CreateMesh();
   mesh->elmdist = elmdist;
@@ -41,31 +41,31 @@ MeshType *SetUpMesh(int *etype, int *ncon, idxtype *elmdist, idxtype *elements,
   mesh->esize = esizes[*etype];
 
   if (((*wgtflag)&1) == 0) {
-    mesh->elmwgt = idxsmalloc(mesh->nelms*mesh->ncon, 1, "SetUpMesh: elmwgt");
+    mesh->elmwgt = ismalloc(mesh->nelms*mesh->ncon, 1, "SetUpMesh: elmwgt");
   }
 
-  minnode = elements[idxamin(mesh->nelms*mesh->esize, elements)];
-  MPI_Allreduce((void *)&minnode, (void *)&gminnode, 1, MPI_INT, MPI_MIN, *comm);
+  minnode = imin(mesh->nelms*mesh->esize, elements, 1);
+  gkMPI_Allreduce((void *)&minnode, (void *)&gminnode, 1, IDX_T, MPI_MIN, *comm);
   for (i=0; i<mesh->nelms*mesh->esize; i++)
     elements[i] -= gminnode;
   mesh->gminnode = gminnode;
 
-  maxnode = elements[idxamax(mesh->nelms*mesh->esize, elements)];
-  MPI_Allreduce((void *)&maxnode, (void *)&gmaxnode, 1, MPI_INT, MPI_MAX, *comm);
+  maxnode = imax(mesh->nelms*mesh->esize, elements, 1);
+  gkMPI_Allreduce((void *)&maxnode, (void *)&gmaxnode, 1, IDX_T, MPI_MAX, *comm);
   mesh->gnns = gmaxnode+1;
 
   return mesh;
 }
 
 /*************************************************************************
-* This function creates a MeshType data structure and initializes
+* This function creates a mesh_t data structure and initializes
 * the various fields
 **************************************************************************/
-MeshType *CreateMesh(void)
+mesh_t *CreateMesh(void)
 {
-  MeshType *mesh;
+  mesh_t *mesh;
 
-  mesh = (MeshType *)GKmalloc(sizeof(MeshType), "CreateMesh: mesh");
+  mesh = (mesh_t *)gk_malloc(sizeof(mesh_t), "CreateMesh: mesh");
 
   InitMesh(mesh);
 
@@ -73,9 +73,9 @@ MeshType *CreateMesh(void)
 }
 
 /*************************************************************************
-* This function initializes the various fields of a MeshType.
+* This function initializes the various fields of a mesh_t.
 **************************************************************************/
-void InitMesh(MeshType *mesh)
+void InitMesh(mesh_t *mesh)
 {
 
   mesh->etype = -1;

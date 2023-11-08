@@ -1,3 +1,33 @@
+/**
+ * Copyright (c) Stanford University, The Regents of the University of California, and others.
+ *
+ * All Rights Reserved.
+ *
+ * See Copyright-SimVascular.txt for additional details.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject
+ * to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included
+ * in all copies or substantial portions of the Software.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+ * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
 // The functions defined here replicate the Fortran functions defined in vtkXMLParser.f90.
 //
@@ -21,6 +51,7 @@
 
 #include <string>
 #include <map>
+#include <vector>
 
 namespace vtk_xml_parser {
 
@@ -38,6 +69,32 @@ std::map<unsigned char,int> vtk_cell_to_elem {
   {VTK_WEDGE, 6}
 };
 
+std::map<unsigned char, std::vector<std::vector<int>>> vtk_cell_ordering {
+  {VTK_HEXAHEDRON, {{0,3,2,1},
+                    {4,5,6,7},
+                    {0,1,5,4},
+                    {1,2,6,5},
+                    {2,3,7,6},
+                    {3,0,4,7}}},
+  {VTK_LINE, {{0},
+              {1}}},
+  {VTK_QUAD, {{0,1},
+              {1,2},
+              {2,3},
+              {3,0}}},
+  {VTK_TETRA, {{0,1,2},
+               {0,1,3},
+               {1,2,3},
+               {2,0,3}}},
+  {VTK_TRIANGLE, {{0,1},
+                  {1,2},
+                  {2,0}}},
+  {VTK_WEDGE, {{0,1,2},
+               {3,4,5},
+               {0,1,4,3},
+               {1,2,5,4},
+               {2,0,3,5}}}
+};
 /// Names of data arrays store in VTK mesh files.
 const std::string NODE_IDS_NAME("GlobalNodeID");
 const std::string ELEMENT_IDS_NAME("GlobalElementID");
@@ -194,18 +251,25 @@ void store_element_conn(vtkSmartPointer<vtkUnstructuredGrid> vtk_ugrid, mshType&
   #endif
 
   int np_elem = 0;
+  std::vector<std::vector<int>> ordering;
   if (num_line != 0) {
     np_elem = vtk_cell_to_elem[VTK_LINE];
+    ordering = vtk_cell_ordering[VTK_LINE];
   } if (num_hex != 0) {
     np_elem = vtk_cell_to_elem[VTK_HEXAHEDRON];
+    ordering = vtk_cell_ordering[VTK_HEXAHEDRON];
   } if (num_quad != 0) {
     np_elem = vtk_cell_to_elem[VTK_QUAD];
+    ordering = vtk_cell_ordering[VTK_QUAD];
   } if (num_tet != 0) {
     np_elem = vtk_cell_to_elem[VTK_TETRA];
+    ordering = vtk_cell_ordering[VTK_TETRA];
   } if (num_tri != 0) {
     np_elem = vtk_cell_to_elem[VTK_TRIANGLE];
+    ordering = vtk_cell_ordering[VTK_TRIANGLE];
   } if (num_wedge != 0) {
     np_elem = vtk_cell_to_elem[VTK_WEDGE];
+    ordering = vtk_cell_ordering[VTK_WEDGE];
   }
 
   // For higher-order elements with mid-side nodes. 
@@ -219,6 +283,7 @@ void store_element_conn(vtkSmartPointer<vtkUnstructuredGrid> vtk_ugrid, mshType&
   mesh.gnEl = num_elems;
   mesh.eNoN = np_elem; 
   mesh.gIEN = Array<int>(np_elem, num_elems);
+  mesh.ordering = ordering;
 
   #ifdef debug_store_element_conn
   std::cout << "[store_element_conn] np_elem: " << np_elem <<  std::endl;

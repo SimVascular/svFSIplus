@@ -1,3 +1,33 @@
+/**
+ * Copyright (c) Stanford University, The Regents of the University of California, and others.
+ *
+ * All Rights Reserved.
+ *
+ * See Copyright-SimVascular.txt for additional details.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject
+ * to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included
+ * in all copies or substantial portions of the Software.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+ * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
 // The code here replicates the Fortran code in DISTRIBUTE.f.
 
@@ -32,7 +62,7 @@ void distribute(Simulation* simulation)
   auto& com_mod = simulation->com_mod;
   auto& cm = com_mod.cm;
 
-  #define n_debug_distribute
+  #define debug_distribute
   #ifdef debug_distribute
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
@@ -1014,6 +1044,9 @@ void dist_eq(ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, const std::
       cm.bcast(cm_mod, &cep_mod.ttp.G_Kr);
       cm.bcast(cm_mod, cep_mod.ttp.G_Ks);
       cm.bcast(cm_mod, cep_mod.ttp.G_to);
+
+      cm.bcast(cm_mod, cep_mod.bo.tau_si);
+      cm.bcast(cm_mod, cep_mod.bo.tau_fi);
     } 
 
     if ((dmn.phys == EquationType::phys_struct) || (dmn.phys == EquationType::phys_ustruct)) {
@@ -1402,7 +1435,7 @@ void part_msh(Simulation* simulation, int iM, mshType& lM, Vector<int>& gmtl, in
   int num_proc = cm.np();
   int task_id = cm.idcm();
 
-  #define n_dbg_part_msh
+  #define dbg_part_msh
   #ifdef dbg_part_msh
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();

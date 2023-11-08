@@ -1,5 +1,5 @@
-/* Copyright (c) Stanford University, The Regents of the University of
- *               California, and others.
+/**
+ * Copyright (c) Stanford University, The Regents of the University of California, and others.
  *
  * All Rights Reserved.
  *
@@ -40,7 +40,7 @@
 #include"parmetislib.h"
 
 int split_(int *nElptr, int *eNoNptr, int *eNoNbptr, int *IEN,
-   int *nPartsPtr, idxtype *iElmdist, float *iWgt, idxtype *part)
+   int *nPartsPtr, idx_t *iElmdist, float *iWgt, idx_t *part)
 {
 
    int i, e, a, nEl=*nElptr, eNoN=*eNoNptr, eNoNb=*eNoNbptr,
@@ -48,12 +48,12 @@ int split_(int *nElptr, int *eNoNptr, int *eNoNbptr, int *IEN,
       ncommonnodes, options[10], *exRanks, nExRanks, *map, edgecut;
 
    float ubvec[MAXNCON], *wgt;
-   idxtype *eptr, *eind, *elmdist;
+   idx_t *eptr, *eind, *elmdist;
 
    map     = (int *)malloc(nTasks*sizeof(int));
    exRanks = (int *)malloc(nTasks*sizeof(int));
    wgt     = (float *)malloc(nTasks*sizeof(float));
-   elmdist = (idxtype *)malloc((nTasks+1)*sizeof(idxtype));
+   elmdist = (idx_t *)malloc((nTasks+1)*sizeof(idx_t));
    MPI_Group newGrp, tmpGrp;
    MPI_Comm comm;
 
@@ -92,8 +92,8 @@ int split_(int *nElptr, int *eNoNptr, int *eNoNbptr, int *IEN,
       return -1;
    }
 
-   eptr = (idxtype *)malloc((nEl+1)*sizeof(idxtype));
-   eind = (idxtype *)malloc(nEl*eNoN*sizeof(idxtype));
+   eptr = (idx_t *)malloc((nEl+1)*sizeof(idx_t));
+   eind = (idx_t *)malloc(nEl*eNoN*sizeof(idx_t));
 
    for (e=0; e<=nEl; e++) {
       eptr[e] = e*eNoN;
