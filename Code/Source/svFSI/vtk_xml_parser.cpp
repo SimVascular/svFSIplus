@@ -315,7 +315,7 @@ void store_element_ids(vtkSmartPointer<vtkUnstructuredGrid> vtk_ugrid, mshType& 
 {
   auto elem_ids = vtkIntArray::SafeDownCast(vtk_ugrid->GetCellData()->GetArray(ELEMENT_IDS_NAME.c_str()));
   if (elem_ids == nullptr) { 
-    throw std::runtime_error("No '" + ELEMENT_IDS_NAME + "' data found in VTK mesh.");
+    throw std::runtime_error("No '" + ELEMENT_IDS_NAME + "' data of type Int32 found in VTK mesh.");
   }
   int num_elem_ids = elem_ids->GetNumberOfTuples();
   for (int i = 0; i < num_elem_ids; i++) { 
@@ -331,6 +331,7 @@ void store_element_ids(vtkSmartPointer<vtkPolyData> vtk_polydata, faceType& face
 {
   auto elem_ids = vtkIntArray::SafeDownCast(vtk_polydata->GetCellData()->GetArray(ELEMENT_IDS_NAME.c_str()));
   if (elem_ids == nullptr) {
+    throw std::runtime_error("No '" + ELEMENT_IDS_NAME + "' data of type Int32 found in VTK mesh.");
     return;
   }
   #ifdef debug_store_element_ids
