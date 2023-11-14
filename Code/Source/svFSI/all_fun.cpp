@@ -819,8 +819,8 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, co
   if (u-l+1 == nsd) {
      Array<double> vec(nsd,nNo);
      for (int a = 0; a < nNo; a++) {
-       for (int i = l; i <= u; i++) {
-         vec(i,a) = s(i,a);                 
+       for (int i = l, n = 0; i <= u; i++, n++) {
+         vec(n,a) = s(i,a);                 
        }
      }
      result = integ(com_mod, cm_mod, lFa, vec);
