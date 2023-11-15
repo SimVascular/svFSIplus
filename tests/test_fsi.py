@@ -9,7 +9,8 @@ from .conftest import run_with_reference
 base_folder = os.path.join("cases", "fsi")
 
 
-def test_pipe_3d(n_proc):
+@pytest.mark.parametrize("name_inp", ["svFSI.xml", "svFSI_petsc.xml"])
+def test_pipe_3d(name_inp, n_proc):
     folder = os.path.join(base_folder, "pipe_3d")
     fields = ["Displacement", "Pressure", "Velocity"]
-    run_with_reference(folder, fields, n_proc, 5)
+    run_with_reference(folder, fields, n_proc, 5, name_inp=name_inp)

@@ -81,7 +81,7 @@
 
    <LS type="GMRES" >
       <Preconditioner> PETSc </Preconditioner>
-      <PETSc_file_path> direct.inp </PETSc_file_path>
+      <PETSc_file_path> direct.yml </PETSc_file_path>
    </LS>
 
    <Output type="Spatial" >
