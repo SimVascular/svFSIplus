@@ -14,7 +14,7 @@ def test_pipe_3d(n_proc):
     inflate_folder = os.path.join(folder, "2a-inflate")
     fields = ["Displacement"]
     t_max = 3
-    run_with_reference(inflate_folder, fields, t_max, 1)
+    run_with_reference(inflate_folder, fields, 1, t_max)
 
     inflate_cmm_folder = os.path.join(folder, "3a-inflate-cmm")
     fields = ["Displacement", "Pressure", "Velocity"]
@@ -24,7 +24,7 @@ def test_pipe_3d(n_proc):
     prestress_folder = os.path.join(folder, "2b-prestress")
     fields = ["Stress"]
     t_max = 3
-    run_with_reference(prestress_folder, fields, t_max, 1)
+    run_with_reference(prestress_folder, fields, 1, t_max)
 
     prestress_cmm_folder = os.path.join(folder, "3b-prestress-cmm")
     fields = ["Displacement", "Stress", "Pressure", "Velocity"]
