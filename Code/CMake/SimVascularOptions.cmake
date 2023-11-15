@@ -61,7 +61,7 @@ option(SV_USE_METIS_SVFSI "Use metis_svfsi Library" ON)
 option(SV_USE_GKLIB_SVFSI "Use GKlib_svfsi Library" ON)
 option(SV_USE_PARMETIS_SVFSI "Use parmetis_svfsi Library" ON)
 option(SV_USE_TETGEN "Use tetgen Library" ON)
-option(SV_USE_PETSC "Use PETSC Library with svFSI" ON)
+option(SV_USE_PETSC "Use PETSC Library with svFSI" OFF)
 
 #-----------------------------------------------------------------------------
 

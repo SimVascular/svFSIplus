@@ -17,9 +17,6 @@ __pycache__
 
 # Visual Studio Code
 .vscode
-<<<<<<< HEAD
-=======
 
 # Doxygen output
 Documentation/html/
->>>>>>> origin/main

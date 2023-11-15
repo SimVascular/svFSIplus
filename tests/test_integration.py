@@ -18,8 +18,7 @@ RTOL = {'Pressure': 1.0e-12, 'Velocity': 1.0e-12, 'Action_potential': 1.0e-12, '
         'Def_grad': 1.0e-12, 'Traction':1.0e-12, 'WSS':1.0e-12}
 
 # number of processors to test
-# procs = [1, 3, 4]
-procs = [1, 4]
+procs = [1, 3, 4]
 
 def run_by_name(folder, name, t_max, n_proc=1):
     """

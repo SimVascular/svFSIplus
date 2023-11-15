@@ -227,12 +227,6 @@ const std::map<std::string,PreconditionerMapType> preconditioner_name_to_type =
 
   {"trilinos-ml", std::make_pair(PreconditionerType::PREC_TRILINOS_ML,true)},
 
-  {"trilinos-gr", std::make_pair(PreconditionerType::PREC_TRILINOS_GR,true)},
-
-  {"trilinos-direct", std::make_pair(PreconditionerType::PREC_TRILINOS_DIRECT,true)},
-
-  {"trilinos-ml-xml", std::make_pair(PreconditionerType::PREC_TRILINOS_ML_XML,true)},
-
   {"petsc", std::make_pair(PreconditionerType::PREC_PETSC,true)}
 };
 
