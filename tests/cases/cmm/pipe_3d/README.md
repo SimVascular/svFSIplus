@@ -27,7 +27,7 @@ The inflation step is performed on the wall set as a shell,
 
 <Add_mesh name="wall"> 
   <Set_mesh_as_shell> true </Set_mesh_as_shell>
-  <Mesh_file_path> ../../pipe3D_RCR/mesh/mesh-surfaces/lumen_wall.vtp </Mesh_file_path>
+  <Mesh_file_path> ../../../fluid/pipe_RCR_3d/mesh/mesh-surfaces/lumen_wall.vtp </Mesh_file_path>
 </Add_mesh>
 
 ### (II) Set Initialize keyword
