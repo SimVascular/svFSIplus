@@ -861,7 +861,6 @@ class LinearSolverParameters : public ParameterLists
 
     Parameter<bool> use_trilinos_for_assembly;
 
-    Parameter<std::string> XML_file_path;
     Parameter<std::string> PETSc_file_path;
 };
 

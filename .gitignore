@@ -20,3 +20,6 @@ __pycache__
 
 # Doxygen output
 Documentation/html/
+
+# Configure scripts
+do-configure*.sh
