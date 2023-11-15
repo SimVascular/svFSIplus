@@ -10,8 +10,8 @@ base_folder = os.path.join("cases", "ustruct")
 
 
 @pytest.mark.parametrize("ele", ["P1P1_VMS"])
-def test_block_compression_ustruct(ele, n_proc):
-    folder = os.path.join(base_folder, "block_compression_ustruct", ele)
+def test_block_compression(ele, n_proc):
+    folder = os.path.join(base_folder, "block_compression", ele)
     field = ["Displacement", "Pressure", "Stress", "Divergence"]
     run_with_reference(folder, field, n_proc)
 

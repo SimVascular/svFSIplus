@@ -9,20 +9,20 @@ from .conftest import run_with_reference, DEFAULT_TOL
 base_folder = os.path.join("cases", "cep")
 
 
-def test_1Dcable_TTP(n_proc):
-    folder = os.path.join(base_folder, "1Dcable_TTP")
+def test_cable_TTP_1d(n_proc):
+    folder = os.path.join(base_folder, "cable_TTP_1d")
     field = ["Action_potential"]
     run_with_reference(folder, field, n_proc)
 
 
-def test_2Dspiral_BO(n_proc):
-    folder = os.path.join(base_folder, "2Dspiral_BO")
+def test_spiral_BO_2d(n_proc):
+    folder = os.path.join(base_folder, "spiral_BO_2d")
     field = ["Action_potential"]
     run_with_reference(folder, field, n_proc)
 
 
-def test_2Dsquare_AP(n_proc):
-    folder = os.path.join(base_folder, "2Dsquare_AP")
+def test_square_AP_2d(n_proc):
+    folder = os.path.join(base_folder, "square_AP_2d")
     field = ["Action_potential"]
     run_with_reference(folder, field, n_proc)
 

@@ -9,8 +9,8 @@ from .conftest import run_with_reference
 base_folder = os.path.join("cases", "cmm")
 
 
-def test_cmm_3d_pipe(n_proc):
-    folder = os.path.join(base_folder, "cmm_3d_pipe")
+def test_pipe_3d(n_proc):
+    folder = os.path.join(base_folder, "pipe")
     inflate_folder = os.path.join(folder, "2a-inflate")
     fields = ["Displacement"]
     t_max = 3

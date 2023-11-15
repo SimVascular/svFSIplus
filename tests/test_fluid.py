@@ -9,14 +9,14 @@ from .conftest import run_with_reference
 base_folder = os.path.join("cases", "fluid")
 
 
-def test_pipe3D_RCR(n_proc):
-    folder = os.path.join(base_folder, "pipe3D_RCR")
+def test_pipe_RCR_3d(n_proc):
+    folder = os.path.join(base_folder, "pipe_RCR_3d")
     fields = ["Pressure", "Velocity"]
     run_with_reference(folder, fields, n_proc, 2)
 
 
 def test_cavity_2d(n_proc):
-    folder = os.path.join(base_folder, "driven_cavity_2D")
+    folder = os.path.join(base_folder, "driven_cavity_2d")
     fields = ["Pressure", "Velocity"]
     run_with_reference(folder, fields, n_proc, 2)
 
@@ -27,19 +27,19 @@ def test_dye_AD(n_proc):
     run_with_reference(folder, fields, n_proc)
 
 
-def test_newtonian_flow(n_proc):
-    folder = os.path.join(base_folder, "newtonian_flow")
+def test_newtonian(n_proc):
+    folder = os.path.join(base_folder, "newtonian")
     fields = ["Velocity", "Pressure", "Traction", "WSS"]
     run_with_reference(folder, fields, n_proc)
 
 
-def test_casson_flow(n_proc):
-    folder = os.path.join(base_folder, "casson_flow")
+def test_casson(n_proc):
+    folder = os.path.join(base_folder, "casson")
     fields = ["Velocity", "Pressure", "Traction", "WSS"]
     run_with_reference(folder, fields, n_proc)
 
 
-def test_carreau_yasuda_flow(n_proc):
-    folder = os.path.join(base_folder, "carreau_yasuda_flow")
+def test_carreau_yasuda(n_proc):
+    folder = os.path.join(base_folder, "carreau_yasuda")
     fields = ["Velocity", "Pressure", "Traction", "WSS"]
     run_with_reference(folder, fields, n_proc)

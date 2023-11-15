@@ -15,8 +15,8 @@ def test_LV_Guccione_passive(n_proc):
     run_with_reference(folder, fields, n_proc)
 
 
-def test_block_compression_struct(n_proc):
-    folder = os.path.join(base_folder, "block_compression_struct")
+def test_block_compression(n_proc):
+    folder = os.path.join(base_folder, "block_compression")
     fields = [
         "Displacement",
         "Velocity",

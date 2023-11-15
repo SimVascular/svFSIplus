@@ -9,7 +9,7 @@ from .conftest import run_with_reference
 base_folder = os.path.join("cases", "fsi")
 
 
-def test_ale_3d_pipe(n_proc):
-    folder = os.path.join(base_folder, "ale_3d_pipe")
+def test_pipe_3d(n_proc):
+    folder = os.path.join(base_folder, "pipe_3d")
     fields = ["Displacement", "Pressure", "Velocity"]
     run_with_reference(folder, fields, n_proc, 5)
