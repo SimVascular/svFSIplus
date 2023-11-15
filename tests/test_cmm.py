@@ -10,7 +10,7 @@ base_folder = os.path.join("cases", "cmm")
 
 
 def test_pipe_3d(n_proc):
-    folder = os.path.join(base_folder, "pipe3D_RCR")
+    folder = os.path.join(base_folder, "pipe_3d")
     inflate_folder = os.path.join(folder, "2a-inflate")
     fields = ["Displacement"]
     t_max = 3
