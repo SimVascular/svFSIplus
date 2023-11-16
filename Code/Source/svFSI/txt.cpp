@@ -477,17 +477,17 @@ void wtxt(const ComMod& com_mod, CmMod& cm_mod, const eqType& lEq, const int m, 
           if (m == 1) {
             if (div) {
               tmp = fa.area;
-              tmp = all_fun::integ(com_mod, cm_mod, fa, tmpV, 1) / tmp;
+              tmp = all_fun::integ(com_mod, cm_mod, fa, tmpV, 0) / tmp;
             } else {
               if (pFlag && lTH) {
-                tmp = all_fun::integ(com_mod, cm_mod, fa, tmpV, 1, true);
+                tmp = all_fun::integ(com_mod, cm_mod, fa, tmpV, 0, true);
               } else {
-                tmp = all_fun::integ(com_mod, cm_mod, fa, tmpV, 1);
+                tmp = all_fun::integ(com_mod, cm_mod, fa, tmpV, 0);
               }
             }
 
           } else if (m == nsd) {
-            tmp = all_fun::integ(com_mod, cm_mod, fa, tmpV, 1, m);
+            tmp = all_fun::integ(com_mod, cm_mod, fa, tmpV, 0, m-1);
           } else {
             throw std::runtime_error("WTXT only accepts 1 and nsd");
           }
@@ -505,9 +505,9 @@ void wtxt(const ComMod& com_mod, CmMod& cm_mod, const eqType& lEq, const int m, 
 
         if (div) {
           tmp = dmn.v;
-          tmp = all_fun::integ(com_mod, cm_mod, dmn.Id, tmpV, 1, m) / tmp;
+          tmp = all_fun::integ(com_mod, cm_mod, dmn.Id, tmpV, 0, m-1) / tmp;
         } else {
-          tmp = all_fun::integ(com_mod, cm_mod, dmn.Id, tmpV, 1, m, pFlag);
+          tmp = all_fun::integ(com_mod, cm_mod, dmn.Id, tmpV, 0, m-1, pFlag);
         }
         if (com_mod.cm.mas(cm_mod)) {
           fprintf(fp, " %.10e ", tmp);
