@@ -101,9 +101,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>commu</b> (const <a c
 <tr class="memitem:a86df3d55c7c794ca122cf3894020c269"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceall__fun.html#a86df3d55c7c794ca122cf3894020c269">integ</a> (const <a class="el" href="class_com_mod.html">ComMod</a> &amp;com_mod, const <a class="el" href="class_cm_mod.html">CmMod</a> &amp;cm_mod, const <a class="el" href="classface_type.html">faceType</a> &amp;lFa, const Array&lt; double &gt; &amp;s)</td></tr>
 <tr class="memdesc:a86df3d55c7c794ca122cf3894020c269"><td class="mdescLeft">&#160;</td><td class="mdescRight">This routine integrate s over the surface faId.  <a href="namespaceall__fun.html#a86df3d55c7c794ca122cf3894020c269">More...</a><br /></td></tr>
 <tr class="separator:a86df3d55c7c794ca122cf3894020c269"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a93851528f4b908b4ec149998e500b9e0"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceall__fun.html#a93851528f4b908b4ec149998e500b9e0">integ</a> (const <a class="el" href="class_com_mod.html">ComMod</a> &amp;com_mod, const <a class="el" href="class_cm_mod.html">CmMod</a> &amp;cm_mod, const <a class="el" href="classface_type.html">faceType</a> &amp;lFa, const Array&lt; double &gt; &amp;s, const int l, int uo, bool THflag)</td></tr>
-<tr class="memdesc:a93851528f4b908b4ec149998e500b9e0"><td class="mdescLeft">&#160;</td><td class="mdescRight">This routine integrate s(l:u,:) over the surface faId.  <a href="namespaceall__fun.html#a93851528f4b908b4ec149998e500b9e0">More...</a><br /></td></tr>
-<tr class="separator:a93851528f4b908b4ec149998e500b9e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab6e43f5e53d315eba197c7ef1539ff59"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceall__fun.html#ab6e43f5e53d315eba197c7ef1539ff59">integ</a> (const <a class="el" href="class_com_mod.html">ComMod</a> &amp;com_mod, const <a class="el" href="class_cm_mod.html">CmMod</a> &amp;cm_mod, const <a class="el" href="classface_type.html">faceType</a> &amp;lFa, const Array&lt; double &gt; &amp;s, const int l, std::optional&lt; int &gt; uo, bool THflag)</td></tr>
+<tr class="memdesc:ab6e43f5e53d315eba197c7ef1539ff59"><td class="mdescLeft">&#160;</td><td class="mdescRight">This routine integrate s(l:u,:) over the surface faId.  <a href="namespaceall__fun.html#ab6e43f5e53d315eba197c7ef1539ff59">More...</a><br /></td></tr>
+<tr class="separator:ab6e43f5e53d315eba197c7ef1539ff59"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab48c8b402f75c0f41215e58f23522b35"><td class="memItemLeft" align="right" valign="top"><a id="ab48c8b402f75c0f41215e58f23522b35"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>is_domain</b> (const <a class="el" href="class_com_mod.html">ComMod</a> &amp;com_mod, const <a class="el" href="classeq_type.html">eqType</a> &amp;eq, const int node, const <a class="el" href="namespaceconsts.html#a39d75035844f28d6cf26535f4b37f099">consts::EquationType</a> phys)</td></tr>
 <tr class="separator:ab48c8b402f75c0f41215e58f23522b35"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -353,8 +353,8 @@ IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IM
 
 </div>
 </div>
-<a id="a93851528f4b908b4ec149998e500b9e0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a93851528f4b908b4ec149998e500b9e0">&#9670;&nbsp;</a></span>integ() <span class="overload">[2/4]</span></h2>
+<a id="ab6e43f5e53d315eba197c7ef1539ff59"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab6e43f5e53d315eba197c7ef1539ff59">&#9670;&nbsp;</a></span>integ() <span class="overload">[2/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -392,7 +392,7 @@ IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IM
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int&#160;</td>
+          <td class="paramtype">std::optional&lt; int &gt;&#160;</td>
           <td class="paramname"><em>uo</em>, </td>
         </tr>
         <tr>
@@ -410,7 +410,7 @@ IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IM
 </div><div class="memdoc">
 
 <p>This routine integrate s(l:u,:) over the surface faId. </p>
-<p>Note that 'l' seems to be a length and 'uo' an offset. 'l' should never be 0.</p>
+<p>Note that 'l' and 'u' should be 0-based and are used to index into 's'.</p>
 <p>Reproduces 'FUNCTION IntegG(lFa, s, l, uo, THflag)'. </p>
 
 </div>
@@ -521,7 +521,7 @@ IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IM
 </div><div class="memdoc">
 
 <p>This routine integrate an equation over a particular domain. </p>
-<p>Replicates 'FUNCTION vInteg(dId, s, l, u, pFlag)' defined in ALLFUN.f. </p>
+<p>Note that 'l' and 'u' should be 0-based and are used to index into 's'. Replicates 'FUNCTION vInteg(dId, s, l, u, pFlag)' defined in ALLFUN.f. </p>
 
 </div>
 </div>
