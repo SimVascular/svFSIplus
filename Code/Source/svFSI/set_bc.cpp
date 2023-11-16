@@ -103,8 +103,8 @@ void calc_der_cpl_bc(ComMod& com_mod, const CmMod& cm_mod)
       auto& fa = com_mod.msh[iM].fa[iFa];
 
       if (utils::btest(bc.bType, iBC_Neu)) {
-        cplBC.fa[ptr].Qo = all_fun::integ(com_mod, cm_mod, fa, com_mod.Yo, 1, nsd);
-        cplBC.fa[ptr].Qn = all_fun::integ(com_mod, cm_mod, fa, com_mod.Yn, 1, nsd);
+        cplBC.fa[ptr].Qo = all_fun::integ(com_mod, cm_mod, fa, com_mod.Yo, 0, nsd-1);
+        cplBC.fa[ptr].Qn = all_fun::integ(com_mod, cm_mod, fa, com_mod.Yn, 0, nsd-1);
         cplBC.fa[ptr].Po = 0.0;
         cplBC.fa[ptr].Pn = 0.0;
         #ifdef debug_calc_der_cpl_bc 
@@ -115,8 +115,8 @@ void calc_der_cpl_bc(ComMod& com_mod, const CmMod& cm_mod)
 
       } else if (utils::btest(bc.bType, iBC_Dir)) {
         double area = fa.area;
-        cplBC.fa[ptr].Po = all_fun::integ(com_mod, cm_mod, fa, com_mod.Yo, nsd+1) / area;
-        cplBC.fa[ptr].Pn = all_fun::integ(com_mod, cm_mod, fa, com_mod.Yn, nsd+1) / area;
+        cplBC.fa[ptr].Po = all_fun::integ(com_mod, cm_mod, fa, com_mod.Yo, nsd) / area;
+        cplBC.fa[ptr].Pn = all_fun::integ(com_mod, cm_mod, fa, com_mod.Yn, nsd) / area;
         cplBC.fa[ptr].Qo = 0.0;
         cplBC.fa[ptr].Qn = 0.0;
         #ifdef debug_calc_der_cpl_bc 
@@ -465,8 +465,8 @@ void rcr_init(ComMod& com_mod, const CmMod& cm_mod)
       if (cplBC.initRCR) {
         auto& fa = com_mod.msh[iM].fa[iFa];
         double area = fa.area;
-        double Qo = all_fun::integ(com_mod, cm_mod, fa, com_mod.Yo, 1, nsd);
-        double Po = all_fun::integ(com_mod, cm_mod, fa, com_mod.Yo, nsd+1)  / area;
+        double Qo = all_fun::integ(com_mod, cm_mod, fa, com_mod.Yo, 0, nsd-1);
+        double Po = all_fun::integ(com_mod, cm_mod, fa, com_mod.Yo, nsd)  / area;
         cplBC.xo[ptr] = Po - (Qo * cplBC.fa[ptr].RCR.Rp);
       } else { 
         cplBC.xo[ptr] = cplBC.fa[ptr].RCR.Xo;
@@ -592,16 +592,17 @@ void set_bc_cpl(ComMod& com_mod, CmMod& cm_mod)
         }
       }
 
+
       if (ptr != -1) {
         if (utils::btest(bc.bType,iBC_Neu)) {
-          cplBC.fa[ptr].Qo = all_fun::integ(com_mod, cm_mod, com_mod.msh[iM].fa[iFa], Yo, 1, nsd);
-          cplBC.fa[ptr].Qn = all_fun::integ(com_mod, cm_mod, com_mod.msh[iM].fa[iFa], Yn, 1, nsd);
+          cplBC.fa[ptr].Qo = all_fun::integ(com_mod, cm_mod, com_mod.msh[iM].fa[iFa], Yo, 0, nsd-1);
+          cplBC.fa[ptr].Qn = all_fun::integ(com_mod, cm_mod, com_mod.msh[iM].fa[iFa], Yn, 0, nsd-1);
           cplBC.fa[ptr].Po = 0.0;
           cplBC.fa[ptr].Pn = 0.0;
         } else if (utils::btest(bc.bType,iBC_Dir)) {
           double area = com_mod.msh[iM].fa[iFa].area;
-          cplBC.fa[ptr].Po = all_fun::integ(com_mod, cm_mod, com_mod.msh[iM].fa[iFa], Yo, nsd+1) / area;
-          cplBC.fa[ptr].Pn = all_fun::integ(com_mod, cm_mod, com_mod.msh[iM].fa[iFa], Yn, nsd+1) / area;
+          cplBC.fa[ptr].Po = all_fun::integ(com_mod, cm_mod, com_mod.msh[iM].fa[iFa], Yo, nsd) / area;
+          cplBC.fa[ptr].Pn = all_fun::integ(com_mod, cm_mod, com_mod.msh[iM].fa[iFa], Yn, nsd) / area;
           cplBC.fa[ptr].Qo = 0.0;
           cplBC.fa[ptr].Qn = 0.0;
         }
@@ -623,7 +624,6 @@ void set_bc_cpl(ComMod& com_mod, CmMod& cm_mod)
       bc.g = cplBC.fa[ptr].y;
     }
   }
-
 }
 
 /// @brief Apply Dirichlet BCs strongly.

@@ -295,6 +295,8 @@ global(const ComMod& com_mod, const CmMod& cm_mod, const mshType& lM, const Arra
 
 /// @brief This routine integrate an equation over a particular domain
 ///
+/// Note that 'l' and 'u' should be 0-based and are used to index into 's'.
+//
 /// Replicates 'FUNCTION vInteg(dId, s, l, u, pFlag)' defined in ALLFUN.f.
 //
 double integ(const ComMod& com_mod, const CmMod& cm_mod, int dId, const Array<double>& s, int l, int u, bool pFlag)
@@ -305,6 +307,7 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, int dId, const Array<do
   #ifdef debug_integ_v
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
+  dmsg << "vInteg " << " ";
   dmsg << "dId: " << dId;
   dmsg << "l: " << l;
   dmsg << "pFlag: " << pFlag;
@@ -544,6 +547,7 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, co
   #ifdef debug_integ_s
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
+  dmsg << "IntegS " << " ";
   dmsg << "lFa.iM: " << lFa.iM+1;
   dmsg << "lFa.name: " << lFa.name;
   dmsg << "lFa.eType: " << lFa.eType;
@@ -687,6 +691,8 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, co
   #ifdef debug_integ_V
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
+  dmsg << "IntegV " << " ";
+  dmsg << "lFa.name: " << lFa.name;
   #endif
 
   auto& cm = com_mod.cm;
@@ -775,11 +781,12 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, co
 
 /// @brief This routine integrate s(l:u,:) over the surface faId.
 ///
-/// Note that 'l' seems to be a length and 'uo' an offset. 'l' should never be 0.
+/// Note that 'l' and 'u' should be 0-based and are used to index into 's'.
 ///
 /// Reproduces 'FUNCTION IntegG(lFa, s, l, uo, THflag)'.
 //
-double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, const Array<double>& s, const int l, int uo, bool THflag)
+double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, 
+    const Array<double>& s, const int l, std::optional<int> uo, bool THflag)
 {
   using namespace consts;
 
@@ -787,6 +794,7 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, co
   #ifdef debug_integ_g
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
+  dmsg << "IntegG " << " ";
   dmsg << "l: " << l;
   dmsg << "uo: " << uo;
   #endif
@@ -796,9 +804,13 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, co
   int insd = nsd - 1;
   int tnNo = com_mod.tnNo;
 
-  int u = l;
-  if (uo != -1) { 
-    u = uo;
+  // Set u if uo is given.
+  int u{0};
+
+  if (uo.has_value()) { 
+    u = uo.value();
+  } else {
+    u = l;
   }
 
   bool flag = THflag; 
@@ -819,8 +831,8 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, co
   if (u-l+1 == nsd) {
      Array<double> vec(nsd,nNo);
      for (int a = 0; a < nNo; a++) {
-       for (int i = 0; i < nsd; i++) {
-         vec(i,a) = s(i+l-1,a);                 
+       for (int i = l, n = 0; i <= u; i++, n++) {
+         vec(n,a) = s(i,a);                 
        }
      }
      result = integ(com_mod, cm_mod, lFa, vec);
@@ -828,7 +840,7 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, co
   } else if (l == u) {
      Vector<double> sclr(nNo);
      for (int a = 0; a < nNo; a++) {
-        sclr(a) = s(l-1,a);
+        sclr(a) = s(l,a);
      }
      result = integ(com_mod, cm_mod, lFa, sclr, flag);
   } else {
@@ -1116,8 +1128,6 @@ void set_dmn_id(mshType& mesh, const int iDmn, const int ifirst, const int ilast
   if (mesh.eId.size() == 0) {
     mesh.eId = Vector<int>(mesh.gnEl);
   }
-
-  //std::cout << "[set_dmn_id] first: " << first << std::endl;
 
   // Set the iDimn'th bit for each element ID.
   for (int e = first; e <= last; e++) {

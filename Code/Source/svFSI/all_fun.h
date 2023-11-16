@@ -37,6 +37,7 @@
 
 #include "consts.h"
 
+#include <optional>
 #include <string>
 
 namespace all_fun {
@@ -61,7 +62,7 @@ namespace all_fun {
       bool pFlag=false);
 
   double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, const Array<double>& s, 
-      const int l, int uo=-1, bool THflag=false);
+      const int l, std::optional<int> uo=std::nullopt, bool THflag=false);
 
   double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, const Array<double>& s);
 
