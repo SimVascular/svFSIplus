@@ -26,18 +26,18 @@
 
 <Add_mesh name="msh" > 
 
-  <Mesh_file_path> ../../pipe3D_RCR/mesh/mesh-complete.mesh.vtu </Mesh_file_path>
+  <Mesh_file_path> ../../../fluid/pipe_RCR_3d/mesh/mesh-complete.mesh.vtu </Mesh_file_path>
 
   <Add_face name="lumen_inlet">
-      <Face_file_path> ../../pipe3D_RCR/mesh/mesh-surfaces/lumen_inlet.vtp </Face_file_path>
+      <Face_file_path> ../../../fluid/pipe_RCR_3d/mesh/mesh-surfaces/lumen_inlet.vtp </Face_file_path>
   </Add_face>
 
   <Add_face name="lumen_outlet">
-      <Face_file_path> ../../pipe3D_RCR/mesh/mesh-surfaces/lumen_outlet.vtp </Face_file_path>
+      <Face_file_path> ../../../fluid/pipe_RCR_3d/mesh/mesh-surfaces/lumen_outlet.vtp </Face_file_path>
   </Add_face>
 
   <Add_face name="lumen_wall">
-      <Face_file_path> ../../pipe3D_RCR/mesh/mesh-surfaces/lumen_wall.vtp </Face_file_path>
+      <Face_file_path> ../../../fluid/pipe_RCR_3d/mesh/mesh-surfaces/lumen_wall.vtp </Face_file_path>
   </Add_face>  
 
   <Initial_velocities_file_path> ../1-rigid-solution/result_800_cpp.vtu </Initial_velocities_file_path>

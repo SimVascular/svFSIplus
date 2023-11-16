@@ -26,25 +26,28 @@
 
 <Add_mesh name="wall" > 
   <Set_mesh_as_shell> true </Set_mesh_as_shell>
-  <Mesh_file_path> ../../pipe3D_RCR/mesh/mesh-surfaces/lumen_wall.vtp </Mesh_file_path>
+  <Mesh_file_path> ../../../fluid/pipe_RCR_3d/mesh/mesh-surfaces/lumen_wall.vtp </Mesh_file_path>
 </Add_mesh>
+
 
 <Add_equation type="CMM" > 
    <Coupled> true </Coupled>   
    <Min_iterations> 3 </Min_iterations>  
    <Max_iterations> 5 </Max_iterations>
    <Tolerance> 1e-6 </Tolerance> 
-
-   <Initialize> inflate </Initialize>
+   <Prestress> true </Prestress>
+   <Initialize> prestress </Initialize>
+   
    <Poisson_ratio> 0.5 </Poisson_ratio>
    <Shell_thickness> 0.2 </Shell_thickness>
    <Elasticity_modulus> 4000000.0 </Elasticity_modulus>
   
    <Output type="Spatial">
       <Displacement> true </Displacement>
+      <Stress> true </Stress>
    </Output>
 
-   <LS type="CG" >
+   <LS type="GMRES" >
      <Max_iterations> 500 </Max_iterations>
      <Tolerance> 1e-6 </Tolerance>
    </LS>
