@@ -305,7 +305,7 @@ void bc_ini(const ComMod& com_mod, const CmMod& cm_mod, bcType& lBc, faceType& l
   } else if (btest(lBc.bType, iBC_para)) { 
     Vector<double> center(3);
     for (int i = 0; i < nsd; i++) {
-      center(i) = all_fun::integ(com_mod, cm_mod, lFa, com_mod.x, i+1) / lFa.area;
+      center(i) = all_fun::integ(com_mod, cm_mod, lFa, com_mod.x, i) / lFa.area;
     }
 
     // gNodes is one if a node located on the boundary (beside iFa)
