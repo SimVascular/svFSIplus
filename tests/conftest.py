@@ -103,7 +103,7 @@ def run_with_reference(
         else:
             msg = "Test failed!"
             msg += (
-                "\nResults in field " + f + " differ by more than rtol=" + str(RTOL[f])
+                "\nResults in field " + f + " differ by more than rtol=" + str(rtol)
             )
             msg += (
                 " in " + str(np.sum(close)) + " out of " + str(close.size) + " results."
