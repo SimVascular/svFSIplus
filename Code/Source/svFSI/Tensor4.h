@@ -34,7 +34,7 @@
 
 #include <cstring>
 
-#define Tensor4_check_enabled
+//#define Tensor4_check_enabled
 
 /// @brief The Tensor4 template class implements a simple interface to 4th order tensors.
 //

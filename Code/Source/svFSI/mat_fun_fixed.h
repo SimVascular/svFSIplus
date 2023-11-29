@@ -1,33 +1,3 @@
-/**
- * Copyright (c) Stanford University, The Regents of the University of California, and others.
- *
- * All Rights Reserved.
- *
- * See Copyright-SimVascular.txt for additional details.
- *
- * Permission is hereby granted, free of charge, to any person obtaining
- * a copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, sublicense, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject
- * to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included
- * in all copies or substantial portions of the Software.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
- * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
- * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
- * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
- * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
 
 // These are template functions reproducing some mat_fun functions using
 // fixed size arrays. 
@@ -35,13 +5,14 @@
 #ifndef MAT_FUN_FIXED_H 
 #define MAT_FUN_FIXED_H 
 
+#include "mat_fun.h"
 #include "utils.h"
 
-namespace mat_fun {
+namespace mat_fun_fixed {
+
+//void ten_init(const int nd);
 
 extern Array<int> t_ind;
-
-//static Array<int> t_ind;
 
 template <size_t N>
 double mat_det(const double A[N][N])
@@ -80,7 +51,13 @@ template <size_t N>
 void mat_id(double A[N][N])
 {
   for (int i = 0; i < N; i++) {
-    A[i][i] = 1.0;
+    for (int j = 0; j < N; j++) {
+      if (i == j) {
+        A[i][j] = 1.0;
+      } else {
+        A[i][j] = 0.0;
+      }
+    }
   }
 }
 
@@ -94,6 +71,10 @@ void transpose(const double A[N][N],  double result[N][N])
   }
 }
 
+//---------
+// mat_mul
+//---------
+//
 template <size_t N>
 void mat_mul(const double A[N][N], const double B[N][N], double result[N][N])
 {
@@ -121,6 +102,30 @@ void mat_mul(const double A[N][N], const Vector<double>& v, double result[N])
     }
 
     result[i] = sum;
+  }
+}
+
+template <size_t N>
+void mat_mul6x3(const double A[2*N][2*N], const Array<double>& B, Array<double>& C)
+{
+  int B_num_rows = B.nrows();
+  int B_num_cols = B.ncols();
+
+  if (B_num_rows != 2*N) {
+    throw std::runtime_error("[mat_mul] The number of columns of A (" + std::to_string(2*N) + ") does not equal " +
+        " the number of rows of B (" + std::to_string(B_num_rows) + ").");
+  }
+ 
+  for (int i = 0; i < 2*N; i++) {
+    for (int j = 0; j < B_num_cols; j++) {
+      double sum = 0.0;
+
+      for (int k = 0; k < 2*N; k++) {
+        sum += A[i][k] * B(k,j);
+      }
+
+      C(i,j) = sum;
+    }
   }
 }
 
@@ -177,6 +182,8 @@ template <size_t N>
 void ten_dyad_prod(const double A[N][N], const double B[N][N], double C[N][N][N][N])
 {  
   int nn = pow(N,4);
+  //std::cout << "[ten_dyad_prod] t_ind.size(): " << t_ind.size() << std::endl;
+  //std::cout << "[ten_dyad_prod] t_ind: " << t_ind << std::endl;
  
   for (int ii = 0; ii < nn; ii++) {
     int i = t_ind(0,ii);
@@ -259,10 +266,12 @@ void ten_transpose(const double A[N][N][N][N], double result[N][N][N][N])
 template <size_t N>
 void ten_init()
 {
+  if (t_ind.size() != 0) { 
+    return;
+  }
+
   int nn = pow(N, 4);
   t_ind.resize(4, nn);
-  //ALLOCATE(t_ind(4,nn))
-  //std::cout << msg_prefix << "nn: " << nn << std::endl;
 
   int ii = 0;
   for (int l = 0; l < N; l++) {
@@ -322,28 +331,65 @@ void ten_ddot(const double A[N][N][N][N], const double B[N][N][N][N], double C[N
 }
 
 template <size_t N>
-double norm(const Vector<double>& u, const double v[N])
+double norm(const double u[N], const double v[N])
 {
   double norm = 0.0;
   for (int i = 0; i < N; i++) {
-    norm += u(i)*v[i];
+    norm += u[i]*v[i];
   }
   return norm;
 }
 
 template <size_t N>
+double norm(const Vector<double>& u, const double v[N])
+{
+  double norm = 0.0;
+  for (int i = 0; i < N; i++) {
+    norm += u[i]*v[i];
+  }
+  return norm;
+}
+
+
+template <size_t N>
 void print(const std::string& name, const double A[N][N])
 {
   std::cout << name << ": ";
-  for (int i = 0; i < N; i++) {
-    for (int j = 0; j < N; j++) {
+  for (int j = 0; j < N; j++) {
+    for (int i = 0; i < N; i++) {
       std::cout << A[i][j] << " ";
     }
-    std::cout << " | ";
+    //std::cout << " | ";
   }
   std::cout << std::endl;
 }
 
+template <size_t N>
+void mat_symm(const double A[N][N], double S[N][N])
+{
+  for (int i = 0; i < N; i++) {
+    for (int j = 0; j < N; j++) {
+      S[i][j] = 0.5 * (A[i][j] + A[j][i]);
+    }
+  }
+}
+
+template <size_t N>
+void mat_dev(const double A[N][N], double dev[N][N])
+{
+  //std::cout << "===== mat_dev =====" << std::endl;
+  double trA = mat_trace<N>(A);
+  double id[N][N];
+  mat_id<N>(id);
+  //std::cout << "[mat_dev] trA: " << trA << std::endl;
+  //print<N>("[mat_dev] id: ", id);
+
+  for (int i = 0; i < N; i++) {
+    for (int j = 0; j < N; j++) {
+      dev[i][j] = A[i][j] - (trA / static_cast<double>(N)) * id[i][j];
+    }
+  }
+}
 
 };
 

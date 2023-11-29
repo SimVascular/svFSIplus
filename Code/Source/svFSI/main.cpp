@@ -170,6 +170,9 @@ void iterate_solution(Simulation* simulation)
   bool exit_now = false;
   double elapsed_time = 0.0;
 
+  //Array<double>::write_enabled = true;
+  //Array3<double>::write_enabled = true;
+
   while (true) {
     #ifdef debug_iterate_solution
     dmsg << "========================================= " << std::endl;
@@ -253,6 +256,8 @@ void iterate_solution(Simulation* simulation)
       dmsg << "com_mod.eq[cEq].sym: " << com_mod.eq[cEq].sym;
       //simulation->com_mod.timer.set_time();
       #endif
+      //std::cout << "-------------------------------------" << std::endl;
+      //std::cout << "inner_count: " << inner_count << std::endl;
 
       auto istr = "_" + std::to_string(cTS) + "_" + std::to_string(inner_count);
       iEqOld = cEq;
@@ -320,6 +325,8 @@ void iterate_solution(Simulation* simulation)
       for (int iM = 0; iM < com_mod.nMsh; iM++) {
         eq_assem::global_eq_assem(com_mod, cep_mod, com_mod.msh[iM], Ag, Yg, Dg);
       }
+      com_mod.R.write("R_as"+ istr);
+      com_mod.Val.write("Val_as"+ istr);
 
       // Treatment of boundary conditions on faces
       // Apply Neumman or Traction boundary conditions
@@ -446,6 +453,9 @@ void iterate_solution(Simulation* simulation)
       #endif
 
       ls_ns::ls_solve(com_mod, eq, incL, res);
+
+      com_mod.R.write("R_solve"+ istr);
+      com_mod.Val.write("Val_solve"+ istr);
 
       // Solution is obtained, now updating (Corrector)
       //

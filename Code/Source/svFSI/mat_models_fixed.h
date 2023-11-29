@@ -1,33 +1,3 @@
-/**
- * Copyright (c) Stanford University, The Regents of the University of California, and others.
- *
- * All Rights Reserved.
- *
- * See Copyright-SimVascular.txt for additional details.
- *
- * Permission is hereby granted, free of charge, to any person obtaining
- * a copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, sublicense, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject
- * to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included
- * in all copies or substantial portions of the Software.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
- * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
- * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
- * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
- * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
 
 // These are template functions reproducing mat_model functions using
 // fixed size arrays. 
@@ -42,10 +12,14 @@
 
 #include "mat_fun.h"
 
-namespace mat_models {
+namespace mat_models_fixed {
 
+//--------------
+// cc_to_voigt
+//--------------
+//
 template <size_t N>
-void cc_to_voigt(const double CC[N][N][N][N], double Dm[2*N][2*N])
+void cc_to_voigt_fixed(const double CC[N][N][N][N], double Dm[2*N][2*N])
 {
   if (N == 3) {
     Dm[0][0] = CC[0][0][0][0];
@@ -97,6 +71,10 @@ void cc_to_voigt(const double CC[N][N][N][N], double Dm[2*N][2*N])
   } 
 }
 
+//-----------
+// get_pk2cc
+//-----------
+//
 template <size_t N>
 void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn, const double F[N][N], const int nfd,
     const Array<double>& fl, const double ya, double S[N][N], double Dm[2*N][2*N])
@@ -135,7 +113,7 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
 
   // Fiber-reinforced stress
   double Tfa = 0.0;
-  get_fib_stress(com_mod, cep_mod, stM.Tf, Tfa);
+  mat_models::get_fib_stress(com_mod, cep_mod, stM.Tf, Tfa);
   //CALL GETIBSTRESS(stM.Tf, Tfa)
 
   // Electromechanics coupling - active stress
@@ -178,19 +156,19 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
   }
   */
 
-  double J = mat_det<N>(Fe);
+  double J = mat_fun_fixed::mat_det<N>(Fe);
   double J2d = pow(J, (-2.0/nd));
   double J4d = J2d*J2d;
 
   double Idm[N][N];
-  mat_id<N>(Idm);
+  mat_fun_fixed::mat_id<N>(Idm);
 
   double Fe_t[N][N];
-  transpose<N>(Fe, Fe_t);
+  mat_fun_fixed::transpose<N>(Fe, Fe_t);
   //print<N>("[get_pk2cc] Fe_t", Fe_t);
 
   double C[N][N];
-  mat_mul<N>(Fe_t, Fe, C);
+  mat_fun_fixed::mat_mul<N>(Fe_t, Fe, C);
 
   double E[N][N];
   for (int i = 0; i < nsd; i++) {
@@ -200,21 +178,21 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
   }
 
   double Ci[N][N];
-  mat_inv<N>(C, Ci);
+  mat_fun_fixed::mat_inv<N>(C, Ci);
   //std::cout << msg_prefix << "num_allocated 2: " << Array<double>::num_allocated - num_alloc << std::endl;
 
   double Cprod[N][N];
-  mat_mul<N>(C,C,Cprod);
-  double trE = mat_trace<N>(E);
-  double Inv1 = J2d * mat_trace<N>(C);
-  double Inv2 = 0.50 * (Inv1*Inv1 - J4d * mat_trace<N>(Cprod));
+  mat_fun_fixed::mat_mul<N>(C,C,Cprod);
+  double trE = mat_fun_fixed::mat_trace<N>(E);
+  double Inv1 = J2d * mat_fun_fixed::mat_trace<N>(C);
+  double Inv2 = 0.50 * (Inv1*Inv1 - J4d * mat_fun_fixed::mat_trace<N>(Cprod));
 
   // Contribution of dilational penalty terms to S and CC
   double p  = 0.0;
   double pl = 0.0;
 
   if (!utils::is_zero(Kp)) {
-    get_svol_p(com_mod, cep_mod, stM, J, p, pl);
+    mat_models::get_svol_p(com_mod, cep_mod, stM, J, p, pl);
     // CALL GETSVOLP(stM, J, p, pl)
   }
   //std::cout << msg_prefix << "p: " << p << std::endl;
@@ -248,8 +226,8 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
         }
       }
 
-      ten_dyad_prod<N>(Idm, Idm, Idm_prod);
-      ten_ids<N>(Ids);
+      mat_fun_fixed::ten_dyad_prod<N>(Idm, Idm, Idm_prod);
+      mat_fun_fixed::ten_ids<N>(Ids);
 
       for (int i = 0; i < nsd; i++) {
         for (int j = 0; j < nsd; j++) {
@@ -290,7 +268,7 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
 
       // Fiber reinforcement/active stress
       double prod[N][N];
-      mat_dyad_prod<N>(fl.col(0), fl.col(0), prod);
+      mat_fun_fixed::mat_dyad_prod<N>(fl.col(0), fl.col(0), prod);
 
       for (int i = 0; i < nsd; i++) {
         for (int j = 0; j < nsd; j++) {
@@ -309,8 +287,8 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
 
       double Ci_S_prod[N][N][N][N];
       double S_Ci_prod[N][N][N][N];
-      ten_dyad_prod<N>(Ci, S, Ci_S_prod);
-      ten_dyad_prod<N>(S, Ci, S_Ci_prod);
+      mat_fun_fixed::ten_dyad_prod<N>(Ci, S, Ci_S_prod);
+      mat_fun_fixed::ten_dyad_prod<N>(S, Ci, S_Ci_prod);
 
       for (int j = 0; j < N; j++) {
         for (int i = 0; i < N; i++) {
@@ -323,7 +301,7 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
         for (int j = 0; j < nsd; j++) {
           for (int k = 0; k < nsd; k++) {
             for (int l = 0; l < nsd; l++) {
-              CC[i][j][k][l] = (-2.0/nsd) * Ci_S_prod[i][j][k][l] + S_Ci_prod[i][j][k][l];
+              CC[i][j][k][l] = (-2.0/nd) * (Ci_S_prod[i][j][k][l] + S_Ci_prod[i][j][k][l]);
             }
           }
         }
@@ -331,10 +309,10 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
       //CC = (-2.0/nd) * ( ten_dyad_prod(Ci, S, nsd) + ten_dyad_prod(S, Ci, nsd));
 
       double Ci_sym_prod[N][N][N][N];
-      ten_symm_prod<N>(Ci, Ci, Ci_sym_prod);
+      mat_fun_fixed::ten_symm_prod<N>(Ci, Ci, Ci_sym_prod);
 
       double Ci_Ci_prod[N][N][N][N];
-      ten_dyad_prod<N>(Ci, Ci, Ci_Ci_prod);
+      mat_fun_fixed::ten_dyad_prod<N>(Ci, Ci, Ci_Ci_prod);
 
       for (int i = 0; i < nsd; i++) {
         for (int j = 0; j < nsd; j++) {
@@ -364,7 +342,7 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
 
       // Fiber reinforcement/active stress
       double prod[N][N];
-      mat_dyad_prod<N>(fl.col(0), fl.col(0), prod);
+      mat_fun_fixed::mat_dyad_prod<N>(fl.col(0), fl.col(0), prod);
 
       for (int i = 0; i < nsd; i++) {
         for (int j = 0; j < nsd; j++) {
@@ -376,7 +354,7 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
       g1 = 4.0 * J4d * stM.C01;
 
       double CCb[N][N][N][N];
-      ten_dyad_prod<N>(Idm, Idm, CCb);
+      mat_fun_fixed::ten_dyad_prod<N>(Idm, Idm, CCb);
 
       for (int i = 0; i < nsd; i++) {
         for (int j = 0; j < nsd; j++) {
@@ -388,7 +366,7 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
         }
       }
 
-      double r1 = J2d * mat_ddot<N>(C, Sb) / nd;
+      double r1 = J2d * mat_fun_fixed::mat_ddot<N>(C, Sb) / nd;
       for (int i = 0; i < nsd; i++) {
         for (int j = 0; j < nsd; j++) {
           Sb[i][j] = J2d*Sb[i][j] - r1*Ci[i][j];
@@ -398,8 +376,8 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
 
       double Ci_Ci_prod[N][N][N][N];
       double Ci_C_prod[N][N][N][N];
-      ten_dyad_prod<N>(Ci, Ci, Ci_Ci_prod);
-      ten_dyad_prod<N>(Ci, C, Ci_C_prod);
+      mat_fun_fixed::ten_dyad_prod<N>(Ci, Ci, Ci_Ci_prod);
+      mat_fun_fixed::ten_dyad_prod<N>(Ci, C, Ci_C_prod);
 
       double PP[N][N][N][N];
 
@@ -414,20 +392,20 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
       }
       //auto PP = ten_ids(nsd) - (1.0/nd) * ten_dyad_prod(Ci, C, nsd);
 
-      ten_ddot<N>(CCb, PP, CC);
+      mat_fun_fixed::ten_ddot<N>(CCb, PP, CC);
       //CC = ten_ddot(CCb, PP, nsd);
 
       double CC_t[N][N][N][N];
-      ten_transpose<N>(CC, CC_t);
+      mat_fun_fixed::ten_transpose<N>(CC, CC_t);
       //CC = ten_transpose(CC, nsd);
 
-      ten_ddot<N>(PP, CC_t, CC);
+      mat_fun_fixed::ten_ddot<N>(PP, CC_t, CC);
       //CC = ten_ddot(PP, CC, nsd);
 
       double Ci_S_prod[N][N][N][N];
       double S_Ci_prod[N][N][N][N];
-      ten_dyad_prod<N>(Ci, S, Ci_S_prod);
-      ten_dyad_prod<N>(S, Ci, S_Ci_prod);
+      mat_fun_fixed::ten_dyad_prod<N>(Ci, S, Ci_S_prod);
+      mat_fun_fixed::ten_dyad_prod<N>(S, Ci, S_Ci_prod);
 
       for (int i = 0; i < nsd; i++) {
         for (int j = 0; j < nsd; j++) {
@@ -448,7 +426,7 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
       //S  = S + p*J*Ci;
 
       double Ci_sym_prod[N][N][N][N];
-      ten_symm_prod<N>(Ci, Ci, Ci_sym_prod);
+      mat_fun_fixed::ten_symm_prod<N>(Ci, Ci, Ci_sym_prod);
 
       //double Ci_Ci_prod[N][N][N][N];
       //ten_dyad_prod<N>(Ci, Ci, Ci_Ci_prod);
@@ -475,11 +453,11 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
       double kap = stM.kap;
 
       double C_fl[N];
-      mat_mul(C, fl.rcol(0), C_fl);
-      double Inv4 = J2d * mat_fun::norm<N>(fl.rcol(0), C_fl);
+      mat_fun_fixed::mat_mul(C, fl.rcol(0), C_fl);
+      double Inv4 = J2d * mat_fun_fixed::norm<N>(fl.rcol(0), C_fl);
 
-      mat_mul(C, fl.rcol(1), C_fl);
-      double Inv6 = J2d * mat_fun::norm<N>(fl.rcol(1), C_fl);
+      mat_fun_fixed::mat_mul(C, fl.rcol(1), C_fl);
+      double Inv6 = J2d * mat_fun_fixed::norm<N>(fl.rcol(1), C_fl);
 
       //double Inv4 = J2d*utils::norm(fl.col(0), mat_mul(C, fl.col(0)));
       //double Inv6 = J2d*utils::norm(fl.col(1), mat_mul(C, fl.col(1)));
@@ -735,12 +713,9 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
   } 
 
   // Convert to Voigt Notation
-  cc_to_voigt<N>(CC, Dm);
+  cc_to_voigt_fixed<N>(CC, Dm);
   //cc_to_voigt(nsd, CC, Dm);
 }
-
-
-
 
 };
 
