@@ -248,9 +248,6 @@ void construct_dsolid(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const
                 bfl(nsd,eNoN), fN(nsd,nFn), pS0l(nsymd,eNoN), Nx(nsd,eNoN), lR(dof,eNoN);
   Array3<double> lK(dof*dof,eNoN,eNoN);
 
-  Array<double> lR_fixed(dof,eNoN);
-  Array3<double> lK_fixed(dof*dof,eNoN,eNoN);
-
   // Loop over all elements of mesh
 
   for (int e = 0; e < lM.nEl; e++) {
@@ -307,8 +304,6 @@ void construct_dsolid(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const
     //
     lR = 0.0;
     lK = 0.0;
-    lR_fixed = 0.0;
-    lK_fixed = 0.0;
 
     double Jac{0.0};
     Array<double> ksix(nsd,nsd);

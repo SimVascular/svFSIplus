@@ -220,6 +220,30 @@ void mat_dyad_prod(const Vector<double>& u, const Vector<double>& v, double resu
 }
 
 template <size_t N>
+void mat_symm_prod(const Vector<double>& u, const Vector<double>& v, double result[N][N])
+{
+  for (int i = 0; i < N; i++) {
+    for (int j = 0; j < N; j++) {
+      result[i][j] = 0.5 * (u(i)*v(j) + u(j)*v(i));
+    }
+  }
+}
+
+template <size_t N>
+void ten_dyad_prod(const Array<double>& A, const Array<double>& B, double C[N][N][N][N])
+{   
+  int nn = pow(N,4);
+
+  for (int ii = 0; ii < nn; ii++) {
+    int i = t_ind(0,ii);
+    int j = t_ind(1,ii);
+    int k = t_ind(2,ii);
+    int l = t_ind(3,ii);
+    C[i][j][k][l] = A(i,j) * B(k,l);
+  }
+}
+
+template <size_t N>
 void ten_symm_prod(const double A[N][N], const double B[N][N], double C[N][N][N][N])
 {
   int nn = pow(N,4);
@@ -387,6 +411,87 @@ void mat_dev(const double A[N][N], double dev[N][N])
   for (int i = 0; i < N; i++) {
     for (int j = 0; j < N; j++) {
       dev[i][j] = A[i][j] - (trA / static_cast<double>(N)) * id[i][j];
+    }
+  }
+}
+
+
+template <size_t N>
+void ten_ddot_3424(const double A[N][N][N][N], const double B[N][N][N][N], double C[N][N][N][N])
+{
+  int nn = pow(N,4);
+
+  if (N == 2) {
+    for (int ii = 0; ii < nn; ii++) {
+      int i = t_ind(0,ii);
+      int j = t_ind(1,ii);
+      int k = t_ind(2,ii);
+      int l = t_ind(3,ii);
+
+      C[i][j][k][l] += A[i][j][0][0]*B[k][0][l][0] +
+                       A[i][j][0][1]*B[k][0][l][1] +
+                       A[i][j][1][0]*B[k][1][l][0] +
+                       A[i][j][1][1]*B[k][1][l][1];
+    }
+
+  } else {
+
+    for (int ii = 0; ii < nn; ii++) {
+      int i = t_ind(0,ii);
+      int j = t_ind(1,ii);
+      int k = t_ind(2,ii);
+      int l = t_ind(3,ii);
+
+      C[i][j][k][l] += A[i][j][0][0]*B[k][0][l][0] + 
+                       A[i][j][0][1]*B[k][0][l][1] + 
+                       A[i][j][0][2]*B[k][0][l][2] + 
+                       A[i][j][1][0]*B[k][1][l][0] + 
+                       A[i][j][1][1]*B[k][1][l][1] + 
+                       A[i][j][1][2]*B[k][1][l][2] + 
+                       A[i][j][2][0]*B[k][2][l][0] + 
+                       A[i][j][2][1]*B[k][2][l][1] + 
+                       A[i][j][2][2]*B[k][2][l][2];
+
+    }
+  }
+}
+
+template <size_t N>
+void ten_ddot_2412(const double A[N][N][N][N], const double B[N][N][N][N], double C[N][N][N][N])
+{
+  int nn = pow(N,4);
+
+  if (N == 2) {
+    for (int ii = 0; ii < nn; ii++) {
+      int i = t_ind(0,ii);
+      int j = t_ind(1,ii);
+      int k = t_ind(2,ii);
+      int l = t_ind(3,ii);
+
+      C[i][j][k][l] += A[i][0][j][0]*B[0][0][k][l] + 
+                       A[i][0][j][1]*B[0][1][k][l] + 
+                       A[i][1][j][0]*B[1][0][k][l] + 
+                       A[i][1][j][1]*B[1][1][k][l];
+
+    }
+
+  } else {
+
+    for (int ii = 0; ii < nn; ii++) {
+      int i = t_ind(0,ii);
+      int j = t_ind(1,ii);
+      int k = t_ind(2,ii);
+      int l = t_ind(3,ii);
+
+      C[i][j][k][l] += A[i][0][j][0]*B[0][0][k][l] + 
+                       A[i][0][j][1]*B[0][1][k][l] + 
+                       A[i][0][j][2]*B[0][2][k][l] + 
+                       A[i][1][j][0]*B[1][0][k][l] + 
+                       A[i][1][j][1]*B[1][1][k][l] + 
+                       A[i][1][j][2]*B[1][2][k][l] + 
+                       A[i][2][j][0]*B[2][0][k][l] + 
+                       A[i][2][j][1]*B[2][1][k][l] + 
+                       A[i][2][j][2]*B[2][2][k][l];
     }
   }
 }
