@@ -1,0 +1,78 @@
+#----------------------------------------------------------------
+# General simulation parameters
+
+Continue previous simulation: 0
+Number of spatial dimensions: 3
+Number of time steps: 20
+Time step size: 0.01
+Spectral radius of infinite time step: 0.50
+Searched file name to trigger stop: STOP_SIM
+
+Save results to VTK format: 1
+Save results in folder: lps_thickness
+Name prefix of saved VTK files: result
+Increment in saving VTK files: 20
+Start saving after time step: 1
+
+Increment in saving restart files: 20
+Convert BIN to VTK format: 0
+
+Verbose: 1
+Warning: 1
+Debug: 0
+
+#----------------------------------------------------------------
+# Mesh data
+Add mesh: lv_msh {
+   Mesh file path: ../mesh-complete.mesh.vtu
+   Add face: base {
+      Face file path: ../mesh-surfaces/top.vtp
+   }
+   Add face: epi {
+      Face file path: ../mesh-surfaces/epi.vtp
+   }
+   Add face: endo {
+      Face file path: ../mesh-surfaces/endo.vtp
+   }
+}
+
+#----------------------------------------------------------------
+# Equations (PHI_THK)
+
+Add equation: heatS {
+   Coupled: f
+   Min iterations: 1
+   Max iterations: 5
+   Tolerance: 1e-6
+
+   Conductivity: 1.0
+   Source term: 0.0
+   Density: 0.0
+
+   Output: Spatial {
+      Temperature: t
+   }
+
+   Output: Alias {
+      Temperature: PHI_THK
+   }
+
+   LS type: CG
+   {
+      Preconditioner: FSILS
+      Max iterations: 500
+      Tolerance:      1D-6
+   }
+
+   Add BC: epi {
+      Type: Dir
+      Value: 1.0
+      Zero out perimeter: f
+   }
+
+   Add BC: endo {
+      Type: Dir
+      Value: 0.0
+      Zero out perimeter: f
+   }
+}

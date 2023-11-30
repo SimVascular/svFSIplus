@@ -1,0 +1,110 @@
+#----------------------------------------------------------------
+# General simulation parameters
+
+Continue previous simulation: f
+Number of spatial dimensions: 3
+Number of time steps: 1
+Time step size: 1e-3
+Spectral radius of infinite time step: 0.50
+Searched file name to trigger stop: STOP_SIM
+
+Save results to VTK format: t
+Name prefix of saved VTK files: result
+Save results in folder: results_svfsi_vvedula22
+Increment in saving VTK files: 1
+Start saving after time step: 1
+
+Increment in saving restart files: 50
+Convert BIN to VTK format: f
+
+Verbose: t
+Warning: t
+Debug: f
+
+#----------------------------------------------------------------
+# Mesh data
+Add mesh: msh {
+   Mesh file path: mesh/mesh-complete.mesh.vtu
+   Add face: endo {
+      Face file path: mesh/mesh-surfaces/endo.vtp
+   }
+   Add face: epi {
+      Face file path: mesh/mesh-surfaces/epi.vtp
+   }
+   Add face: top {
+      Face file path: mesh/mesh-surfaces/top.vtp
+   }
+
+   Fiber direction file path: mesh/fibersLongCells.vtu
+   Fiber direction file path: mesh/fibersSheetCells.vtu
+   
+   Mesh scale factor: 100.0
+}
+
+#----------------------------------------------------------------
+# Equations
+Add equation: struct {
+   Coupled: t
+   Min iterations: 3
+   Max iterations: 10
+   Tolerance: 1e-6
+
+   Density: 1.0
+   Elasticity modulus: 1.0e6
+   Poisson ratio: 0.483333
+   Viscosity: fluid {
+      Value: 0.0
+   }
+
+   Constitutive model: HO-ma {
+      a: 590.0
+      b: 8.023
+      a4f: 184720.0
+      b4f: 16.026
+      a4s: 24810.0
+      b4s: 11.12
+      afs: 2160.0
+      bfs: 11.436
+      k: 100.0
+   }
+   Dilational penalty model: ST91
+
+   Output: Spatial {
+      Displacement: t
+      Velocity: t
+      Jacobian: t
+      Stress: t
+      Strain: t
+      VonMises_stress: t
+   }
+
+    LS type: GMRES
+   {
+      #Preconditioner: Trilinos-ILUT
+      Tolerance: 1e-6
+      Max iterations: 1000
+      Krylov space dimension: 50
+   }
+
+   Add BC: epi {
+      Type: Robin
+      Stiffness: 1.0e7
+      Damping: 5.0e2
+      Apply along normal direction: t
+   }
+
+   Add BC: top {
+      Type: Robin
+      Stiffness: 1.0e4
+      Damping: 5.0e2
+   }
+
+   Add BC: endo {
+      Type: Neu
+      Time dependence: Unsteady
+      Temporal values file path: endo_pressure.dat
+      Ramp function: f
+      Follower pressure load: t
+   }
+}
+

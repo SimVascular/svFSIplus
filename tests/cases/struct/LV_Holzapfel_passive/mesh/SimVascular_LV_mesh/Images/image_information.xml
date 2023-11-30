@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ImageObjectInformation version="1.0" creation_time="1701191208" modification_time="1701191208">
+    <timestep id="0">
+        <created_with_simvascular_version>2022.07</created_with_simvascular_version>
+        <path></path>
+        <image_file_name></image_file_name>
+        <image_header_file_name></image_header_file_name>
+        <image_name></image_name>
+        <data_is_local_copy>false</data_is_local_copy>
+        <scale_factor>1</scale_factor>
+    </timestep>
+</ImageObjectInformation>
+

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<mitk_mesh type="TetGen" model_name="LV" version="1.0">
+    <timestep id="0">
+        <mesh type="TetGen">
+            <command_history>
+                <command content="option surface 0" />
+                <command content="option volume 1" />
+                <command content="option UseMMG 1" />
+                <command content="option GlobalEdgeSize 0.05" />
+                <command content="setWalls" />
+                <command content="option Optimization 3" />
+                <command content="option QualityRatio 1.4" />
+                <command content="option NoBisect" />
+                <command content="AllowMultipleRegions 0" />
+                <command content="generateMesh" />
+                <command content="writeMesh" />
+            </command_history>
+        </mesh>
+    </timestep>
+</mitk_mesh>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<model type="PolyData" version="1.0">
+    <timestep id="0">
+        <model_element type="PolyData" num_sampling="0" use_uniform="0">
+            <segmentations />
+            <faces>
+                <face id="1" name="endo" type="" visible="true" opacity="1" color1="1" color2="1" color3="1" />
+                <face id="2" name="epi" type="" visible="true" opacity="1" color1="1" color2="1" color3="1" />
+                <face id="3" name="base" type="" visible="true" opacity="1" color1="1" color2="1" color3="1" />
+            </faces>
+            <blend_radii />
+            <blend_param blend_iters="2" sub_blend_iters="3" cstr_smooth_iters="2" lap_smooth_iters="50" subdivision_iters="1" decimation="0.01" />
+        </model_element>
+    </timestep>
+</model>
