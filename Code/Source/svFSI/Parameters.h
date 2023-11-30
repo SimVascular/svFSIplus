@@ -454,6 +454,7 @@ class HolzapfelParameters : public ParameterLists
     Parameter<double> b4s;
     Parameter<double> afs;
     Parameter<double> bfs;
+    Parameter<double> k;
 
     bool value_set = false;
 };
@@ -517,6 +518,7 @@ class ConstitutiveModelParameters : public ParameterLists
     // Model types supported.
     static const std::string GUCCIONE_MODEL;
     static const std::string HGO_MODEL;
+    static const std::string HOLZAPFEL_MODEL;
     static const std::string LEE_SACKS;
     static const std::string NEOHOOKEAN_MODEL;
     static const std::string STVENANT_KIRCHHOFF_MODEL;
