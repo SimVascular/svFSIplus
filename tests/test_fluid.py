@@ -43,3 +43,8 @@ def test_carreau_yasuda(n_proc):
     folder = os.path.join(base_folder, "carreau_yasuda")
     fields = ["Velocity", "Pressure", "Traction", "WSS"]
     run_with_reference(folder, fields, n_proc)
+
+def test_iliac_artery(n_proc):
+    folder = os.path.join(base_folder, "iliac_artery")
+    fields = ["Velocity", "Pressure", "Traction", "WSS"]
+    run_with_reference(folder, fields, n_proc)
