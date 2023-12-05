@@ -46,7 +46,6 @@
 namespace mat_fun {
 
 Array<int> t_ind;
-//static Array<int> t_ind;
 
 /// @brief Double dot product of 2 square matrices
 //

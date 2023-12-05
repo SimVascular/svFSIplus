@@ -40,9 +40,9 @@
 #include "consts.h"
 #include "lhsa.h"
 #include "mat_fun.h"
-#include "mat_fun_fixed.h"
+#include "mat_fun_carray.h"
 #include "mat_models.h"
-#include "mat_models_fixed.h"
+#include "mat_models_carray.h"
 #include "nn.h"
 #include "utils.h"
 
@@ -321,7 +321,7 @@ void construct_dsolid(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const
       pSl = 0.0;
 
       if (nsd == 3) {
-        struct_3d_fixed(com_mod, cep_mod, eNoN, nFn, w, N, Nx, al, yl, dl, bfl, fN, pS0l, pSl, ya_l, lR, lK);
+        struct_3d_carray(com_mod, cep_mod, eNoN, nFn, w, N, Nx, al, yl, dl, bfl, fN, pS0l, pSl, ya_l, lR, lK);
         //struct_3d(com_mod, cep_mod, eNoN, nFn, w, N, Nx, al, yl, dl, bfl, fN, pS0l, pSl, ya_l, lR, lK);
 
 #if 0
@@ -602,20 +602,17 @@ void struct_2d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, 
   }
 }
 
-//-----------------
-// struct_3d_fixed
-//-----------------
+/// @brief Reproduces Fortran 'STRUCT3D' subroutine using C++ arrays.
 //
-void struct_3d_fixed(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, const double w, 
+void struct_3d_carray(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, const double w, 
     const Vector<double>& N, const Array<double>& Nx, const Array<double>& al, const Array<double>& yl, 
     const Array<double>& dl, const Array<double>& bfl, const Array<double>& fN, const Array<double>& pS0l, 
     Vector<double>& pSl, const Vector<double>& ya_l, Array<double>& lR, Array3<double>& lK) 
 {
   using namespace consts;
   using namespace mat_fun;
-  //std::cout << "==================== struct_3d_fixed ===============" << std::endl;
 
-  #define _debug_struct_3d
+  #define n_debug_struct_3d
   #ifdef debug_struct_3d
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
@@ -658,7 +655,6 @@ void struct_3d_fixed(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int
 
   // Inertia, body force and deformation tensor (F)
   //
-
   double F[3][3]{0.0}; 
   double S0[3][3]{0.0}; 
   double vx[3][3]{0.0};
@@ -709,42 +705,32 @@ void struct_3d_fixed(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int
   S0[2][1] = S0[1][2];
   S0[0][2] = S0[2][0];
 
-  //mat_fun_fixed::print<3>("[struct_3d_fixed] F: ", F);
-  //mat_fun_fixed::print<3>("[struct_3d_fixed] vx: ", vx);
-  //mat_fun_fixed::print<3>("[struct_3d_fixed] S0: ", S0);
-
-  double Jac = mat_fun_fixed::mat_det<3>(F);
-  //std::cout << "[struct_3d_fixed] Jac: " << Jac << std::endl;
+  double Jac = mat_fun_carray::mat_det<3>(F);
 
   double Fi[3][3]{0.0}; 
-  mat_fun_fixed::mat_inv<3>(F, Fi);
-  //mat_fun_fixed::print<3>("[struct_3d_fixed] Fi: ", Fi);
+  mat_fun_carray::mat_inv<3>(F, Fi);
 
   // Viscous contribution
   // Velocity gradient in current configuration
   double VxFi[3][3]{0.0}; 
-  //double VxFi[3][3]{0.0}; 
-  mat_fun_fixed::mat_mul(vx, Fi, VxFi);
-  //mat_fun_fixed::print<3>("[struct_3d_fixed] VxFi: ", VxFi);
+  mat_fun_carray::mat_mul(vx, Fi, VxFi);
 
   // Deviatoric strain tensor
   double VxFi_sym[3][3]{0.0}; 
-  mat_fun_fixed::mat_symm<3>(VxFi,VxFi_sym);
-  //mat_fun_fixed::print<3>("[struct_3d_fixed] VxFi_sym: ", VxFi_sym);
+  mat_fun_carray::mat_symm<3>(VxFi,VxFi_sym);
 
   double ddev[3][3]{0.0}; 
-  mat_fun_fixed::mat_dev<3>(VxFi_sym, ddev);
-  //mat_fun_fixed::print<3>("[struct_3d_fixed] ddev: ", ddev);
+  mat_fun_carray::mat_dev<3>(VxFi_sym, ddev);
 
   // 2nd Piola-Kirchhoff stress due to viscosity
   double Fi_transp[3][3]{0.0}; 
-  mat_fun_fixed::transpose<3>(Fi, Fi_transp);
+  mat_fun_carray::transpose<3>(Fi, Fi_transp);
 
   double Svis[3][3]{0.0}; 
-  mat_fun_fixed::mat_mul<3>(ddev, Fi_transp, Svis);
+  mat_fun_carray::mat_mul<3>(ddev, Fi_transp, Svis);
 
   double Fi_Svis_m[3][3]{0.0}; 
-  mat_fun_fixed::mat_mul<3>(Fi, Svis, Fi_Svis_m);
+  mat_fun_carray::mat_mul<3>(Fi, Svis, Fi_Svis_m);
 
   for (int i = 0; i < 3; i++) {
     for (int j = 0; j < 3; j++) {
@@ -752,8 +738,8 @@ void struct_3d_fixed(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int
     }
   }
 
-  //ten_init(3);
-  mat_fun_fixed::ten_init<3>();
+  // Initialize tensor indexing.
+  mat_fun_carray::ten_init(3);
 
   // 2nd Piola-Kirchhoff tensor (S) and material stiffness tensor in
   // Voigt notationa (Dm)
@@ -761,44 +747,7 @@ void struct_3d_fixed(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int
   double S[3][3]; 
   double Dm[6][6]; 
 
-#ifdef use_orig_get_pk2cc
-  Array<double> S_a(3,3), Dm_a(6,6), F_a(3,3); 
-
-  for (int i = 0; i < 3; i++) {
-    for (int j = 0; j < 3; j++) {
-      F_a(i,j) = F[i][j];
-    }
-  }
-
-  mat_models::get_pk2cc(com_mod, cep_mod, dmn, F_a, nFn, fN, ya_g, S_a, Dm_a);
-
-  for (int i = 0; i < 3; i++) {
-    for (int j = 0; j < 3; j++) {
-      S[i][j] = S_a(i,j);
-    }
-  }
-
-  for (int i = 0; i < 6; i++) {
-    for (int j = 0; j < 6; j++) {
-      Dm[i][j] = Dm_a(i,j);
-    }
-  }
-
-#else 
-
-  Array<double> F_a(3,3); 
-
-  for (int i = 0; i < 3; i++) {
-    for (int j = 0; j < 3; j++) {
-      F_a(i,j) = F[i][j];
-    }
-  }
-
-  //mat_models_fixed::get_pk2cc_new<3>(com_mod, cep_mod, dmn, F_a, nFn, fN, ya_g, S, Dm);
-  mat_models_fixed::get_pk2cc<3>(com_mod, cep_mod, dmn, F, nFn, fN, ya_g, S, Dm);
-
-#endif
-
+  mat_models_carray::get_pk2cc<3>(com_mod, cep_mod, dmn, F, nFn, fN, ya_g, S, Dm);
 
   // Elastic + Viscous stresses
   for (int i = 0; i < 3; i++) {
@@ -833,20 +782,7 @@ void struct_3d_fixed(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int
   // 1st Piola-Kirchhoff tensor (P)
   //
   double P[3][3]{0.0}; 
-  mat_fun_fixed::mat_mul<3>(F, S, P);
-  //mat_fun_fixed::print<3>("[struct_3d_fixed] VxFi", VxFi);
-  //mat_fun_fixed::print<3>("[struct_3d_fixed] ddev", ddev);
-  //mat_fun_fixed::print<3>("[struct_3d_fixed] Fi", Fi);
-  //mat_fun_fixed::print<3>("[struct_3d_fixed] P", P);
-  /*
-  std::cout << "[struct_3d_fixed] Dm: ";
-  for (int j = 0; j < 6; j++) {
-    for (int i = 0; i < 6; i++) {
-      std::cout << Dm[i][j] << " ";
-    }
-  }
-  std::cout << std::endl;
-  */
+  mat_fun_carray::mat_mul<3>(F, S, P);
 
   // Local residual
   for (int a = 0; a < eNoN; a++) {
@@ -927,9 +863,8 @@ void struct_3d_fixed(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int
       T1 = amd*N(a)*N(b) + afu*NxSNx;
 
       // Material Stiffness (Bt*D*B)
-      mat_fun_fixed::mat_mul6x3<3>(Dm, Bm.rslice(b), DBm);
+      mat_fun_carray::mat_mul6x3<3>(Dm, Bm.rslice(b), DBm);
       NxNx = NxFi(0,a)*NxFi(0,b) + NxFi(1,a)*NxFi(1,b) + NxFi(2,a)*NxFi(2,b);
-      //std::cout << "[struct_3d_fixed] DBm: " << DBm << std::endl; 
 
       // dM1/du1
       // Material stiffness: Bt*D*B
@@ -940,10 +875,6 @@ void struct_3d_fixed(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int
       // Viscous terms contribution
       Tv = (2.0*(DdNx(0,a)*NxFi(0,b) - DdNx(0,b)*NxFi(0,a)) - (NxNx*VxFi[0][0] + NxFi(0,b)*VxNx(0,a) -  
            r23*NxFi(0,a)*VxNx(0,b))) * rmu + (r13*NxFi(0,a)*NxFi(0,b) + NxNx) * rmv;
-
-      //dmsg << "Tv: " << Tv;
-      //dmsg << "BmDBm: " << BmDBm;
-      //dmsg << "NxNx: " << NxNx;
 
       lK(0,a,b) = lK(0,a,b) + w*(T1 + afu*BmDBm + Tv);
 
@@ -1158,7 +1089,7 @@ void struct_3d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, 
     F(2,1) = F(2,1) + Nx(1,a)*dl(k,a);
     F(2,2) = F(2,2) + Nx(2,a)*dl(k,a);
 
-    #ifdef use_fixed_arrays
+    #ifdef use_carrays
     F_f[0][0] += Nx(0,a)*dl(i,a);
     F_f[0][1] += Nx(1,a)*dl(i,a);
     F_f[0][2] += Nx(2,a)*dl(i,a);

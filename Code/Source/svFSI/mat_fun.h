@@ -36,9 +36,6 @@
 #include "Tensor4.h"
 #include "Vector.h"
 
-#include "mat_fun_fixed.h"
-
-
 /// @brief The classes defined here duplicate the data structures in the 
 /// Fortran MATFUN module defined in MATFUN.f. 
 ///
