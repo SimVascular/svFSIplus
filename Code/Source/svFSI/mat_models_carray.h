@@ -113,18 +113,15 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
   const auto& stM = lDmn.stM;
   double nd = static_cast<double>(nsd);
   double Kp = stM.Kpen;
-  //std::cout << msg_prefix << "Kp: " << Kp << std::endl;
 
   // Fiber-reinforced stress
   double Tfa = 0.0;
   mat_models::get_fib_stress(com_mod, cep_mod, stM.Tf, Tfa);
-  //CALL GETIBSTRESS(stM.Tf, Tfa)
 
   // Electromechanics coupling - active stress
   if (cep_mod.cem.aStress) {
     Tfa = Tfa + ya;
   }
-  //std::cout << msg_prefix << "Tfa: " << Tfa << std::endl;
 
   // Electromechanics coupling - active strain
   double Fe[N][N];
@@ -134,11 +131,11 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
     }
   }
 
-  //Array<double> Fa(nsd,nsd);
-  double Fa[N][N]{0.0};
-  double Fai[N][N]{0.0};
-  //auto Fa = mat_id(nsd);
-  //auto Fai = Fa;
+  double Fa[N][N];
+  mat_fun_carray::mat_zero(Fa);
+  double Fai[N][N];
+  mat_fun_carray::mat_zero(Fai);
+
   for (int i = 0; i < N; i++) {
     for (int j = 0; j < N; j++) {
       if (i == j) {
@@ -147,18 +144,6 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
       }
     }
   }
-
-  //print<N>("[get_pk2cc] F", F);
-  //print<N>("[get_pk2cc] Fa", Fa);
-
-  /*
-  if (cep_mod.cem.aStrain) {
-    actv_strain(com_mod, cep_mod, ya, nfd, fl, Fa);
-    //CALL ACTVSTRAIN(ya, nfd, fl, Fa)
-    Fai = mat_inv(Fa, nsd);
-    Fe = mat_mul(F, Fai);
-  }
-  */
 
   double J = mat_fun_carray::mat_det<N>(Fe);
   double J2d = pow(J, (-2.0/nd));
@@ -169,7 +154,6 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
 
   double Fe_t[N][N];
   mat_fun_carray::transpose<N>(Fe, Fe_t);
-  //print<N>("[get_pk2cc] Fe_t", Fe_t);
 
   double C[N][N];
   mat_fun_carray::mat_mul<N>(Fe_t, Fe, C);
@@ -183,7 +167,6 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
 
   double Ci[N][N];
   mat_fun_carray::mat_inv<N>(C, Ci);
-  //std::cout << msg_prefix << "num_allocated 2: " << Array<double>::num_allocated - num_alloc << std::endl;
 
   double Cprod[N][N];
   mat_fun_carray::mat_mul<N>(C,C,Cprod);
@@ -197,16 +180,14 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
 
   if (!utils::is_zero(Kp)) {
     mat_models::get_svol_p(com_mod, cep_mod, stM, J, p, pl);
-    // CALL GETSVOLP(stM, J, p, pl)
   }
-  //std::cout << msg_prefix << "p: " << p << std::endl;
-  //std::cout << msg_prefix << "pl: " << pl << std::endl;
 
   // Now, compute isochoric and total stress, elasticity tensors
   //
   double CC[N][N][N][N];
   double Idm_prod[N][N][N][N];
   double Ids[N][N][N][N];
+  mat_fun_carray::ten_ids<N>(Ids);
 
   switch (stM.isoType) {
     case ConstitutiveModelType::stIso_lin: {
@@ -220,8 +201,8 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
     } break;
 
     // St.Venant-Kirchhoff
+    //
     case ConstitutiveModelType::stIso_StVK: {
-      //std::cout << msg_prefix << "stIso_StVK material model " << std::endl;
       double g1 = stM.C10;         // lambda
       double g2 = stM.C01 * 2.0;   // 2*mu
 
@@ -243,10 +224,10 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
           }
         }
       }
-      //CC = g1 * ten_dyad_prod(Idm, Idm, nsd) + g2*ten_ids(nsd);
     } break;
 
     // modified St.Venant-Kirchhoff
+    //
     case ConstitutiveModelType::stIso_mStVK: {
       double g1 = stM.C10; // kappa
       double g2 = stM.C01;  // mu
@@ -275,13 +256,12 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
           }
         }
       }
-      //CC = g1 * ( -2.0*log(J)*ten_symm_prod(Ci, Ci, nsd) + ten_dyad_prod(Ci, Ci, nsd) ) + 2.0*g2*ten_ids(nsd);
 
     } break;
 
     // NeoHookean model
+    //
     case ConstitutiveModelType::stIso_nHook: {
-      //std::cout << msg_prefix << "NeoHookean model  " << std::endl;
       double g1 = 2.0 * stM.C10;
 
       double Sb[N][N];
@@ -300,7 +280,6 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
           Sb[i][j] += Tfa * prod[i][j];
         }
       }
-      //Sb += Tfa * mat_dyad_prod(fl.col(0), fl.col(0), nsd);
 
       double r1 = g1 * Inv1 / nd;
       for (int j = 0; j < N; j++) {
@@ -308,7 +287,6 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
           S[i][j] = J2d*Sb[i][j] - r1*Ci[i][j];
         }
       }
-      //S = J2d*Sb - r1*Ci;
 
       double Ci_S_prod[N][N][N][N];
       double S_Ci_prod[N][N][N][N];
@@ -320,7 +298,6 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
           S[i][j] += p * J * Ci[i][j];
         }
       }
-      //S += p*J*Ci;
 
       for (int i = 0; i < nsd; i++) {
         for (int j = 0; j < nsd; j++) {
@@ -331,7 +308,6 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
           }
         }
       }
-      //CC = (-2.0/nd) * ( ten_dyad_prod(Ci, S, nsd) + ten_dyad_prod(S, Ci, nsd));
 
       double Ci_sym_prod[N][N][N][N];
       mat_fun_carray::ten_symm_prod<N>(Ci, Ci, Ci_sym_prod);
@@ -348,11 +324,11 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
           }
         }
       }
-      //CC += 2.0*(r1 - p*J) * ten_symm_prod(Ci, Ci, nsd)  +  (pl*J - 2.0*r1/nd) * ten_dyad_prod(Ci, Ci, nsd);
 
     } break;
 
     //  Mooney-Rivlin model
+    //
     case ConstitutiveModelType::stIso_MR: {
       double g1  = 2.0 * (stM.C10 + Inv1*stM.C01);
       double g2  = -2.0 * stM.C01;
@@ -363,7 +339,6 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
           Sb[i][j] = g1*Idm[i][j] + g2*J2d*C[i][j];
         }
       }
-      //auto Sb = g1*Idm + g2*J2d*C;
 
       // Fiber reinforcement/active stress
       double prod[N][N];
@@ -374,7 +349,6 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
           Sb[i][j] += Tfa*prod[i][j];
         }
       }
-      //Sb = Sb + Tfa*mat_dyad_prod(fl.col(0), fl.col(0), nsd);
 
       g1 = 4.0 * J4d * stM.C01;
 
@@ -397,7 +371,6 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
           S[i][j] = J2d*Sb[i][j] - r1*Ci[i][j];
         }
       }
-      //S = J2d*Sb - r1*Ci;
 
       double Ci_Ci_prod[N][N][N][N];
       double Ci_C_prod[N][N][N][N];
@@ -415,17 +388,13 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
           }
         }
       }
-      //auto PP = ten_ids(nsd) - (1.0/nd) * ten_dyad_prod(Ci, C, nsd);
 
       mat_fun_carray::ten_ddot<N>(CCb, PP, CC);
-      //CC = ten_ddot(CCb, PP, nsd);
 
       double CC_t[N][N][N][N];
       mat_fun_carray::ten_transpose<N>(CC, CC_t);
-      //CC = ten_transpose(CC, nsd);
 
       mat_fun_carray::ten_ddot<N>(PP, CC_t, CC);
-      //CC = ten_ddot(PP, CC, nsd);
 
       double Ci_S_prod[N][N][N][N];
       double S_Ci_prod[N][N][N][N];
@@ -441,14 +410,12 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
           }
         }
       }
-      //CC = CC - (2.0/nd) * ( ten_dyad_prod(Ci, S, nsd) + ten_dyad_prod(S, Ci, nsd) );
 
       for (int i = 0; i < nsd; i++) {
         for (int j = 0; j < nsd; j++) {
           S[i][j] += p * J * Ci[i][j];
         }
       }
-      //S  = S + p*J*Ci;
 
       double Ci_sym_prod[N][N][N][N];
       mat_fun_carray::ten_symm_prod<N>(Ci, Ci, Ci_sym_prod);
@@ -462,12 +429,12 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
           }
         }
       }
-      //CC = CC + 2.0*(r1 - p*J) * ten_symm_prod(Ci, Ci, nsd) + (pl*J - 2.0*r1/nd) * ten_dyad_prod(Ci, Ci, nsd);
 
     } break;
 
     // HGO (Holzapfel-Gasser-Ogden) model with additive splitting of
     // the anisotropic fiber-based strain-energy terms
+    //
     case ConstitutiveModelType::stIso_HGO: {
       if (nfd != 2) {
         //err = "Min fiber directions not defined for HGO material model (2)"
@@ -481,34 +448,26 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
       mat_fun_carray::mat_mul(C, fl.rcol(1), C_fl);
       double Inv6 = J2d * mat_fun_carray::norm<N>(fl.rcol(1), C_fl);
 
-      //double Inv4 = J2d*utils::norm(fl.col(0), mat_mul(C, fl.col(0)));
-      //double Inv6 = J2d*utils::norm(fl.col(1), mat_mul(C, fl.col(1)));
-
       double Eff = kap*Inv1 + (1.0-3.0*kap)*Inv4 - 1.0;
       double Ess = kap*Inv1 + (1.0-3.0*kap)*Inv6 - 1.0;
 
       double Hff[N][N];
       mat_fun_carray::mat_dyad_prod<N>(fl.col(0), fl.col(0), Hff);
-      //auto Hff = mat_dyad_prod(fl.col(0), fl.col(0), nsd);
 
       for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
           Hff[i][j] = kap*Idm[i][j] + (1.0-3.0*kap)*Hff[i][j];
         }
       }
-      //Hff = kap*Idm + (1.0-3.0*kap)*Hff;
 
       double Hss[N][N];
       mat_fun_carray::mat_dyad_prod<N>(fl.col(1), fl.col(1), Hss);
-      //auto Hss = mat_dyad_prod(fl.col(1), fl.col(1), nsd);
 
       for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
           Hss[i][j] = kap*Idm[i][j] + (1.0-3.0*kap)*Hss[i][j];
         }
       }
-      //Hss = kap*Idm + (1.0-3.0*kap)*Hss;
-
 
       double g1 = stM.C10;
       double g2 = stM.aff * Eff * exp(stM.bff*Eff*Eff);
@@ -520,7 +479,6 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
           Sb[i][j] = 2.0 * (g1*Idm[i][j] + g2*Hff[i][j] + g3*Hss[i][j]);
         }
       }
-      //auto Sb = 2.0*(g1*Idm + g2*Hff + g3*Hss);
 
       // Fiber reinforcement/active stress
       double prod[N][N];
@@ -531,7 +489,6 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
           Sb[i][j] += Tfa*prod[i][j];
         }
       }
-      //Sb = Sb + Tfa*mat_dyad_prod(fl.col(0), fl.col(0), nsd);
 
       g1 = stM.aff*(1.0 + 2.0*stM.bff*Eff*Eff)*exp(stM.bff*Eff*Eff);
       g2 = stM.ass*(1.0 + 2.0*stM.bss*Ess*Ess)*exp(stM.bss*Ess*Ess);
@@ -555,17 +512,14 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
           }
         }
       }
-      //auto CCb = g1 * ten_dyad_prod(Hff, Hff, nsd) + g2 * ten_dyad_prod(Hss, Hss, nsd);
 
       double r1 = J2d * mat_fun_carray::mat_ddot<N>(C, Sb) / nd;
-      //double r1  = J2d*mat_ddot(C, Sb, nsd) / nd;
 
       for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
           S[i][j] = J2d*Sb[i][j] - r1*Ci[i][j];
         }
       }
-      //S = J2d*Sb - r1*Ci;
 
       double Ci_C_prod[N][N][N][N];
       mat_fun_carray::ten_dyad_prod<N>(Ci, C, Ci_C_prod);
@@ -580,18 +534,13 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
           }
         }
       }
-      //auto PP = ten_ids(nsd) - (1.0/nd) * ten_dyad_prod(Ci, C, nsd);
-
 
       mat_fun_carray::ten_ddot<N>(CCb, PP, CC);
-      //CC = ten_ddot(CCb, PP, nsd);
 
       double CC_t[N][N][N][N];
       mat_fun_carray::ten_transpose<N>(CC, CC_t);
-      //CC = ten_transpose(CC, nsd);
 
       mat_fun_carray::ten_ddot<N>(PP, CC_t, CC);
-      //CC = ten_ddot(PP, CC, nsd);
 
       double Ci_S_prod[N][N][N][N];
       mat_fun_carray::ten_dyad_prod<N>(Ci, S, Ci_S_prod);
@@ -608,14 +557,12 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
           }
         }
       }
-      //CC = CC - (2.0/nd) * ( ten_dyad_prod(Ci, S, nsd) + ten_dyad_prod(S, Ci, nsd) );
 
       for (int i = 0; i < nsd; i++) {
         for (int j = 0; j < nsd; j++) {
           S[i][j] += p * J * Ci[i][j];
         }
       }
-      //S = S + p*J*Ci;
 
       double Ci_sym_prod[N][N][N][N];
       mat_fun_carray::ten_symm_prod<N>(Ci, Ci, Ci_sym_prod);
@@ -632,11 +579,11 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
           }
         }
       }
-      //CC = CC + 2.0*(r1 - p*J) * ten_symm_prod(Ci, Ci, nsd) + (pl*J - 2.0*r1/nd) * ten_dyad_prod(Ci, Ci, nsd);
 
     } break;
 
     // Guccione (1995) transversely isotropic model
+    //
     case ConstitutiveModelType::stIso_Gucci: {
       #ifdef debug_get_pk2cc
       std::cout << msg_prefix << "stIso_Gucci" << std::endl;
@@ -652,7 +599,6 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
           E[i][j] = 0.50 * (J2d*C[i][j] - Idm[i][j]);
         }
       }
-      //auto E = 0.50 * (J2d*C - Idm);
 
       // Transform into local orthogonal coordinate system
       //
@@ -660,27 +606,23 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
       auto fl_0 = fl.col(0);
       auto fl_1 = fl.col(1);
       auto fl_cross = cross(fl);
+
       for (int i = 0; i < N; i++) {
         Rm[i][0] = fl_0[i];
         Rm[i][1] = fl_1[i];
         Rm[i][2] = fl_cross[i];
       }
-      //Rm.set_col(0, fl.col(0));
-      //Rm.set_col(1, fl.col(1));
-      //Rm.set_col(2, cross(fl));
 
       // Project E to local orthogocal coordinate system
       //
       double Es_1[N][N];
       mat_fun_carray::mat_mul(E, Rm, Es_1);
-      //auto Es = mat_mul(E, Rm);
 
       double Rm_t[N][N];
       mat_fun_carray::transpose<N>(Rm, Rm_t);
 
       double Es[N][N];
       mat_fun_carray::mat_mul(Rm_t, Es_1, Es);
-      //Es = mat_mul(transpose(Rm), Es);
 
       double g1 = stM.bff;
       double g2 = stM.bss;
@@ -689,15 +631,11 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
       double QQ = g1 *  Es[0][0]*Es[0][0] + 
                   g2 * (Es[1][1]*Es[1][1] + Es[2][2]*Es[2][2] + Es[1][2]*Es[1][2] + Es[2][1]*Es[2][1]) +
                   g3 * (Es[0][1]*Es[0][1] + Es[1][0]*Es[1][0] + Es[0][2]*Es[0][2] + Es[2][0]*Es[2][0]);
-      //double QQ = g1 *  Es(0,0)*Es(0,0) + 
-      //            g2 * (Es(1,1)*Es(1,1) + Es(2,2)*Es(2,2) + Es(1,2)*Es(1,2) + Es(2,1)*Es(2,1)) +
-      //            g3 * (Es(0,1)*Es(0,1) + Es(1,0)*Es(1,0) + Es(0,2)*Es(0,2) + Es(2,0)*Es(2,0));
 
       double r2 = stM.C10 * exp(QQ);
 
       // Fiber stiffness contribution := (dE*_ab / dE_IJ)
       //
-
       // Use Array in the following since it is a bit tricky.
       //
       Array<double> Rm_a(N,N);
@@ -728,9 +666,6 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
 
         }
       }
-      //auto Sb = g1 *  Es(0,0) * RmRm.slice(0) + 
-      //          g2 * (Es(1,1) * RmRm.slice(1) + Es(2,2)*RmRm.slice(2) + 2.0*Es(1,2)*RmRm.slice(4)) +
-      //    2.0 * g3 * (Es(0,1) * RmRm.slice(3) + Es(0,2)*RmRm.slice(5));
 
       double Sb_prod[N][N][N][N];
       mat_fun_carray::ten_dyad_prod<N>(Sb, Sb, Sb_prod);
@@ -745,14 +680,12 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
           }
         }
       }
-      //auto CCb = 2.0*ten_dyad_prod(Sb, Sb, nsd);
 
       for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
           Sb[i][j] = Sb[i][j] * r2;
         }
       }
-      //Sb = Sb * r2;
 
       // Fiber reinforcement/active stress
       //
@@ -764,20 +697,14 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
           Sb[i][j] += Tfa * prod[i][j];
         }
       }
-      //Sb = Sb + Tfa*mat_dyad_prod(fl.col(0), fl.col(0), nsd);
-
 
       double r1 = J2d * mat_fun_carray::mat_ddot<N>(C, Sb) / nd;
-      //double r1 = J2d*mat_ddot(C, Sb, nsd) / nd;
 
       for (int i = 0; i < nsd; i++) {
         for (int j = 0; j < nsd; j++) {
           S[i][j] = J2d*Sb[i][j] - r1*Ci[i][j];
         }
       }
-      //S = J2d*Sb - r1*Ci;
-
-      r2  = r2*J4d;
 
       CArray4 prod_0;
       CArray4 prod_1;
@@ -793,24 +720,19 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
       mat_fun_carray::ten_dyad_prod<N>(RmRm.slice(4), RmRm.slice(4), prod_4);
       mat_fun_carray::ten_dyad_prod<N>(RmRm.slice(5), RmRm.slice(5), prod_5);
 
+      r2 = r2 * J4d;
+
       for (int i = 0; i < N; i++) { 
         for (int j = 0; j < N; j++) { 
           for (int k = 0; k < N; k++) { 
             for (int l = 0; l < N; l++) { 
-              CCb[i][j][k][l] = r2*(CCb[i][j][k][l] + g1 * prod_0[i][j][k][l] + 
-                        g2 * (prod_1[i][j][k][l] + prod_2[i][j][k][l] + prod_4[i][j][k][l] +
-                  2.0 * g3 * (prod_3[i][j][k][l] +
-                  prod_5[i][j][k][l])));
+              CCb[i][j][k][l] = r2 * (CCb[i][j][k][l] + g1 * prod_0[i][j][k][l] +
+                         g2 * ( prod_1[i][j][k][l] + prod_2[i][j][k][l] + 2.0*prod_4[i][j][k][l] ) +
+                         2.0 * g3 * (prod_3[i][j][k][l] + prod_5[i][j][k][l] ));
             }
           }
         }
       }
-      //CCb = r2*(CCb + g1 * ten_dyad_prod(RmRm.slice(0), RmRm.slice(0), nsd) + 
-      //                g2 * (ten_dyad_prod(RmRm.slice(1), RmRm.slice(1), nsd) +
-      //                    ten_dyad_prod(RmRm.slice(2), RmRm.slice(2), nsd) +
-      //                     ten_dyad_prod(RmRm.slice(4), RmRm.slice(4), nsd)*2.0) +
-      //          2.0 * g3 * (ten_dyad_prod(RmRm.slice(3), RmRm.slice(3), nsd) +
-      //          ten_dyad_prod(RmRm.slice(5), RmRm.slice(5), nsd)));
 
       double Ci_C_prod[N][N][N][N];
       mat_fun_carray::ten_dyad_prod<N>(Ci, C, Ci_C_prod);
@@ -825,17 +747,13 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
           }
         }
       }
-      //auto PP = ten_ids(nsd) - (1.0/nd) * ten_dyad_prod(Ci, C, nsd);
 
       mat_fun_carray::ten_ddot<N>(CCb, PP, CC);
-      //CC = ten_ddot(CCb, PP, nsd);
 
       double CC_t[N][N][N][N];
       mat_fun_carray::ten_transpose<N>(CC, CC_t);
-      //CC  = ten_transpose(CC, nsd);
 
       mat_fun_carray::ten_ddot<N>(PP, CC_t, CC);
-      //CC  = ten_ddot(PP, CC, nsd);
 
       CArray4 Ci_S_prod;
       mat_fun_carray::ten_dyad_prod<N>(Ci, S, Ci_S_prod);
@@ -852,14 +770,12 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
           }
         }
       }
-      //CC  = CC - (2.0/nd) * ( ten_dyad_prod(Ci, S, nsd) + ten_dyad_prod(S, Ci, nsd) );
 
       for (int i = 0; i < nsd; i++) {
         for (int j = 0; j < nsd; j++) {
           S[i][j] += p * J * Ci[i][j];
         }
       }
-      //S  = S + p*J*Ci;
 
       CArray4 Ci_sym_prod;
       mat_fun_carray::ten_symm_prod<N>(Ci, Ci, Ci_sym_prod);
@@ -876,7 +792,6 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
           }
         }
       }
-      //CC = CC + 2.0*(r1 - p*J) * ten_symm_prod(Ci, Ci, nsd) + (pl*J - 2.0*r1/nd) * ten_dyad_prod(Ci, Ci, nsd);
 
     } break;
 

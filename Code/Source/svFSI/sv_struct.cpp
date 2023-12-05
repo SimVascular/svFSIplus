@@ -655,9 +655,9 @@ void struct_3d_carray(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const in
 
   // Inertia, body force and deformation tensor (F)
   //
-  double F[3][3]{0.0}; 
-  double S0[3][3]{0.0}; 
-  double vx[3][3]{0.0};
+  double F[3][3]={}; 
+  double S0[3][3]={}; 
+  double vx[3][3]={};
   double ud[3] = {-rho*fb[0], -rho*fb[1], -rho*fb[2]}; 
 
   F[0][0] = 1.0;
@@ -707,29 +707,29 @@ void struct_3d_carray(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const in
 
   double Jac = mat_fun_carray::mat_det<3>(F);
 
-  double Fi[3][3]{0.0}; 
+  double Fi[3][3]; 
   mat_fun_carray::mat_inv<3>(F, Fi);
 
   // Viscous contribution
   // Velocity gradient in current configuration
-  double VxFi[3][3]{0.0}; 
+  double VxFi[3][3]; 
   mat_fun_carray::mat_mul(vx, Fi, VxFi);
 
   // Deviatoric strain tensor
-  double VxFi_sym[3][3]{0.0}; 
+  double VxFi_sym[3][3]; 
   mat_fun_carray::mat_symm<3>(VxFi,VxFi_sym);
 
-  double ddev[3][3]{0.0}; 
+  double ddev[3][3]; 
   mat_fun_carray::mat_dev<3>(VxFi_sym, ddev);
 
   // 2nd Piola-Kirchhoff stress due to viscosity
-  double Fi_transp[3][3]{0.0}; 
+  double Fi_transp[3][3]; 
   mat_fun_carray::transpose<3>(Fi, Fi_transp);
 
-  double Svis[3][3]{0.0}; 
+  double Svis[3][3]; 
   mat_fun_carray::mat_mul<3>(ddev, Fi_transp, Svis);
 
-  double Fi_Svis_m[3][3]{0.0}; 
+  double Fi_Svis_m[3][3]; 
   mat_fun_carray::mat_mul<3>(Fi, Svis, Fi_Svis_m);
 
   for (int i = 0; i < 3; i++) {
@@ -781,7 +781,7 @@ void struct_3d_carray(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const in
 
   // 1st Piola-Kirchhoff tensor (P)
   //
-  double P[3][3]{0.0}; 
+  double P[3][3]; 
   mat_fun_carray::mat_mul<3>(F, S, P);
 
   // Local residual
@@ -1051,7 +1051,7 @@ void struct_3d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, 
   Array<double> F(3,3), S0(3,3), vx(3,3);
   Vector<double> ud(3);
 
-  double F_f[3][3]{0.0}; 
+  double F_f[3][3]={}; 
   F_f[0][0] = 1.0;
   F_f[1][1] = 1.0;
   F_f[2][2] = 1.0;

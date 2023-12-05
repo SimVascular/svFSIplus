@@ -44,6 +44,18 @@ extern Array<int> t_ind;
 
 void ten_init(const int nd);
 
+template <size_t N>
+void mat_zero(double A[N][N])
+{
+  memset(A, 0, N*sizeof(A[0]));
+}
+
+template <size_t N>
+void mat_zero(double A[N][N][N])
+{
+  memset(A, 0, N*sizeof(A[0]));
+}
+
 /// @brief Print a 2D array. 
 //
 template <size_t N>
@@ -241,6 +253,13 @@ double mat_trace(const double A[N][N])
   return result;
 }
 
+
+template <size_t N>
+void ten_zero(double A[N][N][N][N])
+{
+  memset(A, 0, N*sizeof(A[0]));
+}
+
 template <size_t N>
 void ten_dyad_prod(const double A[N][N], const double B[N][N], double C[N][N][N][N])
 {  
@@ -258,7 +277,7 @@ void ten_dyad_prod(const double A[N][N], const double B[N][N], double C[N][N][N]
 template <size_t N>
 void ten_ids(double A[N][N][N][N])
 {
-  memset(A, 0, N*sizeof(A[0]));
+  ten_zero(A);
 
   for (int i = 0; i < N; i++) {
     for (int j = 0; j < N; j++) {
@@ -350,6 +369,7 @@ template <size_t N>
 void ten_ddot(const double A[N][N][N][N], const double B[N][N][N][N], double C[N][N][N][N])
 {
   int nn = pow(N,4);
+  ten_zero(C);
 
   if (N == 2) {
     for (int ii = 0; ii < nn; ii++) {
@@ -437,6 +457,7 @@ template <size_t N>
 void ten_ddot_3424(const double A[N][N][N][N], const double B[N][N][N][N], double C[N][N][N][N])
 {
   int nn = pow(N,4);
+  ten_zero(C);
 
   if (N == 2) {
     for (int ii = 0; ii < nn; ii++) {
@@ -477,6 +498,7 @@ template <size_t N>
 void ten_ddot_2412(const double A[N][N][N][N], const double B[N][N][N][N], double C[N][N][N][N])
 {
   int nn = pow(N,4);
+  ten_zero(C);
 
   if (N == 2) {
     for (int ii = 0; ii < nn; ii++) {
