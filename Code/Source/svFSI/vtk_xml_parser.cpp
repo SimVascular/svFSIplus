@@ -66,7 +66,13 @@ std::map<unsigned char,int> vtk_cell_to_elem {
   {VTK_QUAD, 4},
   {VTK_TETRA, 4},
   {VTK_TRIANGLE, 3},
-  {VTK_WEDGE, 6}
+  {VTK_WEDGE, 6},
+  {VTK_QUADRATIC_TRIANGLE, 6},
+  {VTK_BIQUADRATIC_TRIANGLE, 7},
+  {VTK_QUADRATIC_QUAD, 8},
+  {VTK_BIQUADRATIC_QUAD, 9},
+  {VTK_QUADRATIC_TETRA, 10},
+  {VTK_QUADRATIC_HEXAHEDRON, 20}
 };
 
 std::map<unsigned char, std::vector<std::vector<int>>> vtk_cell_ordering {
@@ -93,7 +99,31 @@ std::map<unsigned char, std::vector<std::vector<int>>> vtk_cell_ordering {
                {3,4,5},
                {0,1,4,3},
                {1,2,5,4},
-               {2,0,3,5}}}
+               {2,0,3,5}}},
+  {VTK_QUADRATIC_TRIANGLE, {{0,3,1},
+                            {1,4,2},
+                            {2,5,0}}},
+  {VTK_BIQUADRATIC_TRIANGLE, {{0,3,1},
+                              {1,4,2},
+                              {2,5,0}}},
+  {VTK_QUADRATIC_QUAD, {{0,4,1},
+                        {1,5,2},
+                        {2,6,3},
+                        {3,7,0}}},
+  {VTK_BIQUADRATIC_QUAD, {{0,4,1},
+                          {1,5,2},
+                          {2,6,3},
+                          {3,7,0}}},
+{VTK_QUADRATIC_TETRA, {{0,1,2,4,5,6},
+                       {0,3,1,7,8,4},
+                       {1,3,2,8,9,5},
+                       {2,3,0,9,7,6}}},
+{VTK_QUADRATIC_HEXAHEDRON, {{0,1,5,4,8,13,12,9},
+                            {2,3,7,6,10,15,14,11},
+                            {0,1,2,3,8,11,10,9},
+                            {4,5,6,7,12,13,14,15},
+                            {0,3,2,1,9,10,11,8},
+                            {4,7,6,5,15,14,13,12}}}
 };
 /// Names of data arrays store in VTK mesh files.
 const std::string NODE_IDS_NAME("GlobalNodeID");
@@ -208,6 +238,12 @@ void store_element_conn(vtkSmartPointer<vtkUnstructuredGrid> vtk_ugrid, mshType&
   int num_tri = 0;
   int num_unknown = 0;
   int num_wedge = 0;
+  int num_quadratic_tri = 0;
+  int num_biquadratic_tri = 0;
+  int num_quadratic_quad = 0;
+  int num_biquadratic_quad = 0;
+  int num_quadratic_tetra = 0;
+  int num_quadratic_hexahedron = 0;
 
   for (int i = 0; i < num_elems; i++) {
     switch (cell_types->GetValue(i)) {
@@ -233,6 +269,30 @@ void store_element_conn(vtkSmartPointer<vtkUnstructuredGrid> vtk_ugrid, mshType&
 
       case VTK_WEDGE:
         num_wedge += 1;
+      break;
+
+      case VTK_QUADRATIC_TRIANGLE:
+        num_quadratic_tri += 1;
+      break;
+
+      case VTK_BIQUADRATIC_TRIANGLE:
+        num_biquadratic_tri += 1;
+      break;
+
+      case VTK_QUADRATIC_QUAD:
+        num_quadratic_quad += 1;
+      break;
+
+      case VTK_BIQUADRATIC_QUAD:
+        num_biquadratic_quad += 1;
+      break;
+
+      case VTK_QUADRATIC_TETRA:
+        num_quadratic_tetra += 1;
+      break;
+
+      case VTK_QUADRATIC_HEXAHEDRON:
+        num_quadratic_hexahedron += 1;
       break;
 
       default:
@@ -273,6 +333,28 @@ void store_element_conn(vtkSmartPointer<vtkUnstructuredGrid> vtk_ugrid, mshType&
   }
 
   // For higher-order elements with mid-side nodes. 
+  //
+  if (num_quadratic_tri != 0) {
+    np_elem = vtk_cell_to_elem[VTK_QUADRATIC_TRIANGLE];
+    ordering = vtk_cell_ordering[VTK_QUADRATIC_TRIANGLE];
+  } if (num_biquadratic_tri != 0){
+    np_elem = vtk_cell_to_elem[VTK_BIQUADRATIC_TRIANGLE];
+    ordering = vtk_cell_ordering[VTK_BIQUADRATIC_TRIANGLE];
+  } if (num_quadratic_quad != 0) {
+    np_elem = vtk_cell_to_elem[VTK_QUADRATIC_QUAD];
+    ordering = vtk_cell_ordering[VTK_QUADRATIC_QUAD];
+  } if (num_biquadratic_quad != 0) {
+    np_elem = vtk_cell_to_elem[VTK_BIQUADRATIC_QUAD];
+    ordering = vtk_cell_ordering[VTK_BIQUADRATIC_QUAD];
+  } if (num_quadratic_tetra != 0) {
+    np_elem = vtk_cell_to_elem[VTK_QUADRATIC_TETRA];
+    ordering = vtk_cell_ordering[VTK_QUADRATIC_TETRA];
+  } if (num_quadratic_hexahedron != 0) {
+    np_elem = vtk_cell_to_elem[VTK_QUADRATIC_HEXAHEDRON];
+    ordering = vtk_cell_ordering[VTK_QUADRATIC_HEXAHEDRON];
+  }
+
+  // For generic higher-order elements.
   //
   if (np_elem == 0) { 
     auto cell = vtkGenericCell::New();
