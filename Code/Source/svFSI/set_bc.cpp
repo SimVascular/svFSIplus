@@ -1190,7 +1190,7 @@ void set_bc_neu(ComMod& com_mod, const CmMod& cm_mod, const Array<double>& Yg, c
     int iFa = bc.iFa;
     int iM = bc.iM;
     #ifdef debug_set_bc_neu
-    dmsg << "----- iBc " << iBc+1 << " -----";
+    dmsg << "----- iBc " << iBc+1;
     #endif
 
     if (utils::btest(bc.bType, iBC_Neu)) {
@@ -1291,6 +1291,7 @@ void set_bc_neu_l(ComMod& com_mod, const CmMod& cm_mod, const bcType& lBc, const
     for (int a = 0; a < nNo; a++) {
       int Ac = lFa.gN(a);
       hg(Ac) = -h(0)*lBc.gx(a);
+      //dmsg << "hg(Ac): " << hg(Ac);
     }
   }
 
@@ -1340,6 +1341,7 @@ void set_bc_rbnl(ComMod& com_mod, const faceType& lFa, const double ks, const do
   Array3<double> lK(dof*dof,eNoN,eNoN), lKd(nsd*dof,eNoN,eNoN);
 
   for (int e = 0; e < lFa.nEl; e++) {
+    //std::cout << "[set_bc_rbnl] ---------- e " << e+1 << " ----------" << std::endl;
     cDmn = all_fun::domain(com_mod, com_mod.msh[iM], cEq, lFa.gE(e));
     auto cPhys = eq.dmn[cDmn].phys;
 
@@ -1362,14 +1364,16 @@ void set_bc_rbnl(ComMod& com_mod, const faceType& lFa, const double ks, const do
     lKd = 0.0;
 
     for (int g = 0; g < lFa.nG; g++) {
+      //std::cout << "[set_bc_rbnl] ----- g " << g+1 << " -----" << std::endl;
       Vector<double> nV(nsd);
       auto Nx = lFa.Nx.slice(g);
       nn::gnnb(com_mod, lFa, e, g, nsd, nsd-1, eNoN, Nx, nV);
       double Jac = sqrt(utils::norm(nV));
       nV  = nV / Jac;
-      double w = lFa.w(g) * sqrt(utils::norm(nV));
+      double w = lFa.w(g) * Jac; 
       N = lFa.N.col(g);
       Vector<double> u(nsd), ud(nsd);
+      //std::cout << "[set_bc_rbnl] nV: " << nV << std::endl;
 
       for (int a = 0; a < eNoN; a++) {
         for (int i = 0; i < nsd; i++) {
@@ -1377,10 +1381,15 @@ void set_bc_rbnl(ComMod& com_mod, const faceType& lFa, const double ks, const do
           ud(i) = ud(i) + N(a)*yl(i,a);
         }
       }
+      //std::cout << "[set_bc_rbnl] w: " << w << std::endl;
+      //std::cout << "[set_bc_rbnl] u: " << u << std::endl;
+      //std::cout << "[set_bc_rbnl] ud: " << ud << std::endl;
 
       auto nDn = mat_fun::mat_id(nsd);
       Vector<double> h;
       h = ks*u + cs*ud;
+      //std::cout << "[set_bc_rbnl] h: " << h << std::endl;
+      //std::cout << "[set_bc_rbnl] isN: " << isN << std::endl;
 
       if (isN) {
         h = utils::norm(h, nV) * nV;
@@ -1393,9 +1402,9 @@ void set_bc_rbnl(ComMod& com_mod, const faceType& lFa, const double ks, const do
 
       if (nsd == 3) {
         for (int a = 0; a < eNoN; a++) {
-          lR(0,a) = lR(0,a) - w*N(a)*h(0);
-          lR(1,a) = lR(1,a) - w*N(a)*h(1);
-          lR(2,a) = lR(2,a) - w*N(a)*h(2);
+          lR(0,a) = lR(0,a) + w*N(a)*h(0);
+          lR(1,a) = lR(1,a) + w*N(a)*h(1);
+          lR(2,a) = lR(2,a) + w*N(a)*h(2);
         }
 
         if (cPhys == EquationType::phys_ustruct) {
@@ -1470,8 +1479,8 @@ void set_bc_rbnl(ComMod& com_mod, const faceType& lFa, const double ks, const do
 
       } else if (nsd == 2) {
         for (int a = 0; a < eNoN; a++) {
-          lR(0,a) = lR(0,a) - w*N(a)*h(0);
-          lR(1,a) = lR(1,a) - w*N(a)*h(1);
+          lR(0,a) = lR(0,a) + w*N(a)*h(0);
+          lR(1,a) = lR(1,a) + w*N(a)*h(1);
          }
 
         if (cPhys == EquationType::phys_ustruct) {
@@ -1507,10 +1516,10 @@ void set_bc_rbnl(ComMod& com_mod, const faceType& lFa, const double ks, const do
           for (int a = 0; a < eNoN; a++) {
             for (int b = 0; b < eNoN; b++) {
               double T1 = N(a)*N(b);
-              lK(0,a,b) = lK(0,a,b) - wl*T1*nDn(0,0);
-              lK(1,a,b) = lK(1,a,b) - wl*T1*nDn(0,1);
-              lK(dof+0,a,b) = lK(dof+0,a,b) - wl*T1*nDn(1,0);
-              lK(dof+1,a,b) = lK(dof+1,a,b) - wl*T1*nDn(1,1);
+              lK(0,a,b) = lK(0,a,b) + wl*T1*nDn(0,0);
+              lK(1,a,b) = lK(1,a,b) + wl*T1*nDn(0,1);
+              lK(dof+0,a,b) = lK(dof+0,a,b) + wl*T1*nDn(1,0);
+              lK(dof+1,a,b) = lK(dof+1,a,b) + wl*T1*nDn(1,1);
             }
           }
         }
