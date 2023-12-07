@@ -360,7 +360,7 @@ void read_bc(Simulation* simulation, EquationParameters* eq_params, eqType& lEq,
   }
 
   // Stiffness and damping parameters for Robin BC
-  if (!utils::btest(lBc.bType, enum_int(BoundaryConditionType::bType_Robin))) { 
+  if (utils::btest(lBc.bType, enum_int(BoundaryConditionType::bType_Robin))) { 
     lBc.k = bc_params->stiffness.value();
     lBc.c = bc_params->damping.value();
     lBc.rbnN = bc_params->apply_along_normal_direction.value();
