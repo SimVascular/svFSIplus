@@ -72,7 +72,8 @@ std::map<unsigned char,int> vtk_cell_to_elem {
   {VTK_QUADRATIC_QUAD, 8},
   {VTK_BIQUADRATIC_QUAD, 9},
   {VTK_QUADRATIC_TETRA, 10},
-  {VTK_QUADRATIC_HEXAHEDRON, 20}
+  {VTK_QUADRATIC_HEXAHEDRON, 20},
+  {VTK_TRIQUADRATIC_HEXAHEDRON, 27}
 };
 
 std::map<unsigned char, std::vector<std::vector<int>>> vtk_cell_ordering {
@@ -114,16 +115,22 @@ std::map<unsigned char, std::vector<std::vector<int>>> vtk_cell_ordering {
                           {1,5,2},
                           {2,6,3},
                           {3,7,0}}},
-{VTK_QUADRATIC_TETRA, {{0,1,2,4,5,6},
+  {VTK_QUADRATIC_TETRA, {{0,1,2,4,5,6},
                        {0,3,1,7,8,4},
                        {1,3,2,8,9,5},
                        {2,3,0,9,7,6}}},
-{VTK_QUADRATIC_HEXAHEDRON, {{0,1,5,4,8,13,12,9},
-                            {2,3,7,6,10,15,14,11},
-                            {0,1,2,3,8,11,10,9},
-                            {4,5,6,7,12,13,14,15},
-                            {0,3,2,1,9,10,11,8},
-                            {4,7,6,5,15,14,13,12}}}
+  {VTK_QUADRATIC_HEXAHEDRON, {{0,11,3,10,2,9,1,8},
+                              {4,12,5,13,6,14,7,15},
+                              {0,8,1,17,5,12,4,16},
+                              {1,9,2,18,6,13,5,17},
+                              {2,10,3,19,7,14,6,18},
+                              {3,11,0,16,4,15,7,19}}},
+  {VTK_TRIQUADRATIC_HEXAHEDRON, {{0,11,3,10,2,9,1,8,24},
+                                {4,12,5,13,6,14,7,15,25},
+                                {0,8,1,17,5,12,4,16,22},
+                                {1,9,2,18,6,13,5,17,21},
+                                {2,10,3,19,7,14,6,18,23},
+                                {3,11,0,16,4,15,7,19,20}}}
 };
 /// Names of data arrays store in VTK mesh files.
 const std::string NODE_IDS_NAME("GlobalNodeID");
@@ -244,7 +251,7 @@ void store_element_conn(vtkSmartPointer<vtkUnstructuredGrid> vtk_ugrid, mshType&
   int num_biquadratic_quad = 0;
   int num_quadratic_tetra = 0;
   int num_quadratic_hexahedron = 0;
-
+  int num_triquadratic_hexahedron = 0;
   for (int i = 0; i < num_elems; i++) {
     switch (cell_types->GetValue(i)) {
       case VTK_HEXAHEDRON:
@@ -293,6 +300,10 @@ void store_element_conn(vtkSmartPointer<vtkUnstructuredGrid> vtk_ugrid, mshType&
 
       case VTK_QUADRATIC_HEXAHEDRON:
         num_quadratic_hexahedron += 1;
+      break;
+
+      case VTK_TRIQUADRATIC_HEXAHEDRON:
+        num_triquadratic_hexahedron += 1;
       break;
 
       default:
@@ -352,6 +363,9 @@ void store_element_conn(vtkSmartPointer<vtkUnstructuredGrid> vtk_ugrid, mshType&
   } if (num_quadratic_hexahedron != 0) {
     np_elem = vtk_cell_to_elem[VTK_QUADRATIC_HEXAHEDRON];
     ordering = vtk_cell_ordering[VTK_QUADRATIC_HEXAHEDRON];
+  } if (num_triquadratic_hexahedron != 0) {
+    np_elem = vtk_cell_to_elem[VTK_TRIQUADRATIC_HEXAHEDRON];
+    ordering = vtk_cell_ordering[VTK_TRIQUADRATIC_HEXAHEDRON];
   }
 
   // For generic higher-order elements.

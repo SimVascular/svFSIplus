@@ -142,6 +142,9 @@ void VtkVtpData::VtkVtpDataImpl::set_connectivity(const int nsd, const Array<int
     else if (np_elem == 20) {
         vtk_cell_type = VTK_QUADRATIC_HEXAHEDRON;
     }
+    else if (np_elem == 27) {
+        vtk_cell_type = VTK_TRIQUADRATIC_HEXAHEDRON;
+    }
   }
   
   if (np_elem == 2) {
@@ -346,6 +349,8 @@ void VtkVtuData::VtkVtuDataImpl::set_connectivity(const int nsd, const Array<int
     } else if (np_elem == 20) {
       vtk_cell_type = VTK_QUADRATIC_HEXAHEDRON;
 
+    } else if (np_elem == 27) {
+      vtk_cell_type = VTK_TRIQUADRATIC_HEXAHEDRON;
     }
 
   }
