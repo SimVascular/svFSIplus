@@ -33,5 +33,5 @@ def test_block_compression(n_proc):
 
 
 def test_robin(n_proc):
-    folder = os.path.join(base_folder, "block_compression")
+    folder = os.path.join(base_folder, "robin")
     run_with_reference(folder, fields, n_proc)
