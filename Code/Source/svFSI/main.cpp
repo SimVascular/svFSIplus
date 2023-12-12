@@ -170,6 +170,10 @@ void iterate_solution(Simulation* simulation)
   bool exit_now = false;
   double elapsed_time = 0.0;
 
+  // Uncomment these two lines to enable writting values to a file.
+  //Array<double>::write_enabled = true;
+  //Array3<double>::write_enabled = true;
+
   while (true) {
     #ifdef debug_iterate_solution
     dmsg << "========================================= " << std::endl;
@@ -279,6 +283,10 @@ void iterate_solution(Simulation* simulation)
       #endif
 
       pic::pici(simulation, Ag, Yg, Dg);
+      Ag.write("Ag_pic"+ istr);
+      Yg.write("Yg_pic"+ istr);
+      Dg.write("Dg_pic"+ istr);
+      Yn.write("Yn_pic"+ istr);
 
       if (Rd.size() != 0) {
         Rd = 0.0;
@@ -321,6 +329,9 @@ void iterate_solution(Simulation* simulation)
         eq_assem::global_eq_assem(com_mod, cep_mod, com_mod.msh[iM], Ag, Yg, Dg);
       }
 
+      com_mod.Val.write("Val_as"+ istr);
+      com_mod.R.write("R_as"+ istr);
+
       // Treatment of boundary conditions on faces
       // Apply Neumman or Traction boundary conditions
       //
@@ -330,7 +341,15 @@ void iterate_solution(Simulation* simulation)
       dmsg << "Apply Neumman or Traction BCs ... " << std::endl;
       #endif
 
+      Yg.write("Yg_vor_neu"+ istr);
+      Dg.write("Dg_vor_neu"+ istr);
+
       set_bc::set_bc_neu(com_mod, cm_mod, Yg, Dg);
+
+      com_mod.Val.write("Val_neu"+ istr);
+      com_mod.R.write("R_neu"+ istr);
+      Yg.write("Yg_neu"+ istr);
+      Dg.write("Dg_neu"+ istr);
 
       // Apply CMM BC conditions
       //
@@ -447,6 +466,9 @@ void iterate_solution(Simulation* simulation)
 
       ls_ns::ls_solve(com_mod, eq, incL, res);
 
+      com_mod.Val.write("Val_solve"+ istr);
+      com_mod.R.write("R_solve"+ istr);
+
       // Solution is obtained, now updating (Corrector)
       //
       // Modifies: com_mod.An com_mod.Dn com_mod.Yn cep_mod.Xion com_mod.pS0 com_mod.pSa
@@ -457,6 +479,7 @@ void iterate_solution(Simulation* simulation)
       #endif
 
       pic::picc(simulation);
+      com_mod.Yn.write("Yn_picc"+ istr);
 
       // Writing out the time passed, residual, and etc.
       if (std::count_if(com_mod.eq.begin(),com_mod.eq.end(),[](eqType& eq){return eq.ok;}) == com_mod.eq.size()) { 
