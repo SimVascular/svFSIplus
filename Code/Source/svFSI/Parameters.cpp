@@ -461,6 +461,7 @@ const std::string ConstitutiveModelParameters::xml_element_name_ = "Constitutive
 // [TODO] Should use the types defined in consts.h.
 const std::string ConstitutiveModelParameters::GUCCIONE_MODEL = "Guccione";
 const std::string ConstitutiveModelParameters::HGO_MODEL = "HGO";
+const std::string ConstitutiveModelParameters::HOLZAPFEL_MODEL = "Holzapfel";
 const std::string ConstitutiveModelParameters::LEE_SACKS = "Lee-Sacks";
 const std::string ConstitutiveModelParameters::NEOHOOKEAN_MODEL = "neoHookean";
 const std::string ConstitutiveModelParameters::STVENANT_KIRCHHOFF_MODEL = "stVenantKirchhoff";
@@ -471,6 +472,8 @@ const std::map<std::string, std::string> ConstitutiveModelParameters::constituti
   { "Gucci",                                     ConstitutiveModelParameters::GUCCIONE_MODEL},
 
   {ConstitutiveModelParameters::HGO_MODEL, ConstitutiveModelParameters::HGO_MODEL},
+
+  {ConstitutiveModelParameters::HOLZAPFEL_MODEL, ConstitutiveModelParameters::HOLZAPFEL_MODEL},
 
   {ConstitutiveModelParameters::LEE_SACKS, ConstitutiveModelParameters::LEE_SACKS},
 
@@ -489,6 +492,7 @@ using SetConstitutiveModelParamMapType = std::map<std::string, std::function<voi
 SetConstitutiveModelParamMapType SetConstitutiveModelParamMap = {
   {ConstitutiveModelParameters::GUCCIONE_MODEL, [](CmpType cp, CmpXmlType params) -> void {cp->guccione.set_values(params);}},
   {ConstitutiveModelParameters::HGO_MODEL, [](CmpType cp, CmpXmlType params) -> void {cp->holzapfel_gasser_ogden.set_values(params);}},
+  {ConstitutiveModelParameters::HOLZAPFEL_MODEL, [](CmpType cp, CmpXmlType params) -> void {cp->holzapfel.set_values(params);}},
   {ConstitutiveModelParameters::LEE_SACKS, [](CmpType cp, CmpXmlType params) -> void {cp->lee_sacks.set_values(params);}},
   {ConstitutiveModelParameters::NEOHOOKEAN_MODEL, [](CmpType cp, CmpXmlType params) -> void {cp->neo_hookean.set_values(params);}},
   {ConstitutiveModelParameters::STVENANT_KIRCHHOFF_MODEL, [](CmpType cp, CmpXmlType params) -> void {cp->stvenant_kirchhoff.set_values(params);}},
@@ -559,6 +563,8 @@ HolzapfelParameters::HolzapfelParameters()
   set_parameter("afs", 0.0, required, afs);
   set_parameter("bfs", 0.0, required, bfs);
 
+  set_parameter("k", 0.0, required, k);
+  
   set_xml_element_name("Constitutive_model type=Holzapfel");
 }
 
