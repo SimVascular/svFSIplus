@@ -32,8 +32,8 @@
 // These are template functions reproducing some mat_fun functions 
 // using C++ arrays rather than Array objects. 
 
-#ifndef MAT_FUN_FIXED_H 
-#define MAT_FUN_FIXED_H 
+#ifndef MAT_FUN_CARRAY_H 
+#define MAT_FUN_CARRAY_H 
 
 #include "mat_fun.h"
 #include "utils.h"
