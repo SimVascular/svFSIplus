@@ -58,7 +58,13 @@ def run_by_name(folder, name, t_max, n_proc=1):
 
 
 def run_with_reference(
-    folder, fields, n_proc=1, t_max=1, name_ref=None, name_inp="svFSI.xml"
+    base_folder,
+    test_folder,
+    fields,
+    n_proc=1,
+    t_max=1,
+    name_ref=None,
+    name_inp="svFSI.xml",
 ):
     """
     Run a test case and compare it to a stored reference solution
@@ -75,6 +81,7 @@ def run_with_reference(
         name_ref = "result_" + str(t_max).zfill(3) + ".vtu"
 
     # run simulation
+    folder = os.path.join("cases", base_folder, test_folder)
     res = run_by_name(folder, name_inp, t_max, n_proc)
 
     # read reference
@@ -102,9 +109,7 @@ def run_with_reference(
             return
         else:
             msg = "Test failed!"
-            msg += (
-                "\nResults in field " + f + " differ by more than rtol=" + str(RTOL[f])
-            )
+            msg += "\nResults in field " + f + " differ by more than rtol=" + str(rtol)
             msg += (
                 " in " + str(np.sum(close)) + " out of " + str(close.size) + " results."
             )

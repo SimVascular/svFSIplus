@@ -1190,7 +1190,7 @@ void set_bc_neu(ComMod& com_mod, const CmMod& cm_mod, const Array<double>& Yg, c
     int iFa = bc.iFa;
     int iM = bc.iM;
     #ifdef debug_set_bc_neu
-    dmsg << "----- iBc " << iBc+1 << " -----";
+    dmsg << "----- iBc " << iBc+1;
     #endif
 
     if (utils::btest(bc.bType, iBC_Neu)) {
@@ -1291,6 +1291,9 @@ void set_bc_neu_l(ComMod& com_mod, const CmMod& cm_mod, const bcType& lBc, const
     for (int a = 0; a < nNo; a++) {
       int Ac = lFa.gN(a);
       hg(Ac) = -h(0)*lBc.gx(a);
+      #ifdef debug_set_bc_neu_l
+      dmsg << "hg(Ac): " << hg(Ac);
+      #endif
     }
   }
 
@@ -1327,9 +1330,9 @@ void set_bc_rbnl(ComMod& com_mod, const faceType& lFa, const double ks, const do
   auto& cDmn = com_mod.cDmn;
 
   int s = eq.s;
-  double am = eq.af * eq.gam * dt;
-  double af = eq.af * eq.beta * dt * dt;
-  double afm = am / eq.am;
+  double afv = eq.af * eq.gam * dt;
+  double afu = eq.af * eq.beta * dt * dt;
+  double afm = afv / eq.am;
 
   int iM = lFa.iM;
   int eNoN = lFa.eNoN;
@@ -1346,6 +1349,7 @@ void set_bc_rbnl(ComMod& com_mod, const faceType& lFa, const double ks, const do
     for (int a = 0; a < eNoN; a++) {
       int Ac = lFa.IEN(a,e);
       ptr(a) = Ac;
+
       for (int i = 0; i < nsd; i++) {
         xl(i,a) = com_mod.x(i,Ac);
         yl(i,a) = Yg(i+s,Ac);
@@ -1364,7 +1368,9 @@ void set_bc_rbnl(ComMod& com_mod, const faceType& lFa, const double ks, const do
       Vector<double> nV(nsd);
       auto Nx = lFa.Nx.slice(g);
       nn::gnnb(com_mod, lFa, e, g, nsd, nsd-1, eNoN, Nx, nV);
-      double w = lFa.w(g) * sqrt(utils::norm(nV));
+      double Jac = sqrt(utils::norm(nV));
+      nV  = nV / Jac;
+      double w = lFa.w(g) * Jac; 
       N = lFa.N.col(g);
       Vector<double> u(nsd), ud(nsd);
 
@@ -1377,28 +1383,26 @@ void set_bc_rbnl(ComMod& com_mod, const faceType& lFa, const double ks, const do
 
       auto nDn = mat_fun::mat_id(nsd);
       Vector<double> h;
+      h = ks*u + cs*ud;
 
       if (isN) {
-        h = (ks*utils::norm(u, nV) + cs*utils::norm(ud, nV)) * nV;
+        h = utils::norm(h, nV) * nV;
         for (int a = 0; a < nsd; a++) {
           for (int b = 0; b < nsd; b++) {
             nDn(a,b) = nV(a)*nV(b);
           }
         }
-
-      } else {
-        h = ks*u + cs*ud;
       }
 
       if (nsd == 3) {
         for (int a = 0; a < eNoN; a++) {
-          lR(0,a) = lR(0,a) - w*N(a)*h(0);
-          lR(1,a) = lR(1,a) - w*N(a)*h(1);
-          lR(2,a) = lR(2,a) - w*N(a)*h(2);
+          lR(0,a) = lR(0,a) + w*N(a)*h(0);
+          lR(1,a) = lR(1,a) + w*N(a)*h(1);
+          lR(2,a) = lR(2,a) + w*N(a)*h(2);
         }
 
         if (cPhys == EquationType::phys_ustruct) {
-          double wl = w*af;
+          double wl = w * afv;
 
           for (int a = 0; a < eNoN; a++) {
             for (int b = 0; b < eNoN; b++) {
@@ -1447,34 +1451,34 @@ void set_bc_rbnl(ComMod& com_mod, const faceType& lFa, const double ks, const do
         // cPhys != EquationType::phys_ustruct
         //
         } else {
-          double wl = w*(ks*af + cs*am);
+          double wl = w * (ks*afu + cs*afv);
 
           for (int a = 0; a < eNoN; a++) {
             for (int b = 0; b < eNoN; b++) {
               double T1 = N(a)*N(b);
-              lK(0,a,b) = lK(0,a,b) - wl*T1*nDn(0,0);
-              lK(1,a,b) = lK(1,a,b) - wl*T1*nDn(0,1);
-              lK(2,a,b) = lK(2,a,b) - wl*T1*nDn(0,2);
+              lK(0,a,b) = lK(0,a,b) + wl*T1*nDn(0,0);
+              lK(1,a,b) = lK(1,a,b) + wl*T1*nDn(0,1);
+              lK(2,a,b) = lK(2,a,b) + wl*T1*nDn(0,2);
 
-              lK(dof+0,a,b) = lK(dof+0,a,b) - wl*T1*nDn(1,0);
-              lK(dof+1,a,b) = lK(dof+1,a,b) - wl*T1*nDn(1,1);
-              lK(dof+2,a,b) = lK(dof+2,a,b) - wl*T1*nDn(1,2);
+              lK(dof+0,a,b) = lK(dof+0,a,b) + wl*T1*nDn(1,0);
+              lK(dof+1,a,b) = lK(dof+1,a,b) + wl*T1*nDn(1,1);
+              lK(dof+2,a,b) = lK(dof+2,a,b) + wl*T1*nDn(1,2);
 
-              lK(2*dof+0,a,b) = lK(2*dof+2,a,b)-wl*T1*nDn(2,0);
-              lK(2*dof+1,a,b) = lK(2*dof+1,a,b)-wl*T1*nDn(2,1);
-              lK(2*dof+2,a,b) = lK(2*dof+2,a,b)-wl*T1*nDn(2,2);
+              lK(2*dof+0,a,b) = lK(2*dof+0,a,b) + wl*T1*nDn(2,0);
+              lK(2*dof+1,a,b) = lK(2*dof+1,a,b) + wl*T1*nDn(2,1);
+              lK(2*dof+2,a,b) = lK(2*dof+2,a,b) + wl*T1*nDn(2,2);
             }
           }
         }
 
       } else if (nsd == 2) {
         for (int a = 0; a < eNoN; a++) {
-          lR(0,a) = lR(0,a) - w*N(a)*h(0);
-          lR(1,a) = lR(1,a) - w*N(a)*h(1);
+          lR(0,a) = lR(0,a) + w*N(a)*h(0);
+          lR(1,a) = lR(1,a) + w*N(a)*h(1);
          }
 
         if (cPhys == EquationType::phys_ustruct) {
-          double wl = w*af;
+          double wl = w*afv;
 
           for (int a = 0; a < eNoN; a++) {
             for (int b = 0; b < eNoN; b++) {
@@ -1501,15 +1505,15 @@ void set_bc_rbnl(ComMod& com_mod, const faceType& lFa, const double ks, const do
           }
 
         } else {
-          double wl = w*(ks*af + cs*am);
+          double wl = w * (ks*afu + cs*afv);
 
           for (int a = 0; a < eNoN; a++) {
             for (int b = 0; b < eNoN; b++) {
               double T1 = N(a)*N(b);
-              lK(0,a,b) = lK(0,a,b) - wl*T1*nDn(0,0);
-              lK(1,a,b) = lK(1,a,b) - wl*T1*nDn(0,1);
-              lK(dof+0,a,b) = lK(dof+0,a,b) - wl*T1*nDn(1,0);
-              lK(dof+1,a,b) = lK(dof+1,a,b) - wl*T1*nDn(1,1);
+              lK(0,a,b) = lK(0,a,b) + wl*T1*nDn(0,0);
+              lK(1,a,b) = lK(1,a,b) + wl*T1*nDn(0,1);
+              lK(dof+0,a,b) = lK(dof+0,a,b) + wl*T1*nDn(1,0);
+              lK(dof+1,a,b) = lK(dof+1,a,b) + wl*T1*nDn(1,1);
             }
           }
         }

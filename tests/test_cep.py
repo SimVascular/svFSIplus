@@ -6,31 +6,30 @@ import pandas as pd
 from .conftest import run_with_reference, DEFAULT_TOL
 
 # Common folder for all tests in this file
-base_folder = os.path.join("cases", "cep")
+base_folder = "cep"
+
+# Fields to test
+fields = ["Action_potential"]
 
 
 def test_cable_TTP_1d(n_proc):
-    folder = os.path.join(base_folder, "cable_TTP_1d")
-    field = ["Action_potential"]
-    run_with_reference(folder, field, n_proc)
+    test_folder = "cable_TTP_1d"
+    run_with_reference(base_folder, test_folder, fields, n_proc)
 
 
 def test_spiral_BO_2d(n_proc):
-    folder = os.path.join(base_folder, "spiral_BO_2d")
-    field = ["Action_potential"]
-    run_with_reference(folder, field, n_proc)
+    test_folder = "spiral_BO_2d"
+    run_with_reference(base_folder, test_folder, fields, n_proc)
 
 
 def test_square_AP_2d(n_proc):
-    folder = os.path.join(base_folder, "square_AP_2d")
-    field = ["Action_potential"]
-    run_with_reference(folder, field, n_proc)
+    test_folder = "square_AP_2d"
+    run_with_reference(base_folder, test_folder, fields, n_proc)
 
 
 def test_purkinje(n_proc):
-    folder = os.path.join(base_folder, "purkinje")
-    field = ["Action_potential"]
-    run_with_reference(folder, field, n_proc)
+    test_folder = "purkinje"
+    run_with_reference(base_folder, test_folder, fields, n_proc)
 
 
 @pytest.mark.parametrize(
@@ -43,16 +42,20 @@ def test_purkinje(n_proc):
     ],
 )
 def test_niederer_benchmark_ECGs_quadrature(confs_ecgs, n_proc):
-    folder = os.path.join(base_folder, "niederer_benchmark_ECGs_quadrature")
-    field = ["Action_potential"]
+    test_folder = "niederer_benchmark_ECGs_quadrature"
     t_max = 1
     name_inp = "svFSI_" + confs_ecgs[0] + ".xml"
     name_ref = "result_" + confs_ecgs[0] + "_" + str(t_max).zfill(3) + ".vtu"
-    run_with_reference(folder, field, n_proc, t_max, name_ref, name_inp)
+    run_with_reference(
+        base_folder, test_folder, fields, n_proc, t_max, name_ref, name_inp
+    )
 
     for jj in range(0, 3):
+        ecg_folder = os.path.join(
+            "cases", base_folder, test_folder, str(n_proc) + "-procs"
+        )
         ecg_trace = pd.read_csv(
-            folder + "/" + str(n_proc) + "-procs/ecglead_" + str(jj + 1) + ".txt",
+            os.path.join(ecg_folder, "ecglead_" + str(jj + 1) + ".txt"),
             header=None,
         )
         assert (
