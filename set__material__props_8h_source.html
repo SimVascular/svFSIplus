@@ -225,29 +225,30 @@ $(function() {
 <div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;  lDmn.stM.bss = params.b4s.value();</div>
 <div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;  lDmn.stM.afs = params.afs.value();</div>
 <div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;  lDmn.stM.bfs = params.bfs.value();</div>
-<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;} },</div>
-<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160; </div>
-<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;<span class="comment">//---------------------------//</span></div>
-<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;<span class="comment">//       stIso_LS            //</span></div>
-<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;<span class="comment">//---------------------------//</span></div>
-<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;<span class="comment">// Lee-Sacks material model.</span></div>
-<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;<span class="comment">//</span></div>
-<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;{consts::ConstitutiveModelType::stIso_LS, [](<a class="code" href="class_domain_parameters.html">DomainParameters</a>* domain_params, <span class="keywordtype">double</span> mu, <span class="keywordtype">double</span> kap, <span class="keywordtype">double</span> lam,</div>
-<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;    <a class="code" href="classdmn_type.html">dmnType</a>&amp; lDmn) -&gt; <span class="keywordtype">void</span></div>
-<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;{</div>
-<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;  lDmn.stM.isoType = consts::ConstitutiveModelType::stIso_LS;</div>
-<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;  <span class="keyword">auto</span>&amp; params = domain_params-&gt;constitutive_model.lee_sacks;</div>
-<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160; </div>
-<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;  lDmn.stM.a = params.a.value();</div>
-<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;  lDmn.stM.a0 = params.a0.value();</div>
-<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;  lDmn.stM.b1 = params.b1.value();</div>
-<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;  lDmn.stM.b2 = params.b2.value();</div>
-<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;  lDmn.stM.mu0 = params.mu0.value();</div>
-<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160; </div>
-<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;} },</div>
-<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160; </div>
-<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;};</div>
-<div class="ttc" id="aclass_domain_parameters_html"><div class="ttname"><a href="class_domain_parameters.html">DomainParameters</a></div><div class="ttdoc">The DomainParameters class stores parameters for the XML 'Domain' element to specify properties for s...</div><div class="ttdef"><b>Definition:</b> Parameters.h:960</div></div>
+<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;  lDmn.stM.khs = params.k.value();</div>
+<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;} },</div>
+<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160; </div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;<span class="comment">//---------------------------//</span></div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;<span class="comment">//       stIso_LS            //</span></div>
+<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;<span class="comment">//---------------------------//</span></div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;<span class="comment">// Lee-Sacks material model.</span></div>
+<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;<span class="comment">//</span></div>
+<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;{consts::ConstitutiveModelType::stIso_LS, [](<a class="code" href="class_domain_parameters.html">DomainParameters</a>* domain_params, <span class="keywordtype">double</span> mu, <span class="keywordtype">double</span> kap, <span class="keywordtype">double</span> lam,</div>
+<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;    <a class="code" href="classdmn_type.html">dmnType</a>&amp; lDmn) -&gt; <span class="keywordtype">void</span></div>
+<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;{</div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;  lDmn.stM.isoType = consts::ConstitutiveModelType::stIso_LS;</div>
+<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;  <span class="keyword">auto</span>&amp; params = domain_params-&gt;constitutive_model.lee_sacks;</div>
+<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160; </div>
+<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;  lDmn.stM.a = params.a.value();</div>
+<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;  lDmn.stM.a0 = params.a0.value();</div>
+<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;  lDmn.stM.b1 = params.b1.value();</div>
+<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;  lDmn.stM.b2 = params.b2.value();</div>
+<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;  lDmn.stM.mu0 = params.mu0.value();</div>
+<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160; </div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;} },</div>
+<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160; </div>
+<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;};</div>
+<div class="ttc" id="aclass_domain_parameters_html"><div class="ttname"><a href="class_domain_parameters.html">DomainParameters</a></div><div class="ttdoc">The DomainParameters class stores parameters for the XML 'Domain' element to specify properties for s...</div><div class="ttdef"><b>Definition:</b> Parameters.h:962</div></div>
 <div class="ttc" id="aclassdmn_type_html"><div class="ttname"><a href="classdmn_type.html">dmnType</a></div><div class="ttdoc">Domain type is to keep track with element belong to which domain and also different physical quantiti...</div><div class="ttdef"><b>Definition:</b> ComMod.h:415</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
