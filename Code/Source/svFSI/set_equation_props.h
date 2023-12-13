@@ -100,6 +100,7 @@ SetEquationPropertiesMapType set_equation_props = {
     //
     auto init_str = eq_params->initialize();
     std::transform(init_str.begin(), init_str.end(), init_str.begin(), ::tolower);
+
     if (std::set<std::string>{"inflate", "inf"}.count(init_str) != 0) {
       com_mod.pstEq = false;
     } else if (std::set<std::string>{"prestress", "prest"}.count(init_str) != 0) {
@@ -119,7 +120,7 @@ SetEquationPropertiesMapType set_equation_props = {
   if (eq_params->variable_wall_properties.defined()) {
     com_mod.cmmVarWall = true;
 
-    if (com_mod.varWallProps.size() != 0) {
+    if (com_mod.varWallProps.size() == 0) {
       com_mod.varWallProps.resize(2, com_mod.gtnNo);
     }
 

@@ -2746,9 +2746,7 @@ void read_visc_model(Simulation* simulation, EquationParameters* eq_params, Doma
 // Read CMM variable wall properties from a file.
 //
 // Modifies:
-//   com_mod.msh[iM.x - seems to use this as a scatch array.
-//
-// [NOTE] This is not fully implemented, no tests yet.
+//   com_mod.msh[iM.x - seems to use this as a scratch array.
 //
 void read_wall_props_ff(ComMod& com_mod, const std::string& file_name, const int iM, const int iFa)
 {
@@ -2760,6 +2758,7 @@ void read_wall_props_ff(ComMod& com_mod, const std::string& file_name, const int
     int data_comp = 1;
     int data_series = 1;
     vtk_xml::read_vtu_pdata(file_name, "Thickness", com_mod.nsd, data_comp, data_series, mesh);
+
     for (int a = 0; a < mesh.gnNo; a++) {
       int Ac = mesh.gN[a];
       com_mod.varWallProps(0,Ac) = mesh.x(0,a);
@@ -2767,9 +2766,13 @@ void read_wall_props_ff(ComMod& com_mod, const std::string& file_name, const int
 
     // Read elasticity modulus
     mesh.x = 0.0; 
+    data_comp = 1;
+    data_series = 1;
+    vtk_xml::read_vtu_pdata(file_name, "Elasticity_modulus", com_mod.nsd, data_comp, data_series, mesh);
+
     for (int a = 0; a < mesh.gnNo; a++) {
       int Ac = mesh.gN[a];
-      com_mod.varWallProps(1,Ac) = mesh.x(1,a);
+      com_mod.varWallProps(1,Ac) = mesh.x(0,a);
     }
 
   } else { 
