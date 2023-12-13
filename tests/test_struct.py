@@ -33,9 +33,8 @@ def test_LV_Guccione_passive(n_proc):
     run_with_reference(base_folder, test_folder, fields, n_proc)
 
 def test_LV_Holzapfel_passive(n_proc):
-    folder = os.path.join(base_folder, "LV_Holzapfel_passive")
-    fields = ["Displacement", "Velocity", "Jacobian"]
-    run_with_reference(folder, fields, n_proc)
+    test_folder = "LV_Holzapfel_passive"
+    run_with_reference(base_folder, test_folder, fields, n_proc)
 
 def test_block_compression(n_proc):
     test_folder = "block_compression"
