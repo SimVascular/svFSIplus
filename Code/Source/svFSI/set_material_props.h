@@ -153,6 +153,7 @@ SeMaterialPropertiesMapType set_material_props = {
   lDmn.stM.bss = params.b4s.value();
   lDmn.stM.afs = params.afs.value();
   lDmn.stM.bfs = params.bfs.value();
+  lDmn.stM.khs = params.k.value();
 } },
 
 //---------------------------//

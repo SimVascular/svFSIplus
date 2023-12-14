@@ -257,6 +257,8 @@ void iterate_solution(Simulation* simulation)
       dmsg << "com_mod.eq[cEq].sym: " << com_mod.eq[cEq].sym;
       //simulation->com_mod.timer.set_time();
       #endif
+      //std::cout << "-------------------------------------" << std::endl;
+      //std::cout << "inner_count: " << inner_count << std::endl;
 
       auto istr = "_" + std::to_string(cTS) + "_" + std::to_string(inner_count);
       iEqOld = cEq;
@@ -328,6 +330,8 @@ void iterate_solution(Simulation* simulation)
       for (int iM = 0; iM < com_mod.nMsh; iM++) {
         eq_assem::global_eq_assem(com_mod, cep_mod, com_mod.msh[iM], Ag, Yg, Dg);
       }
+      com_mod.R.write("R_as"+ istr);
+      com_mod.Val.write("Val_as"+ istr);
 
       com_mod.Val.write("Val_as"+ istr);
       com_mod.R.write("R_as"+ istr);

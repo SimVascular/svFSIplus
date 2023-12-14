@@ -29,19 +29,65 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// These are template functions reproducing some mat_fun functions using
-// fixed size arrays. 
+// These are template functions reproducing some mat_fun functions 
+// using C++ arrays rather than Array objects. 
 
-#ifndef MAT_FUN_FIXED_H 
-#define MAT_FUN_FIXED_H 
+#ifndef MAT_FUN_CARRAY_H 
+#define MAT_FUN_CARRAY_H 
 
+#include "mat_fun.h"
 #include "utils.h"
 
-namespace mat_fun {
+namespace mat_fun_carray {
 
 extern Array<int> t_ind;
 
-//static Array<int> t_ind;
+void ten_init(const int nd);
+
+template <size_t N>
+void mat_zero(double A[N][N])
+{
+  memset(A, 0, N*sizeof(A[0]));
+}
+
+template <size_t N>
+void mat_zero(double A[N][N][N])
+{
+  memset(A, 0, N*sizeof(A[0]));
+}
+
+/// @brief Print a 2D array. 
+//
+template <size_t N>
+void print(const std::string& name, const double A[N][N])
+{
+  std::cout << name << ": ";
+  for (int j = 0; j < N; j++) {
+    for (int i = 0; i < N; i++) {
+      std::cout << A[i][j] << " ";
+    }
+  }
+  std::cout << std::endl;
+}
+
+/// @brief Print a 3D array. 
+//
+template <size_t N>
+void print(const std::string& name, const double A[N][N][N][N])
+{
+  std::cout << name << ": ";
+  for (int l = 0; l < N; l++) {
+    for (int k = 0; k < N; k++) {
+      for (int j = 0; j < N; j++) {
+        for (int i = 0; i < N; i++) {
+          std::cout << A[i][j][k][l] << " ";
+        }
+      }
+    }
+  }
+  std::cout << std::endl;
+}
+
 
 template <size_t N>
 double mat_det(const double A[N][N])
@@ -80,7 +126,13 @@ template <size_t N>
 void mat_id(double A[N][N])
 {
   for (int i = 0; i < N; i++) {
-    A[i][i] = 1.0;
+    for (int j = 0; j < N; j++) {
+      if (i == j) {
+        A[i][j] = 1.0;
+      } else {
+        A[i][j] = 0.0;
+      }
+    }
   }
 }
 
@@ -94,6 +146,10 @@ void transpose(const double A[N][N],  double result[N][N])
   }
 }
 
+//---------
+// mat_mul
+//---------
+//
 template <size_t N>
 void mat_mul(const double A[N][N], const double B[N][N], double result[N][N])
 {
@@ -121,6 +177,30 @@ void mat_mul(const double A[N][N], const Vector<double>& v, double result[N])
     }
 
     result[i] = sum;
+  }
+}
+
+template <size_t N>
+void mat_mul6x3(const double A[2*N][2*N], const Array<double>& B, Array<double>& C)
+{
+  int B_num_rows = B.nrows();
+  int B_num_cols = B.ncols();
+
+  if (B_num_rows != 2*N) {
+    throw std::runtime_error("[mat_mul] The number of columns of A (" + std::to_string(2*N) + ") does not equal " +
+        " the number of rows of B (" + std::to_string(B_num_rows) + ").");
+  }
+ 
+  for (int i = 0; i < 2*N; i++) {
+    for (int j = 0; j < B_num_cols; j++) {
+      double sum = 0.0;
+
+      for (int k = 0; k < 2*N; k++) {
+        sum += A[i][k] * B(k,j);
+      }
+
+      C(i,j) = sum;
+    }
   }
 }
 
@@ -173,6 +253,13 @@ double mat_trace(const double A[N][N])
   return result;
 }
 
+
+template <size_t N>
+void ten_zero(double A[N][N][N][N])
+{
+  memset(A, 0, N*sizeof(A[0]));
+}
+
 template <size_t N>
 void ten_dyad_prod(const double A[N][N], const double B[N][N], double C[N][N][N][N])
 {  
@@ -190,14 +277,12 @@ void ten_dyad_prod(const double A[N][N], const double B[N][N], double C[N][N][N]
 template <size_t N>
 void ten_ids(double A[N][N][N][N])
 {
-  A = {};
+  ten_zero(A);
 
   for (int i = 0; i < N; i++) {
     for (int j = 0; j < N; j++) {
       A[i][j][i][j] += 0.5;
       A[i][j][j][i] += 0.5;
-      //A(i,j,i,j) = A(i,j,i,j) + 0.5;
-      //A(i,j,j,i) = A(i,j,j,i) + 0.5;
     }
   }
 }
@@ -209,6 +294,30 @@ void mat_dyad_prod(const Vector<double>& u, const Vector<double>& v, double resu
     for (int i = 0; i < N; i++) {
       result[i][j] = u(i) * v(j);
     }
+  }
+}
+
+template <size_t N>
+void mat_symm_prod(const Vector<double>& u, const Vector<double>& v, double result[N][N])
+{
+  for (int i = 0; i < N; i++) {
+    for (int j = 0; j < N; j++) {
+      result[i][j] = 0.5 * (u(i)*v(j) + u(j)*v(i));
+    }
+  }
+}
+
+template <size_t N>
+void ten_dyad_prod(const Array<double>& A, const Array<double>& B, double C[N][N][N][N])
+{   
+  int nn = pow(N,4);
+
+  for (int ii = 0; ii < nn; ii++) {
+    int i = t_ind(0,ii);
+    int j = t_ind(1,ii);
+    int k = t_ind(2,ii);
+    int l = t_ind(3,ii);
+    C[i][j][k][l] = A(i,j) * B(k,l);
   }
 }
 
@@ -257,33 +366,10 @@ void ten_transpose(const double A[N][N][N][N], double result[N][N][N][N])
 }
 
 template <size_t N>
-void ten_init()
-{
-  int nn = pow(N, 4);
-  t_ind.resize(4, nn);
-  //ALLOCATE(t_ind(4,nn))
-  //std::cout << msg_prefix << "nn: " << nn << std::endl;
-
-  int ii = 0;
-  for (int l = 0; l < N; l++) {
-    for (int k = 0; k < N; k++) {
-      for (int j = 0; j < N; j++) {
-        for (int i = 0; i < N; i++) {
-          t_ind(0,ii) = i;
-          t_ind(1,ii) = j;
-          t_ind(2,ii) = k;
-          t_ind(3,ii) = l;
-          ii = ii + 1;
-        }
-      }
-    }
-  }
-}
-
-template <size_t N>
 void ten_ddot(const double A[N][N][N][N], const double B[N][N][N][N], double C[N][N][N][N])
 {
   int nn = pow(N,4);
+  ten_zero(C);
 
   if (N == 2) {
     for (int ii = 0; ii < nn; ii++) {
@@ -322,26 +408,131 @@ void ten_ddot(const double A[N][N][N][N], const double B[N][N][N][N], double C[N
 }
 
 template <size_t N>
-double norm(const Vector<double>& u, const double v[N])
+double norm(const double u[N], const double v[N])
 {
   double norm = 0.0;
   for (int i = 0; i < N; i++) {
-    norm += u(i)*v[i];
+    norm += u[i]*v[i];
   }
   return norm;
 }
 
 template <size_t N>
-void print(const std::string& name, const double A[N][N])
+double norm(const Vector<double>& u, const double v[N])
 {
-  std::cout << name << ": ";
+  double norm = 0.0;
+  for (int i = 0; i < N; i++) {
+    norm += u[i]*v[i];
+  }
+  return norm;
+}
+
+
+template <size_t N>
+void mat_symm(const double A[N][N], double S[N][N])
+{
   for (int i = 0; i < N; i++) {
     for (int j = 0; j < N; j++) {
-      std::cout << A[i][j] << " ";
+      S[i][j] = 0.5 * (A[i][j] + A[j][i]);
     }
-    std::cout << " | ";
   }
-  std::cout << std::endl;
+}
+
+template <size_t N>
+void mat_dev(const double A[N][N], double dev[N][N])
+{
+  double trA = mat_trace<N>(A);
+  double id[N][N];
+  mat_id<N>(id);
+
+  for (int i = 0; i < N; i++) {
+    for (int j = 0; j < N; j++) {
+      dev[i][j] = A[i][j] - (trA / static_cast<double>(N)) * id[i][j];
+    }
+  }
+}
+
+
+template <size_t N>
+void ten_ddot_3424(const double A[N][N][N][N], const double B[N][N][N][N], double C[N][N][N][N])
+{
+  int nn = pow(N,4);
+  ten_zero(C);
+
+  if (N == 2) {
+    for (int ii = 0; ii < nn; ii++) {
+      int i = t_ind(0,ii);
+      int j = t_ind(1,ii);
+      int k = t_ind(2,ii);
+      int l = t_ind(3,ii);
+
+      C[i][j][k][l] += A[i][j][0][0]*B[k][0][l][0] +
+                       A[i][j][0][1]*B[k][0][l][1] +
+                       A[i][j][1][0]*B[k][1][l][0] +
+                       A[i][j][1][1]*B[k][1][l][1];
+    }
+
+  } else {
+
+    for (int ii = 0; ii < nn; ii++) {
+      int i = t_ind(0,ii);
+      int j = t_ind(1,ii);
+      int k = t_ind(2,ii);
+      int l = t_ind(3,ii);
+
+      C[i][j][k][l] += A[i][j][0][0]*B[k][0][l][0] + 
+                       A[i][j][0][1]*B[k][0][l][1] + 
+                       A[i][j][0][2]*B[k][0][l][2] + 
+                       A[i][j][1][0]*B[k][1][l][0] + 
+                       A[i][j][1][1]*B[k][1][l][1] + 
+                       A[i][j][1][2]*B[k][1][l][2] + 
+                       A[i][j][2][0]*B[k][2][l][0] + 
+                       A[i][j][2][1]*B[k][2][l][1] + 
+                       A[i][j][2][2]*B[k][2][l][2];
+
+    }
+  }
+}
+
+template <size_t N>
+void ten_ddot_2412(const double A[N][N][N][N], const double B[N][N][N][N], double C[N][N][N][N])
+{
+  int nn = pow(N,4);
+  ten_zero(C);
+
+  if (N == 2) {
+    for (int ii = 0; ii < nn; ii++) {
+      int i = t_ind(0,ii);
+      int j = t_ind(1,ii);
+      int k = t_ind(2,ii);
+      int l = t_ind(3,ii);
+
+      C[i][j][k][l] += A[i][0][j][0]*B[0][0][k][l] + 
+                       A[i][0][j][1]*B[0][1][k][l] + 
+                       A[i][1][j][0]*B[1][0][k][l] + 
+                       A[i][1][j][1]*B[1][1][k][l];
+
+    }
+
+  } else {
+
+    for (int ii = 0; ii < nn; ii++) {
+      int i = t_ind(0,ii);
+      int j = t_ind(1,ii);
+      int k = t_ind(2,ii);
+      int l = t_ind(3,ii);
+
+      C[i][j][k][l] += A[i][0][j][0]*B[0][0][k][l] + 
+                       A[i][0][j][1]*B[0][1][k][l] + 
+                       A[i][0][j][2]*B[0][2][k][l] + 
+                       A[i][1][j][0]*B[1][0][k][l] + 
+                       A[i][1][j][1]*B[1][1][k][l] + 
+                       A[i][1][j][2]*B[1][2][k][l] + 
+                       A[i][2][j][0]*B[2][0][k][l] + 
+                       A[i][2][j][1]*B[2][1][k][l] + 
+                       A[i][2][j][2]*B[2][2][k][l];
+    }
+  }
 }
 
 
