@@ -112,6 +112,7 @@ set(CSRCS
   ls.h ls.cpp
   main.cpp
   mat_fun.h mat_fun.cpp
+  mat_fun_carray.h mat_fun_carray.cpp
   mat_models.h mat_models.cpp
   mesh.h mesh.cpp
   nn.h nn.cpp
