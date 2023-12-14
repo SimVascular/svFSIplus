@@ -93,7 +93,7 @@ $(function() {
 <div class="line">            VTKXML.f                       |                  vtk_xml.cpp</div>
 <div class="line">------------------------------------------------------------------------------------------------</div>
 </div><!-- fragment --><p>All Fortan subroutines located in a particular file will typically have a C++ implementation in a similarly named file.</p>
-<p>C++ functions are defined within a <code>namespace</code> defined for each Fortran file. For example, the functioins in <code>load_msh.cpp</code> are defined within the <code><a class="el" href="namespaceload__msh.html">load_msh</a></code> <code>namespace</code>. Some <code>namespaces</code> are named with a <code>_ns</code> suffix to prevent conflicts with function names (e.g. <code><a class="el" href="namespaceread__files__ns.html" title="Define some types used to pass data to functions.">read_files_ns</a></code>).</p>
+<p>C++ functions are defined within a <code>namespace</code> defined for each Fortran file. For example, the functioins in <code>load_msh.cpp</code> are defined within the <code>load_msh</code> <code>namespace</code>. Some <code>namespaces</code> are named with a <code>_ns</code> suffix to prevent conflicts with function names (e.g. <code><a class="el" href="namespaceread__files__ns.html" title="Define some types used to pass data to functions.">read_files_ns</a></code>).</p>
 <h1><a class="anchor" id="autotoc_md4"></a>
 Fortran Modules</h1>
 <p>C++ classes are used to implement Fortran modules. Fortran variable names are retained to prevent (or maintain) confusion. There are no global variables. Modules are accessed from a <code><a class="el" href="class_simulation.html">Simulation</a></code> object.</p>
@@ -328,7 +328,7 @@ ComMod</h2>
 <p><a href="https://github.com/ktbolt/svFSI/blob/Implement-svFSI-using-cpp_19/Code/Source/svFSI_cinterface/simulation_wrap.cpp">simulation_wrap.cpp</a></p>
 <p>C++ / Fortran interface function used to create a C++ <code><a class="el" href="class_simulation.html">Simulation</a></code> object and return it to Fortran.</p>
 <ul>
-<li><code><a class="el" href="class_simulation.html#a5b224cc5b36bcc8eb29689aff223de41">Simulation::Simulation()</a></code>- Create a C++ <a class="el" href="class_simulation.html">Simulation</a> object<ul>
+<li><code>Simulation::Simulation()</code>- Create a C++ <a class="el" href="class_simulation.html">Simulation</a> object<ul>
 <li>Create <code><a class="el" href="class_com_mod.html" title="The ComMod class duplicates the data structures in the Fortran COMMOD module defined in MOD....">ComMod</a></code> member, set defaults in ctor</li>
 <li>Create <code><a class="el" href="class_parameters.html" title="The Parameters class stores parameter values read in from a solver input file.">Parameters</a></code> member</li>
 </ul>
@@ -382,7 +382,7 @@ ComMod</h2>
 <h2 id="simulation_set_module_parameters">void <a class="el" href="class_simulation.html#a11f808780839667a1055ae513ea1af51" title="Set the simulation and module member data.">Simulation::set_module_parameters()</a> </h2>
 <p><a href="https://github.com/ktbolt/svFSI/blob/Implement-svFSI-using-cpp_19/Code/Source/svFSI_cinterface/Simulation.cpp">Simulation.cpp</a></p>
 <p>Set <code><a class="el" href="class_com_mod.html" title="The ComMod class duplicates the data structures in the Fortran COMMOD module defined in MOD....">ComMod</a></code> module varliables.</p>
-<h2 id="read_msh_ns_read_msh">void <a class="el" href="namespaceread__msh__ns.html#aa87827735cc946a6aa6bf36131220bc6" title="For each mesh defined for the simulation.">read_msh_ns::read_msh()</a> </h2>
+<h2 id="read_msh_ns_read_msh">void read_msh_ns::read_msh() </h2>
 <p><a href="https://github.com/ktbolt/svFSI/blob/Implement-svFSI-using-cpp_19/Code/Source/svFSI_cinterface/read_msh.cpp">read_msh.cpp</a></p>
 <p>Read all mesh and BCs data. Replicates <code>SUBROUTINE READMSH</code> in <code>READMSH.f</code></p>
 <ul>
@@ -396,7 +396,7 @@ ComMod</h2>
 <li>Re-arranging x and finding the size of the entire domain</li>
 <li>Renumber face node IDs</li>
 <li><code>read_fib_nff(simulation, com_mod.msh[iM], cTmp, "FIB_DIR", i)</code> - Read fiber orientation<ul>
-<li><code><a class="el" href="namespacevtk__xml__parser.html#a3315b09df4f3da49dabdddc282f5150c" title="Read fiber direction data from a VTK VTU file and copy it into a mesh..">vtk_xml_parser::load_fiber_direction_vtu</a>(fName, kwrd, idx, simulation-&gt;com_mod.nsd, mesh)</code></li>
+<li><code>vtk_xml_parser::load_fiber_direction_vtu(fName, kwrd, idx, simulation-&gt;com_mod.nsd, mesh)</code></li>
 </ul>
 </li>
 <li>Iterate over each <code>mesh</code> iM in <code>com_mod.msh</code> to set read prestress data<ul>
@@ -422,7 +422,7 @@ ComMod</h2>
 <ul>
 <li><code>vtk_xml_parser::load_vtk(VtkFileFormat::VTU, file_name, mesh)</code> - Read a VTK <code>.vtu</code> file and store its data into <code>mesh</code>.</li>
 </ul>
-<h2 id="vtk_xml_parser_load_vtk">void <a class="el" href="namespacevtk__xml__parser.html#a97a384ce9876db857181014770cb6f85" title="Read a mesh from a .vtu file.">vtk_xml_parser::load_vtu(const std::string&amp; file_name, mshType&amp; mesh)</a> </h2>
+<h2 id="vtk_xml_parser_load_vtk">void vtk_xml_parser::load_vtu(const std::string&amp; file_name, mshType&amp; mesh) </h2>
 <p><a href="https://github.com/ktbolt/svFSI/blob/Implement-svFSI-using-cpp_19/Code/Source/svFSI_cinterface/vtk_xml_parser.cpp">vtk_xml_parser.cpp</a></p>
 <p>Read a mesh from a <code>.vtu</code> file and store its data into <code>mesh</code>. This calls VTK functions.</p>
 <p>Replicates </p><div class="fragment"><div class="line">subroutine loadVTK(vtk,fName,istat)</div>
@@ -465,13 +465,13 @@ ComMod</h2>
 <h2 id="get_nn_bnds_mesh">nn::get_nn_bnds(Simulation* simulation, mshType&amp; mesh) </h2>
 <p><a href="https://github.com/ktbolt/svFSI/blob/Implement-svFSI-using-cpp_19/Code/Source/svFSI_cinterface/nn.cpp">nn.cpp</a></p>
 <p>Create bounds on Gauss integration points and shape functions. Replicates Fortran <code>SUBROUTINE GETNNBNDSlMeType, lMeNoN, lMxib, lMNb)</code>.</p>
-<h2 id="read_msh_ns_check_ien"><a class="el" href="namespaceread__msh__ns.html#a89ef823a7826b365d7dd851486e93f13" title="Check the mesh connectivity and node ordering.">read_msh_ns::check_ien(Simulation* simulation, mshType&amp; mesh)</a> </h2>
+<h2 id="read_msh_ns_check_ien">read_msh_ns::check_ien(Simulation* simulation, mshType&amp; mesh) </h2>
 <p><a href="https://github.com/ktbolt/svFSI/blob/Implement-svFSI-using-cpp_19/Code/Source/svFSI_cinterface/read_msh.cpp">read_msh.cpp</a></p>
 <p>Check the mesh connectivity and node ordering. It may reorder element connectivity. Replicates the Fortran <code>CHECKIEN</code> subroutine defined in <code>READMSH.f</code>.</p>
 <ul>
 <li><code>check_element_conn[eType](mesh)</code></li>
 </ul>
-<h2 id="check_element_conn">std::map&lt;<a class="el" href="namespaceconsts.html#ac5ca2211987fdf8238b95ec4e84687b4" title="Element type replicating eType_NA, eType_PNT, etc.">consts::ElementType</a>, std::function&lt;void(mshType&amp;)&gt;&gt; <a class="el" href="namespaceread__msh__ns.html#a5b14d5c1e006331eafebd0345503b86d" title="A map of function pointers used to check element connecivity.">read_msh_ns::check_element_conn</a> </h2>
+<h2 id="check_element_conn">std::map&lt;consts::ElementType, std::function&lt;void(mshType&amp;)&gt;&gt; read_msh_ns::check_element_conn </h2>
 <p><a href="https://github.com/ktbolt/svFSI/blob/Implement-svFSI-using-cpp_19/Code/Source/svFSI_cinterface/read_msh.cpp">read_msh.cpp</a></p>
 <p>A map of function pointers used to check element connecivity.</p>
 <ul>
@@ -492,7 +492,7 @@ ComMod</h2>
 <ul>
 <li><code>vtk_xml_parser::load_vtp(file_name, face)</code></li>
 </ul>
-<h2 id="vtk_xml_parser_load_vtp"><a class="el" href="namespacevtk__xml__parser.html#a49086069da159bdf06ad8071353b9a41" title="Store a surface mesh read from a VTK .vtp file into a Face object.">vtk_xml_parser::load_vtp(const std::string&amp; file_name, faceType&amp; face)</a> </h2>
+<h2 id="vtk_xml_parser_load_vtp">vtk_xml_parser::load_vtp(const std::string&amp; file_name, faceType&amp; face) </h2>
 <p><a href="https://github.com/ktbolt/svFSI/blob/Implement-svFSI-using-cpp_19/Code/Source/svFSI_cinterface/vtk_xml_parser.cpp">vtk_xml_parser.cpp</a></p>
 <p>Store a surface mesh read in from a VTK <code>.vtp</code> file into a <a class="el" href="classface_type.html" title="The face type containing mesh at boundary.">faceType</a> object.</p>
 <ul>
@@ -503,7 +503,7 @@ ComMod</h2>
 <li><code>store_element_conn(vtk_polydata, face)</code></li>
 <li><code>store_element_ids(vtk_polydata, face)</code></li>
 </ul>
-<h2 id="nn_select_eleb"><a class="el" href="namespacenn.html#a663ffd76e3eb3c48e48cbab9756aae0a" title="Set face properties for the input element type.">nn::select_eleb(Simulation* simulation, mshType&amp; mesh, faceType&amp; face)</a>) </h2>
+<h2 id="nn_select_eleb">nn::select_eleb(Simulation* simulation, mshType&amp; mesh, faceType&amp; face)) </h2>
 <p><a href="https://github.com/ktbolt/svFSI/blob/Implement-svFSI-using-cpp_19/Code/Source/svFSI_cinterface/nn.cpp">nn.cpp</a></p>
 <p>Set face properties for the input element type.</p>
 <ul>
@@ -528,7 +528,7 @@ ComMod</h2>
 <p><a href="https://github.com/ktbolt/svFSI/blob/Implement-svFSI-using-cpp_19/Code/Source/svFSI_cinterface/read_msh.cpp">read_msh.cpp</a></p>
 <p>Associates two faces with each other and sets gN, matches the nodal coordinates for each projection face.</p>
 <ul>
-<li><code><a class="el" href="namespaceall__fun.html#a924bcdb90da6ad1d0f659a29a406fb6d" title="Find the face ID and mesh ID based on the face name.">all_fun::find_face</a>(com_mod.msh, ctmpi, iM, iFa)</code></li>
+<li><code>all_fun::find_face(com_mod.msh, ctmpi, iM, iFa)</code></li>
 <li><code>match_faces(com_mod, face1, face2, tol, lPrj)</code></li>
 </ul>
 <h2 id="find_face">find_face(com_mod.msh, ctmpi, iM, iFa) </h2>
@@ -546,7 +546,7 @@ ComMod</h2>
 <p><a href="https://github.com/ktbolt/svFSI/blob/Implement-svFSI-using-cpp_19/Code/Source/svFSI_cinterface/read_msh.cpp">read_msh.cpp</a></p>
 <p>Read fiber direction from a vtu file.</p>
 <ul>
-<li><code><a class="el" href="namespacevtk__xml__parser.html#a3315b09df4f3da49dabdddc282f5150c" title="Read fiber direction data from a VTK VTU file and copy it into a mesh..">vtk_xml_parser::load_fiber_direction_vtu</a>(fName, kwrd, idx, simulation-&gt;com_mod.nsd, mesh)</code></li>
+<li><code>vtk_xml_parser::load_fiber_direction_vtu(fName, kwrd, idx, simulation-&gt;com_mod.nsd, mesh)</code></li>
 </ul>
 <h2 id="load_fiber_direction_vtu">load_fiber_direction_vtu(const std::string&amp; file_name, const std::string&amp; data_name, const int idx, const int nsd, <a class="el" href="classmsh_type.html" title="This is the container for a mesh or NURBS patch, those specific to NURBS are noted.">mshType</a>&amp; mesh" </h2>
 <p><a href="https://github.com/ktbolt/svFSI/blob/Implement-svFSI-using-cpp_19/Code/Source/svFSI_cinterface/vtk_xml_parser.cpp">vtk_xml_parser.cpp</a></p>
@@ -573,7 +573,7 @@ ComMod</h2>
 <li>eq_type = equation_name_to_type.at(eq_type_str)</li>
 <li><code>set_equation_props[eq_type](simulation, eq_params, lEq, propL, outPuts, nDOP)</code> - Execute function based on 'eq_type'</li>
 </ul>
-<h2 id="set_equation_props">std::map&lt;<a class="el" href="namespaceconsts.html#a39d75035844f28d6cf26535f4b37f099" title="Types of equations that are included in this solver.">consts::EquationType</a>, std::function&lt;void(Simulation*, <a class="el" href="class_equation_parameters.html" title="The EquationParameters class stores parameters for the &#39;Add_equation&#39; XML element used to specify an ...">EquationParameters</a>&amp;, <a class="el" href="classeq_type.html" title="Equation type.">eqType</a>&amp;, EquationProps&amp;, EquationOutputs&amp;, EquationNdop&amp;)&gt;&gt;) </h2>
+<h2 id="set_equation_props">std::map&lt;consts::EquationType, std::function&lt;void(Simulation*, <a class="el" href="class_equation_parameters.html" title="The EquationParameters class stores parameters for the &#39;Add_equation&#39; XML element used to specify an ...">EquationParameters</a>&amp;, <a class="el" href="classeq_type.html" title="Equation type.">eqType</a>&amp;, EquationProps&amp;, EquationOutputs&amp;, EquationNdop&amp;)&gt;&gt;) </h2>
 <p><a href="https://github.com/ktbolt/svFSI/blob/Implement-svFSI-using-cpp_19/Code/Source/svFSI_cinterface/set_equation_props.h">set_equation_props.h</a></p>
 <p>A map of lambda functions used to set equation properties.</p>
 <h2 id="read_outputs">read_outputs(Simulation* simulation, EquationParameters&amp; eq_params, eqType&amp; lEq, EquationNdop&amp; nDOP,  EquationOutputs&amp; outPuts) </h2>
@@ -681,7 +681,7 @@ ComMod</h2>
 </div><!-- fragment --></li>
 <li><code>nn::select_eleb(simulation, lM, gFa)</code> - Set face properties for the input element type.</li>
 </ul>
-<h2 id="dist_eq">dist_eq(<a class="el" href="class_com_mod.html" title="The ComMod class duplicates the data structures in the Fortran COMMOD module defined in MOD....">ComMod</a>&amp; com_mod, const <a class="el" href="class_cm_mod.html" title="The CmMod class duplicates the data structures in the Fortran CMMOD module defined in COMU....">CmMod</a>&amp; <a class="el" href="namespacecm__mod.html">cm_mod</a>, const <a class="el" href="classcm_type.html" title="The cmType class stores data and defines methods used for mpi communication.">cmType</a>&amp; cm, const std::vector&lt;mshType&gt;&amp; tMs, const <a class="el" href="class_vector.html">Vector&lt;int&gt;</a>&amp; gmtl, <a class="el" href="class_cep_mod.html">CepMod</a>&amp; cep_mod, <a class="el" href="classeq_type.html" title="Equation type.">eqType</a>&amp; lEq) </h2>
+<h2 id="dist_eq">dist_eq(<a class="el" href="class_com_mod.html" title="The ComMod class duplicates the data structures in the Fortran COMMOD module defined in MOD....">ComMod</a>&amp; com_mod, const <a class="el" href="class_cm_mod.html" title="The CmMod class duplicates the data structures in the Fortran CMMOD module defined in COMU....">CmMod</a>&amp; cm_mod, const <a class="el" href="classcm_type.html" title="The cmType class stores data and defines methods used for mpi communication.">cmType</a>&amp; cm, const std::vector&lt;mshType&gt;&amp; tMs, const <a class="el" href="class_vector.html">Vector&lt;int&gt;</a>&amp; gmtl, <a class="el" href="class_cep_mod.html">CepMod</a>&amp; cep_mod, <a class="el" href="classeq_type.html" title="Equation type.">eqType</a>&amp; lEq) </h2>
 <p><a href="https://github.com/ktbolt/svFSI/blob/Implement-svFSI-using-cpp_19/Code/Source/svFSI_cinterface/distribute.cpp">distribute.cpp</a></p>
 <p>Distribute equation data to processors.</p>
 <ul>
@@ -701,7 +701,7 @@ ComMod</h2>
 <div class="line">...</div>
 </div><!-- fragment --></li>
 <li>Distribute domain properties</li>
-<li><code>dist_mat_consts(com_mod, <a class="el" href="namespacecm__mod.html">cm_mod</a>, cm, dmn.stM)</code></li>
+<li><code>dist_mat_consts(com_mod, cm_mod, cm, dmn.stM)</code></li>
 </ul>
 <h2 id="dist_mat_consts">dist_mat_consts(const ComMod&amp; com_mod, const CmMod&amp; cm_mod, const cmType&amp; cm, stModelType&amp; lStM) </h2>
 <p><a href="https://github.com/ktbolt/svFSI/blob/Implement-svFSI-using-cpp_19/Code/Source/svFSI_cinterface/distribute.cpp">distribute.cpp</a></p>
@@ -747,11 +747,11 @@ ComMod</h2>
 </div><!-- fragment --><ul>
 <li><code>mat_fun::ten_init(nsd)</code></li>
 <li><code>lhsa_ns::lhsa(simulation, nnz)</code> - Constructing stiffness matrix</li>
-<li><code><a class="el" href="namespacefsi__linear__solver.html#a161e4187ce33cb3af36357f841d3bf3c" title="Modifies:">fsi_linear_solver::fsils_lhs_create</a>(com_mod.lhs, communicator, com_mod.gtnNo, com_mod.tnNo, nnz, com_mod.ltg, com_mod.rowPtr, com_mod.colPtr, nFacesLS)</code></li>
+<li><code>fsi_linear_solver::fsils_lhs_create(com_mod.lhs, communicator, com_mod.gtnNo, com_mod.tnNo, nnz, com_mod.ltg, com_mod.rowPtr, com_mod.colPtr, nFacesLS)</code></li>
 <li><code>cep_ion::cep_init(simulation)</code></li>
 <li><code>fs::init_fs_msh(com_mod, mesh)</code></li>
 <li><code>baf_ini_ns::baf_ini(simulation)</code></li>
-<li><code><a class="el" href="namespaceset__bc.html#a858e9661517b3964518287e4c9714c3f" title="Apply Dirichlet BCs strongly.">set_bc::set_bc_dir</a>(com_mod, com_mod.Ao, com_mod.Yo, com_mod.Do)</code></li>
+<li><code>set_bc::set_bc_dir(com_mod, com_mod.Ao, com_mod.Yo, com_mod.Do)</code></li>
 <li><code>txt_ns::txt(simulation, true)</code></li>
 </ul>
 <h2 id="lsh">void lhsa(Simulation* simulation, int&amp; nnz) </h2>
@@ -802,7 +802,7 @@ ComMod</h2>
 <div class="line">lM.fs[0].eNoN  = lM.eNoN;</div>
 <div class="line">lM.fs[0].nG    = lM.nG;</div>
 </div><!-- fragment --><ul>
-<li><code><a class="el" href="namespacenn.html#a3ef20d0cd0778bc989b88425bd781965" title="Returns second order derivatives at given natural coords.">nn::get_gn_nxx</a>(insd, ind2, lM.fs[0].eType, lM.fs[0].eNoN, g, lM.fs[0].xi, lM.fs[0].Nxx)</code></li>
+<li><code>nn::get_gn_nxx(insd, ind2, lM.fs[0].eType, lM.fs[0].eNoN, g, lM.fs[0].xi, lM.fs[0].Nxx)</code></li>
 <li><code>set_thood_fs(lM.fs[1], lM.fs[0].eType)</code></li>
 <li><code>alloc_fs(lM.fs[1], nsd, insd)</code></li>
 </ul>
@@ -818,13 +818,13 @@ ComMod</h2>
 <div class="line">com_mod.cplBC.fa[i].RCR.Xo = bc.RCR.Xo;</div>
 </div><!-- fragment --><ul>
 <li><code>face_ini(simulation, msh, face)</code> - Compute face normals and area</li>
-<li><code>shl_ini(com_mod, <a class="el" href="namespacecm__mod.html">cm_mod</a>, com_mod.msh[iM])</code></li>
-<li><code>bc_ini(com_mod, <a class="el" href="namespacecm__mod.html">cm_mod</a>, bc, com_mod.msh[iM].fa[iFa])</code> - Initialize face BC profile</li>
-<li><code>shl_bc_ini(com_mod, <a class="el" href="namespacecm__mod.html">cm_mod</a>, bc, com_mod.msh[iM].fa[iFa], com_mod.msh[iM])</code></li>
+<li><code>shl_ini(com_mod, cm_mod, com_mod.msh[iM])</code></li>
+<li><code>bc_ini(com_mod, cm_mod, bc, com_mod.msh[iM].fa[iFa])</code> - Initialize face BC profile</li>
+<li><code>shl_bc_ini(com_mod, cm_mod, bc, com_mod.msh[iM].fa[iFa], com_mod.msh[iM])</code></li>
 <li><code>set_bc::rcr_init(com_mod, cm_mod)</code></li>
-<li><code><a class="el" href="namespaceset__bc.html#a31e35947997af08a4dc34125bdccfadc" title="Interface to call 0D code (genBC/gcode)">set_bc::genBC_Integ_X</a>(com_mod, <a class="el" href="namespacecm__mod.html">cm_mod</a>, "I")</code></li>
+<li><code>set_bc::genBC_Integ_X(com_mod, cm_mod, "I")</code></li>
 <li><code>set_bc::calc_der_cpl_bc(com_mod, cm_mod)</code></li>
-<li><code>fsi_ls_ini(com_mod, <a class="el" href="namespacecm__mod.html">cm_mod</a>, bc, com_mod.msh[iM].fa[iFa], lsPtr)</code></li>
+<li><code>fsi_ls_ini(com_mod, cm_mod, bc, com_mod.msh[iM].fa[iFa], lsPtr)</code></li>
 <li><code>fsils_bc_create(com_mod.lhs, lsPtr, i, nsd, BcType::BC_TYPE_Dir, gNodes)</code></li>
 </ul>
 <h2 id="fsi_ls_ini">void fsi_ls_ini(ComMod&amp; com_mod, const CmMod&amp; cm_mod, bcType&amp; lBc, const faceType&amp; lFa, int&amp; lsPtr) </h2>
@@ -846,7 +846,7 @@ ComMod</h2>
 <div class="line">lY(tDof, tnNo)</div>
 <div class="line">lD(tDof, tnNo)</div>
 </div><!-- fragment --><ul>
-<li><code><a class="el" href="namespaceset__bc.html#ad6ffa4eb69e5b74d2213f675cf2a4ec2">set_bc::set_bc_dir_l</a>(com_mod, bc, com_mod.msh[iM].fa[iFa], tmpA, tmpY, lDof)</code></li>
+<li><code>set_bc::set_bc_dir_l(com_mod, bc, com_mod.msh[iM].fa[iFa], tmpA, tmpY, lDof)</code></li>
 </ul>
 <h2 id="set_bc_dir_l">void set_bc_dir_l(ComMod&amp; com_mod, const bcType&amp; lBc, const faceType&amp; lFa, Array&lt;double&gt;&amp; lA, Array&lt;double&gt;&amp; lY, int lDof) </h2>
 <p><a href="https://github.com/ktbolt/svFSI/blob/Implement-svFSI-using-cpp_19/Code/Source/svFSI_cinterface/set_bc.cpp">set_bc.cpp</a></p>
@@ -857,7 +857,7 @@ ComMod</h2>
 <h2 id="iterate_solution">void iterate_solution(Simulation* simulation) </h2>
 <p><a href="https://github.com/ktbolt/svFSI/blob/Implement-svFSI-using-cpp_19/Code/Source/svFSI_cinterface/simulation_wrap.cpp">simulation_wrap.cpp</a></p>
 <ul>
-<li><code>read_msh_ns::calc_mesh_props(com_mod, <a class="el" href="namespacecm__mod.html">cm_mod</a>, com_mod.nMsh, com_mod.msh)</code></li>
+<li><code>read_msh_ns::calc_mesh_props(com_mod, cm_mod, com_mod.nMsh, com_mod.msh)</code></li>
 <li><code>pic::picp(simulation)</code></li>
 <li><code>set_bc::set_bc_dir(com_mod, An, Yn, Dn)</code></li>
 <li>Inner loop for iteration<ul>
@@ -866,7 +866,7 @@ ComMod</h2>
 <li><code>pic::pici(simulation, Ag, Yg, Dg)</code></li>
 <li><code>ls_ns::ls_alloc(com_mod, eq)</code></li>
 <li><code>bf::set_bf(com_mod, Dg)</code></li>
-<li><code><a class="el" href="namespaceeq__assem.html#a0afb80ab53388a678c1d3291a77d1fe4" title="This routine assembles the equation on a given mesh.">eq_assem::global_eq_assem</a>(com_mod, com_mod.msh[iM], Ag, Yg, Dg)</code> - For each mesh</li>
+<li><code>eq_assem::global_eq_assem(com_mod, com_mod.msh[iM], Ag, Yg, Dg)</code> - For each mesh</li>
 <li><code>set_bc::set_bc_neu(com_mod, cm_mod, Yg, Dg)</code></li>
 <li><code>set_bc::set_bc_cmm(com_mod, cm_mod, Ag, Dg)</code></li>
 <li><code>set_bc::set_bc_dir_w(com_mod, Yg, Dg)</code> - Apply weakly applied Dirichlet BCs</li>
@@ -935,7 +935,7 @@ ComMod</h2>
 <ul>
 <li><code>fs::get_thood_fs(com_mod, fs, lM, vmsStab, 1)</code></li>
 <li><code>nn::gnn(fs[1].eNoN, nsd, nsd, Nx, xql, Nqx, Jac, ksix)</code></li>
-<li><code><a class="el" href="namespacenn.html#a987c981c182a5c7acc35d126dee42313" title="Compute second order derivative on parent element.">nn::gn_nxx</a>(l, fs[0].eNoN, nsd, nsd, Nx, Nxx, xwl, Nwx, Nwxx)</code></li>
+<li><code>nn::gn_nxx(l, fs[0].eNoN, nsd, nsd, Nx, Nxx, xwl, Nwx, Nwxx)</code></li>
 <li><code>fluid_3d_m(com_mod, vmsStab, fs[0].eNoN, fs[1].eNoN, w, ksix, N0, N1, Nwx, Nqx, Nwxx, al, yl, bfl, lR, lK)</code> - If nsd=3</li>
 <li><code>fluid_2d_m(com_mod, vmsStab, fs[0].eNoN, fs[1].eNoN, w, ksix, N0, N1, Nwx, Nqx, Nwxx, al, yl, bfl, lR, lK)</code> - If nsd=2</li>
 <li><code>trilinos_doassem_(const_cast&lt;int&amp;&gt;(eNoN), ptr.data(), lK.data(), lR.data())</code> - If using <a class="el" href="struct_trilinos.html" title="Initialize all Epetra types we need separate from Fortran.">Trilinos</a></li>

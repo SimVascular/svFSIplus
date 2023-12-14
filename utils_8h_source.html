@@ -70,114 +70,107 @@ $(function() {
 <div class="title">utils.h</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment"> * Copyright (c) Stanford University, The Regents of the University of California, and others.</span></div>
-<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;<span class="comment"> *</span></div>
-<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="comment"> * All Rights Reserved.</span></div>
-<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="comment"> *</span></div>
-<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="comment"> * See Copyright-SimVascular.txt for additional details.</span></div>
-<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="comment"> *</span></div>
-<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="comment"> * Permission is hereby granted, free of charge, to any person obtaining</span></div>
-<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="comment"> * a copy of this software and associated documentation files (the</span></div>
-<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="comment"> * &quot;Software&quot;), to deal in the Software without restriction, including</span></div>
-<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="comment"> * without limitation the rights to use, copy, modify, merge, publish,</span></div>
-<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="comment"> * distribute, sublicense, and/or sell copies of the Software, and to</span></div>
-<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="comment"> * permit persons to whom the Software is furnished to do so, subject</span></div>
-<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="comment"> * to the following conditions:</span></div>
-<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="comment"> *</span></div>
-<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="comment"> * The above copyright notice and this permission notice shall be included</span></div>
-<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="comment"> * in all copies or substantial portions of the Software.</span></div>
-<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="comment"> *</span></div>
-<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="comment"> * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS</span></div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="comment"> * IS&quot; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED</span></div>
-<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="comment"> * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A</span></div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="comment"> * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER</span></div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="comment"> * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,</span></div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="comment"> * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,</span></div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="comment"> * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR</span></div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="comment"> * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF</span></div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="comment"> * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING</span></div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="comment"> * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS</span></div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="comment"> * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</span></div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160; </div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="preprocessor">#ifndef UTILS_H </span></div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="preprocessor">#define UTILS_H </span></div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160; </div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="preprocessor">#include &quot;Array.h&quot;</span></div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160; </div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespaceutils.html">utils</a> {</div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160; </div>
-<div class="line"><a name="l00039"></a><span class="lineno"><a class="line" href="classutils_1_1stack_type.html">   39</a></span>&#160;<span class="keyword">class </span><a class="code" href="classutils_1_1stack_type.html">stackType</a></div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;{</div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;  <span class="keyword">public</span>:<span class="comment"></span></div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="comment">    /// Maximum length of the stack</span></div>
-<div class="line"><a name="l00043"></a><span class="lineno"><a class="line" href="classutils_1_1stack_type.html#a3f71cfeade4178b2bceb175b0678a852">   43</a></span>&#160;<span class="comment"></span>    <span class="keywordtype">int</span> <a class="code" href="classutils_1_1stack_type.html#a3f71cfeade4178b2bceb175b0678a852">maxN</a> = 0;</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<span class="comment">    /// Current size of stack</span></div>
-<div class="line"><a name="l00046"></a><span class="lineno"><a class="line" href="classutils_1_1stack_type.html#aab9fe6a4b9b4cdada815fc2b6346be46">   46</a></span>&#160;<span class="comment"></span>    <span class="keywordtype">int</span> <a class="code" href="classutils_1_1stack_type.html#aab9fe6a4b9b4cdada815fc2b6346be46">n</a> = 0;</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="comment">    /// Values inside stack</span></div>
-<div class="line"><a name="l00049"></a><span class="lineno"><a class="line" href="classutils_1_1stack_type.html#ae46d9507c4915b164ba364315d867661">   49</a></span>&#160;<span class="comment"></span>    <a class="code" href="class_vector.html">Vector&lt;int&gt;</a> <a class="code" href="classutils_1_1stack_type.html#ae46d9507c4915b164ba364315d867661">v</a>;</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;};</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160; </div>
-<div class="line"><a name="l00052"></a><span class="lineno"><a class="line" href="classutils_1_1queue_type.html">   52</a></span>&#160;<span class="keyword">class </span><a class="code" href="classutils_1_1queue_type.html">queueType</a></div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;{</div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;  <span class="keyword">public</span>:</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;    <span class="keywordtype">int</span> n = 0;</div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    <span class="keywordtype">int</span> maxN = 0;</div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    <a class="code" href="class_vector.html">Vector&lt;int&gt;</a> v;</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;};</div>
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">/* Copyright (c) Stanford University, The Regents of the University of California, and others.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;<span class="comment"> * All Rights Reserved.</span></div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="comment"> * See Copyright-SimVascular.txt for additional details.</span></div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="comment"> * Permission is hereby granted, free of charge, to any person obtaining</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="comment"> * a copy of this software and associated documentation files (the</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="comment"> * &quot;Software&quot;), to deal in the Software without restriction, including</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="comment"> * without limitation the rights to use, copy, modify, merge, publish,</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="comment"> * distribute, sublicense, and/or sell copies of the Software, and to</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="comment"> * permit persons to whom the Software is furnished to do so, subject</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="comment"> * to the following conditions:</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="comment"> * The above copyright notice and this permission notice shall be included</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="comment"> * in all copies or substantial portions of the Software.</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="comment"> * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="comment"> * IS&quot; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED</span></div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="comment"> * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A</span></div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="comment"> * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER</span></div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="comment"> * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,</span></div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="comment"> * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,</span></div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="comment"> * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR</span></div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="comment"> * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="comment"> * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING</span></div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="comment"> * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS</span></div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="comment"> * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</span></div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160; </div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="preprocessor">#ifndef UTILS_H </span></div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="preprocessor">#define UTILS_H </span></div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160; </div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="preprocessor">#include &quot;Array.h&quot;</span></div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160; </div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="keyword">namespace </span>utils {</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160; </div>
+<div class="line"><a name="l00038"></a><span class="lineno"><a class="line" href="classutils_1_1stack_type.html">   38</a></span>&#160;<span class="keyword">class </span><a class="code" href="classutils_1_1stack_type.html">stackType</a></div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;{</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;  <span class="keyword">public</span>:<span class="comment"></span></div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="comment">    /// Maximum length of the stack</span></div>
+<div class="line"><a name="l00042"></a><span class="lineno"><a class="line" href="classutils_1_1stack_type.html#a3f71cfeade4178b2bceb175b0678a852">   42</a></span>&#160;<span class="comment"></span>    <span class="keywordtype">int</span> <a class="code" href="classutils_1_1stack_type.html#a3f71cfeade4178b2bceb175b0678a852">maxN</a> = 0;</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="comment">    /// Current size of stack</span></div>
+<div class="line"><a name="l00045"></a><span class="lineno"><a class="line" href="classutils_1_1stack_type.html#aab9fe6a4b9b4cdada815fc2b6346be46">   45</a></span>&#160;<span class="comment"></span>    <span class="keywordtype">int</span> <a class="code" href="classutils_1_1stack_type.html#aab9fe6a4b9b4cdada815fc2b6346be46">n</a> = 0;</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="comment">    /// Values inside stack</span></div>
+<div class="line"><a name="l00048"></a><span class="lineno"><a class="line" href="classutils_1_1stack_type.html#ae46d9507c4915b164ba364315d867661">   48</a></span>&#160;<span class="comment"></span>    <a class="code" href="class_vector.html">Vector&lt;int&gt;</a> <a class="code" href="classutils_1_1stack_type.html#ae46d9507c4915b164ba364315d867661">v</a>;</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;};</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160; </div>
+<div class="line"><a name="l00051"></a><span class="lineno"><a class="line" href="classutils_1_1queue_type.html">   51</a></span>&#160;<span class="keyword">class </span><a class="code" href="classutils_1_1queue_type.html">queueType</a></div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;{</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;  <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;    <span class="keywordtype">int</span> n = 0;</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;    <span class="keywordtype">int</span> maxN = 0;</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    <a class="code" href="class_vector.html">Vector&lt;int&gt;</a> v;</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;};</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160; </div>
 <div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160; </div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160; </div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="keywordtype">bool</span> btest(<span class="keywordtype">int</span> value, <span class="keywordtype">int</span> pos);</div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160; </div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="keywordtype">int</span> <a class="code" href="namespaceutils.html#ae857478339a48d53ccfad3fc455af6b4">CountBits</a>(<span class="keywordtype">int</span> n);</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160; </div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;<span class="keywordtype">double</span> cput();</div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160; </div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;<a class="code" href="class_vector.html">Vector&lt;double&gt;</a> cross(<span class="keyword">const</span> Array&lt;double&gt;&amp; V);</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160; </div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;<span class="keywordtype">bool</span> dequeue(<a class="code" href="classutils_1_1queue_type.html">queueType</a>&amp; que, <span class="keywordtype">int</span>&amp; iVal);</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;<span class="keywordtype">void</span> enqueue(<a class="code" href="classutils_1_1queue_type.html">queueType</a>&amp; que, <span class="keywordtype">int</span> iVal);</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160; </div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;<span class="keywordtype">int</span> <a class="code" href="namespaceutils.html#ac2240351ff50ae71eef7606af48e2311">ibclr</a>(<span class="keywordtype">int</span> value, <span class="keywordtype">int</span> pos);</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="keywordtype">int</span> <a class="code" href="namespaceutils.html#ab8743198cadac1d75918ded7bb1c5356">ibset</a>(<span class="keywordtype">int</span> value, <span class="keywordtype">int</span> pos);</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;<span class="keywordtype">bool</span> is_zero(<span class="keywordtype">double</span> value1, <span class="keywordtype">double</span> value2=0.0);</div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160; </div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;<span class="keywordtype">double</span> mem_usage(<span class="keyword">const</span> <span class="keywordtype">bool</span> print_usage=<span class="keyword">false</span>, <span class="keyword">const</span> std::string&amp; prefix=<span class="stringliteral">&quot;&quot;</span>);</div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160; </div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;<span class="keywordtype">double</span> <a class="code" href="namespaceutils.html#a6327e9617293839a38f157922640a4f9">norm</a>(<span class="keyword">const</span> <a class="code" href="class_vector.html">Vector&lt;double&gt;</a>&amp; U); </div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;<span class="keywordtype">double</span> <a class="code" href="namespaceutils.html#a6327e9617293839a38f157922640a4f9">norm</a>(<span class="keyword">const</span> <a class="code" href="class_vector.html">Vector&lt;double&gt;</a>&amp; U, <span class="keyword">const</span> <a class="code" href="class_vector.html">Vector&lt;double&gt;</a>&amp; V);</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;<span class="keywordtype">double</span> <a class="code" href="namespaceutils.html#a6327e9617293839a38f157922640a4f9">norm</a>(<span class="keyword">const</span> Array&lt;double&gt;&amp; U);</div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160; </div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;<span class="keywordtype">void</span> print_mem(<span class="keyword">const</span> std::string&amp; type, <span class="keyword">const</span> std::string&amp; prefix, <span class="keyword">const</span> <span class="keywordtype">double</span> memory_in_use, <span class="keyword">const</span> <span class="keywordtype">double</span> memory_returned);</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;<span class="keywordtype">void</span> print_stats(<span class="keyword">const</span> std::string&amp; type, <span class="keyword">const</span> std::string&amp; prefix, <span class="keyword">const</span> <span class="keywordtype">int</span> allocated, <span class="keyword">const</span> <span class="keywordtype">int</span> active);</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160; </div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;<span class="keywordtype">bool</span> pull_stack(<a class="code" href="classutils_1_1stack_type.html">stackType</a>&amp; stk, <span class="keywordtype">int</span>&amp; iVal);</div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;<span class="keywordtype">void</span> <a class="code" href="namespaceutils.html#ab3dd9fae1f4958e70a2ce705f9cb8162">push_stack</a>(<a class="code" href="classutils_1_1stack_type.html">stackType</a>&amp; stk, <span class="keywordtype">int</span> iVal);</div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;<span class="keywordtype">void</span> <a class="code" href="namespaceutils.html#ab3dd9fae1f4958e70a2ce705f9cb8162">push_stack</a>(<a class="code" href="classutils_1_1stack_type.html">stackType</a>&amp; stk, std::initializer_list&lt;int&gt; values);</div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160; </div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;<span class="keywordtype">int</span> sign(<span class="keywordtype">double</span> value);</div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160; </div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;<span class="keywordtype">void</span> swap(<span class="keywordtype">int</span>&amp; value1, <span class="keywordtype">int</span>&amp; value2);</div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160; </div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;};</div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160; </div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160; </div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;<span class="keywordtype">bool</span> btest(<span class="keywordtype">int</span> value, <span class="keywordtype">int</span> pos);</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160; </div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="keywordtype">int</span> CountBits(<span class="keywordtype">int</span> n);</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160; </div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="keywordtype">double</span> cput();</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160; </div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;<a class="code" href="class_vector.html">Vector&lt;double&gt;</a> cross(<span class="keyword">const</span> Array&lt;double&gt;&amp; V);</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160; </div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;<span class="keywordtype">bool</span> dequeue(<a class="code" href="classutils_1_1queue_type.html">queueType</a>&amp; que, <span class="keywordtype">int</span>&amp; iVal);</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;<span class="keywordtype">void</span> enqueue(<a class="code" href="classutils_1_1queue_type.html">queueType</a>&amp; que, <span class="keywordtype">int</span> iVal);</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160; </div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;<span class="keywordtype">int</span> ibclr(<span class="keywordtype">int</span> value, <span class="keywordtype">int</span> pos);</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;<span class="keywordtype">int</span> ibset(<span class="keywordtype">int</span> value, <span class="keywordtype">int</span> pos);</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="keywordtype">bool</span> is_zero(<span class="keywordtype">double</span> value1, <span class="keywordtype">double</span> value2=0.0);</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160; </div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;<span class="keywordtype">double</span> mem_usage(<span class="keyword">const</span> <span class="keywordtype">bool</span> print_usage=<span class="keyword">false</span>, <span class="keyword">const</span> std::string&amp; prefix=<span class="stringliteral">&quot;&quot;</span>);</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160; </div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;<span class="keywordtype">double</span> norm(<span class="keyword">const</span> <a class="code" href="class_vector.html">Vector&lt;double&gt;</a>&amp; U); </div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;<span class="keywordtype">double</span> norm(<span class="keyword">const</span> <a class="code" href="class_vector.html">Vector&lt;double&gt;</a>&amp; U, <span class="keyword">const</span> <a class="code" href="class_vector.html">Vector&lt;double&gt;</a>&amp; V);</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;<span class="keywordtype">double</span> norm(<span class="keyword">const</span> Array&lt;double&gt;&amp; U);</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160; </div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;<span class="keywordtype">void</span> print_mem(<span class="keyword">const</span> std::string&amp; type, <span class="keyword">const</span> std::string&amp; prefix, <span class="keyword">const</span> <span class="keywordtype">double</span> memory_in_use, <span class="keyword">const</span> <span class="keywordtype">double</span> memory_returned);</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;<span class="keywordtype">void</span> print_stats(<span class="keyword">const</span> std::string&amp; type, <span class="keyword">const</span> std::string&amp; prefix, <span class="keyword">const</span> <span class="keywordtype">int</span> allocated, <span class="keyword">const</span> <span class="keywordtype">int</span> active);</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160; </div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;<span class="keywordtype">bool</span> pull_stack(<a class="code" href="classutils_1_1stack_type.html">stackType</a>&amp; stk, <span class="keywordtype">int</span>&amp; iVal);</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;<span class="keywordtype">void</span> push_stack(<a class="code" href="classutils_1_1stack_type.html">stackType</a>&amp; stk, <span class="keywordtype">int</span> iVal);</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;<span class="keywordtype">void</span> push_stack(<a class="code" href="classutils_1_1stack_type.html">stackType</a>&amp; stk, std::initializer_list&lt;int&gt; values);</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160; </div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;<span class="keywordtype">int</span> sign(<span class="keywordtype">double</span> value);</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160; </div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;<span class="keywordtype">void</span> swap(<span class="keywordtype">int</span>&amp; value1, <span class="keywordtype">int</span>&amp; value2);</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160; </div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;};</div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160; </div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160; </div>
 <div class="ttc" id="aclass_vector_html"><div class="ttname"><a href="class_vector.html">Vector&lt; int &gt;</a></div></div>
-<div class="ttc" id="aclassutils_1_1queue_type_html"><div class="ttname"><a href="classutils_1_1queue_type.html">utils::queueType</a></div><div class="ttdef"><b>Definition:</b> utils.h:53</div></div>
-<div class="ttc" id="aclassutils_1_1stack_type_html"><div class="ttname"><a href="classutils_1_1stack_type.html">utils::stackType</a></div><div class="ttdef"><b>Definition:</b> utils.h:40</div></div>
-<div class="ttc" id="aclassutils_1_1stack_type_html_a3f71cfeade4178b2bceb175b0678a852"><div class="ttname"><a href="classutils_1_1stack_type.html#a3f71cfeade4178b2bceb175b0678a852">utils::stackType::maxN</a></div><div class="ttdeci">int maxN</div><div class="ttdoc">Maximum length of the stack.</div><div class="ttdef"><b>Definition:</b> utils.h:43</div></div>
-<div class="ttc" id="aclassutils_1_1stack_type_html_aab9fe6a4b9b4cdada815fc2b6346be46"><div class="ttname"><a href="classutils_1_1stack_type.html#aab9fe6a4b9b4cdada815fc2b6346be46">utils::stackType::n</a></div><div class="ttdeci">int n</div><div class="ttdoc">Current size of stack.</div><div class="ttdef"><b>Definition:</b> utils.h:46</div></div>
-<div class="ttc" id="aclassutils_1_1stack_type_html_ae46d9507c4915b164ba364315d867661"><div class="ttname"><a href="classutils_1_1stack_type.html#ae46d9507c4915b164ba364315d867661">utils::stackType::v</a></div><div class="ttdeci">Vector&lt; int &gt; v</div><div class="ttdoc">Values inside stack.</div><div class="ttdef"><b>Definition:</b> utils.h:49</div></div>
-<div class="ttc" id="anamespaceutils_html"><div class="ttname"><a href="namespaceutils.html">utils</a></div><div class="ttdef"><b>Definition:</b> utils.cpp:50</div></div>
-<div class="ttc" id="anamespaceutils_html_a6327e9617293839a38f157922640a4f9"><div class="ttname"><a href="namespaceutils.html#a6327e9617293839a38f157922640a4f9">utils::norm</a></div><div class="ttdeci">double norm(const Vector&lt; double &gt; &amp;U)</div><div class="ttdoc">This function will compute second NORM of a vector.</div><div class="ttdef"><b>Definition:</b> utils.cpp:239</div></div>
-<div class="ttc" id="anamespaceutils_html_ab3dd9fae1f4958e70a2ce705f9cb8162"><div class="ttname"><a href="namespaceutils.html#ab3dd9fae1f4958e70a2ce705f9cb8162">utils::push_stack</a></div><div class="ttdeci">void push_stack(stackType &amp;stk, std::initializer_list&lt; int &gt; values)</div><div class="ttdoc">Push a list of values onto the stack.</div><div class="ttdef"><b>Definition:</b> utils.cpp:359</div></div>
-<div class="ttc" id="anamespaceutils_html_ab8743198cadac1d75918ded7bb1c5356"><div class="ttname"><a href="namespaceutils.html#ab8743198cadac1d75918ded7bb1c5356">utils::ibset</a></div><div class="ttdeci">int ibset(int value, int pos)</div><div class="ttdoc">Returns 'value' with the bit at position 'pos' set to one.</div><div class="ttdef"><b>Definition:</b> utils.cpp:166</div></div>
-<div class="ttc" id="anamespaceutils_html_ac2240351ff50ae71eef7606af48e2311"><div class="ttname"><a href="namespaceutils.html#ac2240351ff50ae71eef7606af48e2311">utils::ibclr</a></div><div class="ttdeci">int ibclr(int value, int pos)</div><div class="ttdoc">Clear a bit.</div><div class="ttdef"><b>Definition:</b> utils.cpp:159</div></div>
-<div class="ttc" id="anamespaceutils_html_ae857478339a48d53ccfad3fc455af6b4"><div class="ttname"><a href="namespaceutils.html#ae857478339a48d53ccfad3fc455af6b4">utils::CountBits</a></div><div class="ttdeci">int CountBits(int n)</div><div class="ttdoc">Count the number of bits in an int.</div><div class="ttdef"><b>Definition:</b> utils.cpp:54</div></div>
+<div class="ttc" id="aclassutils_1_1queue_type_html"><div class="ttname"><a href="classutils_1_1queue_type.html">utils::queueType</a></div><div class="ttdef"><b>Definition:</b> utils.h:52</div></div>
+<div class="ttc" id="aclassutils_1_1stack_type_html"><div class="ttname"><a href="classutils_1_1stack_type.html">utils::stackType</a></div><div class="ttdef"><b>Definition:</b> utils.h:39</div></div>
+<div class="ttc" id="aclassutils_1_1stack_type_html_a3f71cfeade4178b2bceb175b0678a852"><div class="ttname"><a href="classutils_1_1stack_type.html#a3f71cfeade4178b2bceb175b0678a852">utils::stackType::maxN</a></div><div class="ttdeci">int maxN</div><div class="ttdoc">Maximum length of the stack.</div><div class="ttdef"><b>Definition:</b> utils.h:42</div></div>
+<div class="ttc" id="aclassutils_1_1stack_type_html_aab9fe6a4b9b4cdada815fc2b6346be46"><div class="ttname"><a href="classutils_1_1stack_type.html#aab9fe6a4b9b4cdada815fc2b6346be46">utils::stackType::n</a></div><div class="ttdeci">int n</div><div class="ttdoc">Current size of stack.</div><div class="ttdef"><b>Definition:</b> utils.h:45</div></div>
+<div class="ttc" id="aclassutils_1_1stack_type_html_ae46d9507c4915b164ba364315d867661"><div class="ttname"><a href="classutils_1_1stack_type.html#ae46d9507c4915b164ba364315d867661">utils::stackType::v</a></div><div class="ttdeci">Vector&lt; int &gt; v</div><div class="ttdoc">Values inside stack.</div><div class="ttdef"><b>Definition:</b> utils.h:48</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
