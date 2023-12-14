@@ -33,6 +33,9 @@
 // b o o l //
 
 template<>
+bool Array<bool>::show_index_check_message = true;
+
+template<>
 int Array<bool>::id = 0;
 
 template<>
@@ -51,6 +54,9 @@ template<>
 bool Array<bool>::write_enabled = false;
 
 // d o u b l e //
+
+template<>
+bool Array<double>::show_index_check_message = true;
 
 template<>
 int Array<double>::id = 0;
@@ -83,6 +89,9 @@ template<>
 bool Array<double>::write_enabled = false;
 
 //  i n t  //
+
+template<>
+bool Array<int>::show_index_check_message = true;
 
 template<>
 int Array<int>::id = 0;

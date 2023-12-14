@@ -32,6 +32,9 @@
 #include "utils.h"
 
 template<>
+bool Vector<double>::show_index_check_message = true;
+
+template<>
 double Vector<double>::memory_in_use = 0;
 
 template<>
@@ -63,6 +66,9 @@ void Vector<double>::stats(const std::string& prefix)
 //------//
 
 template<>
+bool Vector<int>::show_index_check_message = true;
+
+template<>
 double Vector<int>::memory_in_use = 0;
 
 template<>
@@ -90,6 +96,10 @@ void Vector<int>::stats(const std::string& prefix)
 }
 
 // Vector<Vector<double>> 
+
+template<>
+bool Vector<Vector<double>>::show_index_check_message = true;
+
 template<>
 double Vector<Vector<double>>::memory_in_use = 0;
 
@@ -106,6 +116,9 @@ template<>
 bool Vector<Vector<double>>::write_enabled = false;
 
 // float //
+template<>
+bool Vector<float>::show_index_check_message = true;
+
 template<>
 double Vector<float>::memory_in_use = 0;
 

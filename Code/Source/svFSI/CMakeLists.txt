@@ -63,6 +63,10 @@ if(WITH_TRILINOS)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif()
 
+if(ENABLE_ARRAY_INDEX_CHECKING)
+  ADD_DEFINITIONS(-DENABLE_ARRAY_INDEX_CHECKING)
+endif()
+
 # svFSI requires LAPACK
 find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
@@ -79,7 +83,7 @@ set(lib ${SV_LIB_SVFSI_NAME})
 set(CSRCS 
   Array3.h Array3.cpp 
   Array.h Array.cpp
-  Tensor4.h 
+  Tensor4.h Tensor4.cpp
   Vector.h Vector.cpp 
 
   lapack_defs.h
