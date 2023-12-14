@@ -367,6 +367,17 @@ void construct_usolid(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const
 
     } // for g = 0 to fs[1].nG
 
+#if 0
+    if (e+1 == 100) { 
+      Array3<double>::write_enabled = true;
+      Array<double>::write_enabled = true;
+      lR.write("lR");
+      lK.write("lK");
+      lKd.write("lKd");
+      exit(0);
+    }
+#endif
+
     // Assembly
 #ifdef WITH_TRILINOS
     if (eq.assmTLS) {

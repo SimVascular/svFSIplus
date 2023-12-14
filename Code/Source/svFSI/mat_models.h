@@ -70,7 +70,5 @@ void g_vol_pen(const ComMod& com_mod, const dmnType& lDmn, const double p,
 
 };
 
-//#include "mat_models_fixed.h"
-
 #endif
 
