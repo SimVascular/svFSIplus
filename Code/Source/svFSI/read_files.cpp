@@ -598,9 +598,7 @@ void read_bc(Simulation* simulation, EquationParameters* eq_params, eqType& lEq,
       int iM = lBc.iM;
       int iFa = lBc.iFa;
       auto& face = com_mod.msh[iM].fa[iFa];
-      if (face.x.size() == 0) {
-        face.x.resize(com_mod.nsd, face.nNo);
-      }
+      face.x.resize(com_mod.nsd, face.nNo);
 
       int data_series = 0;
       vtk_xml::read_vtp_pdata(cTmp, "Displacement", com_mod.nsd, com_mod.nsd, data_series, face);
@@ -2750,6 +2748,15 @@ void read_visc_model(Simulation* simulation, EquationParameters* eq_params, Doma
 //
 void read_wall_props_ff(ComMod& com_mod, const std::string& file_name, const int iM, const int iFa)
 {
+  #define n_debug_read_wall_props_ff
+  #ifdef debug_read_wall_props_ff
+  DebugMsg dmsg(__func__, com_mod.cm.idcm());
+  dmsg.banner();
+  dmsg << "com_mod.cmmInit: " << com_mod.cmmInit;
+  dmsg << "com_mod.varWallProps.nrows(): " << com_mod.varWallProps.nrows();
+  dmsg << "com_mod.varWallProps.ncols(): " << com_mod.varWallProps.ncols();
+  #endif
+
   if (com_mod.cmmInit) {
     auto& mesh = com_mod.msh[iM];
     mesh.x.resize(1, mesh.gnNo);
@@ -2768,8 +2775,14 @@ void read_wall_props_ff(ComMod& com_mod, const std::string& file_name, const int
     mesh.x = 0.0; 
     data_comp = 1;
     data_series = 1;
+    #ifdef debug_read_wall_props_ff
+    dmsg << "read_vtp_pdata Elasticity_modulus ..." << com_mod.cmmInit;
+    #endif
     vtk_xml::read_vtu_pdata(file_name, "Elasticity_modulus", com_mod.nsd, data_comp, data_series, mesh);
 
+    #ifdef debug_read_wall_props_ff
+    dmsg << "Set com_mod.varWallProps ... " << com_mod.cmmInit;
+    #endif
     for (int a = 0; a < mesh.gnNo; a++) {
       int Ac = mesh.gN[a];
       com_mod.varWallProps(1,Ac) = mesh.x(0,a);
@@ -2783,12 +2796,34 @@ void read_wall_props_ff(ComMod& com_mod, const std::string& file_name, const int
     // Read thickness
     int data_comp = 1;
     int data_series = 0;
+    #ifdef debug_read_wall_props_ff
+    dmsg << "read_vtp_pdata Thickness " << " ...";
+    #endif
     vtk_xml::read_vtp_pdata(file_name, "Thickness", com_mod.nsd, data_comp, data_series, face);
+
+    #ifdef debug_read_wall_props_ff
+    dmsg << "Set com_mod.varWallProps(0,Ac) " << " ...";
+    #endif
 
     for (int a = 0; a < face.nNo; a++) {
       int Ac = face.gN[a];
       Ac = mesh.gN[Ac];
-      com_mod.varWallProps(0,Ac) = face.x(1,a);
+      com_mod.varWallProps(0,Ac) = face.x(0,a);
+    }
+
+    #ifdef debug_read_wall_props_ff
+    dmsg << "read_vtp_pdata Elasticity_modulus " << "...";
+    #endif
+    vtk_xml::read_vtp_pdata(file_name, "Elasticity_modulus", com_mod.nsd, data_comp, data_series, face);
+
+    #ifdef debug_read_wall_props_ff
+    dmsg << "Set com_mod.varWallProps(1,Ac) " << " ...";
+    #endif
+
+    for (int a = 0; a < face.nNo; a++) {
+      int Ac = face.gN[a];
+      Ac = mesh.gN[Ac];
+      com_mod.varWallProps(1,Ac) = face.x(0,a);
     }
   }
 }
