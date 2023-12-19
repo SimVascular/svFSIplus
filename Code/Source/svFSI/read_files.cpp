@@ -340,10 +340,7 @@ void read_bc(Simulation* simulation, EquationParameters* eq_params, eqType& lEq,
     // [NOTE] This is not implemented.
     if (bc_params->bct_file_path.defined()) {
       auto file_name = bc_params->bct_file_path.value();
-      throw std::runtime_error("[read_bc] read_bct is not imlemented.");
       read_bct(com_mod, lBc.gm, com_mod.msh[iM].fa[iFa], file_name);
-      //ALLOCATE(lBc%gm)
-      //CALL READBCT(lBc%gm, msh(iM)%fa(iFa), ftmp%fname)
 
     } else {
       if (bc_params->temporal_and_spatial_values_file_path.defined()) {
@@ -638,33 +635,158 @@ void read_bc(Simulation* simulation, EquationParameters* eq_params, eqType& lEq,
 //
 // Reproduces 'SUBROUTINE READBCT(lMB, lFa, fName)' in READFILES.f.
 //
-// [TODO:DaveP] this is not implemented.
-//
 void read_bct(ComMod& com_mod, MBType& lMB, faceType& lFa, const std::string& fName)
 {
+  // The name of the arrays to search for in the bct.vtp file.
+  static std::string shdr("velocity_");
+
+  static std::string file_desc("general velocity data file '" + fName + "'"); 
+
   if (FILE *file = fopen(fName.c_str(), "r")) {
       fclose(file);
   } else {
-    throw std::runtime_error("The VTK VTP bct data file '" + fName + "' can't be read.");
+    throw std::runtime_error("The " + file_desc + " can't be read.");
   }
 
   // Read the vtp file.
   //
   VtkVtpData vtp_data(fName);
-  int num_points = vtp_data.num_points();
-  if (num_points == 0) {
-    throw std::runtime_error("The VTK VTP bct data file '" + fName + "' does not contain any points.");
+  int nNo = vtp_data.num_points();
+  if (nNo == 0) {
+    throw std::runtime_error("The " + file_desc + " does not contain any points.");
   }
 
   int num_elems = vtp_data.num_elems();
   if (num_elems == 0) {
-    throw std::runtime_error("The VTK VTP bct data file '" + fName + "' does not contain any elements.");
+    throw std::runtime_error("The " + file_desc + " does not contain any elements.");
   }
 
-  if (num_points != lFa.nNo) {
-    throw std::runtime_error("The number of points (" + std::to_string(num_points) + " in the VTK VTP bct data file '" + fName + 
-        "' does not match the number of points (" + std::to_string(num_points) + " for the face '" + lFa.name + "'.");
+  if (nNo != lFa.nNo) {
+    throw std::runtime_error("The number of points (" + std::to_string(nNo) + ") in the " + file_desc + 
+        " does not match the number of points (" + std::to_string(nNo) + " for the face '" + lFa.name + "'.");
   }
+
+  // Get all the point data starting with "velocity_"
+  //
+  auto namesL = vtp_data.get_point_data_names();
+  int n = namesL.size();
+
+  int ntime = 0;
+  int nj = 1;
+
+  for (int i = 0; i < n; i++) {
+    auto stmp = namesL[i];
+
+    for (int j = 0; j < 9; j++) {
+      if (shdr[j] != stmp[j]) {
+        break; 
+      }
+      nj += 1;
+    }
+
+    if (nj < 9) {
+      namesL[i] = "";
+      continue; 
+    }
+    ntime = ntime + 1;
+  } 
+
+  // Initialize lMB data structure
+  //
+  const int nsd = com_mod.nsd;
+  lMB.dof = nsd;
+  lMB.nTP = ntime;
+  int iM = lFa.iM;
+  lMB.t.resize(ntime); 
+  lMB.d.resize(nsd,nNo,ntime); 
+  Vector<int> ptr(com_mod.msh[iM].gnNo);
+
+  ntime = 0;
+
+  for (int i = 0; i < n; i++) {
+    auto stmp = namesL[i];
+    if (stmp.size() == 0) { 
+      continue;
+    }
+
+    stmp = stmp.substr(9);
+    double t = std::stod(stmp);
+    lMB.t(ntime) = t;
+
+    if (ntime == 0) { 
+      if (!utils::is_zero(t)) {
+        throw std::runtime_error("The first time step in the " + file_desc + " should be zero.");
+      }
+    } else {
+      t = t - lMB.t(ntime-1);
+      if (utils::is_zero(t) || t < 0.0) {
+        throw std::runtime_error("There is a non-increaing series of times in the " + file_desc + ".");
+      }
+    }
+
+    ntime = ntime + 1;
+  }
+
+  lMB.period = lMB.t(ntime-1);
+  auto& msh = com_mod.msh[iM];
+
+  // Prepare pointer array
+  //
+  for (int a = 0; a < lFa.nNo; a++) {
+    int Ac = lFa.gN(a);
+    Ac = msh.lN(Ac);
+
+    if (Ac == -1) {
+      throw std::runtime_error("Incorrect global node number detected in the " + file_desc + 
+          ".  Mesh: '"  + msh.name + "'  Face: '" + lFa.name + "'  Node: " + std::to_string(a+1) + 
+          " gN: " + std::to_string(lFa.gN(a)));
+    }
+
+    ptr(Ac) = a;
+  } 
+
+  // Get GlobalNodeID from vtp file and make sure it is consistent
+  // with mesh structure
+  //
+  Vector<int> gN(nNo);
+  vtp_data.copy_point_data("GlobalNodeID", gN);
+
+  for (int a = 0; a < nNo; a++) {
+    int Ac = gN(a) - 1;
+    if (Ac > msh.gnNo-1 || Ac < 0) {
+      throw std::runtime_error("Global node IDs in the '" + file_desc + " are not consistent with the volume mesh '" + msh.name + ".");
+    }
+    Ac = ptr(Ac);
+    if (Ac == -1) { 
+      throw std::runtime_error("Global node IDs in the '" + file_desc + " are not consistent with the volume mesh '" + msh.name + ".");
+    }
+  }
+
+  // Load spatial data for each time point from vtp file
+  //
+  Array<double> tmpR(nsd,nNo);
+  ntime = 0;
+
+  for (int i = 0; i < n; i++) {
+    auto stmp = namesL[i];
+    if (stmp.size() == 0) { 
+      continue;
+    }
+
+    tmpR = 0.0;
+    vtp_data.copy_point_data(stmp, tmpR);
+
+    for (int a = 0; a < nNo; a++) {
+      int Ac = gN(a) - 1;
+      Ac = ptr(Ac);
+      for (int j = 0; j < nsd; j++) {
+        lMB.d(j,Ac,ntime) = tmpR(j,a);
+      }
+    }
+
+    ntime = ntime + 1;
+  }
+
 }
 
 //---------
