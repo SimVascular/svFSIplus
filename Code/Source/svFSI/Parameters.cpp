@@ -1722,6 +1722,9 @@ void EquationParameters::set_values(tinyxml2::XMLElement* eq_elem)
     } else if (name == ECGLeadsParameters::xml_element_name_) {
       ecg_leads.set_values(item);
 
+    } else if (name == VariableWallPropsParameters::xml_element_name_) {
+      variable_wall_properties.set_values(item);
+
     } else if (item->GetText() != nullptr) {
       auto value = item->GetText();
 
