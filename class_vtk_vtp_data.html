@@ -114,9 +114,15 @@ virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>read_file</b>
 <tr class="memitem:a4c0cee8f45ffd950157d88412b6dd6f6"><td class="memItemLeft" align="right" valign="top"><a id="a4c0cee8f45ffd950157d88412b6dd6f6"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>copy_point_data</b> (const std::string &amp;data_name, <a class="el" href="class_vector.html">Vector</a>&lt; double &gt; &amp;mesh_data)</td></tr>
 <tr class="separator:a4c0cee8f45ffd950157d88412b6dd6f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5d679aff7b7db4e6d7a17d81cb4a23f7"><td class="memItemLeft" align="right" valign="top"><a id="a5d679aff7b7db4e6d7a17d81cb4a23f7"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>copy_point_data</b> (const std::string &amp;data_name, <a class="el" href="class_vector.html">Vector</a>&lt; int &gt; &amp;mesh_data)</td></tr>
+<tr class="separator:a5d679aff7b7db4e6d7a17d81cb4a23f7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9f946b5f9e516909bd186e0d2b38cf28"><td class="memItemLeft" align="right" valign="top">Array&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_vtk_vtp_data.html#a9f946b5f9e516909bd186e0d2b38cf28">get_point_data</a> (const std::string &amp;data_name)</td></tr>
 <tr class="memdesc:a9f946b5f9e516909bd186e0d2b38cf28"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get an array of point data from an unstructured grid.  <a href="class_vtk_vtp_data.html#a9f946b5f9e516909bd186e0d2b38cf28">More...</a><br /></td></tr>
 <tr class="separator:a9f946b5f9e516909bd186e0d2b38cf28"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a521d98309e9abcd8c544dfe2ef2efc3a"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_vtk_vtp_data.html#a521d98309e9abcd8c544dfe2ef2efc3a">get_point_data_names</a> ()</td></tr>
+<tr class="memdesc:a521d98309e9abcd8c544dfe2ef2efc3a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get a list of point data names.  <a href="class_vtk_vtp_data.html#a521d98309e9abcd8c544dfe2ef2efc3a">More...</a><br /></td></tr>
+<tr class="separator:a521d98309e9abcd8c544dfe2ef2efc3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2811ed67b0befe319ebbb6ae38ed9491"><td class="memItemLeft" align="right" valign="top"><a id="a2811ed67b0befe319ebbb6ae38ed9491"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>has_point_data</b> (const std::string &amp;data_name)</td></tr>
 <tr class="separator:a2811ed67b0befe319ebbb6ae38ed9491"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -237,6 +243,25 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><b>file_name</b><
 </div><div class="memdoc">
 
 <p>Get an array of point data from an unstructured grid. </p>
+
+</div>
+</div>
+<a id="a521d98309e9abcd8c544dfe2ef2efc3a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a521d98309e9abcd8c544dfe2ef2efc3a">&#9670;&nbsp;</a></span>get_point_data_names()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; std::string &gt; VtkVtpData::get_point_data_names </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get a list of point data names. </p>
 
 </div>
 </div>
