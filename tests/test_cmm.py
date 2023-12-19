@@ -21,7 +21,7 @@ def test_pipe_3d(n_proc):
 
     prestress_folder = os.path.join(folder, "2b-prestress")
     t_max = 3
-    run_with_reference(base_folder, prestress_folder, fields[0:1], 1, t_max)
+    run_with_reference(base_folder, prestress_folder, fields[0:2], 1, t_max)
 
     prestress_cmm_folder = os.path.join(folder, "3b-prestress-cmm")
     t_max = 5
