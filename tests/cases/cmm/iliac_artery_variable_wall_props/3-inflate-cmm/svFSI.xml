@@ -54,7 +54,7 @@
    <Coupled> true </Coupled>   
    <Min_iterations> 3 </Min_iterations>  
    <Max_iterations> 10 </Max_iterations>
-   <Tolerance> 1e-4 </Tolerance> 
+   <Tolerance> 1e-7 </Tolerance> 
 
    <Fluid_density> 1.06 </Fluid_density>
    <Viscosity model="Constant" >

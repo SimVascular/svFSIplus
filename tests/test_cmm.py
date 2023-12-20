@@ -31,15 +31,11 @@ def test_pipe_3d(n_proc):
 
 def test_iliac_artery_variable_wall_props(n_proc):
     folder = "iliac_artery_variable_wall_props"
-    inflate_folder = os.path.join(folder, "1-rigid-solution")
+    inflate_folder = os.path.join(folder, "2-inflate")
     t_max = 3
-    run_with_reference(base_folder, inflate_folder, fields[2::], n_proc, t_max)
+    run_with_reference(base_folder, inflate_folder, fields[1:2], 1, t_max)
 
-    inflate_cmm_folder = os.path.join(folder, "2-inflate")
+    inflate_cmm_folder = os.path.join(folder, "3-inflate-cmm")
     t_max = 3
-    run_with_reference(base_folder, inflate_cmm_folder, fields[1:2], 1, t_max)
-
-    prestress_cmm_folder = os.path.join(folder, "3-inflate-cmm")
-    t_max = 3
-    run_with_reference(base_folder, prestress_cmm_folder, fields[1::], n_proc, t_max)
+    run_with_reference(base_folder, inflate_cmm_folder, fields[1::], n_proc, t_max)
 
