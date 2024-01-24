@@ -1,0 +1,11 @@
+# This workflow checks for large files that are not tracked with git lfs
+name: Documentation
+on: [push, pull_request]
+jobs:
+  check_git_lfs:
+    runs-on: ubuntu-latest
+    steps:
+        - name: Check for large files without git lfs
+          uses: ppremk/lfs-warning@v3.2
+          with:
+            filesizelimit: 1MB
