@@ -51,6 +51,7 @@ jobs:
           name: coverage_report
           path: build/svFSI-build/coverage
       - name: Upload coverage reports to Codecov
+        if: startsWith(matrix.os, 'ubuntu-22.04')
         uses: codecov/codecov-action@v3
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
