@@ -3,6 +3,7 @@
 <div align="center">
 
 [![Build Status](https://github.com/SimVascular/svFSIplus/actions/workflows/test.yml/badge.svg)](https://github.com/SimVascular/svFSIplus/actions)
+[![codecov](https://codecov.io/github/SimVascular/svFSIplus/graph/badge.svg?token=I848DNIHSP)](https://codecov.io/github/SimVascular/svFSIplus)
 ![Latest Release](https://img.shields.io/github/v/release/SimVascular/svFSIplus?label=latest)
 ![Platform](https://img.shields.io/badge/platform-macOS%20|%20linux-blue)
 [![DOI](https://img.shields.io/badge/DOI-10.21105%2Fjoss.04118-green)](https://doi.org/10.21105/joss.04118)
