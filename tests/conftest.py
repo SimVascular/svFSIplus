@@ -123,10 +123,10 @@ def run_with_reference(
             i_max = np.argmax(np.abs(a_fl - b_fl))
 
             # maximum absolute difference
-            max_abs = np.abs(a_fl[i_max] - a_fl[i_max])
+            max_abs = np.abs(a_fl[i_max] - b_fl[i_max])
 
             # relative difference at same location
-            max_rel = np.abs(a_fl[i_max] / a_fl[i_max] - 1)
+            max_rel = np.abs(a_fl[i_max] / b_fl[i_max] - 1)
 
             # throw error message for pytest
             msg = "Test failed in field " + f + "."
