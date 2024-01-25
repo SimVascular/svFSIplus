@@ -90,7 +90,13 @@ def run_with_reference(
 
     # check results
     for f in fields:
+        # extract field
+        if f not in res.point_data.keys():
+            raise ValueError("Field " + f + " not in simulation result")
         a = res.point_data[f]
+
+        if f not in ref.point_data.keys():
+            raise ValueError("Field " + f + " not in reference result")
         b = ref.point_data[f]
 
         # truncate last dimension if solution is 2D but reference is 3D
@@ -99,19 +105,35 @@ def run_with_reference(
                 assert not np.any(b[:, 2])
                 b = b[:, :2]
 
-        # compare solution to reference
+        # pick tolerance for current field
         if f in RTOL:
             rtol = RTOL[f]
         else:
             rtol = DEFAULT_TOL
+
+        # throw error if not all results are within relative tolerance
         close = np.isclose(a, b, rtol=rtol)
-        if np.all(close):
-            return
-        else:
-            msg = "Test failed!"
-            msg += "\nResults in field " + f + " differ by more than rtol=" + str(rtol)
-            msg += (
-                " in " + str(np.sum(close)) + " out of " + str(close.size) + " results."
-            )
-            msg += " Max. abs. difference is " + "{:.1e}".format(np.max(np.abs(a - b)))
+        if not np.all(close):
+            # portion of individual results that are above the tolerance
+            wrong = 1 - np.sum(close) / close.size
+
+            # location of absolute maximum difference
+            a_fl = a.flatten()
+            b_fl = b.flatten()
+            i_max = np.argmax(np.abs(a_fl - b_fl))
+
+            # maximum absolute difference
+            max_abs = np.abs(a_fl[i_max] - a_fl[i_max])
+
+            # relative difference at same location
+            max_rel = np.abs(a_fl[i_max] / a_fl[i_max] - 1)
+
+            # throw error message for pytest
+            msg = "Test failed in field " + f + "."
+            msg += " Results differ by more than rtol=" + str(rtol)
+            msg += " in {:.0%}".format(wrong)
+            msg += " out of results."
+            msg += " Max. abs. differences is" 
+            msg += " {:.1e}".format(max_abs)
+            msg += " (rel. {:.1e}".format(max_rel) + ")"
             raise ValueError(msg)
