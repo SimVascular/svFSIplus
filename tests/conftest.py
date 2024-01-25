@@ -133,7 +133,7 @@ def run_with_reference(
             msg += " Results differ by more than rtol=" + str(rtol)
             msg += " in {:.0%}".format(wrong)
             msg += " out of results."
-            msg += " Max. abs. differences is" 
+            msg += " Max. abs. difference is"
             msg += " {:.1e}".format(max_abs)
             msg += " (rel. {:.1e}".format(max_rel) + ")"
             raise ValueError(msg)
