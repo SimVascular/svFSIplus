@@ -108,10 +108,11 @@ def run_with_reference(
         if np.all(close):
             return
         else:
+            diff = close.size - np.sum(close)
             msg = "Test failed!"
             msg += "\nResults in field " + f + " differ by more than rtol=" + str(rtol)
             msg += (
-                " in " + str(np.sum(close)) + " out of " + str(close.size) + " results."
+                " in " + str(diff) + " out of " + str(close.size) + " results."
             )
             msg += " Max. abs. difference is " + "{:.1e}".format(np.max(np.abs(a - b)))
             raise ValueError(msg)
