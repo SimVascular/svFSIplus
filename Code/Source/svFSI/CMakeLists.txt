@@ -215,3 +215,106 @@ if(ENABLE_COVERAGE)
 endif()
 
 
+# add_executable(runUnitTest ../../../tests/unitTests/test.cpp)
+# target_include_directories(runUnitTest PRIVATE ${SV_INCLUDE_DIRS})
+
+# replace main.cpp
+set(CSRCS_unitTest 
+../../../tests/unitTests/test.cpp
+
+  Array3.h Array3.cpp 
+  Array.h Array.cpp
+  Tensor4.h Tensor4.cpp
+  Vector.h Vector.cpp 
+
+  lapack_defs.h
+
+  DebugMsg.h 
+  Parameters.h Parameters.cpp
+  Simulation.h Simulation.cpp
+  SimulationLogger.h
+  VtkData.h VtkData.cpp
+
+  all_fun.h all_fun.cpp
+  baf_ini.h baf_ini.cpp
+  bf.h bf.cpp
+  cep.h cep.cpp
+  cep_ion.h cep_ion.cpp
+  cmm.h cmm.cpp
+  consts.h consts.cpp
+  contact.h contact.cpp
+  distribute.h distribute.cpp
+  eq_assem.h eq_assem.cpp
+  fluid.h fluid.cpp
+  fsi.h fsi.cpp
+  fs.h fs.cpp
+  fft.h fft.cpp
+  heatf.h heatf.cpp
+  heats.h heats.cpp
+  initialize.h initialize.cpp
+  l_elas.h l_elas.cpp
+  lhsa.h lhsa.cpp
+  ls.h ls.cpp
+
+  mat_fun.h mat_fun.cpp
+  mat_fun_carray.h mat_fun_carray.cpp
+  mat_models.h mat_models.cpp
+  mesh.h mesh.cpp
+  nn.h nn.cpp
+  output.h output.cpp
+  load_msh.h load_msh.cpp
+  pic.h pic.cpp
+  post.h post.cpp
+  read_files.h read_files.cpp
+  read_msh.h read_msh.cpp
+  remesh.h remesh.cpp
+  remeshTet.cpp
+  set_bc.h set_bc.cpp
+  shells.h shells.cpp
+  stokes.h stokes.cpp
+  sv_struct.h sv_struct.cpp
+  txt.h txt.cpp
+  utils.h utils.cpp
+  ustruct.h ustruct.cpp
+  vtk_xml.h vtk_xml.cpp
+  vtk_xml_parser.h vtk_xml_parser.cpp
+
+  CepMod.h CepMod.cpp
+  CepModAp.h CepModAp.cpp
+  CepModBo.h CepModBo.cpp
+  CepModFn.h CepModFn.cpp
+  CepModTtp.h CepModTtp.cpp
+  ChnlMod.h ChnlMod.cpp
+  CmMod.h CmMod.cpp
+  ComMod.h ComMod.cpp
+  Timer.h
+
+  SPLIT.c
+)
+
+simvascular_add_executable(runUnitTest
+  SRCS ${CSRCS_unitTest}
+  # DEV_SCRIPT_NAME "hhhhhmysvfsi"
+  # INSTALL_SCRIPT_NAME "hhhhhcsvfsi"
+  INSTALL_COMP CoreExecutables
+  INSTALL_DESTINATION ${SV_INSTALL_RUNTIME_DIR})
+
+
+target_link_libraries(runUnitTest
+  ${GLOBAL_LIBRARIES}
+  ${INTELRUNTIME_LIBRARIES}
+  ${ZLIB_LIBRARY}
+  ${BLAS_LIBRARIES}
+  ${LAPACK_LIBRARIES}
+  ${METIS_SVFSI_LIBRARY_NAME}
+  ${PARMETIS_SVFSI_LIBRARY_NAME}
+  ${TETGEN_LIBRARY_NAME}
+  ${TINYXML_LIBRARY_NAME}
+  ${SV_LIB_SVFSILS_NAME}${SV_MPI_NAME_EXT}
+  ${VTK_LIBRARIES}
+  )
+
+if(SV_MPI_EXTRA_LIBRARY)
+  target_link_libraries(runUnitTest ${SV_MPI_EXTRA_LIBRARY})
+endif()
+
