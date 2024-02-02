@@ -215,8 +215,50 @@ if(ENABLE_COVERAGE)
 endif()
 
 
-# add_executable(runUnitTest ../../../tests/unitTests/test.cpp)
-# target_include_directories(runUnitTest PRIVATE ${SV_INCLUDE_DIRS})
+# add Google Test:
+
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
+)
+# For Windows: Prevent overriding the parent project's compiler/linker settings
+# set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
+FetchContent_MakeAvailable(googletest)
+
+enable_testing()
+
+add_executable(
+  hello_test
+  ../../../tests/unitTests/hello_test.cpp
+)
+target_link_libraries(
+  hello_test
+  GTest::gtest_main
+)
+
+set_target_properties(
+  hello_test 
+  PROPERTIES
+  RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../../../tests/unitTests/build"
+)
+
+include(GoogleTest)
+gtest_discover_tests(hello_test)
+
+
+
+
+
+
+
+
+
+
+
+
+# add test.cpp:
 
 # replace main.cpp
 set(CSRCS_unitTest 
@@ -299,6 +341,12 @@ simvascular_add_executable(runUnitTest
   INSTALL_COMP CoreExecutables
   INSTALL_DESTINATION ${SV_INSTALL_RUNTIME_DIR})
 
+# add_executabdle(runUnitTest ${CSRCS_unitTest})
+
+# target_link_libraries(
+#   runUnitTest
+#   GTest::gtest_main
+# )
 
 target_link_libraries(runUnitTest
   ${GLOBAL_LIBRARIES}
@@ -312,9 +360,12 @@ target_link_libraries(runUnitTest
   ${TINYXML_LIBRARY_NAME}
   ${SV_LIB_SVFSILS_NAME}${SV_MPI_NAME_EXT}
   ${VTK_LIBRARIES}
-  )
+)
 
-if(SV_MPI_EXTRA_LIBRARY)
-  target_link_libraries(runUnitTest ${SV_MPI_EXTRA_LIBRARY})
-endif()
+set_target_properties(
+  runUnitTest 
+  PROPERTIES
+  RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../../../tests/unitTests/build"
+)
 
+# gtest_discover_tests(runUnitTest)

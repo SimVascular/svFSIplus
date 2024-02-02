@@ -3,6 +3,8 @@
 *
 */
 
+// include GoogleTest
+// #include "gtest/gtest.h"
 
 // include header files from svFSIplus
 #include "mat_fun.h"
@@ -37,6 +39,19 @@
 #include <iomanip>
 #include <iostream>
 
+// Using global variables
+Simulation *simulation;
+ComMod com_mod;
+CmMod cm_mod_;
+cmType cm;
+CepMod cep_mod;
+
+// S, Dm: target variables 
+Array<double> S(3,3), Dm(6,6);
+// I: identity matrix
+Array<double> I = mat_fun::mat_id(3);
+
+
 
 void read_files(Simulation* simulation, const std::string& file_name)
 {
@@ -61,23 +76,31 @@ void read_files(Simulation* simulation, const std::string& file_name)
   
 }
 
-int main(int argc, char *argv[]) {
+// TEST(Dummy, Dummylollll) {
+//     EXPECT_EQ(1, 0);
+// }
 
+// TEST(GetPK2ccTest, Identity) {
+//     EXPECT_EQ(S(0,0), I(0,0));   // I: Identity 3x3 matrix
+// }
+
+// Main function running the tests
+int main(int argc, char **argv) {
     // Initialize MPI.
     //
     int mpi_rank, mpi_size;
+    // MPI_Init(&argc, &argv);
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
-
     // Original: initiate in main():
 
-    auto simulation = new Simulation();
+    simulation = new Simulation();
 
     // filename for the unit element .xml: (To be complete !!)
-    // std::string file_name = "unitTest.xml"; 
+    std::string file_name = "/Users/yuechengyu/Work/Cardiac/svFSIplus_unitTest/svFSIplus/tests/unitTests/unitTest.xml"; 
     
-    std::string file_name(argv[1]);
+    // std::string file_name(argv[1]);
     read_files(simulation, file_name);
 
     std::cout << "Finish reading files" << std::endl;
@@ -87,16 +110,11 @@ int main(int argc, char *argv[]) {
     initialize(simulation, init_time);
 
     // Original: define from struct_3d/struct_3d_carray(...) <- construct_dsolid(...)
-    
-    // ya_g or ya: a constant related to electromechanics ??
-    double ya_g = 0.0;
-    // S, Dm: target variables 
-    Array<double> S(3,3), Dm(6,6);
 
-    auto& com_mod = simulation->com_mod;
-    auto& cm_mod = simulation->cm_mod;
-    auto& cm = com_mod.cm;
-    auto& cep_mod = simulation->get_cep_mod();
+    com_mod = simulation->com_mod;
+    cm_mod_ = simulation->cm_mod;
+    cm = com_mod.cm;
+    cep_mod = simulation->get_cep_mod();
 
     const int nsd  = com_mod.nsd;
 
@@ -125,21 +143,27 @@ int main(int argc, char *argv[]) {
         }
       }
     }
-    
 
     int cEq = com_mod.cEq;
     auto& eq = com_mod.eq[cEq];
     int cDmn = com_mod.cDmn;
     auto& dmn = eq.dmn[cDmn];
 
+
+
+    // ya_g or ya: a constant related to electromechanics ??
+    double ya_g = 0.0;
+    
+
+
     std::cout << "Before calling get_pk2cc: input argument F" << std::endl;
     std::cout << "=================== INPUT ===================" << std::endl;
     // F: deformation gradient
     Array<double> F(3,3);
-    F = mat_fun::mat_id(3);
+    F = I;
     // F(0, 0) = 2.0;
-    const auto& stM = dmn.stM;
-    std::cout << "Material type: " << stM.isoType << std::endl;
+    // const auto& stM = dmn.stM;
+    // std::cout << "Material type: " << stM.isoType << std::endl;
     F.print("Input Deformation ");
 
     // Original: call in sv_struct.cpp
@@ -160,5 +184,12 @@ int main(int argc, char *argv[]) {
     // iterate_simulation(simulation) <- run_simulation(simulation) <- main(...)
 
     std::cout << "This is svFSIplus/tests/unitTests/test.cpp now!" << std::endl;
+
+    std::cout << "Let's try EXPECT_EQ(S, actual_value)" << std::endl;
+
+
+    
+    // ::testing::InitGoogleTest(&argc, argv);
+    // return RUN_ALL_TESTS();
 
 }
