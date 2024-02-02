@@ -4,7 +4,7 @@
 */
 
 // include GoogleTest
-// #include "gtest/gtest.h"
+#include "gtest/gtest.h"
 
 // include header files from svFSIplus
 #include "mat_fun.h"
@@ -50,6 +50,8 @@ CepMod cep_mod;
 Array<double> S(3,3), Dm(6,6);
 // I: identity matrix
 Array<double> I = mat_fun::mat_id(3);
+// Z: zero matrix
+Array<double> Z(3,3);
 
 
 
@@ -76,13 +78,17 @@ void read_files(Simulation* simulation, const std::string& file_name)
   
 }
 
-// TEST(Dummy, Dummylollll) {
-//     EXPECT_EQ(1, 0);
-// }
+TEST(Dummy, OneEqualsToOne) {
+    EXPECT_EQ(1, 1);
+}
 
-// TEST(GetPK2ccTest, Identity) {
-//     EXPECT_EQ(S(0,0), I(0,0));   // I: Identity 3x3 matrix
-// }
+TEST(GetPK2ccTest, Identity) {
+    for (short i = 0; i < 3; i++){
+        for (short j = 0; j < 3; j++){
+            EXPECT_EQ(S(i,j), Z(i,j));   
+        }
+    }
+}
 
 // Main function running the tests
 int main(int argc, char **argv) {
@@ -189,7 +195,7 @@ int main(int argc, char **argv) {
 
 
     
-    // ::testing::InitGoogleTest(&argc, argv);
-    // return RUN_ALL_TESTS();
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 
 }

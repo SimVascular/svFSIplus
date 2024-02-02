@@ -334,19 +334,25 @@ set(CSRCS_unitTest
   SPLIT.c
 )
 
-simvascular_add_executable(runUnitTest
-  SRCS ${CSRCS_unitTest}
-  # DEV_SCRIPT_NAME "hhhhhmysvfsi"
-  # INSTALL_SCRIPT_NAME "hhhhhcsvfsi"
-  INSTALL_COMP CoreExecutables
-  INSTALL_DESTINATION ${SV_INSTALL_RUNTIME_DIR})
+set(UNIT_TEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../tests/unitTests/build")
+message(UNIT_TEST_DIR = "${UNIT_TEST_DIR}")
 
-# add_executabdle(runUnitTest ${CSRCS_unitTest})
-
-# target_link_libraries(
-#   runUnitTest
-#   GTest::gtest_main
+# seems only the first line affects, IDN what other lines for......
+# simvascular_add_executable(runUnitTest
+#   SRCS ${CSRCS_unitTest}
+#   # DEV_SCRIPT_NAME "hhhhhmysvfsi"
+#   # INSTALL_SCRIPT_NAME "hhhhhcsvfsi"
+#   # INSTALL_COMP CoreExecutables
+#   # INSTALL_DESTINATION ${SV_INSTALL_RUNTIME_DIR}
+#   # INSTALL_DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/../../../tests/unitTests/build"
+#   # INSTALL_DESTINATION ${UNIT_TEST_DIR}   
 # )
+
+
+# the following line works to build in svFSI-build/bin/runUnitTest
+add_executable(runUnitTest ${CSRCS_unitTest})
+
+
 
 target_link_libraries(runUnitTest
   ${GLOBAL_LIBRARIES}
@@ -362,10 +368,19 @@ target_link_libraries(runUnitTest
   ${VTK_LIBRARIES}
 )
 
+# PROBLEM: the following operations doesn't work for svFSIplus to read mesh file!!!!
+# SOLUTION: change all path in .xml file to absolute path
+#           for example: /Users/yuechengyu/Work/Cardiac/svFSIplus_unitTest/svFSIplus/tests/unitTests/and go on...
 set_target_properties(
   runUnitTest 
   PROPERTIES
   RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../../../tests/unitTests/build"
 )
 
-# gtest_discover_tests(runUnitTest)
+# PROBLEM: the following linking to GTest will cause failure to read mesh file!!!!!
+target_link_libraries(
+  runUnitTest
+  GTest::gtest_main
+)
+
+gtest_discover_tests(runUnitTest)
