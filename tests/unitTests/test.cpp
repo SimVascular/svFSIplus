@@ -92,6 +92,9 @@ TEST(GetPK2ccTest, Identity) {
 
 // Main function running the tests
 int main(int argc, char **argv) {
+    // std::cout << "Current working directory: " 
+    //           << std::filesystem::current_path() << std::endl;
+
     // Initialize MPI.
     //
     int mpi_rank, mpi_size;
@@ -104,9 +107,12 @@ int main(int argc, char **argv) {
     simulation = new Simulation();
 
     // filename for the unit element .xml: (To be complete !!)
-    std::string file_name = "/Users/yuechengyu/Work/Cardiac/svFSIplus_unitTest/svFSIplus/tests/unitTests/unitTest.xml"; 
-    
+    // current_path: /path_to_svFSIplus/svFSIplus/build/svFSI-build/Source/svFSI
+    std::string file_name = std::filesystem::current_path().string() + "/../../../../tests/unitTests/unitTest.xml";
+    // std::string file_name = "/Users/yuechengyu/Work/Cardiac/svFSIplus_unitTest/svFSIplus/tests/unitTests/unitTest.xml"; 
     // std::string file_name(argv[1]);
+
+
     read_files(simulation, file_name);
 
     std::cout << "Finish reading files" << std::endl;
@@ -194,7 +200,6 @@ int main(int argc, char **argv) {
     std::cout << "Let's try EXPECT_EQ(S, actual_value)" << std::endl;
 
 
-    
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 
