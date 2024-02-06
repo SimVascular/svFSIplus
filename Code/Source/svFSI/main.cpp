@@ -721,6 +721,10 @@ int main(int argc, char *argv[])
     #endif
     initialize(simulation, init_time);
 
+    #ifdef WITH_PETSC
+    ls_ns::initialize_petsc(simulation->com_mod);
+    #endif
+
     #ifdef debug_main
     for (int iM = 0; iM < simulation->com_mod.nMsh; iM++) {
       dmsg << "---------- iM " << iM;

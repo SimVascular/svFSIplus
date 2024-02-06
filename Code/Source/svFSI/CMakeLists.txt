@@ -1,3 +1,27 @@
+# Copyright (c) 2014-2015 The Regents of the University of California.
+# All Rights Reserved.
+#
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal in the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject
+# to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included
+# in all copies or substantial portions of the Software.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+# IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+# TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+# PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+# OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+# EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+# PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+# LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+# NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
@@ -49,8 +73,7 @@ if(SV_USE_TRILINOS)
       MESSAGE(WARNING "Trilinos_FOUND is true but Trilinos_LIBRARIES is empty. This suggests that FIND_PACKAGE(Trilinos) failed quietly. Proceed with caution.")
     endif()
 
-    MESSAGE("Setting WITH_TRILINOS to true\n")
-    set(WITH_TRILINOS 1)
+    set(USE_TRILINOS 1)
   ELSE()
     MESSAGE(WARNING "Could not find Trilinos. Compiling svFSI without Trilinos.")
   ENDIF()
@@ -58,9 +81,46 @@ if(SV_USE_TRILINOS)
 endif()
 
 # add trilinos flags and defines
-if(WITH_TRILINOS)
+if(USE_TRILINOS)
   ADD_DEFINITIONS(-DWITH_TRILINOS)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+endif()
+
+# Build with the PETSc linear algebra package.
+#
+if(NOT "${SV_PETSC_DIR}" STREQUAL "")
+
+   if(NOT EXISTS ${SV_PETSC_DIR})
+      message(ERROR "The PETSc directory ${SV_PETSC_DIR} could not be found.")
+   endif()
+
+   if(NOT EXISTS "${SV_PETSC_DIR}/include")
+      message(ERROR "The PETSc include directory ${SV_PETSC_DIR}/include could not be found.")
+   endif()
+
+   if(NOT EXISTS "${SV_PETSC_DIR}/lib")
+      message(ERROR "The PETSc library directory ${SV_PETSC_DIR}/lib could not be found.")
+   endif()
+
+  set(PETSC_INCLUDE_DIRS "${SV_PETSC_DIR}/include;${SV_PETSC_DIR}/../include")
+  set(PETSC_LIBRARY_DIRS "-L${SV_PETSC_DIR}/lib -lpetsc")
+  message("\nBuilding with the PETSc package; the include and libraries directories are: ")
+  message("  PETSC_LIBRARY_DIRS = ${PETSC_LIBRARY_DIRS}")
+  message("  PETSC_INCLUDE_DIRS = ${PETSC_INCLUDE_DIRS}")
+
+  # Set PETSc include and library directories.
+  include_directories(${PETSC_INCLUDE_DIRS})
+  #link_directories(${PETSC_LIBRARY_DIRS})
+
+  # Set C++ directive to use PETSc.
+  ADD_DEFINITIONS(-DWITH_PETSC)
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pedantic -std=c99")
+
+  set(USE_PETSC 1)
+
+else()
+  set(USE_PETSC 0)
+
 endif()
 
 if(ENABLE_ARRAY_INDEX_CHECKING)
@@ -155,7 +215,12 @@ set(CSRCS
   SPLIT.c
 )
 
-if(WITH_TRILINOS)
+  # Set PETSc interace code.
+  if(USE_PETSC)
+     set(CSRCS ${CSRCS} petsc_linear_solver.h petsc_linear_solver.c)
+  endif()
+
+if(USE_TRILINOS)
   set(CSRCS ${CSRCS} trilinos_linear_solver.cpp)
 
   # trilinos directories and libraries
@@ -191,8 +256,12 @@ if(SV_MPI_EXTRA_LIBRARY)
   target_link_libraries(${SV_SVFSI_EXE} ${SV_MPI_EXTRA_LIBRARY})
 endif()
 
-if(WITH_TRILINOS)
+if(USE_TRILINOS)
   target_link_libraries(${SV_SVFSI_EXE} ${Trilinos_LIBRARIES} ${Trilinos_TPL_LIBRARIES})
+endif()
+
+if(USE_PETSC)
+  target_link_libraries(${SV_SVFSI_EXE} ${PETSC_LIBRARY_DIRS})
 endif()
 
 # coverage

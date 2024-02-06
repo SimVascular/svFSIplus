@@ -667,6 +667,9 @@ class lsType
 
     /// @brief Calling duration              (OUT)
     double callD = 0.0;
+
+    //@brief Configuration file for linear solvers (Trilinos, PETSc)
+    std::string config;
 };
 
 
@@ -1301,6 +1304,24 @@ class tlsType
     Array<double> R;
 };
 
+// Data type for PETSc Linear Solver related arrays
+//
+class plsType
+{
+  public:
+
+    //  Local to global mapping
+    Vector<int> ltg;
+
+    //  Factor for Dirichlet BCs
+    Array<double> W;
+
+    //  Residue
+    Array<double> R;
+
+    // Factor for Lumped Parameter BCs
+    Array<double> V;
+};
 
 /// @brief The ComMod class duplicates the data structures in the Fortran COMMOD module
 /// defined in MOD.f. 
@@ -1584,6 +1605,9 @@ class ComMod {
 
     /// @brief Trilinos Linear Solver data type
     tlsType  tls;
+
+    // @brief PETSc Liear Solver data type
+    plsType pls;
 
     bool debug_active = false;
 
