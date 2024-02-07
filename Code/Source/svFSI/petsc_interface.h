@@ -29,8 +29,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PETSC_LINEAR_SOLVER_H
-#define PETSC_LINEAR_SOLVER_H
+#ifndef PETSC_INTERFACE_H
+#define PETSC_INTERFACE_H
 
 #include <petscksp.h>
 #include <petscao.h>

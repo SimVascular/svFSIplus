@@ -467,7 +467,11 @@ void iterate_solution(Simulation* simulation)
       dmsg << "Solving equation: " << eq.sym; 
       #endif
 
-      ls_ns::ls_solve(com_mod, eq, incL, res);
+      if (simulation->linear_solver) { 
+        simulation->linear_solver->solve(com_mod, eq, incL, res);
+      } else {
+        ls_ns::ls_solve(com_mod, eq, incL, res);
+      }
 
       com_mod.Val.write("Val_solve"+ istr);
       com_mod.R.write("R_solve"+ istr);
@@ -721,8 +725,12 @@ int main(int argc, char *argv[])
     #endif
     initialize(simulation, init_time);
 
-    #ifdef WITH_PETSC
-    ls_ns::initialize_petsc(simulation->com_mod);
+    #ifdef USE_PETSC
+    LinearSolverFactory factory;
+    std::cout << "[initialize] Create PETSc linear solver. " << std::endl;
+    simulation->linear_solver = factory.create_linear_solver(LinearSolverInterface::petsc);
+    simulation->linear_solver->initialize(simulation->com_mod);
+    //ls_ns::initialize_petsc(simulation->com_mod);
     #endif
 
     #ifdef debug_main

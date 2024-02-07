@@ -42,9 +42,9 @@
 #include "trilinos_linear_solver.h"
 #endif
 
-#ifdef WITH_PETSC
-#include "petsc_linear_solver.h"
-#endif
+//#ifdef USE_PETSC
+//#include "petsc_interface.h"
+//#endif
 
 namespace ls_ns {
 
@@ -136,6 +136,7 @@ void init_dir_and_coup_neu(ComMod& com_mod, const Vector<int>& incL, const Vecto
 //-------------------------------
 // Reproduces Fortran 'SUBROUTINE INIT_DIR_AND_COUPNEU_BC_PETSC(incL, res)'.
 //
+/*
 void init_dir_and_coupneu_bc_petsc(ComMod& com_mod, const Vector<int>& incL, const Vector<double>& res)
 {
   using namespace consts;
@@ -209,8 +210,8 @@ void init_dir_and_coupneu_bc_petsc(ComMod& com_mod, const Vector<int>& incL, con
       }
     }
   }
-
 }
+*/
 
 
 /// @brief Allocate com_mod.R and com_mod.Val arrays.
@@ -275,7 +276,8 @@ void ls_solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vecto
   dmsg << "lEq.assmTLS: " << lEq.assmTLS;
   #endif
 
-#ifdef WITH_PETSC
+#ifdef USE_PETSC
+#if 0
   auto& pls = com_mod.pls;
 
   pls.W.resize(com_mod.dof, com_mod.tnNo);
@@ -290,6 +292,7 @@ void ls_solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vecto
 
   petsc_solve_(&lEq.FSILS.RI.fNorm, &lEq.FSILS.RI.iNorm, &lEq.FSILS.RI.dB, &lEq.FSILS.RI.callD, &lEq.FSILS.RI.suc, &lEq.FSILS.RI.itr, com_mod.R.data(), &lEq.FSILS.RI.mItr, &com_mod.dof, &com_mod.cEq);
 
+#endif
   return;
 
 #endif
@@ -354,7 +357,9 @@ void ls_solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vecto
 void initialize_petsc(ComMod& com_mod)
 {
 
-#ifdef WITH_PETSC
+#ifdef USE_PETSC
+
+#if 0
   petsc_destroy_all_(&com_mod.nEq);
 
   petsc_initialize_(&com_mod.lhs.nNo, &com_mod.lhs.mynNo, &com_mod.lhs.nnz, &com_mod.nEq, com_mod.ltg.data(), com_mod.lhs.map.data(), com_mod.lhs.rowPtr.data(), com_mod.lhs.colPtr.data(), com_mod.eq[0].ls.config.data());
@@ -365,6 +370,8 @@ void initialize_petsc(ComMod& com_mod)
       int phys = static_cast<int>(com_mod.eq[a].phys);
       petsc_create_linearsolver_(&ls_type, &prec_type, &com_mod.eq[a].ls.sD, &com_mod.eq[a].ls.mItr, &com_mod.eq[a].ls.relTol, &com_mod.eq[a].ls.absTol, &phys, &com_mod.eq[a].dof, &a, &com_mod.nEq);
     }
+#endif
+
 #endif
 }
 

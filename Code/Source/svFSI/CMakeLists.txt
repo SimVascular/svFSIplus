@@ -113,7 +113,7 @@ if(NOT "${SV_PETSC_DIR}" STREQUAL "")
   #link_directories(${PETSC_LIBRARY_DIRS})
 
   # Set C++ directive to use PETSc.
-  ADD_DEFINITIONS(-DWITH_PETSC)
+  ADD_DEFINITIONS(-DUSE_PETSC)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pedantic -std=c99")
 
   set(USE_PETSC 1)
@@ -147,6 +147,8 @@ set(lib ${SV_LIB_SVFSI_NAME})
 set(CSRCS 
   Array3.h Array3.cpp 
   Array.h Array.cpp
+  LinearSolver.h LinearSolver.cpp
+  PetscLinearSolver.h PetscLinearSolver.cpp
   Tensor4.h Tensor4.cpp
   Vector.h Vector.cpp 
 
@@ -216,9 +218,9 @@ set(CSRCS
 )
 
   # Set PETSc interace code.
-  if(USE_PETSC)
-     set(CSRCS ${CSRCS} petsc_linear_solver.h petsc_linear_solver.c)
-  endif()
+  #if(USE_PETSC)
+  #   set(CSRCS ${CSRCS} petsc_linear_solver.h petsc_linear_solver.c)
+  #endif()
 
 if(USE_TRILINOS)
   set(CSRCS ${CSRCS} trilinos_linear_solver.cpp)

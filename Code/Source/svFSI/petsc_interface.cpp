@@ -29,7 +29,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "petsc_linear_solver.h"
+#include "petsc_interface.h"
 #include <locale.h>
 
 /*
@@ -937,3 +937,128 @@ char * rm_blank(char *string)
     string[non_space_count] = '\0';
     return string;
 }
+
+//-------------------------------
+// init_dir_and_coupneu_bc_petsc
+//-------------------------------
+//
+void PetscLinearSolver::PetscImpl::init_dir_and_coupneu_bc_petsc(ComMod& com_mod, const Vector<int>& incL, const Vector<double>& res)
+{
+  using namespace consts;
+  using namespace fsi_linear_solver;
+
+  int dof = com_mod.dof;
+  auto& lhs = com_mod.lhs;
+
+  if(lhs.nFaces != 0) {
+    for (auto& face : lhs.face) {
+      face.incFlag = true;
+    }
+
+    for (int faIn = 0; faIn < lhs.nFaces; faIn++) {
+      if (incL(faIn) == 0)  {
+        lhs.face[faIn].incFlag = false;
+      }
+    }
+
+    for (int faIn = 0; faIn < lhs.nFaces; faIn++) {
+      auto& face = lhs.face[faIn];
+      face.coupledFlag = false;
+      if (!face.incFlag) {
+        continue;
+      }
+
+      bool flag = (face.bGrp == BcType::BC_TYPE_Neu);
+
+      if (flag && res(faIn) != 0.0) {
+        face.res = res(faIn);
+        face.coupledFlag = true;
+      }
+    }
+  }
+
+  W_ = 1.0;
+
+  for (int faIn = 0; faIn < lhs.nFaces; faIn++) {
+    auto& face = lhs.face[faIn];
+    if (!face.incFlag) {
+      continue;
+    }
+
+    int faDof = std::min(face.dof,dof);
+
+    if (face.bGrp == BcType::BC_TYPE_Dir) {
+      for (int a = 0; a < face.nNo; a++) {
+        int Ac = face.glob(a);
+        for (int i = 0; i < faDof; i++) {
+          W_(i,Ac) = W_(i,Ac) * face.val(i,a);
+        }
+      }
+    }
+  }
+
+  V_ = 0.0;
+  bool isCoupledBC = false;
+
+  for (int faIn = 0; faIn < lhs.nFaces; faIn++) {
+    auto& face = lhs.face[faIn];
+    if (face.coupledFlag) {
+      isCoupledBC = true;
+      int faDof = std::min(face.dof,dof);
+
+      for (int a = 0; a < face.nNo; a++) {
+        int Ac = face.glob(a);
+        for (int i = 0; i < faDof; i++) {
+          V_(i,Ac) = V_(i,Ac) + sqrt(fabs(res(faIn))) * face.val(i,a);
+        }
+      }
+    }
+  }
+
+}
+
+void PetscLinearSolver::PetscImpl::initialize(ComMod& com_mod)
+{
+  std::cout << "[PetscImpl] ---------- initialize ---------- " << std::endl;
+
+  petsc_destroy_all_(&com_mod.nEq);
+
+  petsc_initialize_(&com_mod.lhs.nNo, &com_mod.lhs.mynNo, &com_mod.lhs.nnz, &com_mod.nEq, 
+      com_mod.ltg.data(), com_mod.lhs.map.data(), com_mod.lhs.rowPtr.data(), com_mod.lhs.colPtr.data(), com_mod.eq[0].ls.config.data());
+
+  for (int a = 0; a < com_mod.nEq; a++){
+    int prec_type = static_cast<int>(com_mod.eq[a].ls.PREC_Type);
+    int ls_type = static_cast<int>(com_mod.eq[a].ls.LS_type);
+    int phys = static_cast<int>(com_mod.eq[a].phys);
+    petsc_create_linearsolver_(&ls_type, &prec_type, &com_mod.eq[a].ls.sD, &com_mod.eq[a].ls.mItr, 
+        &com_mod.eq[a].ls.relTol, &com_mod.eq[a].ls.absTol, &phys, &com_mod.eq[a].dof, &a, &com_mod.nEq);
+  }
+
+  std::cout << "[PetscImpl::initialize] com_mod.dof: " << com_mod.dof << std::endl;
+  std::cout << "[PetscImpl::initialize] com_mod.tnNo: " << com_mod.tnNo << std::endl;
+  W_.resize(com_mod.dof, com_mod.tnNo);
+  V_.resize(com_mod.dof, com_mod.tnNo);
+}
+
+void PetscLinearSolver::PetscImpl::solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res)
+{
+  std::cout << "[PetscImpl::solve] ---------- solve ---------- " << std::endl;
+  std::cout << "[PetscImpl::solve] com_mod.dof: " << com_mod.dof << std::endl;
+  std::cout << "[PetscImpl::solve] com_mod.tnNo: " << com_mod.tnNo << std::endl;
+
+  W_.resize(com_mod.dof, com_mod.tnNo);
+  V_.resize(com_mod.dof, com_mod.tnNo);
+
+  init_dir_and_coupneu_bc_petsc(com_mod, incL, res);
+
+  // only excute once for each equation
+  //
+  petsc_create_linearsystem_(&com_mod.dof, &com_mod.cEq, &com_mod.nEq, W_.data(), V_.data());
+
+  petsc_set_values_(&com_mod.dof, &com_mod.cEq, com_mod.R.data(), com_mod.Val.data(), W_.data(), V_.data());
+
+  petsc_solve_(&lEq.FSILS.RI.fNorm, &lEq.FSILS.RI.iNorm, &lEq.FSILS.RI.dB, &lEq.FSILS.RI.callD, 
+      &lEq.FSILS.RI.suc, &lEq.FSILS.RI.itr, com_mod.R.data(), &lEq.FSILS.RI.mItr, &com_mod.dof, &com_mod.cEq);
+
+}
+
