@@ -20,3 +20,8 @@ __pycache__
 
 # Doxygen output
 Documentation/html/
+
+# genBC object files
+**/genBC/obj/
+**/genBC_svFSIplus/obj/
+genBC.exe

@@ -93,7 +93,7 @@ void b_fluid(ComMod& com_mod, const int eNoN, const double w, const Vector<doubl
       udn  = udn + u(i)*nV(i);
     }
   }
-
+  // Compute u dot n for backflow stabilization
   udn = 0.50 * dmn.prop.at(PhysicalProperyType::backflow_stab) * dmn.prop.at(PhysicalProperyType::fluid_density) * (udn - fabs(udn));
   auto hc  = h*nV + udn*u;
   #ifdef debug_b_fluid
@@ -103,7 +103,11 @@ void b_fluid(ComMod& com_mod, const int eNoN, const double w, const Vector<doubl
   #endif
 
   // Here the loop is started for constructing left and right hand side
-  //
+  // Note, if the boundary is a coupled or resistance boundary, the boundary
+  // pressure is included in the residual here, but the corresponding tangent
+  // contribution is not explicit included in the tangent here. Instead, the 
+  // tangent contribution is accounted for by the ADDBCMUL() function within the
+  // linear solver
   if (nsd == 2) {
     for (int a = 0; a < eNoN; a++) {
       lR(0,a) = lR(0,a) - w*N(a)*hc(0);

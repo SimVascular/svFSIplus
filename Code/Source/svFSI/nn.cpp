@@ -527,14 +527,17 @@ void gnn(const int eNoN, const int nsd, const int insd, Array<double>& Nxi, Arra
   }
 }
 
-/// @brief This routine returns a vector at element "e" and Gauss point
-/// 'g' of face 'lFa' that is the normal weigthed by Jac, i.e.
-/// Jac = SQRT(NORM(n)).
+/// @brief This routine returns a surface normal vector at element "e" and Gauss point
+/// 'g' of face 'lFa' that is the normal weighted by Jac, i.e.
+/// Jac = SQRT(NORM(n)), the Jacobian of the mapping from parent surface element to
+/// reference/old/new configuration.
+///
+/// cfg denotes which configuration ('r': reference/timestep 0, 'o': old/timestep n, or 'n': new/timestep n+1). Default 'r'
 ///
 /// Reproduce Fortran 'GNNB'.
 //
 void gnnb(const ComMod& com_mod, const faceType& lFa, const int e, const int g, const int nsd, const int insd, 
-    const int eNoNb, const Array<double>& Nx, Vector<double>& n)
+    const int eNoNb, const Array<double>& Nx, Vector<double>& n, char cfg)
 {
   auto& cm = com_mod.cm;
 
@@ -547,6 +550,8 @@ void gnnb(const ComMod& com_mod, const faceType& lFa, const int e, const int g, 
   dmsg << "nsd: " << nsd;
   dmsg << "insd: " << insd;
   dmsg << "eNoNb: " << eNoNb;
+  dmsg << "cfg: " << cfg;
+  dmsg << "cfg == 'n': " << (cfg == 'n');
   #endif
 
   int iM = lFa.iM;
@@ -603,17 +608,34 @@ void gnnb(const ComMod& com_mod, const faceType& lFa, const int e, const int g, 
     }
   }
 
-  // Correcting the position vector if mesh is moving
+  // Correcting the geometry if mesh is moving or if we want the 
+  // area-weighted normal in a different configuration
   //
   for (int a = 0; a < eNoN; a++) {
     int Ac = msh.IEN(a,Ec);
     for (int i = 0; i < lX.nrows(); i++) {
+      // Get position vector
       lX(i,a) = com_mod.x(i,Ac);
     }
-
     if (com_mod.mvMsh) {
       for (int i = 0; i < lX.nrows(); i++) {
+        // Add mesh displacement
         lX(i,a) = lX(i,a) + com_mod.Do(i+nsd+1,Ac);
+      }
+    }
+    else if (cfg == 'r') {
+        // Do nothing
+    }
+    else if (cfg == 'o') {
+      for (int i = 0; i < lX.nrows(); i++) {
+        // Add displacement at timestep n
+        lX(i,a) = lX(i,a) + com_mod.Do(i,Ac);
+      }
+    }
+    else if (cfg == 'n') {
+      for (int i = 0; i < lX.nrows(); i++) {
+        // Add displacement at timestep n+1
+        lX(i,a) = lX(i,a) + com_mod.Dn(i,Ac);
       }
     }
   }
@@ -696,7 +718,7 @@ void gnnb(const ComMod& com_mod, const faceType& lFa, const int e, const int g, 
   }
 
   // Changing the sign if neccessary. 'a' locates on the face and 'b'
-  // outside of the face, in the parent element
+  // in the interior of the element. v points outward along ba
   //
   a = ptr(0);
   int b = ptr(lFa.eNoN);

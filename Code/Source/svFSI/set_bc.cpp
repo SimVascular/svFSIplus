@@ -50,6 +50,12 @@
 
 namespace set_bc {
 
+/// @brief This function calculates updated cplBC pressures or flowrates from 0D,
+/// as well as the resistance matrix M ~ dP/dQ from 0D using finite difference.
+/// Updates the pressure or flowrates stored in cplBC.fa[i].y and the resistance
+/// matrix M ~ dP/dQ stored in eq.bc[iBc].r.
+/// @param com_mod 
+/// @param cm_mod 
 void calc_der_cpl_bc(ComMod& com_mod, const CmMod& cm_mod)
 {
   using namespace consts;
@@ -68,6 +74,8 @@ void calc_der_cpl_bc(ComMod& com_mod, const CmMod& cm_mod)
   auto& eq = com_mod.eq[iEq];
   auto& cplBC = com_mod.cplBC;
 
+  // If coupling is all with Dirichlet faces, no derivative calculation is needed
+  // (see Moghadam et al. 2013 Section 2.2.2)
   if (std::count_if(cplBC.fa.begin(),cplBC.fa.end(),[](cplFaceType& fa){return fa.bGrp == CplBCType::cplBC_Dir;}) == cplBC.fa.size()) { 
     #ifdef debug_calc_der_cpl_bc 
     dmsg << "all cplBC_Dir " << std::endl;
@@ -78,6 +86,7 @@ void calc_der_cpl_bc(ComMod& com_mod, const CmMod& cm_mod)
 
   bool RCRflag = false;
 
+  // Loop over BCs
   for (int iBc = 0; iBc < eq.nBc; iBc++) {
     #ifdef debug_calc_der_cpl_bc 
     dmsg << "----- iBc " << iBc+1 << " -----" << std::endl;
@@ -102,8 +111,10 @@ void calc_der_cpl_bc(ComMod& com_mod, const CmMod& cm_mod)
       auto& fa = com_mod.msh[iM].fa[iFa];
 
       if (utils::btest(bc.bType, iBC_Neu)) {
-        cplBC.fa[ptr].Qo = all_fun::integ(com_mod, cm_mod, fa, com_mod.Yo, 0, nsd-1);
-        cplBC.fa[ptr].Qn = all_fun::integ(com_mod, cm_mod, fa, com_mod.Yn, 0, nsd-1);
+        // Compute flowrates at 3D Neumann boundaries at timesteps n and n+1
+        /// \todo: Do I need an if struct/ustruct here?
+        cplBC.fa[ptr].Qo = all_fun::integ(com_mod, cm_mod, fa, com_mod.Yo, 0, nsd-1, 'o');
+        cplBC.fa[ptr].Qn = all_fun::integ(com_mod, cm_mod, fa, com_mod.Yn, 0, nsd-1, 'n');
         cplBC.fa[ptr].Po = 0.0;
         cplBC.fa[ptr].Pn = 0.0;
         #ifdef debug_calc_der_cpl_bc 
@@ -112,7 +123,9 @@ void calc_der_cpl_bc(ComMod& com_mod, const CmMod& cm_mod)
         dmsg << "cplBC.fa[ptr].Qn: " << cplBC.fa[ptr].Qn;
         #endif
 
-      } else if (utils::btest(bc.bType, iBC_Dir)) {
+      }
+      // Compute avg pressures at 3D Dirichlet boundaries at timesteps n and n+1 
+      else if (utils::btest(bc.bType, iBC_Dir)) {
         double area = fa.area;
         cplBC.fa[ptr].Po = all_fun::integ(com_mod, cm_mod, fa, com_mod.Yo, nsd) / area;
         cplBC.fa[ptr].Pn = all_fun::integ(com_mod, cm_mod, fa, com_mod.Yn, nsd) / area;
@@ -131,12 +144,15 @@ void calc_der_cpl_bc(ComMod& com_mod, const CmMod& cm_mod)
   dmsg << "RCRflag: " << RCRflag;
   #endif
 
+  // Call genBC or cplBC to get updated pressures or flowrates.
   if (cplBC.useGenBC) {
      set_bc::genBC_Integ_X(com_mod, cm_mod, "D");
    } else {
      set_bc::cplBC_Integ_X(com_mod, cm_mod, RCRflag);
   }
 
+  // Compute the epsilon parameter (diff) for the finite difference calculation
+  // of the resistance matrix M ~ dP/dQ. Slightly different from Eq. 30 in Moghadam et al. 2013
   int j = 0;
   double diff = 0.0;
 
@@ -144,7 +160,7 @@ void calc_der_cpl_bc(ComMod& com_mod, const CmMod& cm_mod)
     auto& bc = eq.bc[iBc];
     int i = bc.cplBCptr;
     if (i != -1 && utils::btest(bc.bType, iBC_Neu)) {
-      diff = diff + (cplBC.fa[i].Qo * cplBC.fa[i].Qo);
+      diff = diff + (cplBC.fa[i].Qn * cplBC.fa[i].Qn);
       j = j + 1;
     }
   }
@@ -156,24 +172,39 @@ void calc_der_cpl_bc(ComMod& com_mod, const CmMod& cm_mod)
      diff = diff*relTol;
   }
 
+  // Store the original pressures and flowrates
+  std::vector<double> orgY(cplBC.fa.size());
+  std::vector<double> orgQ(cplBC.fa.size());
+
+  for (size_t i = 0; i < cplBC.fa.size(); i++) {
+    orgY[i] = cplBC.fa[i].y;
+    orgQ[i] = cplBC.fa[i].Qn;
+  }
+
   for (int iBc = 0; iBc < eq.nBc; iBc++) {
     auto& bc = eq.bc[iBc];
     int i = bc.cplBCptr;
 
     if (i != -1 && utils::btest(bc.bType, iBC_Neu)) {
-        double orgY = cplBC.fa[i].y;
-        double orgQ = cplBC.fa[i].Qn;
-        cplBC.fa[i].Qn = cplBC.fa[i].Qn + diff;
 
+        // Finite difference perturbation in flowrate
+        cplBC.fa[i].Qn = orgQ[i] + diff;
+
+        // Call genBC or cplBC again with perturbed flowrate
         if (cplBC.useGenBC) {
            set_bc::genBC_Integ_X(com_mod, cm_mod, "D");
          } else {
            set_bc::cplBC_Integ_X(com_mod, cm_mod, RCRflag);
         }
 
-        bc.r = (cplBC.fa[i].y - orgY) / diff;
-        cplBC.fa[i].y  = orgY;
-        cplBC.fa[i].Qn = orgQ;
+        // Finite difference calculation of the resistance dP/dQ
+        bc.r = (cplBC.fa[i].y - orgY[i]) / diff;
+
+        // Restore the original pressures and flowrates
+        for (size_t j = 0; j < cplBC.fa.size(); j++) {
+          cplBC.fa[j].y = orgY[j];
+          cplBC.fa[j].Qn = orgQ[j];
+}
      }
   }
 }
@@ -259,9 +290,12 @@ void cplBC_Integ_X(ComMod& com_mod, const CmMod& cm_mod, const bool RCRflag)
   }
 }
 
-/// @brief Interface to call 0D code (genBC/gcode)
-///
-/// \todo [NOTE] not fully implemented.
+
+//---------------
+// genBC_Integ_X
+//---------------
+// Interface to call 0D code (genBC/gcode)
+//
 //
 void genBC_Integ_X(ComMod& com_mod, const CmMod& cm_mod, const std::string& genFlag)
 {
@@ -269,9 +303,17 @@ void genBC_Integ_X(ComMod& com_mod, const CmMod& cm_mod, const std::string& genF
 
   int nDir = 0;
   int nNeu = 0;
+  double dt = com_mod.dt;
   auto& cplBC = com_mod.cplBC;
   auto& cm = com_mod.cm;
 
+  int len = cplBC.binPath.size() + cplBC.commuName.size() + 1;
+  char command[len];
+  strcpy(command, cplBC.binPath.c_str());
+  strcat(command, " ");
+  strcat(command, cplBC.commuName.c_str());
+
+  // If this process is the master process on the communicator
   if (cm.mas(cm_mod)) {
     for (int iFa = 0; iFa < cplBC.nFa; iFa++) {
       auto& fa = cplBC.fa[iFa];
@@ -283,65 +325,106 @@ void genBC_Integ_X(ComMod& com_mod, const CmMod& cm_mod, const std::string& genF
       }
     }
 
-    int fid = 1;
-    //OPEN(fid, FILE=cplBC.commuName, FORM='UNFORMATTED')
-    //WRITE(fid) genFlag
-    //WRITE(fid) dt
-    //WRITE(fid) nDir
-    //WRITE(fid) nNeu
+    // Write coupling info (number of Dirichlet and Neumann surfaces, pressure, 
+    // flow rate) from 3D to cplBC communication file (for GenBC, usually 
+    // called GenBC.int)
+    int int_size = sizeof(int);
+    int double_size = sizeof(double);
+    int flag_size = genFlag.length();
+
+    std::ofstream genBC_writer;
+    genBC_writer.open(cplBC.commuName, std::ios::out|std::ios::binary);
+    if (!genBC_writer.is_open()) {
+      throw std::runtime_error("Failed to open the genBC initialization file '" + cplBC.commuName + "' to write.");
+    }
+    // Flag for how genBC behaves (I: Initializing, T: Iteration loop, L: Last iteration, D: Derivative)
+    genBC_writer.write( (char*)&flag_size, int_size);
+    genBC_writer.write(genFlag.c_str(), flag_size);
+    genBC_writer.write( (char*)&flag_size, int_size);
+    
+    genBC_writer.write( (char*)&double_size, int_size);
+    genBC_writer.write( (char*)&dt, double_size);
+    genBC_writer.write( (char*)&double_size, int_size);
+    
+    genBC_writer.write( (char*)&int_size, int_size);
+    genBC_writer.write( (char*)&nDir, int_size);
+    genBC_writer.write( (char*)&int_size, int_size);
+    
+    genBC_writer.write( (char*)&int_size, int_size);
+    genBC_writer.write( (char*)&nNeu, int_size);
+    genBC_writer.write( (char*)&int_size, int_size);
 
     for (int iFa = 0; iFa < cplBC.nFa; iFa++) {
       if (cplBC.fa[iFa].bGrp == CplBCType::cplBC_Dir) {
-        //WRITE(fid) cplBC.fa(iFa).Po, cplBC.fa(iFa).Pn
+        genBC_writer.write( (char*)&double_size, int_size);
+        genBC_writer.write( (char*)&cplBC.fa[iFa].Po, double_size);
+        genBC_writer.write( (char*)&double_size, int_size);
+        genBC_writer.write( (char*)&double_size, int_size);
+        genBC_writer.write( (char*)&cplBC.fa[iFa].Pn, double_size);
+        genBC_writer.write( (char*)&double_size, int_size);
+      }
+    }
+    
+    for (int iFa = 0; iFa < cplBC.nFa; iFa++) {
+      if (cplBC.fa[iFa].bGrp == CplBCType::cplBC_Neu) {
+        genBC_writer.write( (char*)&double_size, int_size);
+        genBC_writer.write( (char*)&cplBC.fa[iFa].Qo, double_size);
+        genBC_writer.write( (char*)&double_size, int_size);
+        genBC_writer.write( (char*)&double_size, int_size);
+        genBC_writer.write( (char*)&cplBC.fa[iFa].Qn, double_size);
+        genBC_writer.write( (char*)&double_size, int_size);
+      }
+    }
+    genBC_writer.close();
+    
+    // Call genBC executable which reads the communication file GenBC.int
+    system(command);
+
+    // Read outputs from genBC, which are in the same GenBC.int
+    std::ifstream genBC_reader(cplBC.commuName, std::ios::out | std::ios::binary);
+    if (!genBC_reader.is_open()) {
+      throw std::runtime_error("Failed to open the genBC interface file '" + cplBC.commuName + "' to read.");
+    }
+
+    int size_buffer;
+
+    for (int iFa = 0; iFa < cplBC.nFa; iFa++) {
+      if (cplBC.fa[iFa].bGrp == CplBCType::cplBC_Dir) {
+        genBC_reader.read( (char*)&size_buffer, int_size );
+        genBC_reader.read( (char*)&cplBC.fa[iFa].y, size_buffer );
+        genBC_reader.read( (char*)&size_buffer, int_size );
       }
     }
 
     for (int iFa = 0; iFa < cplBC.nFa; iFa++) {
       if (cplBC.fa[iFa].bGrp == CplBCType::cplBC_Neu) {
-        //WRITE(fid) cplBC.fa(iFa).Qo, cplBC.fa(iFa).Qn
-      }
-    }
-    //CLOSE(fid)
-
-    //CALL SYSTEM(TRIM(cplBC.binPath)//" "//TRIM(cplBC.commuName))
-
-    //OPEN(fid,FILE=cplBC.commuName,STATUS='OLD',FORM='UNFORMATTED')
-
-    for (int iFa = 0; iFa < cplBC.nFa; iFa++) {
-      if (cplBC.fa[iFa].bGrp == CplBCType::cplBC_Dir) {
-        //READ(fid) cplBC.fa(iFa).y
+        genBC_reader.read( (char*)&size_buffer, int_size );
+        genBC_reader.read( (char*)&cplBC.fa[iFa].y, size_buffer );
+        genBC_reader.read( (char*)&size_buffer, int_size );
       }
     }
 
-    for (int iFa = 0; iFa < cplBC.nFa; iFa++) {
-      if (cplBC.fa[iFa].bGrp == CplBCType::cplBC_Neu) {
-        //READ(fid) cplBC.fa(iFa).y
-      }
-    }
-    //CLOSE(fid)
+    genBC_reader.close();
   }
 
+  // If there are multiple procs (not sequential), broadcast genBC outputs to
+  // follower procs
   if (!cm.seq()) {
     Vector<double> y(cplBC.nFa);
-    //ALLOCATE(y(cplBC.nFa))
 
     if (cm.mas(cm_mod)) {
       for (int i = 0; i < cplBC.nFa; i++) {
         y(i) = cplBC.fa[i].y;
       }
-      //y = cplBC.fa.y;
     }
 
     cm.bcast(cm_mod, y);
-    //CALL cm.bcast(y)
 
     if (cm.slv(cm_mod)) {
       for (int i = 0; i < cplBC.nFa; i++) {
         cplBC.fa[i].y = y(i);
       }
-      // cplBC.fa.y = y;
     }
-    //DEALLOCATE(y)
   }
 
 }
@@ -558,7 +641,8 @@ void set_bc_cmm_l(ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, con
 
 }
 
-/// @brief Reproduces the Fortran 'SETBCCPL()' subrotutine.
+/// @brief Coupled BC quantities are computed here.
+/// Reproduces the Fortran 'SETBCCPL()' subrotutine.
 //
 void set_bc_cpl(ComMod& com_mod, CmMod& cm_mod)
 {
@@ -573,9 +657,13 @@ void set_bc_cpl(ComMod& com_mod, CmMod& cm_mod)
   const int iEq = 0;
   auto& eq = com_mod.eq[iEq];
 
+  // If coupling scheme is implicit, calculate updated pressure and flowrate 
+  // from 0D, as well as resistance from 0D using finite difference.
   if (cplBC.schm == CplBCType::cplBC_I) { 
     calc_der_cpl_bc(com_mod, cm_mod);
 
+  // If coupling scheme is semi-implicit or explicit, only calculated updated
+  // pressure and flowrate from 0D
   } else {
     bool RCRflag = false; 
 
@@ -593,12 +681,16 @@ void set_bc_cpl(ComMod& com_mod, CmMod& cm_mod)
 
 
       if (ptr != -1) {
+        // Compute flowrates at 3D Neumann boundaries at timesteps n and n+1
         if (utils::btest(bc.bType,iBC_Neu)) {
-          cplBC.fa[ptr].Qo = all_fun::integ(com_mod, cm_mod, com_mod.msh[iM].fa[iFa], Yo, 0, nsd-1);
-          cplBC.fa[ptr].Qn = all_fun::integ(com_mod, cm_mod, com_mod.msh[iM].fa[iFa], Yn, 0, nsd-1);
+          /// \todo: Do I need an if struct/ustruct here?
+          cplBC.fa[ptr].Qo = all_fun::integ(com_mod, cm_mod, com_mod.msh[iM].fa[iFa], Yo, 0, nsd-1, 'o');
+          cplBC.fa[ptr].Qn = all_fun::integ(com_mod, cm_mod, com_mod.msh[iM].fa[iFa], Yn, 0, nsd-1, 'n');
           cplBC.fa[ptr].Po = 0.0;
           cplBC.fa[ptr].Pn = 0.0;
-        } else if (utils::btest(bc.bType,iBC_Dir)) {
+        } 
+        // Compute avg pressures at 3D Dirichlet boundaries at timesteps n and n+1
+        else if (utils::btest(bc.bType,iBC_Dir)) {
           double area = com_mod.msh[iM].fa[iFa].area;
           cplBC.fa[ptr].Po = all_fun::integ(com_mod, cm_mod, com_mod.msh[iM].fa[iFa], Yo, nsd) / area;
           cplBC.fa[ptr].Pn = all_fun::integ(com_mod, cm_mod, com_mod.msh[iM].fa[iFa], Yn, nsd) / area;
@@ -608,6 +700,8 @@ void set_bc_cpl(ComMod& com_mod, CmMod& cm_mod)
       }
     }
 
+    // Call genBC or cplBC to get updated pressures or flowrates.
+    // Updates pressure or flowrates stored in cplBC.fa[i].y
     if (cplBC.useGenBC) {
        set_bc::genBC_Integ_X(com_mod, cm_mod, "D");
     } else {
@@ -1296,12 +1390,10 @@ void set_bc_neu_l(ComMod& com_mod, const CmMod& cm_mod, const bcType& lBc, const
     }
   }
 
-  // Add Neumann BCs contribution to the LHS/RHS
-  //
-  // if follower pressure load.
+  // Add Neumann BCs contribution to the residual (and tangent if flwP)
   //
   if (lBc.flwP) {
-    eq_assem::b_neu_folw_p(com_mod, lFa, hg, Dg);
+    eq_assem::b_neu_folw_p(com_mod, lBc, lFa, hg, Dg);
 
   } else {
     eq_assem::b_assem_neu_bc(com_mod, lFa, hg, Yg);
@@ -1314,7 +1406,7 @@ void set_bc_neu_l(ComMod& com_mod, const CmMod& cm_mod, const bcType& lBc, const
   }
 }
 
-/// @brief Set Robin BC
+/// @brief Set Robin BC contribution to residual and tangent
 //
 void set_bc_rbnl(ComMod& com_mod, const faceType& lFa, const double ks, const double cs, const bool isN, 
   const Array<double>& Yg, const Array<double>& Dg)

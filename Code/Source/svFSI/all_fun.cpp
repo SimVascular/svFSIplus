@@ -292,10 +292,14 @@ global(const ComMod& com_mod, const CmMod& cm_mod, const mshType& lM, const Arra
   return result;
 }
 
-/// @brief This routine integrate an equation over a particular domain
+/// @brief This routine integrated a scalar field over a particular domain.
 ///
 /// Note that 'l' and 'u' should be 0-based and are used to index into 's'.
-//
+/// @param dId domain id
+/// @param s an array containing a scalar value for each node in the mesh
+/// @param l lower index of s
+/// @param u upper index of s (must be equal to l)
+/// @param pFlag flag for using Taylor-Hood function space for pressure
 /// Replicates 'FUNCTION vInteg(dId, s, l, u, pFlag)' defined in ALLFUN.f.
 //
 double integ(const ComMod& com_mod, const CmMod& cm_mod, int dId, const Array<double>& s, int l, int u, bool pFlag)
@@ -535,11 +539,15 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, int dId, const Array<do
   return result;
 }
 
-/// @brief This routine integrate s over the surface faId.
+/// @brief This routine integrate a scalar field s over the face lFa.
 ///
-/// Reproduces 'FUNCTION IntegS(lFa, s, pflag)'.
+/// @param lFa face type, representing a face on the computational mesh
+/// @param s an array containing a scalar value for each node in the mesh
+/// @param pFlag flag for using Taylor-Hood function space for pressure
+/// @param cfg denotes which configuration ('r': reference/timestep 0, 'o': old/timestep n, or 'n': new/timestep n+1). Default 'r'.
 //
-double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, const Vector<double>& s, bool pFlag)
+/// Reproduces 'FUNCTION IntegS(lFa, s, pflag)'.
+double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, const Vector<double>& s, bool pFlag, char cfg)
 {
   using namespace consts;
   #define n_debug_integ_s
@@ -564,7 +572,7 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, co
     insd = 0;
   }
 
-  int nNo = s.size();
+  int nNo = s.size(); // Total number of nodes on a processor
   #ifdef debug_integ_s
   dmsg << "nNo: " << nNo;
   dmsg << "insd: " << insd;
@@ -634,8 +642,11 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, co
   dmsg << "fs.eType: " << fs.eType;
   dmsg << "fs.w: " << fs.w;
   #endif
+
+  // Initialize integral to 0
   double result = 0.0;
 
+  // Loop over elements on face
   for (int e = 0; e < lFa.nEl; e++) {
     // [TODO:DaveP] not implemented.
     if (lFa.eType == ElementType::NRB) {
@@ -649,16 +660,19 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, co
       fs.Nx = lFa.Nx;
     }
 
+    // Loop over the Gauss points
     for (int g = 0; g < fs.nG; g++) {
       Vector<double> n(nsd);
       if (!isIB) {
+        // Get normal vector in cfg configuration
         auto Nx = fs.Nx.slice(g);
-        nn::gnnb(com_mod, lFa, e, g, nsd, insd, fs.eNoN, Nx, n);
+        nn::gnnb(com_mod, lFa, e, g, nsd, insd, fs.eNoN, Nx, n, cfg);
       }
 
+      // Calculating the Jacobian (encodes area of face element)
       double Jac = sqrt(utils::norm(n));
 
-      // Calculating the function value
+      // Calculating the function value at Gauss point
       double sHat = 0.0;
       for (int a = 0; a < fs.eNoN; a++) {
         int Ac = lFa.IEN(a,e);
@@ -670,6 +684,7 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, co
      }
   }
 
+  // If using multiple processors, add result from all processors
   if (com_mod.cm.seq() || isIB) {
     return result; 
   }
@@ -678,11 +693,18 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, co
   return result; 
 }
 
-/// @brief This routine integrate s over the surface faId. 
+/// @brief This routine integrates vector field s dotted with the face normal n
+/// over the face lFa. For example, if s contains the velocity at each node on 
+/// the face, this function computed the velocity flux through the face.
 ///
-/// Reproduces 'FUNCTION IntegV(lFa, s)'
+/// @param lFa face type, representing a face on the computational mesh
+/// @param s an array containing a vector value for each node in the mesh
+/// @param pFlag flag for using Taylor-Hood function space for pressure
+/// @param cfg denotes which configuration ('r': reference/timestep 0, 'o': old/timestep n, or 'n': new/timestep n+1). Default 'r'.
 //
-double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, const Array<double>& s)
+/// Reproduces 'FUNCTION IntegV(lFa, s)'
+double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, 
+            const Array<double>& s, char cfg)
 {
   using namespace consts;
 
@@ -719,6 +741,7 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, co
     }
   }
 
+  // If using Immersed Boundary Method
   bool isIB = false;
   if (com_mod.ibFlag) {
     if (nNo ==  com_mod.ib.tnNo) {
@@ -726,8 +749,10 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, co
     }
   }
 
+  // Initialize integral to 0
   double result =  0.0;
 
+  // Loop over elements on face
   for (int e = 0; e < lFa.nEl; e++) {
     //dmsg << "----- e " << e+1 << " -----";
     //  Updating the shape functions, if this is a NURB
@@ -739,23 +764,25 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, co
       }
     }
 
+    // Loop over the Gauss points
     for (int g = 0; g < lFa.nG; g++) {
       //dmsg << ">>> g: " << g+1;
       Vector<double> n(nsd);
       if (!isIB) {
+        // Get normal vector in cfg configuration
         auto Nx = lFa.Nx.slice(g);
-        nn::gnnb(com_mod, lFa, e, g, nsd, nsd-1, lFa.eNoN, Nx, n);
+        nn::gnnb(com_mod, lFa, e, g, nsd, nsd-1, lFa.eNoN, Nx, n, cfg);
         //CALL GNNB(lFa, e, g, nsd-1, lFa.eNoN, lFa.Nx(:,:,g), n)
       } else {
         //CALL GNNIB(lFa, e, g, n)
       }
 
-      //  Calculating the function value
-      //
+      //  Calculating the function value (s dot n)dA at this Gauss point
       double sHat = 0.0;
 
       for (int a = 0; a < lFa.eNoN; a++) {
         int Ac = lFa.IEN(a,e);
+        // Compute s dot n
         for (int i = 0; i < nsd; i++) {
           sHat = sHat + lFa.N(a,g) * s(i,Ac) * n(i);
           //dmsg << "s(i,Ac): " << s(i,Ac);
@@ -769,6 +796,7 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, co
     }
   }
 
+  // If using multiple processors, add result from all processors
   if (cm.seq() || isIB) {
     return result; 
   }
@@ -778,14 +806,24 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, co
   return result; 
 }
 
-/// @brief This routine integrate s(l:u,:) over the surface faId.
+/// @brief This routine integrate s(l:u,:) over the surface faId, where s is an
+/// array of scalars or an array of nsd-vectors. This routine calls overloaded
+/// functions to integrate scalars, if s is scalar (i.e. l=u), or vectors if s 
+/// is vector (i.e. l<u).
 ///
 /// Note that 'l' and 'u' should be 0-based and are used to index into 's'.
+///
+/// @param lFa face type, representing a face on the computational mesh.
+/// @param s an array containing a vector value for each node in the mesh.
+/// @param l lower index of s
+/// @param uo optional: upper index of s. Default u = l.
+/// @param THlag flag for using Taylor-Hood function space for pressure.
+/// @param cfg denotes which configuration ('r': reference/timestep 0, 'o': old/timestep n, or 'n': new/timestep n+1). Default 'r'.
 ///
 /// Reproduces 'FUNCTION IntegG(lFa, s, l, uo, THflag)'.
 //
 double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, 
-    const Array<double>& s, const int l, std::optional<int> uo, bool THflag)
+    const Array<double>& s, const int l, std::optional<int> uo, bool THflag, char cfg)
 {
   using namespace consts;
 
@@ -803,9 +841,8 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa,
   int insd = nsd - 1;
   int tnNo = com_mod.tnNo;
 
-  // Set u if uo is given.
+  // Set u if uo is given. Else, set u = l.
   int u{0};
-
   if (uo.has_value()) { 
     u = uo.value();
   } else {
@@ -825,23 +862,25 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa,
     }
   }
 
+  // Initialize integral to 0 (not strictly necessary to initialize to 0)
   double result = 0.0; 
-
-  if (u-l+1 == nsd) {
+  
+  // If s vector, integrate as vector (dot with surface normal)
+  if (u-l+1 == nsd) { 
      Array<double> vec(nsd,nNo);
      for (int a = 0; a < nNo; a++) {
        for (int i = l, n = 0; i <= u; i++, n++) {
          vec(n,a) = s(i,a);                 
        }
      }
-     result = integ(com_mod, cm_mod, lFa, vec);
-
+     result = integ(com_mod, cm_mod, lFa, vec, cfg);
+  // If s scalar, integrate as scalar
   } else if (l == u) {
      Vector<double> sclr(nNo);
      for (int a = 0; a < nNo; a++) {
         sclr(a) = s(l,a);
      }
-     result = integ(com_mod, cm_mod, lFa, sclr, flag);
+     result = integ(com_mod, cm_mod, lFa, sclr, flag, cfg);
   } else {
     throw std::runtime_error("Unexpected dof in integ");
   }

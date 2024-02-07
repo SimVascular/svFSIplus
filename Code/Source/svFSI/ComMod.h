@@ -1392,7 +1392,8 @@ class ComMod {
     /// @brief Current equation degrees of freedom
     int dof = 0;
 
-    /// @brief Global total number of nodes
+    /// @brief Global total number of nodes, across all meshes (total) and all 
+    /// procs (global)
     int gtnNo = 0;
 
     /// @brief Number of equations
@@ -1431,7 +1432,8 @@ class ComMod {
     /// @brief Total number of degrees of freedom per node
     int tDof = 0;
 
-    /// @brief Total number of nodes
+    /// @brief Total number of nodes (number of nodes on current proc across
+    /// all meshes)
     int tnNo = 0;
 
     /// @brief Restart Time Step
@@ -1509,7 +1511,7 @@ class ComMod {
     /// @brief LHS matrix
     Array<double>  Val;
 
-    /// @brief Position vector
+    /// @brief Position vector of mesh nodes (in ref config)
     Array<double>  x;
 
     /// @brief Old variables (velocity)

@@ -3,18 +3,18 @@
 
 Continue previous simulation: f
 Number of spatial dimensions: 3
-Number of time steps: 1
-Time step size: 1e-3
+Number of time steps: 100
+Time step size: 1e-2
 Spectral radius of infinite time step: 0.50
 Searched file name to trigger stop: STOP_SIM
 
 Save results to VTK format: t
 Name prefix of saved VTK files: result
 Save results in folder: results_svfsi
-Increment in saving VTK files: 1
+Increment in saving VTK files: 10
 Start saving after time step: 1
 
-Increment in saving restart files: 50
+Increment in saving restart files: 10
 Convert BIN to VTK format: f
 
 Verbose: t
@@ -34,9 +34,6 @@ Add mesh: msh {
    Add face: top {
       Face file path: mesh/mesh-surfaces/top.vtp
    }
-
-   Fiber direction file path: mesh/fibersLongCells.vtu
-   Fiber direction file path: mesh/fibersSheetCells.vtu
    
    Mesh scale factor: 100.0 # Convert from m to cm
 }
@@ -52,22 +49,13 @@ Add equation: struct {
    Tolerance: 1e-6
 
    Density: 1.0         # g/cm^3
-   Elasticity modulus: 1.0e6  # dyne/cm^2
+   Elasticity modulus: 1.0e5  # dyne/cm^2
    Poisson ratio: 0.483333
-   Viscosity: 0.0
-
-   Constitutive model: HO-ma {
-      a: 590.0          # dyne/cm^2
-      b: 8.023          # no units
-      a4f: 184720.0
-      b4f: 16.026
-      a4s: 24810.0
-      b4s: 11.12
-      afs: 2160.0
-      bfs: 11.436
-      k: 100.0
-   }
+   Constitutive model: nHK
    Dilational penalty model: ST91
+   Viscosity: potential{
+      Value: 0.0
+   }
 
    Output: Spatial {
       Displacement: t
@@ -86,24 +74,19 @@ Add equation: struct {
       Krylov space dimension: 50
    }
 
-   Add BC: epi {
-      Type: Robin
-      Stiffness: 1.0e7                 # dyne/cm^2/cm
-      Damping: 5.0e2                   # dyne-s/cm^2/cm
-      Apply along normal direction: t
+   Couple to genBC: I {             
+      # Pressure returned by genBC is in dyne/cm^2            
+      0D code file path: genBC/genBC.exe
    }
 
    Add BC: top {
-      Type: Robin
-      Stiffness: 1.0e4
-      Damping: 5.0e2
+      Type: Dirichlet
+      Value: 0.0
    }
 
    Add BC: endo {
       Type: Neu
-      Time dependence: Unsteady
-      Temporal values file path: endo_pressure.dat
-      Ramp function: f
+      Time dependence: Coupled
       Follower pressure load: t
    }
 }
