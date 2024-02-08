@@ -28,15 +28,17 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "PetscLinearSolver.h"
+#include "PetscLinearAlgebra.h"
 
 #include <iostream>
 
-/////////////////////////////////////////////////////////////////
-//                    P e t s c I m p l                        //
-/////////////////////////////////////////////////////////////////
-
-class PetscLinearSolver::PetscImpl {
+//-----------
+// PetscImpl 
+//-----------
+// The PetscImpl private class hides PETSc data structures
+// and functions.
+//
+class PetscLinearAlgebra::PetscImpl {
   public:
     PetscImpl();
     #ifdef USE_PETSC
@@ -62,39 +64,36 @@ class PetscLinearSolver::PetscImpl {
     Array<double> V_;
 };
 
+// Include PETSc-dependent data structures and funtions. 
 #ifdef USE_PETSC
-#include "petsc_interface.cpp"
+#include "petsc_impl.cpp"
 #endif
 
-PetscLinearSolver::PetscImpl::PetscImpl() 
-{
-  std::cout << "[PetscImpl] ---------- PetscImpl() ---------- " << std::endl;
-}
-
 /////////////////////////////////////////////////////////////////
-//             P e t s c L i n e a r S o l v e r               //
+//             P e t s c L i n e a r A l g e b r a             //
 /////////////////////////////////////////////////////////////////
+// The following methods implement the LinearAlgebra interface.
 
-PetscLinearSolver::PetscLinearSolver()
+PetscLinearAlgebra::PetscLinearAlgebra()
 {
-  std::cout << "[PetscLinearSolver] ---------- PetscLinearSolver ---------- " << std::endl;
+  std::cout << "[PetscLinearAlgebra] ---------- PetscLinearAlgebra ---------- " << std::endl;
   #ifndef USE_PETSC
-  throw std::runtime_error("[PetscLinearSolver] There is no PETSc interface.");
+  throw std::runtime_error("[PetscLinearAlgebra] There is no PETSc interface.");
   #else
-  impl = new PetscLinearSolver::PetscImpl();
-  solver_type = LinearSolverInterface::petsc; 
+  impl = new PetscLinearAlgebra::PetscImpl();
+  interface_type = LinearAlgebraType::petsc; 
   #endif
 }
 
-void PetscLinearSolver::initialize(ComMod& com_mod)
+void PetscLinearAlgebra::initialize(ComMod& com_mod)
 {
-  std::cout << "[PetscLinearSolver] ---------- initialize ---------- " << std::endl;
+  std::cout << "[PetscLinearAlgebra] ---------- initialize ---------- " << std::endl;
   impl->initialize(com_mod);
 }
 
-void PetscLinearSolver::solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res)
+void PetscLinearAlgebra::solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res)
 {
-  std::cout << "[PetscLinearSolver] ---------- solve ---------- " << std::endl;
+  std::cout << "[PetscLinearAlgebra] ---------- solve ---------- " << std::endl;
   impl->solve(com_mod, lEq, incL, res);
 }
 

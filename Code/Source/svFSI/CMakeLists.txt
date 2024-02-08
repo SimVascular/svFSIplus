@@ -147,8 +147,8 @@ set(lib ${SV_LIB_SVFSI_NAME})
 set(CSRCS 
   Array3.h Array3.cpp 
   Array.h Array.cpp
-  LinearSolver.h LinearSolver.cpp
-  PetscLinearSolver.h PetscLinearSolver.cpp
+  LinearAlgebra.h LinearAlgebra.cpp
+  PetscLinearAlgebra.h PetscLinearAlgebra.cpp
   Tensor4.h Tensor4.cpp
   Vector.h Vector.cpp 
 

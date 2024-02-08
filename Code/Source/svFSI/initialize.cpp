@@ -53,7 +53,6 @@
 #include "fsils.hpp"
 #include "lhs.h"
 
-#include "LinearSolver.h"
 #include "CmMod.h"
 
 //#include "set_equation_dof.h"

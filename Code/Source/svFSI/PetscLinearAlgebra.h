@@ -28,24 +28,31 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "LinearSolver.h"
-#include "PetscLinearSolver.h"
+#ifndef PETSC_LINEAR_ALGEBRA_H 
+#define PETSC_LINEAR_ALGEBRA_H 
 
-LinearSolver::LinearSolver()
-{
-}
+#include "LinearAlgebra.h"
 
+//--------------------
+// PetscLinearAlgebra
+//--------------------
+// The PetscLinearAlgebra class implements the LinearAlgebra 
+// interface for the PETSc numerical linear algebra package.
+//
+class PetscLinearAlgebra : public virtual LinearAlgebra {
 
-LinearSolver* LinearSolverFactory::create_linear_solver(LinearSolverInterface solver_type)
-{
-  LinearSolver* linear_solver = nullptr;
+  public:
+    PetscLinearAlgebra();
+    ~PetscLinearAlgebra() { };
 
-  switch (solver_type) {
-    case LinearSolverInterface::petsc:
-      linear_solver = new PetscLinearSolver();
-    break;
-  }
+    virtual void initialize(ComMod& com_mod);
+    virtual void solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res);
 
-  return linear_solver;
-}
+  private:
+    // Private class used to hide PETSc implementation details.
+    class PetscImpl;
+    PetscImpl* impl = nullptr;
+};
+
+#endif
 

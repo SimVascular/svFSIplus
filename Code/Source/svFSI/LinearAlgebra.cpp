@@ -28,24 +28,23 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PETSC_LINEAR_SOLVER_H 
-#define PETSC_LINEAR_SOLVER_H 
+#include "LinearAlgebra.h"
+#include "PetscLinearAlgebra.h"
 
-#include "LinearSolver.h"
+LinearAlgebra::LinearAlgebra()
+{
+}
 
-class PetscLinearSolver : public virtual LinearSolver {
+LinearAlgebra* LinearAlgebraFactory::create_interface(LinearAlgebraType interface_type)
+{
+  LinearAlgebra* interface = nullptr;
 
-  public:
-    PetscLinearSolver();
-    ~PetscLinearSolver() { };
+  switch (interface_type) {
+    case LinearAlgebraType::petsc:
+      interface = new PetscLinearAlgebra();
+    break;
+  }
 
-    virtual void initialize(ComMod& com_mod);
-    virtual void solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res);
-
-  private:
-    class PetscImpl;
-    PetscImpl* impl = nullptr;
-};
-
-#endif
+  return interface;
+}
 

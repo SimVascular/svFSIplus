@@ -1,5 +1,4 @@
-/* 
- * Author: Chi Zhu, Peking University
+/* Copyright (c) Stanford University, The Regents of the University of California, and others.
  *
  * All Rights Reserved.
  *
@@ -28,6 +27,8 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+// This file contains PETSc-dependent data structures. 
 
 #ifndef PETSC_INTERFACE_H
 #define PETSC_INTERFACE_H

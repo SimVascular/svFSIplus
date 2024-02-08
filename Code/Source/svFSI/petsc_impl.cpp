@@ -1,5 +1,5 @@
-/* 
- * Author: Chi Zhu, Peking University
+
+/* Copyright (c) Stanford University, The Regents of the University of California, and others.
  *
  * All Rights Reserved.
  *
@@ -29,7 +29,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "petsc_interface.h"
+// This file contains PetscImpl and PETSc-dependent functions. 
+
+#include "petsc_impl.h"
 #include <locale.h>
 
 /*
@@ -942,7 +944,8 @@ char * rm_blank(char *string)
 // init_dir_and_coupneu_bc_petsc
 //-------------------------------
 //
-void PetscLinearSolver::PetscImpl::init_dir_and_coupneu_bc_petsc(ComMod& com_mod, const Vector<int>& incL, const Vector<double>& res)
+void PetscLinearAlgebra::PetscImpl::init_dir_and_coupneu_bc_petsc(ComMod& com_mod, 
+    const Vector<int>& incL, const Vector<double>& res)
 {
   using namespace consts;
   using namespace fsi_linear_solver;
@@ -1014,10 +1017,19 @@ void PetscLinearSolver::PetscImpl::init_dir_and_coupneu_bc_petsc(ComMod& com_mod
       }
     }
   }
-
 }
 
-void PetscLinearSolver::PetscImpl::initialize(ComMod& com_mod)
+/////////////////////////////////////////////////////////////////
+//                   P e t s c I m p l                         //
+/////////////////////////////////////////////////////////////////
+// PetscImpl methods. 
+
+PetscLinearAlgebra::PetscImpl::PetscImpl()
+{
+  std::cout << "[PetscInterface] ---------- PetscInterface() ---------- " << std::endl;
+}
+
+void PetscLinearAlgebra::PetscImpl::initialize(ComMod& com_mod)
 {
   std::cout << "[PetscImpl] ---------- initialize ---------- " << std::endl;
 
@@ -1040,7 +1052,7 @@ void PetscLinearSolver::PetscImpl::initialize(ComMod& com_mod)
   V_.resize(com_mod.dof, com_mod.tnNo);
 }
 
-void PetscLinearSolver::PetscImpl::solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res)
+void PetscLinearAlgebra::PetscImpl::solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res)
 {
   std::cout << "[PetscImpl::solve] ---------- solve ---------- " << std::endl;
   std::cout << "[PetscImpl::solve] com_mod.dof: " << com_mod.dof << std::endl;

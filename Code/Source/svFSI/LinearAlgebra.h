@@ -28,31 +28,31 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LINEAR_SOLVER_H 
-#define LINEAR_SOLVER_H 
+#ifndef LINEAR_ALGEBRA_H 
+#define LINEAR_ALGEBRA_H 
 
 #include "ComMod.h"
 
-enum class LinearSolverInterface {
+enum class LinearAlgebraType {
   fsi_ls,
   petsc,
   trilinos
 };
 
-class LinearSolver {
+class LinearAlgebra {
 
   public:
-    LinearSolver();
-    virtual ~LinearSolver() { };
+    LinearAlgebra();
+    virtual ~LinearAlgebra() { };
     virtual void initialize(ComMod& com_mod) = 0;
     virtual void solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res) = 0;
-    virtual LinearSolverInterface get_solver_type() { return solver_type; }
-    LinearSolverInterface solver_type;
+    virtual LinearAlgebraType get_interface_type() { return interface_type; }
+    LinearAlgebraType interface_type;
 };
 
-class LinearSolverFactory {
+class LinearAlgebraFactory {
   public:
-    LinearSolver* create_linear_solver(LinearSolverInterface type);
+    LinearAlgebra* create_interface(LinearAlgebraType interface_type);
 };
 
 
