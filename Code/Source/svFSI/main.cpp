@@ -726,11 +726,9 @@ int main(int argc, char *argv[])
     initialize(simulation, init_time);
 
     #ifdef USE_PETSC
-    LinearAlgebraFactory factory;
     std::cout << "[initialize] Create PETSc linear solver. " << std::endl;
-    simulation->linear_algebra = factory.create_interface(LinearAlgebraType::petsc);
+    simulation->linear_algebra = LinearAlgebraFactory::create_interface(LinearAlgebraType::petsc);
     simulation->linear_algebra->initialize(simulation->com_mod);
-    //ls_ns::initialize_petsc(simulation->com_mod);
     #endif
 
     #ifdef debug_main

@@ -29,44 +29,22 @@
  */
 
 #include "PetscLinearAlgebra.h"
-
 #include <iostream>
 
-//-----------
-// PetscImpl 
-//-----------
-// The PetscImpl private class hides PETSc data structures
-// and functions.
+// Include PETSc-dependent data structures and functions. 
 //
-class PetscLinearAlgebra::PetscImpl {
-  public:
-    PetscImpl();
-    #ifdef USE_PETSC
-    void initialize(ComMod& com_mod);
-    void solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res);
-    #else
-    void initialize(ComMod& com_mod) {};
-    void solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res) {};
-    #endif
-
-    void init_dir_and_coupneu_bc_petsc(ComMod& com_mod, const Vector<int>& incL, const Vector<double>& res);
-
-    // Local to global mapping
-    Vector<int> ltg_;
-
-    // Factor for Dirichlet BCs
-    Array<double> W_;
-
-    // Residue
-    Array<double> R_;
-
-    // Factor for Lumped Parameter BCs
-    Array<double> V_;
-};
-
-// Include PETSc-dependent data structures and funtions. 
 #ifdef USE_PETSC
 #include "petsc_impl.cpp"
+
+// If PETSc is not used then define PetscImpl with noop methods.
+//
+#else
+class PetscLinearAlgebra::PetscImpl {
+  public:
+    PetscImpl(){};
+    void initialize(ComMod& com_mod) {};
+    void solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res) {};
+};
 #endif
 
 /////////////////////////////////////////////////////////////////

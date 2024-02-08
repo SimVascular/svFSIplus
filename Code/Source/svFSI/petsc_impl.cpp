@@ -34,6 +34,10 @@
 #include "petsc_impl.h"
 #include <locale.h>
 
+LHSCtx plhs;       /* PETSc lhs */
+LSCtx *psol;       /* PETSc solver */
+PetscLogStage stages[6];  /* performance tuning. */
+
 /*
     Nomenclature used in this file:
     - global: across all MPI processes
@@ -53,18 +57,11 @@
         O1 --> O2 --> PETSc ID
 */
 
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-     Functions that interact with Fortran
-
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-/*
-    Initialize PETSc and create lhs for PETSc.
-*/
-void petsc_initialize_(const PetscInt *nNo, const PetscInt *mynNo, \
-                       const PetscInt *nnz, const PetscInt *nEq, \
-                       const PetscInt *svFSI_ltg, const PetscInt *svFSI_map, \
-                       const PetscInt *svFSI_rowPtr, const PetscInt *svFSI_colPtr, char *inp)
+// Initialize PETSc and create lhs for PETSc.
+//
+void petsc_initialize(const PetscInt nNo, const PetscInt mynNo, const PetscInt nnz, 
+    const PetscInt nEq, const PetscInt *svFSI_ltg, const PetscInt *svFSI_map, 
+    const PetscInt *svFSI_rowPtr, const PetscInt *svFSI_colPtr, char *inp)
 {   
     // char* in_file = rm_blank(inp);
     char* in_file = inp;
@@ -89,29 +86,33 @@ void petsc_initialize_(const PetscInt *nNo, const PetscInt *mynNo, \
     PetscLogStagePush(stages[0]);
 
     plhs.created = PETSC_FALSE;
-    petsc_create_lhs(*nNo, *mynNo, *nnz, svFSI_ltg, svFSI_map, svFSI_rowPtr, svFSI_colPtr);
+    petsc_create_lhs(nNo, mynNo, nnz, svFSI_ltg, svFSI_map, svFSI_rowPtr, svFSI_colPtr);
 
-    PetscMalloc1(*nEq, &psol);
-    for (PetscInt i = 0; i < *nEq; i++) psol[i].created = PETSC_FALSE;
+    PetscMalloc1(nEq, &psol);
+
+    for (PetscInt i = 0; i < nEq; i++) {
+      psol[i].created = PETSC_FALSE;
+    }
 
     PetscLogStagePop();
-
 }
 
 /*
     Create parallel vector and matrix data structures.
 */
-void petsc_create_linearsystem_(const PetscInt *dof, const PetscInt *iEq, const PetscInt *nEq, \
-                                const PetscReal *svFSI_DirBC, const PetscReal *svFSI_lpBC)
+void petsc_create_linearsystem(const PetscInt dof, const PetscInt iEq, const PetscInt nEq, 
+    const PetscReal *svFSI_DirBC, const PetscReal *svFSI_lpBC)
 {   
     // PetscInt cEq = *iEq - 1;
-    PetscInt cEq = *iEq;   // in Fortran, cEq = 1; in C++, cEq = 0;
+    PetscInt cEq = iEq;   // in Fortran, cEq = 1; in C++, cEq = 0;
 
-    if (psol[cEq].created) return;
+    if (psol[cEq].created) {
+      return;
+    }
 
     PetscLogStagePush(stages[1]);
-    petsc_create_bc(*dof, cEq, svFSI_DirBC, svFSI_lpBC); /* bc info is required for mat_create */
-    petsc_create_vecmat(*dof, cEq, *nEq);
+    petsc_create_bc(dof, cEq, svFSI_DirBC, svFSI_lpBC); /* bc info is required for mat_create */
+    petsc_create_vecmat(dof, cEq, nEq);
     psol[cEq].created = PETSC_TRUE;
     PetscLogStagePop();
 }
@@ -119,80 +120,84 @@ void petsc_create_linearsystem_(const PetscInt *dof, const PetscInt *iEq, const 
 /*
     Create PETSc linear solver data.
 */
-void petsc_create_linearsolver_(const PetscInt *lsType, const PetscInt *pcType, \
-                                const PetscInt *kSpace, const PetscInt *maxIter, \
-                                const PetscReal *relTol, const PetscReal *absTol, \
-                                const PetscInt *phys, const PetscInt *dof, \
-                                const PetscInt *iEq, const PetscInt *nEq)
+void petsc_create_linearsolver(const consts::SolverType lsType, const consts::PreconditionerType pcType, 
+    const PetscInt kSpace, const PetscInt maxIter, const PetscReal relTol, const PetscReal absTol, 
+    const consts::EquationType phys, const PetscInt dof, const PetscInt iEq, const PetscInt nEq)
 {   
+    using namespace consts;
+
     // PetscInt cEq = *iEq - 1;
-    PetscInt cEq = *iEq;   // in Fortran, cEq = 1; in C++, cEq = 0;
+    PetscInt cEq = iEq;   // in Fortran, cEq = 1; in C++, cEq = 0;
     PC pc;
     PetscBool usefieldsplit;
 
     PetscLogStagePush(stages[2]);
 
     /* Initialize equation specific prefix for vec/mat/ksp */
-    switch (*phys)
+    switch (phys)
     {
-        case EQ_fluid:
+        case EquationType::phys_fluid:
             psol[cEq].pre = "ns_";
             break;
-        case EQ_struct:
+        case EquationType::phys_struct:
             psol[cEq].pre = "st_";
             break;
-        case EQ_heatS:
+        case EquationType::phys_heatS:
             psol[cEq].pre = "hs_";
             break;
-        case EQ_lElas:
+        case EquationType::phys_lElas:
             psol[cEq].pre = "le_";
             break;
-        case EQ_heatF:
+        case EquationType::phys_heatF:
             psol[cEq].pre = "hf_";
             break;
-        case EQ_FSI:
+        case EquationType::phys_FSI:
             psol[cEq].pre = "fs_";
             break;
-        case EQ_mesh:
+        case EquationType::phys_mesh:
             psol[cEq].pre = "ms_";
             break;
-        case EQ_shell:
+        case EquationType::phys_shell:
             psol[cEq].pre = "sh_";
             break;
-        case EQ_CMM:
+        case EquationType::phys_CMM:
             psol[cEq].pre = "cm_";
             break;
-        case EQ_CEP:
+        case EquationType::phys_CEP:
             psol[cEq].pre = "ep_";
             break;
-        case EQ_ustruct:
+        case EquationType::phys_ustruct:
             psol[cEq].pre = "st_";
             break;
-        case EQ_stokes:
+        case EquationType::phys_stokes:
             psol[cEq].pre = "ss_";
             break;
         default:
             PetscPrintf(MPI_COMM_WORLD, "ERROR <PETSC_CREATE_LINEARSOLVER>: "
-                "equation type %d is not defined.\n", *phys);
+                "equation type %d is not defined.\n", phys);
             break;
     }
 
     /* Initialize PETSc linear solver setting */
     KSPCreate(MPI_COMM_WORLD, &psol[cEq].ksp);
-    if (*nEq > 1) KSPSetOptionsPrefix(psol[cEq].ksp, psol[cEq].pre);
-    KSPSetTolerances(psol[cEq].ksp, *relTol, *absTol, PETSC_DEFAULT, *maxIter); 
+
+    if (nEq > 1) {
+      KSPSetOptionsPrefix(psol[cEq].ksp, psol[cEq].pre);
+    }
+
+    KSPSetTolerances(psol[cEq].ksp, relTol, absTol, PETSC_DEFAULT, maxIter); 
     
-    /* Set linear solver */
-    switch (*lsType)
-    {
-        case PETSc_CG:
+    // Set the linear solver.
+
+    switch (lsType) {
+        case SolverType::lSolver_CG:
             KSPSetType(psol[cEq].ksp, KSPCG);
             break;
-        case PETSc_GMRES:
+        case SolverType::lSolver_GMRES:
             KSPSetType(psol[cEq].ksp, KSPGMRES);
 //            KSPGMRESSetRestart(psol[cEq].ksp, *kSpace);
             break;
-        case PETSc_BICGS:
+        case SolverType::lSolver_BICGS:
             KSPSetType(psol[cEq].ksp, KSPBCGS);
             break;
         default:
@@ -206,19 +211,22 @@ void petsc_create_linearsolver_(const PetscInt *lsType, const PetscInt *pcType, 
     /* Set preconditioner */
     psol[cEq].rcs = PETSC_FALSE;
     KSPGetPC(psol[cEq].ksp, &pc);
-    switch (*pcType)
+
+    switch (pcType)
     {
-        case PETSc_PC:
-        case PETSc_PC_FSILS:
+        //case PETSc_PC:
+        case PreconditionerType::PREC_FSILS:
             PCSetType(pc, PCJACOBI);
             break;
-        case PETSc_PC_RCS:
+
+        case PreconditionerType::PREC_RCS:
             psol[cEq].rcs = PETSC_TRUE;
             PetscPrintf(MPI_COMM_WORLD, "WARNING <PETSC_CREATE_LINEARSOLVER>: "
             "precondition the linear system with RCS first.\n"
             "WARNING <PETSC_CREATE_LINEARSOLVER>: "
             "This will NOT be overwritten by petsc_option.inp!\n");
             break;
+
         default:
             PetscPrintf(MPI_COMM_WORLD, "ERROR <PETSC_CREATE_LINEARSOLVER>: "
             "preconditioner type not supported through svFSI input file.\n"
@@ -233,8 +241,8 @@ void petsc_create_linearsolver_(const PetscInt *lsType, const PetscInt *pcType, 
     /* Set up PCFIELDSPLIT */
     PetscObjectTypeCompare((PetscObject)pc, PCFIELDSPLIT, &usefieldsplit);
     if (usefieldsplit){
-        if (*phys==EQ_fluid || *phys==EQ_ustruct || *phys==EQ_stokes ){
-            petsc_set_pcfieldsplit(*dof, cEq);
+        if (phys==EquationType::phys_fluid || phys==EquationType::phys_ustruct || phys==EquationType::phys_stokes ){
+            petsc_set_pcfieldsplit(dof, cEq);
         }
         else {
             PetscPrintf(MPI_COMM_WORLD, "///////////////////////////////////"
@@ -252,23 +260,23 @@ void petsc_create_linearsolver_(const PetscInt *lsType, const PetscInt *pcType, 
 /*
     Set up the linear system.
 */
-void petsc_set_values_(const PetscInt *dof, const PetscInt *iEq, const PetscReal *R, \
-                       const PetscReal *Val, const PetscReal *svFSI_DirBC, const PetscReal *svFSI_lpBC)
+void petsc_set_values(const PetscInt dof, const PetscInt iEq, const PetscReal *R, 
+    const PetscReal *Val, const PetscReal *svFSI_DirBC, const PetscReal *svFSI_lpBC)
 {   
     // PetscInt cEq = *iEq - 1;
-    PetscInt cEq = *iEq;   // in Fortran, cEq = 1; in C++, cEq = 0;
+    PetscInt cEq = iEq;   // in Fortran, cEq = 1; in C++, cEq = 0;
 
     /* Set values in A &b, apply Dir and Lumped parameter BC */
     PetscLogStagePush(stages[3]);
-    petsc_set_vec(*dof, cEq, R);
-    petsc_set_mat(*dof, cEq, Val);
+    petsc_set_vec(dof, cEq, R);
+    petsc_set_mat(dof, cEq, Val);
     petsc_set_bc(cEq, svFSI_DirBC, svFSI_lpBC);
     PetscLogStagePop();
 
     /* Scale A and b if RCS preconditioner is activated. */
     PetscLogStagePush(stages[5]);
     if (psol[cEq].rcs){
-        petsc_pc_rcs(*dof, cEq);
+      petsc_pc_rcs(dof, cEq);
     }
     PetscLogStagePop();
 }
@@ -276,15 +284,15 @@ void petsc_set_values_(const PetscInt *dof, const PetscInt *iEq, const PetscReal
 /*
     Solve the linear system.
 */
-void petsc_solve_(PetscReal *resNorm,  PetscReal *initNorm,  PetscReal *dB, \
-                  PetscReal *execTime, bool *converged, PetscInt *numIter, \
-                  PetscReal *R, const PetscInt *maxIter, const PetscInt *dof, \
-                  const PetscInt *iEq)
+void petsc_solve(PetscReal *resNorm,  PetscReal *initNorm,  PetscReal *dB, 
+    PetscReal *execTime, bool *converged, PetscInt *numIter, 
+    PetscReal *R, const PetscInt maxIter, const PetscInt dof, 
+    const PetscInt iEq)
 {   
     PetscReal *a, *array;
     PetscInt   i, j, na;
     // PetscInt   cEq = *iEq - 1;
-    PetscInt   cEq = *iEq;   // in Fortran, cEq = 1; in C++, cEq = 0;
+    PetscInt   cEq = iEq;   // in Fortran, cEq = 1; in C++, cEq = 0;
     PetscBool  usepreonly;
     KSPType    ksptype;
     Vec        lx, res;
@@ -292,19 +300,20 @@ void petsc_solve_(PetscReal *resNorm,  PetscReal *initNorm,  PetscReal *dB, \
     PetscLogDouble ts, te;
 
     PetscLogStagePush(stages[4]);
-    na = *maxIter;
+    na = maxIter;
     PetscMalloc1(na, &a);
     PetscTime(&ts);
     KSPSetOperators(psol[cEq].ksp, psol[cEq].A, psol[cEq].A);
 
     /* Calculate residual for direct solver. KSP uses preconditioned norm. */
     PetscObjectTypeCompare((PetscObject)psol[cEq].ksp, KSPPREONLY, &usepreonly);
+
     if (usepreonly){
-        VecNorm(psol[cEq].b, NORM_2 , initNorm);
-    }
-    else {
-        KSPSetResidualHistory(psol[cEq].ksp, a, na, PETSC_TRUE);
-    }
+      VecNorm(psol[cEq].b, NORM_2 , initNorm);
+    } else {
+      KSPSetResidualHistory(psol[cEq].ksp, a, na, PETSC_TRUE);
+    } 
+
     KSPSetUp(psol[cEq].ksp);
     KSPSolve(psol[cEq].ksp, psol[cEq].b, psol[cEq].b);
 
@@ -339,8 +348,8 @@ void petsc_solve_(PetscReal *resNorm,  PetscReal *initNorm,  PetscReal *dB, \
     VecGetArray(lx, &array);
     na = 0;
     for (i = 0; i < plhs.nNo; i++) {
-        for (j = 0; j < *dof; j++) {
-            R[plhs.map[i]*(*dof)+j] = array[na++];
+        for (j = 0; j < dof; j++) {
+            R[plhs.map[i]*(dof)+j] = array[na++];
         }
     }
     VecRestoreArray(lx, &array);
@@ -353,7 +362,7 @@ void petsc_solve_(PetscReal *resNorm,  PetscReal *initNorm,  PetscReal *dB, \
 /* 
     Clean up all petsc data. 
 */
-void petsc_destroy_all_(const PetscInt *nEq)
+void petsc_destroy_all(const PetscInt nEq)
 {   
     if (!psol==NULL){
         PetscInt cEq, ierr;
@@ -373,7 +382,7 @@ void petsc_destroy_all_(const PetscInt *nEq)
         PetscFree2(plhs.rowPtr, plhs.colPtr);
         PetscFree2(plhs.ltg, plhs.ghostltg);
 
-        for (cEq = 0; cEq < *nEq; cEq++)
+        for (cEq = 0; cEq < nEq; cEq++)
         {   
             if (!psol[cEq].created) {
                 PetscPrintf(MPI_COMM_WORLD, "ERROR <PETSC_DESTROY_ALL>: "
@@ -406,12 +415,6 @@ void petsc_destroy_all_(const PetscInt *nEq)
     }
 }
 
-
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-     Private functions
-
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 /*
     Creating PETSc lhs data structure with svFSI info.
@@ -916,28 +919,39 @@ PetscErrorCode petsc_debug_save_mat(const char *filename, Mat mat)
     PetscFunctionReturn(0);
 }
 
-// Function removing spaces from string (Not used in svFSIplus)
-char * rm_blank(char *string)
+/////////////////////////////////////////////////////////////////
+//                   P e t s c I m p l                         //
+/////////////////////////////////////////////////////////////////
+
+//-----------
+// PetscImpl 
+//-----------
+// The PetscImpl private class hides PETSc data structures
+// and functions.
+//
+class PetscLinearAlgebra::PetscImpl {
+  public:
+    PetscImpl();
+    void initialize(ComMod& com_mod);
+    void solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res);
+    void init_dir_and_coupneu_bc_petsc(ComMod& com_mod, const Vector<int>& incL, const Vector<double>& res);
+
+    // Local to global mapping
+    Vector<int> ltg_;
+
+    // Factor for Dirichlet BCs
+    Array<double> W_;
+
+    // Residue
+    Array<double> R_;
+
+    // Factor for Lumped Parameter BCs
+    Array<double> V_;
+};
+
+PetscLinearAlgebra::PetscImpl::PetscImpl()
 {
-    // remove weird FORTRAN character
-    string[strlen(string)-1] = '\0';
-
-    // non_space_count to keep the frequency of non space characters
-    int non_space_count = 0;
-
-    //Traverse a string and if it is non space character then, place it at index non_space_count
-    for (int i = 0; string[i] != '\0'; i++)
-    {
-        if (string[i] != ' ')
-        {
-            string[non_space_count] = string[i];
-            non_space_count++;//non_space_count incremented
-        }
-    }
-
-    //Finally placing final character at the string end
-    string[non_space_count] = '\0';
-    return string;
+  std::cout << "[PetscInterface] ---------- PetscInterface() ---------- " << std::endl;
 }
 
 //-------------------------------
@@ -1019,31 +1033,23 @@ void PetscLinearAlgebra::PetscImpl::init_dir_and_coupneu_bc_petsc(ComMod& com_mo
   }
 }
 
-/////////////////////////////////////////////////////////////////
-//                   P e t s c I m p l                         //
-/////////////////////////////////////////////////////////////////
-// PetscImpl methods. 
-
-PetscLinearAlgebra::PetscImpl::PetscImpl()
-{
-  std::cout << "[PetscInterface] ---------- PetscInterface() ---------- " << std::endl;
-}
-
 void PetscLinearAlgebra::PetscImpl::initialize(ComMod& com_mod)
 {
   std::cout << "[PetscImpl] ---------- initialize ---------- " << std::endl;
 
-  petsc_destroy_all_(&com_mod.nEq);
+  petsc_destroy_all(com_mod.nEq);
 
-  petsc_initialize_(&com_mod.lhs.nNo, &com_mod.lhs.mynNo, &com_mod.lhs.nnz, &com_mod.nEq, 
-      com_mod.ltg.data(), com_mod.lhs.map.data(), com_mod.lhs.rowPtr.data(), com_mod.lhs.colPtr.data(), com_mod.eq[0].ls.config.data());
+  petsc_initialize(com_mod.lhs.nNo, com_mod.lhs.mynNo, com_mod.lhs.nnz, com_mod.nEq, 
+      com_mod.ltg.data(), com_mod.lhs.map.data(), com_mod.lhs.rowPtr.data(), 
+      com_mod.lhs.colPtr.data(), com_mod.eq[0].ls.config.data());
 
-  for (int a = 0; a < com_mod.nEq; a++){
-    int prec_type = static_cast<int>(com_mod.eq[a].ls.PREC_Type);
-    int ls_type = static_cast<int>(com_mod.eq[a].ls.LS_type);
-    int phys = static_cast<int>(com_mod.eq[a].phys);
-    petsc_create_linearsolver_(&ls_type, &prec_type, &com_mod.eq[a].ls.sD, &com_mod.eq[a].ls.mItr, 
-        &com_mod.eq[a].ls.relTol, &com_mod.eq[a].ls.absTol, &phys, &com_mod.eq[a].dof, &a, &com_mod.nEq);
+  for (int a = 0; a < com_mod.nEq; a++) {
+    auto prec_type = com_mod.eq[a].ls.PREC_Type;
+    auto ls_type = com_mod.eq[a].ls.LS_type;
+    auto phys = com_mod.eq[a].phys;
+
+    petsc_create_linearsolver(ls_type, prec_type, com_mod.eq[a].ls.sD, com_mod.eq[a].ls.mItr, 
+        com_mod.eq[a].ls.relTol, com_mod.eq[a].ls.absTol, phys, com_mod.eq[a].dof, a, com_mod.nEq);
   }
 
   std::cout << "[PetscImpl::initialize] com_mod.dof: " << com_mod.dof << std::endl;
@@ -1065,12 +1071,12 @@ void PetscLinearAlgebra::PetscImpl::solve(ComMod& com_mod, eqType& lEq, const Ve
 
   // only excute once for each equation
   //
-  petsc_create_linearsystem_(&com_mod.dof, &com_mod.cEq, &com_mod.nEq, W_.data(), V_.data());
+  petsc_create_linearsystem(com_mod.dof, com_mod.cEq, com_mod.nEq, W_.data(), V_.data());
 
-  petsc_set_values_(&com_mod.dof, &com_mod.cEq, com_mod.R.data(), com_mod.Val.data(), W_.data(), V_.data());
+  petsc_set_values(com_mod.dof, com_mod.cEq, com_mod.R.data(), com_mod.Val.data(), W_.data(), V_.data());
 
-  petsc_solve_(&lEq.FSILS.RI.fNorm, &lEq.FSILS.RI.iNorm, &lEq.FSILS.RI.dB, &lEq.FSILS.RI.callD, 
-      &lEq.FSILS.RI.suc, &lEq.FSILS.RI.itr, com_mod.R.data(), &lEq.FSILS.RI.mItr, &com_mod.dof, &com_mod.cEq);
+  petsc_solve(&lEq.FSILS.RI.fNorm, &lEq.FSILS.RI.iNorm, &lEq.FSILS.RI.dB, &lEq.FSILS.RI.callD, 
+      &lEq.FSILS.RI.suc, &lEq.FSILS.RI.itr, com_mod.R.data(), lEq.FSILS.RI.mItr, com_mod.dof, com_mod.cEq);
 
 }
 

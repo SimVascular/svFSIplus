@@ -38,10 +38,13 @@
 #include <unistd.h>
 #include <stdbool.h>
 
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-    User-defined data type
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-/* PETSc lhs context */
+#include "consts.h"
+
+//--------
+// LHSCtx
+//---------
+// PETSc lhs context. 
+//
 typedef struct {
     PetscBool created;  /* Whether petsc lhs is created */
 
@@ -55,7 +58,11 @@ typedef struct {
     PetscInt *colPtr;   /* column pointer for adjacency info */
 } LHSCtx;
 
-/* PETSc linear solver context */
+//-------
+// LSCtx
+//-------
+// PETSc linear solver context. 
+//
 typedef struct {
     PetscBool created;  /* Whether mat and vec is created */
     const char *pre;      /* option prefix for different equations */
@@ -76,109 +83,50 @@ typedef struct {
     Vec       Dc;       /* diagonal matrix from col maxabs */
 } LSCtx;
 
+void petsc_initialize(const PetscInt nNo, const PetscInt mynNo, 
+    const PetscInt nnz, const PetscInt nEq, const PetscInt *svFSI_ltg, 
+    const PetscInt *svFSI_map, const PetscInt *svFSI_rowPtr, 
+    const PetscInt *svFSI_colPtr, char *inp);
 
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
-    Global variables
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-LHSCtx         plhs;       /* PETSc lhs */
-LSCtx         *psol;       /* PETSc solver */
-PetscLogStage  stages[6];  /* performance tuning. */
+void petsc_create_linearsystem(const PetscInt dof, const PetscInt iEq, const PetscInt nEq, 
+    const PetscReal *svFSI_DirBC, const PetscReal *svFSI_lpBC);
 
+void petsc_create_linearsolver(const consts::PreconditionerType lsType, const consts::PreconditionerType pcType, 
+    const PetscInt kSpace, const PetscInt maxIter, const PetscReal relTol, 
+    const PetscReal absTol, const consts::EquationType phys, const PetscInt dof, 
+    const PetscInt iEq, const PetscInt nEq);
 
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
-   Macro definitions
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-/* For linear solver and preconditioner */
-#define PETSc_CG     798
-#define PETSc_GMRES  797
-#define PETSc_BICGS  795
-    
-#define PETSc_PC_FSILS  701
-#define PETSc_PC_RCS    709
-#define PETSc_PC        713
+void petsc_set_values(const PetscInt dof, const PetscInt iEq, const PetscReal *R, 
+    const PetscReal *Val, const PetscReal *svFSI_DirBC, const PetscReal *svFSI_lpBC);
 
-/* Physics solved */
-#define EQ_fluid   201
-#define EQ_struct  202
-#define EQ_heatS   203
-#define EQ_lElas   204
-#define EQ_heatF   205 
-#define EQ_FSI     206 
-#define EQ_mesh    207
-#define EQ_shell   208 
-#define EQ_CMM     209 
-#define EQ_CEP     210
-#define EQ_ustruct 211 
-#define EQ_stokes  212
+void petsc_solve(PetscReal *resNorm,  PetscReal *initNorm,  PetscReal *dB, 
+    PetscReal *execTime, bool *converged, PetscInt *numIter, 
+    PetscReal *R, const PetscInt maxIter, const PetscInt dof, 
+    const PetscInt iEq);
 
+void petsc_destroy_all(const PetscInt);
 
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
-    Functions that interact with Fortran
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-#ifdef __cplusplus
-extern "C"{
-#endif
-
-void petsc_initialize_(const PetscInt *, const PetscInt *, const PetscInt *, \
-                       const PetscInt *, const PetscInt *, const PetscInt *, \
-                       const PetscInt *, const PetscInt *, char *);
-void petsc_create_linearsystem_(const PetscInt *, const PetscInt *, const PetscInt *, \
-                                const PetscReal *, const PetscReal *);
-void petsc_create_linearsolver_(const PetscInt *, const PetscInt *, const PetscInt *, \
-                                const PetscInt *, const PetscReal *, const PetscReal *, \
-                                const PetscInt *, const PetscInt *, const PetscInt *, \
-                                const PetscInt *);
-void petsc_set_values_(const PetscInt *, const PetscInt *, const PetscReal *, \
-                       const PetscReal *, const PetscReal *, const PetscReal *);
-void petsc_solve_(PetscReal *, PetscReal *, PetscReal *, PetscReal *, bool *, \
-                  PetscInt *,  PetscReal *, const PetscInt *, const PetscInt *, \
-                  const PetscInt *);
-void petsc_destroy_all_(const PetscInt *);
-// void petsc_destroy_all_(const PetscInt);
-
-#ifdef __cplusplus
-}
-#endif
-
-
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
-    Private functions
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-#ifdef __cplusplus
-extern "C"{
-#endif
-
-PetscErrorCode petsc_create_lhs(const PetscInt, const PetscInt, const PetscInt,  \
-                                const PetscInt *, const PetscInt *, \
+PetscErrorCode petsc_create_lhs(const PetscInt, const PetscInt, const PetscInt,  
+                                const PetscInt *, const PetscInt *, 
                                 const PetscInt *, const PetscInt *);
-PetscErrorCode petsc_create_bc(const PetscInt, const PetscInt, const PetscReal *, \
+
+PetscErrorCode petsc_create_bc(const PetscInt, const PetscInt, const PetscReal *, 
                                const PetscReal *);
+
 PetscErrorCode petsc_create_vecmat(const PetscInt, const PetscInt, const PetscInt);
+
 PetscErrorCode petsc_set_vec(const PetscInt, const PetscInt, const PetscReal *);
+
 PetscErrorCode petsc_set_mat(const PetscInt, const PetscInt, const PetscReal *);
+
 PetscErrorCode petsc_set_bc(const PetscInt, const PetscReal *, const PetscReal *);
+
 PetscErrorCode petsc_set_pcfieldsplit(const PetscInt, const PetscInt);
+
 PetscErrorCode petsc_pc_rcs(const PetscInt, const PetscInt);
 
-#ifdef __cplusplus
-}
-#endif
-
-
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
-    Private functions for debugging
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-#ifdef __cplusplus
-extern "C"{
-#endif
 
 PetscErrorCode petsc_debug_save_vec(const char *, Vec);
 PetscErrorCode petsc_debug_save_mat(const char *, Mat);
-
-#ifdef __cplusplus
-}
-#endif
-
-char * rm_blank(char *string);
 
 #endif

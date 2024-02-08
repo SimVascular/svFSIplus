@@ -52,7 +52,7 @@ class LinearAlgebra {
 
 class LinearAlgebraFactory {
   public:
-    LinearAlgebra* create_interface(LinearAlgebraType interface_type);
+    static LinearAlgebra* create_interface(LinearAlgebraType interface_type);
 };
 
 
