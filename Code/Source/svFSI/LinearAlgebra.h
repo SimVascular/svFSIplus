@@ -40,8 +40,10 @@ enum class LinearAlgebraType {
 };
 
 class LinearAlgebra {
-
   public:
+    static const std::map<std::string, LinearAlgebraType> name_to_type;
+    static const std::map<LinearAlgebraType, std::string> type_to_name;
+
     LinearAlgebra();
     virtual ~LinearAlgebra() { };
     virtual void alloc(ComMod& com_mod, eqType& lEq) = 0;

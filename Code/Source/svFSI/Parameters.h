@@ -833,6 +833,25 @@ class ViscosityParameters : public ParameterLists
     ViscosityCassonsParameters cassons_model;
 };
 
+/// @brief The LinearAlgebraParameters class stores parameters for
+/// the 'Linear_algebra' XML element.
+class LinearAlgebraParameters : public ParameterLists
+{
+  public:
+    static const std::string xml_element_name_;
+    LinearAlgebraParameters();
+    void print_parameters();
+    void set_values(tinyxml2::XMLElement* fsi_file);
+
+    Parameter<std::string> type;
+
+    Parameter<std::string> configuration_file;
+    Parameter<std::string> preconditioner;
+    Parameter<bool> use_trilinos_assembly;
+    Parameter<bool> use_trilinos_preconditioner;
+    Parameter<std::string> trilinos_preconditioner;
+};
+
 /// @brief The LinearSolverParameters class stores parameters for
 /// the 'LS' XML element.
 class LinearSolverParameters : public ParameterLists
@@ -861,6 +880,8 @@ class LinearSolverParameters : public ParameterLists
     Parameter<double> tolerance;
 
     Parameter<bool> use_trilinos_for_assembly;
+
+    LinearAlgebraParameters linear_algebra;
 };
 
 /// @brief The StimulusParameters class stores parameters for 

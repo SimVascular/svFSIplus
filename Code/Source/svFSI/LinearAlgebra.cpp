@@ -33,6 +33,18 @@
 #include "FsilsLinearAlgebra.h"
 #include "TrilinosLinearAlgebra.h"
 
+const std::map<std::string, LinearAlgebraType> LinearAlgebra::name_to_type = {
+  {"fsils", LinearAlgebraType::fsils},
+  {"petsc", LinearAlgebraType::petsc},
+  {"trilinos", LinearAlgebraType::trilinos}
+};
+
+const std::map<LinearAlgebraType, std::string> LinearAlgebra::type_to_name = {
+  {LinearAlgebraType::fsils, "fsils"},
+  {LinearAlgebraType::petsc, "petsc"},
+  {LinearAlgebraType::trilinos, "trilinos"}
+};
+
 LinearAlgebra::LinearAlgebra()
 {
 }
