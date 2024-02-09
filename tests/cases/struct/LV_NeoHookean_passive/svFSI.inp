@@ -74,11 +74,6 @@ Add equation: struct {
       Krylov space dimension: 50
    }
 
-   Couple to genBC: I {             
-      # Pressure returned by genBC is in dyne/cm^2            
-      0D code file path: genBC/genBC.exe
-   }
-
    Add BC: top {
       Type: Dirichlet
       Value: 0.0
