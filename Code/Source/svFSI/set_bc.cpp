@@ -113,8 +113,8 @@ void calc_der_cpl_bc(ComMod& com_mod, const CmMod& cm_mod)
       if (utils::btest(bc.bType, iBC_Neu)) {
         // Compute flowrates at 3D Neumann boundaries at timesteps n and n+1
         /// \todo: Do I need an if struct/ustruct here?
-        cplBC.fa[ptr].Qo = all_fun::integ(com_mod, cm_mod, fa, com_mod.Yo, 0, nsd-1, 'o');
-        cplBC.fa[ptr].Qn = all_fun::integ(com_mod, cm_mod, fa, com_mod.Yn, 0, nsd-1, 'n');
+        cplBC.fa[ptr].Qo = all_fun::integ(com_mod, cm_mod, fa, com_mod.Yo, 'o');
+        cplBC.fa[ptr].Qn = all_fun::integ(com_mod, cm_mod, fa, com_mod.Yn, 'n');
         cplBC.fa[ptr].Po = 0.0;
         cplBC.fa[ptr].Pn = 0.0;
         #ifdef debug_calc_der_cpl_bc 
@@ -684,8 +684,8 @@ void set_bc_cpl(ComMod& com_mod, CmMod& cm_mod)
         // Compute flowrates at 3D Neumann boundaries at timesteps n and n+1
         if (utils::btest(bc.bType,iBC_Neu)) {
           /// \todo: Do I need an if struct/ustruct here?
-          cplBC.fa[ptr].Qo = all_fun::integ(com_mod, cm_mod, com_mod.msh[iM].fa[iFa], Yo, 0, nsd-1, 'o');
-          cplBC.fa[ptr].Qn = all_fun::integ(com_mod, cm_mod, com_mod.msh[iM].fa[iFa], Yn, 0, nsd-1, 'n');
+          cplBC.fa[ptr].Qo = all_fun::integ(com_mod, cm_mod, com_mod.msh[iM].fa[iFa], Yo, 'o');
+          cplBC.fa[ptr].Qn = all_fun::integ(com_mod, cm_mod, com_mod.msh[iM].fa[iFa], Yn, 'n');
           cplBC.fa[ptr].Po = 0.0;
           cplBC.fa[ptr].Pn = 0.0;
         } 

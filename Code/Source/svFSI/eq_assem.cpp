@@ -350,7 +350,7 @@ void fsi_ls_upd(ComMod& com_mod, const bcType& lBc, const faceType& lFa)
   using namespace utils;
   using namespace fsi_linear_solver;
 
-  #define debug_fsi_ls_upd
+  #define n_debug_fsi_ls_upd
   #ifdef debug_fsi_ls_upd
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
@@ -364,14 +364,8 @@ void fsi_ls_upd(ComMod& com_mod, const bcType& lBc, const faceType& lFa)
   int iM = lFa.iM;
   int nNo = lFa.nNo;
 
-  // [NOTE] 'nNo' can be zero so we must check for this.
   Array<double> sVl(nsd,nNo); 
   Array<double> sV(nsd,tnNo); 
-  Vector<int> gNodes(nNo);
-
-  for (int a= 0; a < nNo; a++) {
-    gNodes(a) = lFa.gN(a);
-  }
 
   // Updating the value of the surface integral of the normal vector
   // using the deformed configuration ('n' = new = timestep n+1)
@@ -402,7 +396,7 @@ void fsi_ls_upd(ComMod& com_mod, const bcType& lBc, const faceType& lFa)
     }
   }
   // Update lhs.face(i).val with the new value of the surface integral
-  fsils_bc_update(com_mod.lhs, lBc.lsPtr, lFa.nNo, nsd, BcType::BC_TYPE_Neu, gNodes, sVl); 
+  fsils_bc_update(com_mod.lhs, lBc.lsPtr, lFa.nNo, nsd, sVl); 
 };
 
 /// @brief This routine assembles the equation on a given mesh.

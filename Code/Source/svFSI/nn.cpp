@@ -638,6 +638,9 @@ void gnnb(const ComMod& com_mod, const faceType& lFa, const int e, const int g, 
         lX(i,a) = lX(i,a) + com_mod.Dn(i,Ac);
       }
     }
+    else {
+      throw std::runtime_error("gnnb: invalid cfg provided");
+    }
   }
 
   // Calculating surface deflation

@@ -167,11 +167,8 @@ void fsils_bc_free(FSILS_lhsType& lhs, int faIn)
 /// @param faIn 
 /// @param nNo 
 /// @param dof 
-/// @param BC_type 
-/// @param gNodes 
 /// @param Val 
-void fsils_bc_update(FSILS_lhsType& lhs, int faIn, int nNo, int dof, BcType BC_type, const Vector<int>& gNodes, 
-    const Array<double>& Val)
+void fsils_bc_update(FSILS_lhsType& lhs, int faIn, int nNo, int dof, const Array<double>& Val)
 {
   using namespace consts;
 
@@ -189,6 +186,7 @@ void fsils_bc_update(FSILS_lhsType& lhs, int faIn, int nNo, int dof, BcType BC_t
   // Communicate update among procs
   if (lhs.face[faIn].sharedFlag){
     Array<double> v(dof,lhs.nNo);
+    v = 0.0;
 
     for (int a = 0; a < nNo; a++) {
       int Ac = lhs.face[faIn].glob(a);

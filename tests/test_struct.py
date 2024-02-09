@@ -40,7 +40,14 @@ def test_block_compression(n_proc):
     test_folder = "block_compression"
     run_with_reference(base_folder, test_folder, fields, n_proc)
 
-
 def test_robin(n_proc):
     test_folder = "robin"
+    run_with_reference(base_folder, test_folder, fields, n_proc)
+
+def test_LV_NeoHookean_passive(n_proc):
+    test_folder = "LV_NeoHookean_passive"
+    run_with_reference(base_folder, test_folder, fields, n_proc)
+    
+def test_LV_NeoHookean_passive_genBC(n_proc):
+    test_folder = "LV_NeoHookean_passive_genBC"
     run_with_reference(base_folder, test_folder, fields, n_proc)

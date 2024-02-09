@@ -85,8 +85,10 @@ Add equation: struct {
    }
 
    Add BC: endo {
-      Type: Neu
-      Time dependence: Coupled
+      Type: Neu 
+      Time dependence: Unsteady
+      Temporal values file path: endo_pressure.dat
+      Ramp function: t
       Follower pressure load: t
    }
 }

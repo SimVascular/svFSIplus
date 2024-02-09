@@ -80,11 +80,6 @@
       <Krylov_space_dimension> 50 </Krylov_space_dimension>
    </LS>
 
-   <Couple_to_genBC type="I">
-      <!-- Pressure returned by genBC is in dyne/cm^2 -->
-      <ZeroD_code_file_path> genBC_svFSIplus/genBC.exe </ZeroD_code_file_path>
-   </Couple_to_genBC>
-
    <Add_BC name="top" > 
       <Type> Dirichlet </Type> 
       <Value> 0.0 </Value>
@@ -92,10 +87,12 @@
 
    <Add_BC name="endo" > 
       <Type> Neu </Type> 
-      <Time_dependence> Coupled </Time_dependence> 
+      <Time_dependence> Unsteady </Time_dependence> 
+      <Temporal_values_file_path> endo_pressure.dat </Temporal_values_file_path> 
+      <Ramp_function> true </Ramp_function> 
       <Follower_pressure_load> true </Follower_pressure_load> 
    </Add_BC> 
-   
+
 </Add_equation>
 
 </svFSIFile>
