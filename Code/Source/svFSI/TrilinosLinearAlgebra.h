@@ -28,30 +28,31 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PETSC_LINEAR_ALGEBRA_H 
-#define PETSC_LINEAR_ALGEBRA_H 
+#ifndef TRILINOS_LINEAR_ALGEBRA_H 
+#define TRILINOS_LINEAR_ALGEBRA_H 
 
 #include "LinearAlgebra.h"
 
+//-----------------------
+// TrilinosLinearAlgebra
 //--------------------
-// PetscLinearAlgebra
-//--------------------
-// The PetscLinearAlgebra class implements the LinearAlgebra 
-// interface for the PETSc numerical linear algebra package.
+// The TrilinosLinearAlgebra class implements the LinearAlgebra 
+// interface for the Trilinos numerical linear algebra package.
 //
-class PetscLinearAlgebra : public virtual LinearAlgebra {
+class TrilinosLinearAlgebra : public virtual LinearAlgebra {
 
   public:
-    PetscLinearAlgebra();
-    ~PetscLinearAlgebra() { };
-    virtual void alloc(ComMod& com_mod, eqType& lEq) {};
+    TrilinosLinearAlgebra();
+    ~TrilinosLinearAlgebra() { };
+
+    virtual void alloc(ComMod& com_mod, eqType& lEq);
     virtual void initialize(ComMod& com_mod);
     virtual void solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res);
 
   private:
     // Private class used to hide PETSc implementation details.
-    class PetscImpl;
-    PetscImpl* impl = nullptr;
+    class TrilinosImpl;
+    TrilinosImpl* impl = nullptr;
 };
 
 #endif

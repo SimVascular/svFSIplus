@@ -30,6 +30,8 @@
 
 #include "LinearAlgebra.h"
 #include "PetscLinearAlgebra.h"
+#include "FsilsLinearAlgebra.h"
+#include "TrilinosLinearAlgebra.h"
 
 LinearAlgebra::LinearAlgebra()
 {
@@ -40,8 +42,16 @@ LinearAlgebra* LinearAlgebraFactory::create_interface(LinearAlgebraType interfac
   LinearAlgebra* interface = nullptr;
 
   switch (interface_type) {
+    case LinearAlgebraType::fsils:
+      interface = new FsilsLinearAlgebra();
+    break;
+
     case LinearAlgebraType::petsc:
       interface = new PetscLinearAlgebra();
+    break;
+
+    case LinearAlgebraType::trilinos:
+      interface = new TrilinosLinearAlgebra();
     break;
   }
 

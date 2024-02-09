@@ -1584,9 +1584,6 @@ class ComMod {
     /// @brief IB: Immersed boundary data structure
     ibType ib;
 
-    /// @brief Trilinos Linear Solver data type
-    tlsType  tls;
-
     bool debug_active = false;
 
     Timer timer;

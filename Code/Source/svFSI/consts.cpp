@@ -203,6 +203,17 @@ const std::map<std::string,MeshGeneratorType> mesh_generator_name_to_type = {
     {"Meshsim", MeshGeneratorType::RMSH_MESHSIM}
 };
 
+/// @brief A list of Trilinos preconditioners. 
+const std::set<PreconditionerType> trilinos_preconditioners = {
+  PreconditionerType::PREC_TRILINOS_DIAGONAL,
+  PreconditionerType::PREC_TRILINOS_BLOCK_JACOBI,
+  PreconditionerType::PREC_TRILINOS_ILU,
+  PreconditionerType::PREC_TRILINOS_ILUT,
+  PreconditionerType::PREC_TRILINOS_IC,
+  PreconditionerType::PREC_TRILINOS_ICT,
+  PreconditionerType::PREC_TRILINOS_ML
+};
+
 /// @brief Map for preconditioner type string to PreconditionerType enum
 //
 const std::map<std::string,PreconditionerMapType> preconditioner_name_to_type =
@@ -226,6 +237,22 @@ const std::map<std::string,PreconditionerMapType> preconditioner_name_to_type =
 
   {"trilinos-ml", std::make_pair(PreconditionerType::PREC_TRILINOS_ML,true)}
 
+};
+
+/// @brief Map for PreconditionerType enum to a string name.
+//
+const std::map<PreconditionerType, std::string> preconditioner_type_to_name {
+  {PreconditionerType::PREC_FSILS, "fsils"}, 
+  {PreconditionerType::PREC_RCS, "rcs"},
+  {PreconditionerType::PREC_RCS, "row-column-scaling"}, 
+  {PreconditionerType::PREC_TRILINOS_DIAGONAL, "trilinos-diagonal"}, 
+  {PreconditionerType::PREC_TRILINOS_BLOCK_JACOBI, "trilinos-blockjacobi"}, 
+  {PreconditionerType::PREC_TRILINOS_BLOCK_JACOBI, "blockjacobi"},
+  {PreconditionerType::PREC_TRILINOS_ILU, "trilinos-ilu"}, 
+  {PreconditionerType::PREC_TRILINOS_ILUT, "trilinos-ilut"}, 
+  {PreconditionerType::PREC_TRILINOS_IC, "trilinos-ic"}, 
+  {PreconditionerType::PREC_TRILINOS_IC, "trilinos-ict"}, 
+  {PreconditionerType::PREC_TRILINOS_ML, "trilinos-ml"} 
 };
 
 /// @brief Map solver type string to SolverType enum. 

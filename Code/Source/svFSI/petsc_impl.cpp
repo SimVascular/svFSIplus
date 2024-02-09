@@ -934,7 +934,7 @@ class PetscLinearAlgebra::PetscImpl {
     PetscImpl();
     void initialize(ComMod& com_mod);
     void solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res);
-    void init_dir_and_coupneu_bc_petsc(ComMod& com_mod, const Vector<int>& incL, const Vector<double>& res);
+    void init_dir_and_coupneu_bc(ComMod& com_mod, const Vector<int>& incL, const Vector<double>& res);
 
     // Local to global mapping
     Vector<int> ltg_;
@@ -954,11 +954,11 @@ PetscLinearAlgebra::PetscImpl::PetscImpl()
   std::cout << "[PetscInterface] ---------- PetscInterface() ---------- " << std::endl;
 }
 
-//-------------------------------
-// init_dir_and_coupneu_bc_petsc
-//-------------------------------
+//-------------------------
+// init_dir_and_coupneu_bc
+//-------------------------
 //
-void PetscLinearAlgebra::PetscImpl::init_dir_and_coupneu_bc_petsc(ComMod& com_mod, 
+void PetscLinearAlgebra::PetscImpl::init_dir_and_coupneu_bc(ComMod& com_mod, 
     const Vector<int>& incL, const Vector<double>& res)
 {
   using namespace consts;

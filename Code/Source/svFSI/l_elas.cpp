@@ -40,7 +40,7 @@
 #include "utils.h"
 
 #ifdef WITH_TRILINOS
-#include "trilinos_linear_solver.h"
+#include "trilinos_impl.h"
 #endif
 
 namespace l_elas {

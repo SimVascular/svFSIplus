@@ -39,7 +39,8 @@
   \brief   wrap Trilinos solver functions
 */
 
-#include "trilinos_linear_solver.h"
+#include "trilinos_impl.h"
+#include "ComMod.h"
 #define NOOUTPUT
 
 // --- Define global Trilinos variables to be used in below functions ---------
@@ -1080,4 +1081,201 @@ void printSolutionToFile()
   Xfile.close();
 }
 
+/////////////////////////////////////////////////////////////////
+//                  T r i l i n o s I m p l                    //
+/////////////////////////////////////////////////////////////////
+
+//--------------
+// TrilinosImpl 
+//--------------
+// The TrilinosImpl private class hides Trilinos data structures
+// and functions.
+//
+class TrilinosLinearAlgebra::TrilinosImpl {
+  public:
+    TrilinosImpl();
+    void alloc(ComMod& com_mod, eqType& lEq);
+    void initialize(ComMod& com_mod);
+    void solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res);
+    void init_dir_and_coup_neu(ComMod& com_mod, const Vector<int>& incL, const Vector<double>& res);
+
+    /// @brief Local to global mapping
+    Vector<int> ltg_;
+
+    /// @brief Factor for Dirichlet BCs
+    Array<double> W_;
+
+    /// @brief Residual
+    Array<double> R_;
+};
+
+TrilinosLinearAlgebra::TrilinosImpl::TrilinosImpl()
+{
+  //std::cout << "[TrilinosImpl] ---------- TrilinosImpl() ---------- " << std::endl;
+}
+
+//-------
+// alloc
+//-------
+//
+void TrilinosLinearAlgebra::TrilinosImpl::alloc(ComMod& com_mod, eqType& lEq) 
+{
+  //std::cout << "[TrilinosImpl] ---------- alloc ---------- " << std::endl;
+  int dof = com_mod.dof;
+  int tnNo = com_mod.tnNo;
+  int gtnNo = com_mod.gtnNo;
+  auto& lhs = com_mod.lhs;
+  //std::cout << "[TrilinosImpl.alloc] dof: " << dof << std::endl;
+  //std::cout << "[TrilinosImpl.alloc] tnNo: " << tnNo << std::endl;
+  //std::cout << "[TrilinosImpl.alloc] gtnNo: " << gtnNo << std::endl;
+  //std::cout << "[TrilinosImpl.alloc] ltg_.size(): " << ltg_.size() << std::endl;
+
+  W_.clear();
+  R_.clear();
+  trilinos_lhs_free_();
+
+  W_.resize(dof,tnNo); 
+  R_.resize(dof,tnNo);
+
+  int cpp_index = 1;
+  int task_id = com_mod.cm.idcm();
+  //std::cout << "[TrilinosImpl.alloc] task_id: " << task_id << std::endl;
+
+  trilinos_lhs_create_(gtnNo, lhs.mynNo, tnNo, lhs.nnz, ltg_.data(), com_mod.ltg.data(), com_mod.rowPtr.data(), 
+      com_mod.colPtr.data(), dof, cpp_index, task_id);
+
+  //std::cout << "[TrilinosImpl.alloc] Done " << std::endl;
+}
+
+//-----------------------
+// init_dir_and_coup_neu
+//-----------------------
+//
+void TrilinosLinearAlgebra::TrilinosImpl::init_dir_and_coup_neu(ComMod& com_mod, const Vector<int>& incL, const Vector<double>& res)
+{
+  using namespace consts;
+  using namespace fsi_linear_solver;
+
+  int dof = com_mod.dof;
+  int gtnNo = com_mod.gtnNo;
+  int tnNo = com_mod.tnNo;
+  auto& lhs = com_mod.lhs;
+
+  if (lhs.nFaces != 0) {
+    for (auto& face : lhs.face) {
+      face.incFlag = true;
+    }
+
+    for (int faIn = 0; faIn < lhs.nFaces; faIn++) {
+      if (incL(faIn) == 0)  {
+        lhs.face[faIn].incFlag = false;
+      }
+    }
+
+    for (int faIn = 0; faIn < lhs.nFaces; faIn++) {
+      auto& face = lhs.face[faIn];
+      face.coupledFlag = false;
+      if (!face.incFlag) {
+        continue;
+      }
+
+      bool flag = (face.bGrp == BcType::BC_TYPE_Neu);
+      if (flag && res(faIn) != 0.0) {
+        face.res = res(faIn);
+        face.coupledFlag = true;
+      }
+    }
+  }
+
+  W_ = 1.0;
+
+  for (int faIn = 0; faIn < lhs.nFaces; faIn++) {
+    auto& face = lhs.face[faIn];
+    if (!face.incFlag) {
+      continue;
+    }
+
+    int faDof = std::min(face.dof,dof);
+
+    if (face.bGrp == BcType::BC_TYPE_Dir) {
+      for (int a = 0; a < face.nNo; a++) {
+        int Ac = face.glob(a);
+        for (int i = 0; i < faDof; i++) {
+          W_(i,Ac) = W_(i,Ac) * face.val(i,a);
+        }
+      }
+    }
+  }
+
+  Array<double> v(dof,tnNo);
+  bool isCoupledBC = false;
+
+  for (int faIn = 0; faIn < lhs.nFaces; faIn++) {
+    auto& face = lhs.face[faIn];
+    if (face.coupledFlag) {
+      isCoupledBC = true;
+      int faDof = std::min(face.dof,dof);
+
+      for (int a = 0; a < face.nNo; a++) {
+        int Ac = face.glob(a);
+        for (int i = 0; i < faDof; i++) {
+          v(i,Ac) = v(i,Ac) + sqrt(fabs(res(faIn))) * face.val(i,a);
+        }
+      }
+    }
+  }
+
+  trilinos_bc_create_(v.data(), isCoupledBC);
+}
+
+//------------
+// initialize
+//------------
+//
+void TrilinosLinearAlgebra::TrilinosImpl::initialize(ComMod& com_mod)
+{
+  //std::cout << "[TrilinosImpl] ---------- initialize ---------- " << std::endl;
+  //std::cout << "[TrilinosImpl.initialize] com_mod.tnNo: " << com_mod.tnNo << std::endl;
+  ltg_.resize(com_mod.tnNo);
+
+  for (int a = 0; a < com_mod.tnNo; a++) {
+    ltg_(com_mod.lhs.map(a)) = com_mod.ltg(a);
+  }
+}
+
+//-------
+// solve
+//-------
+//
+void TrilinosLinearAlgebra::TrilinosImpl::solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res)
+{
+  //std::cout << "[TrilinosImpl] ---------- solve ---------- " << std::endl;
+
+  init_dir_and_coup_neu(com_mod, incL, res);
+
+  auto& Val = com_mod.Val;
+  auto& R = com_mod.R;
+  int solver_type = static_cast<int>(lEq.ls.LS_type);
+  int prec_type = static_cast<int>(lEq.ls.PREC_Type);
+  //std::cout << "[TrilinosImpl.solve] solver_type: " << solver_type << std::endl;
+  //std::cout << "[TrilinosImpl.solve] prec_type: " << prec_type << std::endl;
+
+  if (consts::trilinos_preconditioners.count(lEq.ls.PREC_Type) == 0) {
+    auto prec_name = consts::preconditioner_type_to_name.at(lEq.ls.PREC_Type); 
+    throw std::runtime_error("[TrilinosLinearAlgebra] '" + prec_name + "' is not a valid Trilinos preconditioner.");
+  }
+
+  trilinos_global_solve_(Val.data(), R.data(), R_.data(), W_.data(), lEq.FSILS.RI.fNorm,
+      lEq.FSILS.RI.iNorm, lEq.FSILS.RI.itr, lEq.FSILS.RI.callD, lEq.FSILS.RI.dB, lEq.FSILS.RI.suc,
+      solver_type, lEq.FSILS.RI.relTol, lEq.FSILS.RI.mItr, lEq.FSILS.RI.sD, prec_type);
+
+  for (int a = 0; a < com_mod.tnNo; a++) {
+    for (int i = 0; i < com_mod.R.nrows(); i++) {
+      com_mod.R(i,a) = R_(i,com_mod.lhs.map(a));
+    }
+  } 
+
+}
+
+ 
 

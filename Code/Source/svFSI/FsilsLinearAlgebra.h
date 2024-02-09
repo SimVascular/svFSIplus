@@ -28,30 +28,31 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PETSC_LINEAR_ALGEBRA_H 
-#define PETSC_LINEAR_ALGEBRA_H 
+#ifndef FSILS_LINEAR_ALGEBRA_H 
+#define FSILS_LINEAR_ALGEBRA_H 
 
 #include "LinearAlgebra.h"
 
 //--------------------
-// PetscLinearAlgebra
+// FsilsLinearAlgebra
 //--------------------
-// The PetscLinearAlgebra class implements the LinearAlgebra 
-// interface for the PETSc numerical linear algebra package.
+// The FsilsLinearAlgebra class implements the LinearAlgebra 
+// interface for the FSILS numerical linear algebra package.
 //
-class PetscLinearAlgebra : public virtual LinearAlgebra {
+class FsilsLinearAlgebra : public virtual LinearAlgebra {
 
   public:
-    PetscLinearAlgebra();
-    ~PetscLinearAlgebra() { };
+    FsilsLinearAlgebra();
+    ~FsilsLinearAlgebra() { };
+
     virtual void alloc(ComMod& com_mod, eqType& lEq) {};
     virtual void initialize(ComMod& com_mod);
     virtual void solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res);
 
   private:
-    // Private class used to hide PETSc implementation details.
-    class PetscImpl;
-    PetscImpl* impl = nullptr;
+    // Private class used to hide FSILS implementation details.
+    class FsilsImpl;
+    FsilsImpl* impl = nullptr;
 };
 
 #endif

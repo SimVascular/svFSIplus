@@ -34,7 +34,7 @@
 #include "ComMod.h"
 
 enum class LinearAlgebraType {
-  fsi_ls,
+  fsils,
   petsc,
   trilinos
 };
@@ -44,6 +44,7 @@ class LinearAlgebra {
   public:
     LinearAlgebra();
     virtual ~LinearAlgebra() { };
+    virtual void alloc(ComMod& com_mod, eqType& lEq) = 0;
     virtual void initialize(ComMod& com_mod) = 0;
     virtual void solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res) = 0;
     virtual LinearAlgebraType get_interface_type() { return interface_type; }

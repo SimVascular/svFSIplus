@@ -34,6 +34,7 @@
 #include <iostream>
 #include <limits>
 #include <map>
+#include <set>
 #include <type_traits>
 
 // The enums here replicate the PARAMETERs defined
@@ -425,9 +426,11 @@ enum class PreconditionerType
   PREC_RCS = 709
 };
 
+extern const std::set<PreconditionerType> trilinos_preconditioners;
+extern const std::map<PreconditionerType, std::string> preconditioner_type_to_name;
+
 /// Map for preconditioner type string to pair (PreconditionerType enum, bool(true if Trilinos precondition)). 
 using PreconditionerMapType = std::pair<PreconditionerType,bool>;
-//extern const std::map<std::string,PreconditionerType> preconditioner_name_to_type;
 extern const std::map<std::string,PreconditionerMapType> preconditioner_name_to_type;
 
 enum class SolverType

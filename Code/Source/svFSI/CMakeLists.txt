@@ -148,7 +148,9 @@ set(CSRCS
   Array3.h Array3.cpp 
   Array.h Array.cpp
   LinearAlgebra.h LinearAlgebra.cpp
+  FsilsLinearAlgebra.h FsilsLinearAlgebra.cpp
   PetscLinearAlgebra.h PetscLinearAlgebra.cpp
+  TrilinosLinearAlgebra.h TrilinosLinearAlgebra.cpp
   Tensor4.h Tensor4.cpp
   Vector.h Vector.cpp 
 
@@ -223,7 +225,7 @@ set(CSRCS
   #endif()
 
 if(USE_TRILINOS)
-  set(CSRCS ${CSRCS} trilinos_linear_solver.cpp)
+  #set(CSRCS ${CSRCS} trilinos_linear_solver.cpp)
 
   # trilinos directories and libraries
   include_directories(${Trilinos_TPL_INCLUDE_DIRS})

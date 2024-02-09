@@ -39,7 +39,7 @@
 #include <math.h>
 
 #ifdef WITH_TRILINOS
-#include "trilinos_linear_solver.h"
+#include "trilinos_impl.h"
 #endif
 
 //#ifdef USE_PETSC
@@ -50,6 +50,7 @@ namespace ls_ns {
 
 /// @brief Reproduces Fortran 'SUBROUTINE INIT_DIR_AND_COUPNEU_BC(incL, res)'.
 //
+#if 0
 void init_dir_and_coup_neu(ComMod& com_mod, const Vector<int>& incL, const Vector<double>& res)
 {
   using namespace consts;
@@ -130,89 +131,7 @@ void init_dir_and_coup_neu(ComMod& com_mod, const Vector<int>& incL, const Vecto
 #endif
 
 }
-
-//-------------------------------
-// init_dir_and_coupneu_bc_petsc
-//-------------------------------
-// Reproduces Fortran 'SUBROUTINE INIT_DIR_AND_COUPNEU_BC_PETSC(incL, res)'.
-//
-/*
-void init_dir_and_coupneu_bc_petsc(ComMod& com_mod, const Vector<int>& incL, const Vector<double>& res)
-{
-  using namespace consts;
-  using namespace fsi_linear_solver;
-
-  int dof = com_mod.dof;
-  auto& pls = com_mod.pls;
-  auto& lhs = com_mod.lhs;
-
-  if(lhs.nFaces != 0) {
-    for (auto& face : lhs.face) {
-      face.incFlag = true;
-    }
-
-    for (int faIn = 0; faIn < lhs.nFaces; faIn++) {
-      if (incL(faIn) == 0)  {
-        lhs.face[faIn].incFlag = false;
-      }
-    }
-
-    for (int faIn = 0; faIn < lhs.nFaces; faIn++) {
-      auto& face = lhs.face[faIn];
-      face.coupledFlag = false;
-      if (!face.incFlag) {
-        continue;
-      }
-
-      bool flag = (face.bGrp == BcType::BC_TYPE_Neu);
-
-      if (flag && res(faIn) != 0.0) {
-        face.res = res(faIn);
-        face.coupledFlag = true;
-      }
-    }
-  }
-
-  pls.W = 1.0;
-
-  for (int faIn = 0; faIn < lhs.nFaces; faIn++) {
-    auto& face = lhs.face[faIn];
-    if (!face.incFlag) {
-      continue;
-    }
-
-    int faDof = std::min(face.dof,dof);
-
-    if (face.bGrp == BcType::BC_TYPE_Dir) {
-      for (int a = 0; a < face.nNo; a++) {
-        int Ac = face.glob(a);
-        for (int i = 0; i < faDof; i++) {
-          pls.W(i,Ac) = pls.W(i,Ac) * face.val(i,a);
-        }
-      }
-    }
-  }
-
-  pls.V = 0.0;
-  bool isCoupledBC = false;
-
-  for (int faIn = 0; faIn < lhs.nFaces; faIn++) {
-    auto& face = lhs.face[faIn];
-    if (face.coupledFlag) {
-      isCoupledBC = true;
-      int faDof = std::min(face.dof,dof);
-
-      for (int a = 0; a < face.nNo; a++) {
-        int Ac = face.glob(a);
-        for (int i = 0; i < faDof; i++) {
-          pls.V(i,Ac) = pls.V(i,Ac) + sqrt(fabs(res(faIn))) * face.val(i,a);
-        }
-      }
-    }
-  }
-}
-*/
-
+#endif
 
 /// @brief Allocate com_mod.R and com_mod.Val arrays.
 ///
@@ -235,28 +154,6 @@ void ls_alloc(ComMod& com_mod, eqType& lEq)
     com_mod.Val.resize(dof*dof, com_mod.lhs.nnz);
   }
 
-#ifdef WITH_TRILINOS
-
-  auto& tls = com_mod.tls;
-
-  if (lEq.useTLS) {
-    if (tls.W.size() != 0) {
-      tls.W.clear();
-      tls.R.clear();
-      trilinos_lhs_free_();
-    }
-
-    tls.W.resize(dof,tnNo); 
-    tls.R.resize(dof,tnNo);
-
-    int cpp_index = 1;
-    int task_id = com_mod.cm.idcm();
-
-    trilinos_lhs_create_(gtnNo, lhs.mynNo, tnNo, lhs.nnz, tls.ltg.data(), com_mod.ltg.data(), com_mod.rowPtr.data(), 
-        com_mod.colPtr.data(), dof, cpp_index, task_id);
-  }
-
-#endif
 }
 
 /// @brief Modifies:    
@@ -276,30 +173,13 @@ void ls_solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vecto
   dmsg << "lEq.assmTLS: " << lEq.assmTLS;
   #endif
 
-#ifdef USE_PETSC
-#if 0
-  auto& pls = com_mod.pls;
-
-  pls.W.resize(com_mod.dof, com_mod.tnNo);
-  pls.V.resize(com_mod.dof, com_mod.tnNo);
-
-  init_dir_and_coupneu_bc_petsc(com_mod, incL, res);
- 
-  // only excute once for each equation
-  petsc_create_linearsystem_(&com_mod.dof, &com_mod.cEq, &com_mod.nEq, pls.W.data(), pls.V.data());
-
-  petsc_set_values_(&com_mod.dof, &com_mod.cEq, com_mod.R.data(), com_mod.Val.data(), pls.W.data(), pls.V.data());
-
-  petsc_solve_(&lEq.FSILS.RI.fNorm, &lEq.FSILS.RI.iNorm, &lEq.FSILS.RI.dB, &lEq.FSILS.RI.callD, &lEq.FSILS.RI.suc, &lEq.FSILS.RI.itr, com_mod.R.data(), &lEq.FSILS.RI.mItr, &com_mod.dof, &com_mod.cEq);
-
-#endif
+  #ifdef USE_PETSC
   return;
-
-#endif
-
+  #endif
 
 #ifdef WITH_TRILINOS
 
+#if 0
   if (lEq.useTLS) {
     init_dir_and_coup_neu(com_mod, incL, res);
   }
@@ -330,14 +210,21 @@ void ls_solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vecto
 
 #endif
 
+#endif
+
+// [Note] This is now performed in FsilsLinearAlgebra::solve 
+//
+#if fsils
     auto& lhs = com_mod.lhs;
     int dof = com_mod.dof;
     auto& R = com_mod.R;      // Residual vector
     auto& Val = com_mod.Val;  // LHS matrix
 
     fsi_linear_solver::fsils_solve(lhs, lEq.FSILS, dof, R, Val, lEq.ls.PREC_Type, incL, res);
+#endif
 
 #ifdef WITH_TRILINOS
+#if 0
   }
 
   if (lEq.useTLS) {
@@ -347,6 +234,7 @@ void ls_solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vecto
       }
     } 
   }
+#endif
 #endif
 }
 
