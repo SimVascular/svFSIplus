@@ -60,7 +60,14 @@ PetscLinearAlgebra::PetscLinearAlgebra()
   #else
   impl = new PetscLinearAlgebra::PetscImpl();
   interface_type = LinearAlgebraType::petsc; 
+  assembly_type = LinearAlgebraType::none;
+  preconditioner_type = consts::PreconditionerType::PREC_NONE;
   #endif
+}
+
+void PetscLinearAlgebra::assemble(ComMod& com_mod, const int num_elem_nodes, const Vector<int>& eqN, 
+    const Array3<double>& lK, const Array<double>& lR)
+{
 }
 
 void PetscLinearAlgebra::initialize(ComMod& com_mod)
@@ -69,7 +76,25 @@ void PetscLinearAlgebra::initialize(ComMod& com_mod)
   impl->initialize(com_mod);
 }
 
+void PetscLinearAlgebra::set_assembly(LinearAlgebraType atype)
+{
+  assembly_type = atype;
+}
+
+
+void PetscLinearAlgebra::set_preconditioner(consts::PreconditionerType prec_type)
+{
+  preconditioner_type = prec_type;
+}
+
+
 void PetscLinearAlgebra::solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res)
+{
+  std::cout << "[PetscLinearAlgebra] ---------- solve ---------- " << std::endl;
+  impl->solve(com_mod, lEq, incL, res);
+}
+
+void PetscLinearAlgebra::solve_assembled(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res)
 {
   std::cout << "[PetscLinearAlgebra] ---------- solve ---------- " << std::endl;
   impl->solve(com_mod, lEq, incL, res);

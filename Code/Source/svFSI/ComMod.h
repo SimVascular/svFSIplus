@@ -56,6 +56,8 @@
 #include <string>
 #include <vector>
 
+class LinearAlgebra;
+
 /// @brief Fourier coefficients that are used to specify unsteady BCs
 //
 class fcType
@@ -1069,6 +1071,9 @@ class eqType
 
     /// @brief type of linear solver
     lsType ls;
+
+    /// @brief Interface to a numerical linear algebra library.
+    LinearAlgebra* linear_algebra;
 
     /// @brief FSILS type of linear solver
     fsi_linear_solver::FSILS_lsType FSILS;

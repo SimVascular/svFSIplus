@@ -1967,6 +1967,12 @@ void read_ls(Simulation* simulation, EquationParameters* eq_params, consts::Solv
   using namespace consts;
   using namespace fsi_linear_solver;
 
+  #define debug_read_ls
+  #ifdef debug_read_ls
+  DebugMsg dmsg(__func__, simulation->com_mod.cm.idcm());
+  dmsg.banner();
+  #endif
+
   // Map SolverType to LinearSolverType enums.
   static std::map<SolverType,LinearSolverType> solver_to_ls_map = {
     {SolverType::lSolver_NS, LinearSolverType::LS_TYPE_NS},
@@ -1980,6 +1986,9 @@ void read_ls(Simulation* simulation, EquationParameters* eq_params, consts::Solv
   SolverType solver_type;
   LinearSolverType FSILSType;
   bool solver_type_defined = eq_params->linear_solver.type.defined();
+  #ifdef debug_read_ls
+  dmsg << "solver_type_defined: " << solver_type_defined;
+  #endif
 
   if (solver_type_defined) {
     auto solver_str = eq_params->linear_solver.type.value();
@@ -1996,6 +2005,9 @@ void read_ls(Simulation* simulation, EquationParameters* eq_params, consts::Solv
   FSILSType = solver_to_ls_map[solver_type];
   for (auto entry : solver_name_to_type) {
     if (solver_type == entry.second) {
+      #ifdef debug_read_ls
+      dmsg << "solver_type: " << entry.first;
+      #endif
       break;
     }
   }
@@ -2003,13 +2015,32 @@ void read_ls(Simulation* simulation, EquationParameters* eq_params, consts::Solv
   // Set linear solver parameters.
   //
   lEq.ls.LS_type = solver_type;
-
   fsi_linear_solver::fsils_ls_create(lEq.FSILS, FSILSType);
+
+  // Process Linear_algebra parameters.
+  //
+  auto& linear_algebra = eq_params->linear_solver.linear_algebra;
+  #ifdef debug_read_ls
+  dmsg << "linear_algebra.defined: " << linear_algebra.defined();
+  dmsg << "linear_algebra.type: " << linear_algebra.type();
+  dmsg << "linear_algebra.preconditioner: " << linear_algebra.preconditioner();
+  #endif
+  auto lin_alg_type = LinearAlgebra::name_to_type.at(linear_algebra.type());
+  lEq.linear_algebra = LinearAlgebraFactory::create_interface(lin_alg_type);
+  lEq.linear_algebra->initialize(simulation->com_mod);
 
   // Set preconditioner type.
   //
+  auto prec_type = consts::preconditioner_name_to_type.at(linear_algebra.preconditioner());
+  lEq.linear_algebra->set_preconditioner(prec_type);
   lEq.ls.PREC_Type = PreconditionerType::PREC_FSILS;
 
+  // Set assembly type.
+  //
+  auto assembly_type = LinearAlgebra::name_to_type.at(linear_algebra.assembly()); 
+  lEq.linear_algebra->set_assembly(assembly_type);
+
+  /*
   #ifdef WITH_TRILINOS
   if (FSILSType == LinearSolverType::LS_TYPE_NS) {
     lEq.ls.PREC_Type = PreconditionerType::PREC_FSILS;
@@ -2018,6 +2049,10 @@ void read_ls(Simulation* simulation, EquationParameters* eq_params, consts::Solv
     lEq.ls.PREC_Type = PreconditionerType::PREC_TRILINOS_DIAGONAL;
   }
   #endif
+
+  lEq.ls.PREC_Type = PreconditionerType::PREC_FSILS;
+  lEq.useTLS = false; 
+  */
 
   if (!solver_type_defined) {
     return;
@@ -2029,9 +2064,8 @@ void read_ls(Simulation* simulation, EquationParameters* eq_params, consts::Solv
     auto precon_str = linear_solver.preconditioner.value();
     std::transform(precon_str.begin(), precon_str.end(), precon_str.begin(), ::tolower);
     try {
-      auto precon_entry = preconditioner_name_to_type.at(precon_str);
-      lEq.ls.PREC_Type = precon_entry.first; 
-      lEq.useTLS = precon_entry.second;
+      lEq.ls.PREC_Type = preconditioner_name_to_type.at(precon_str);
+      //lEq.useTLS = precon_entry.second;
     } catch (const std::out_of_range& exception) {
       throw std::runtime_error("Unknown preconditioner '" + precon_str + ".");
     }
@@ -2039,12 +2073,14 @@ void read_ls(Simulation* simulation, EquationParameters* eq_params, consts::Solv
     //lEq.useTLS = use_trilinos;
   }
 
+  /*
   if (lEq.useTLS) {
     lEq.assmTLS = linear_solver.use_trilinos_for_assembly.value();
     if (lEq.assmTLS && simulation->com_mod.ibFlag) {
       throw std::runtime_error("Cannot assemble immersed bodies using Trilinos");
     } 
   } 
+  */
 
   lEq.ls.mItr = linear_solver.max_iterations.value();
   lEq.FSILS.RI.mItr = lEq.ls.mItr;

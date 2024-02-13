@@ -49,7 +49,8 @@
 
 namespace fsi {
 
-void construct_fsi(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Array<double>& Ag, const Array<double>& Yg, const Array<double>& Dg)
+void construct_fsi(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Array<double>& Ag, 
+    const Array<double>& Yg, const Array<double>& Dg)
 {
   #define n_debug_construct_fsi 
   #ifdef debug_construct_fsi
@@ -319,6 +320,11 @@ void construct_fsi(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Ar
     } // g: loop
 
     // Assembly
+std::cout << "####################### Assembly ##############" << std::endl;
+
+    eq.linear_algebra->assemble(com_mod, eNoN, ptr, lK, lR);
+
+#if 0
 #ifdef WITH_TRILINOS
     if (eq.assmTLS) {
       if (cPhys == Equation_ustruct) {
@@ -331,11 +337,14 @@ void construct_fsi(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Ar
         //CALL USTRUCT_DOASSEM(eNoN, ptr, lKd, lK, lR)
         throw std::runtime_error("[construct_fsi] USTRUCT_DOASSEM not implemented");
       } else {
-        lhsa_ns::do_assem(com_mod, eNoN, ptr, lK, lR);
+        eq.linear_algebra->assemble((com_mod, eNoN, ptr, lK, lR);
+        //lhsa_ns::do_assem(com_mod, eNoN, ptr, lK, lR);
       }
 #ifdef WITH_TRILINOS
     }
 #endif
+#endif
+
   } // e: loop
 
   #ifdef debug_construct_fsi

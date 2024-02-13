@@ -2162,13 +2162,16 @@ LinearAlgebraParameters::LinearAlgebraParameters()
   // A parameter that must be defined.
   bool required = true;
 
-  type = Parameter<std::string>("type", "fsils", required);
+  auto alg_type = LinearAlgebra::type_to_name.at(LinearAlgebraType::fsils);
+  type = Parameter<std::string>("type", alg_type, required);
 
   set_parameter("Configuration_file", "", !required, configuration_file);
-  set_parameter("Preconditioner", "", !required, preconditioner);
-  set_parameter("Use_trilinos_assembly", false, !required, use_trilinos_assembly);
-  set_parameter("Use_trilinos_preconditioner", false, !required, use_trilinos_preconditioner);
-  set_parameter("Trilinos_preconditioner", "", !required, trilinos_preconditioner);
+
+  auto prec_type = consts::preconditioner_type_to_name.at(consts::PreconditionerType::PREC_FSILS);
+  set_parameter("Preconditioner", prec_type, !required, preconditioner);
+
+  auto assemble_type = LinearAlgebra::type_to_name.at(LinearAlgebraType::none);
+  set_parameter("Assembly", assemble_type, !required, assembly);
 }
 
 void LinearAlgebraParameters::print_parameters()
@@ -2215,6 +2218,26 @@ void LinearAlgebraParameters::set_values(tinyxml2::XMLElement* xml_elem)
       
   // Parse XML and set parameter values.
   xml_util_set_parameters(ftpr, xml_elem, error_msg);
+
+  // Check preconditioner type.
+  if (consts::preconditioner_name_to_type.count(preconditioner.value()) == 0) {
+    std::string valid_types = "";
+    std::for_each(consts::preconditioner_name_to_type.begin(), consts::preconditioner_name_to_type.end(),
+        [&valid_types](std::pair<const std::string, const consts::PreconditionerType> p) {valid_types += p.first+" ";});
+    throw std::runtime_error("Unknown TYPE '" + preconditioner() + 
+        "' given in the XML <Linear_algebra> <Preconditioner> element.\nValid types are: " + valid_types);
+  }     
+
+  if (LinearAlgebra::name_to_type.count(assembly()) == 0) {
+    std::string valid_types = "";
+    std::for_each(LinearAlgebra::name_to_type.begin(), LinearAlgebra::name_to_type.end(),
+        [&valid_types](std::pair<const std::string, const LinearAlgebraType> p) {valid_types += p.first+" ";});
+    throw std::runtime_error("Unknown type '" + assembly() +
+        "' given in the XML <Linear_algebra> <Assembly> element.\nValid types are: " + valid_types);
+  }
+
+
+  values_set_ = true;
 }
 
 //////////////////////////////////////////////////////////
@@ -2249,8 +2272,6 @@ LinearSolverParameters::LinearSolverParameters()
   set_parameter("Preconditioner", "", !required, preconditioner);
 
   set_parameter("Tolerance", 0.5, !required, tolerance);
-
-  set_parameter("Use_trilinos_for_assembly", false, !required, use_trilinos_for_assembly);
 }
 
 void LinearSolverParameters::print_parameters()

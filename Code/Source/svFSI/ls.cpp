@@ -148,12 +148,7 @@ void ls_alloc(ComMod& com_mod, eqType& lEq)
   int gtnNo = com_mod.gtnNo;
   auto& lhs = com_mod.lhs;
 
-  com_mod.R.resize(dof,tnNo);
-
-  if (!lEq.assmTLS) {
-    com_mod.Val.resize(dof*dof, com_mod.lhs.nnz);
-  }
-
+  lEq.linear_algebra->alloc(com_mod, lEq);
 }
 
 /// @brief Modifies:    
@@ -164,7 +159,7 @@ void ls_alloc(ComMod& com_mod, eqType& lEq)
 //
 void ls_solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res) 
 {
-  #define n_debug_ls_solve
+  #define debug_ls_solve
   #ifdef debug_ls_solve 
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
@@ -172,6 +167,8 @@ void ls_solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vecto
   dmsg << "lEq.useTLS: " << lEq.useTLS;
   dmsg << "lEq.assmTLS: " << lEq.assmTLS;
   #endif
+
+  lEq.linear_algebra->solve(com_mod, lEq, incL, res);
 
   #ifdef USE_PETSC
   return;

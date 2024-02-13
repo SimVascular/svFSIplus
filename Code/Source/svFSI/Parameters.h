@@ -842,14 +842,14 @@ class LinearAlgebraParameters : public ParameterLists
     LinearAlgebraParameters();
     void print_parameters();
     void set_values(tinyxml2::XMLElement* fsi_file);
+    bool defined() const { return values_set_; };
 
+    bool values_set_ = false;
     Parameter<std::string> type;
 
+    Parameter<std::string> assembly;
     Parameter<std::string> configuration_file;
     Parameter<std::string> preconditioner;
-    Parameter<bool> use_trilinos_assembly;
-    Parameter<bool> use_trilinos_preconditioner;
-    Parameter<std::string> trilinos_preconditioner;
 };
 
 /// @brief The LinearSolverParameters class stores parameters for
@@ -878,8 +878,6 @@ class LinearSolverParameters : public ParameterLists
     Parameter<std::string> preconditioner;
 
     Parameter<double> tolerance;
-
-    Parameter<bool> use_trilinos_for_assembly;
 
     LinearAlgebraParameters linear_algebra;
 };

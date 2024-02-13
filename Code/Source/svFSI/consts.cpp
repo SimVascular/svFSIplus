@@ -216,38 +216,32 @@ const std::set<PreconditionerType> trilinos_preconditioners = {
 
 /// @brief Map for preconditioner type string to PreconditionerType enum
 //
-const std::map<std::string,PreconditionerMapType> preconditioner_name_to_type =
+const std::map<std::string,PreconditionerType> preconditioner_name_to_type =
 {
-  {"fsils", std::make_pair(PreconditionerType::PREC_FSILS,false)},
-  {"svfsi", std::make_pair(PreconditionerType::PREC_FSILS,false)},
+  {"fsils", PreconditionerType::PREC_FSILS},
 
-  {"rcs", std::make_pair(PreconditionerType::PREC_RCS,false)},
-  {"row-column-scaling", std::make_pair(PreconditionerType::PREC_RCS,false)},
+  {"row-column-scaling", PreconditionerType::PREC_RCS},
 
-  {"trilinos-diagonal", std::make_pair(PreconditionerType::PREC_TRILINOS_DIAGONAL,true)},
+  {"trilinos-diagonal", PreconditionerType::PREC_TRILINOS_DIAGONAL},
 
-  {"trilinos-blockjacobi", std::make_pair(PreconditionerType::PREC_TRILINOS_BLOCK_JACOBI,true)},
-  {"blockjacobi", std::make_pair(PreconditionerType::PREC_TRILINOS_BLOCK_JACOBI,true)},
+  {"trilinos-blockjacobi", PreconditionerType::PREC_TRILINOS_BLOCK_JACOBI},
 
-  {"trilinos-ilu", std::make_pair(PreconditionerType::PREC_TRILINOS_ILU,true)},
-  {"trilinos-ilut", std::make_pair(PreconditionerType::PREC_TRILINOS_ILUT,true)},
+  {"trilinos-ilu", PreconditionerType::PREC_TRILINOS_ILU},
+  {"trilinos-ilut", PreconditionerType::PREC_TRILINOS_ILUT},
 
-  {"trilinos-ic", std::make_pair(PreconditionerType::PREC_TRILINOS_IC,true)},
-  {"trilinos-ict", std::make_pair(PreconditionerType::PREC_TRILINOS_ICT,true)},
+  {"trilinos-ic", PreconditionerType::PREC_TRILINOS_IC},
+  {"trilinos-ict", PreconditionerType::PREC_TRILINOS_ICT},
 
-  {"trilinos-ml", std::make_pair(PreconditionerType::PREC_TRILINOS_ML,true)}
-
+  {"trilinos-ml", PreconditionerType::PREC_TRILINOS_ML}
 };
 
 /// @brief Map for PreconditionerType enum to a string name.
 //
 const std::map<PreconditionerType, std::string> preconditioner_type_to_name {
   {PreconditionerType::PREC_FSILS, "fsils"}, 
-  {PreconditionerType::PREC_RCS, "rcs"},
   {PreconditionerType::PREC_RCS, "row-column-scaling"}, 
   {PreconditionerType::PREC_TRILINOS_DIAGONAL, "trilinos-diagonal"}, 
   {PreconditionerType::PREC_TRILINOS_BLOCK_JACOBI, "trilinos-blockjacobi"}, 
-  {PreconditionerType::PREC_TRILINOS_BLOCK_JACOBI, "blockjacobi"},
   {PreconditionerType::PREC_TRILINOS_ILU, "trilinos-ilu"}, 
   {PreconditionerType::PREC_TRILINOS_ILUT, "trilinos-ilut"}, 
   {PreconditionerType::PREC_TRILINOS_IC, "trilinos-ic"}, 

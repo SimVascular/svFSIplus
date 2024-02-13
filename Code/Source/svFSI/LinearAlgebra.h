@@ -33,12 +33,21 @@
 
 #include "ComMod.h"
 
+//-------------------
+// LinearAlgebraType
+//-------------------
+//
 enum class LinearAlgebraType {
+  none,
   fsils,
   petsc,
   trilinos
 };
 
+//---------------
+// LinearAlgebra
+//---------------
+//
 class LinearAlgebra {
   public:
     static const std::map<std::string, LinearAlgebraType> name_to_type;
@@ -47,10 +56,19 @@ class LinearAlgebra {
     LinearAlgebra();
     virtual ~LinearAlgebra() { };
     virtual void alloc(ComMod& com_mod, eqType& lEq) = 0;
+    virtual void assemble(ComMod& com_mod, const int num_elem_nodes, const Vector<int>& eqN, 
+        const Array3<double>& lK, const Array<double>& lR) = 0;
     virtual void initialize(ComMod& com_mod) = 0;
+    virtual void set_assembly(LinearAlgebraType assembly_type) = 0;
+    virtual void set_preconditioner(consts::PreconditionerType prec_type) = 0;
     virtual void solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res) = 0;
+    virtual void solve_assembled(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res) = 0;
+
     virtual LinearAlgebraType get_interface_type() { return interface_type; }
-    LinearAlgebraType interface_type;
+
+    LinearAlgebraType interface_type = LinearAlgebraType::none;
+    LinearAlgebraType assembly_type = LinearAlgebraType::none;
+    consts::PreconditionerType preconditioner_type = consts::PreconditionerType::PREC_NONE;
 };
 
 class LinearAlgebraFactory {

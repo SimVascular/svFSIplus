@@ -1095,9 +1095,14 @@ class TrilinosLinearAlgebra::TrilinosImpl {
   public:
     TrilinosImpl();
     void alloc(ComMod& com_mod, eqType& lEq);
+    void assemble(ComMod& com_mod, const int num_elem_nodes, const Vector<int>& eqN,
+        const Array3<double>& lK, const Array<double>& lR);
     void initialize(ComMod& com_mod);
     void solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res);
+    void solve_assembled(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res);
     void init_dir_and_coup_neu(ComMod& com_mod, const Vector<int>& incL, const Vector<double>& res);
+
+    consts::PreconditionerType preconditioner_;
 
     /// @brief Local to global mapping
     Vector<int> ltg_;
@@ -1145,6 +1150,16 @@ void TrilinosLinearAlgebra::TrilinosImpl::alloc(ComMod& com_mod, eqType& lEq)
       com_mod.colPtr.data(), dof, cpp_index, task_id);
 
   //std::cout << "[TrilinosImpl.alloc] Done " << std::endl;
+}
+
+//----------
+// assemble
+//----------
+//
+void TrilinosLinearAlgebra::TrilinosImpl::assemble(ComMod& com_mod, const int num_elem_nodes, const Vector<int>& eqN,
+        const Array3<double>& lK, const Array<double>& lR)
+{
+  trilinos_doassem_(const_cast<int&>(num_elem_nodes), eqN.data(), lK.data(), lR.data());
 }
 
 //-----------------------
@@ -1249,18 +1264,18 @@ void TrilinosLinearAlgebra::TrilinosImpl::initialize(ComMod& com_mod)
 //
 void TrilinosLinearAlgebra::TrilinosImpl::solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res)
 {
-  //std::cout << "[TrilinosImpl] ---------- solve ---------- " << std::endl;
+  std::cout << "[TrilinosImpl] ---------- TrilinosImpl solve ---------- " << std::endl;
 
   init_dir_and_coup_neu(com_mod, incL, res);
 
   auto& Val = com_mod.Val;
   auto& R = com_mod.R;
   int solver_type = static_cast<int>(lEq.ls.LS_type);
-  int prec_type = static_cast<int>(lEq.ls.PREC_Type);
-  //std::cout << "[TrilinosImpl.solve] solver_type: " << solver_type << std::endl;
-  //std::cout << "[TrilinosImpl.solve] prec_type: " << prec_type << std::endl;
+  int prec_type = static_cast<int>(preconditioner_);
+  std::cout << "[TrilinosImpl.solve] solver_type: " << solver_type << std::endl;
+  std::cout << "[TrilinosImpl.solve] prec_type: " << prec_type << std::endl;
 
-  if (consts::trilinos_preconditioners.count(lEq.ls.PREC_Type) == 0) {
+  if (consts::trilinos_preconditioners.count(preconditioner_) == 0) {
     auto prec_name = consts::preconditioner_type_to_name.at(lEq.ls.PREC_Type); 
     throw std::runtime_error("[TrilinosLinearAlgebra] '" + prec_name + "' is not a valid Trilinos preconditioner.");
   }
@@ -1274,8 +1289,35 @@ void TrilinosLinearAlgebra::TrilinosImpl::solve(ComMod& com_mod, eqType& lEq, co
       com_mod.R(i,a) = R_(i,com_mod.lhs.map(a));
     }
   } 
+}
+
+void TrilinosLinearAlgebra::TrilinosImpl::solve_assembled(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res)
+{
+  std::cout << "[TrilinosImpl] ---------- TrilinosImpl solve_assembled ---------- " << std::endl;
+
+  lEq.FSILS.RI.suc = false; 
+  auto& R = com_mod.R;
+  int solver_type = static_cast<int>(lEq.ls.LS_type);
+  int prec_type = static_cast<int>(preconditioner_);
+  bool assembled = true;
+  std::cout << "[TrilinosImpl.solve_assembled] R_.size(): " << R_.size() << std::endl;
+  std::cout << "[TrilinosImpl.solve_assembled] W_.size(): " << W_.size() << std::endl;
+  std::cout << "[TrilinosImpl.solve_assembled] solver_type: " << solver_type << std::endl;
+  std::cout << "[TrilinosImpl.solve_assembled] prec_type: " << prec_type << std::endl;
+
+  if (consts::trilinos_preconditioners.count(preconditioner_) == 0) {
+    auto prec_name = consts::preconditioner_type_to_name.at(lEq.ls.PREC_Type); 
+    throw std::runtime_error("[TrilinosLinearAlgebra] '" + prec_name + "' is not a valid Trilinos preconditioner.");
+  }
+
+  trilinos_solve_(R_.data(), W_.data(), lEq.FSILS.RI.fNorm, lEq.FSILS.RI.iNorm, 
+      lEq.FSILS.RI.itr, lEq.FSILS.RI.callD, lEq.FSILS.RI.dB, lEq.FSILS.RI.suc, 
+      solver_type, lEq.FSILS.RI.relTol, lEq.FSILS.RI.mItr, lEq.FSILS.RI.sD, 
+      prec_type, assembled);
 
 }
+
+ 
 
  
 

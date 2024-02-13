@@ -307,10 +307,6 @@ void iterate_solution(Simulation* simulation)
       dmsg << "Allocating the RHS and LHS"  << std::endl;
       #endif
 
-      if (simulation->linear_algebra) {  
-        simulation->linear_algebra->alloc(com_mod, eq);
-      }
-
       ls_ns::ls_alloc(com_mod, eq);
 
       // Compute body forces. If phys is shells or CMM (init), apply
@@ -471,11 +467,7 @@ void iterate_solution(Simulation* simulation)
       dmsg << "Solving equation: " << eq.sym; 
       #endif
 
-      if (simulation->linear_algebra) { 
-        simulation->linear_algebra->solve(com_mod, eq, incL, res);
-      } else {
-        ls_ns::ls_solve(com_mod, eq, incL, res);
-      }
+      ls_ns::ls_solve(com_mod, eq, incL, res);
 
       com_mod.Val.write("Val_solve"+ istr);
       com_mod.R.write("R_solve"+ istr);
@@ -728,17 +720,6 @@ int main(int argc, char *argv[])
     dmsg << "Initialize " << " ... ";
     #endif
     initialize(simulation, init_time);
-
-    #ifdef USE_PETSC
-    std::cout << "[initialize] Create PETSc linear solver. " << std::endl;
-    simulation->linear_algebra = LinearAlgebraFactory::create_interface(LinearAlgebraType::petsc);
-    simulation->linear_algebra->initialize(simulation->com_mod);
-    #elif WITH_TRILINOS
-    simulation->linear_algebra = LinearAlgebraFactory::create_interface(LinearAlgebraType::trilinos);
-    simulation->linear_algebra->initialize(simulation->com_mod);
-    #else
-    simulation->linear_algebra = LinearAlgebraFactory::create_interface(LinearAlgebraType::fsils);
-    #endif
 
     #ifdef debug_main
     for (int iM = 0; iM < simulation->com_mod.nMsh; iM++) {

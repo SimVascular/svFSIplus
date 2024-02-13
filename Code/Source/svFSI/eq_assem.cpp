@@ -323,7 +323,8 @@ void b_neu_folw_p(ComMod& com_mod, const faceType& lFa, const Vector<double>& hg
 ///
 /// Ag(tDof,tnNo), Yg(tDof,tnNo), Dg(tDof,tnNo)
 //
-void global_eq_assem(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Array<double>& Ag, const Array<double>& Yg, const Array<double>& Dg)
+void global_eq_assem(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Array<double>& Ag, 
+    const Array<double>& Yg, const Array<double>& Dg)
 {
   #define n_debug_global_eq_assem
   #ifdef debug_global_eq_assem

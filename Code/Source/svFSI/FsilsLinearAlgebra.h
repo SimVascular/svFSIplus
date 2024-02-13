@@ -45,11 +45,21 @@ class FsilsLinearAlgebra : public virtual LinearAlgebra {
     FsilsLinearAlgebra();
     ~FsilsLinearAlgebra() { };
 
-    virtual void alloc(ComMod& com_mod, eqType& lEq) {};
+    virtual void alloc(ComMod& com_mod, eqType& lEq);
+    virtual void assemble(ComMod& com_mod, const int num_elem_nodes, const Vector<int>& eqN,
+        const Array3<double>& lK, const Array<double>& lR);
     virtual void initialize(ComMod& com_mod);
     virtual void solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res);
+    virtual void solve_assembled(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res);
+    virtual void set_assembly(LinearAlgebraType atype);
+    virtual void set_preconditioner(consts::PreconditionerType prec_type);
 
   private:
+    void initialize_trilinos(ComMod& com_mod, eqType& lEq);
+    bool use_trilinos_preconditioner = false;
+    bool use_trilinos_assembly = false;
+    LinearAlgebra* trilinos_solver = nullptr;
+    bool assembly_set = false;
     // Private class used to hide FSILS implementation details.
     class FsilsImpl;
     FsilsImpl* impl = nullptr;
