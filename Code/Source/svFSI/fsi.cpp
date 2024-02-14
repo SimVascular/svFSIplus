@@ -320,8 +320,7 @@ void construct_fsi(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Ar
     } // g: loop
 
     // Assembly
-std::cout << "####################### Assembly ##############" << std::endl;
-
+    std::cout << "[construct_fsi] >>>>> linear_algebra->assemble " << std::endl;
     eq.linear_algebra->assemble(com_mod, eNoN, ptr, lK, lR);
 
 #if 0

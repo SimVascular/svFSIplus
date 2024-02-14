@@ -59,7 +59,7 @@ namespace eq_assem {
 
 void b_assem_neu_bc(ComMod& com_mod, const faceType& lFa, const Vector<double>& hg, const Array<double>& Yg) 
 {
-  #define n_debug_b_assem_neu_bc
+  #define debug_b_assem_neu_bc
   #ifdef debug_b_assem_neu_bc
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();

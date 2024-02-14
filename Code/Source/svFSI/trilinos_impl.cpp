@@ -342,6 +342,10 @@ void trilinos_lhs_create_(unsigned &numGlobalNodes, unsigned &numLocalNodes,
 void trilinos_doassem_(int &numNodesPerElement, const int *eqN,
         const double *lK, double *lR)
 {
+  std::cout << "[trilinos_doassem_] ========== trilinos_doassem_ ===========" << std::endl;
+  std::cout << "[trilinos_doassem_] dof: " << dof << std::endl;
+  std::cout << "[trilinos_doassem_] numNodesPerElement: " << numNodesPerElement << std::endl;
+
   //dof values per global ID in the force vector
   int numValuesPerID = dof;
 
@@ -411,7 +415,7 @@ void trilinos_doassem_(int &numNodesPerElement, const int *eqN,
     error = Trilinos::K->EndSubmitEntries();
     if (error != 0)
     {
-      std::cout << "ERROR: End submitting block entries!" << std::endl;
+      std::cout << "[trilinos_doassem_] ERROR: End submitting block entries!" << std::endl;
       exit(1);
     }
   }
