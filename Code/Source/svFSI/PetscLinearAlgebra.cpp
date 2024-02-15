@@ -59,8 +59,8 @@ PetscLinearAlgebra::PetscLinearAlgebra()
   throw std::runtime_error("[PetscLinearAlgebra] There is no PETSc interface.");
   #else
   impl = new PetscLinearAlgebra::PetscImpl();
-  interface_type = LinearAlgebraType::petsc; 
-  assembly_type = LinearAlgebraType::none;
+  interface_type = consts::LinearAlgebraType::petsc; 
+  assembly_type = consts::LinearAlgebraType::none;
   preconditioner_type = consts::PreconditionerType::PREC_NONE;
   #endif
 }
@@ -76,7 +76,7 @@ void PetscLinearAlgebra::initialize(ComMod& com_mod)
   impl->initialize(com_mod);
 }
 
-void PetscLinearAlgebra::set_assembly(LinearAlgebraType atype)
+void PetscLinearAlgebra::set_assembly(consts::LinearAlgebraType atype)
 {
   assembly_type = atype;
 }

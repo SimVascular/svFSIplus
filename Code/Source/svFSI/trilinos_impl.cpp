@@ -339,8 +339,7 @@ void trilinos_lhs_create_(unsigned &numGlobalNodes, unsigned &numLocalNodes,
  * \param lR                 element local force vector of size
  *                           (dof, numNodesPerElement)
  */
-void trilinos_doassem_(int &numNodesPerElement, const int *eqN,
-        const double *lK, double *lR)
+void trilinos_doassem_(int &numNodesPerElement, const int *eqN, const double *lK, double *lR)
 {
   std::cout << "[trilinos_doassem_] ========== trilinos_doassem_ ===========" << std::endl;
   std::cout << "[trilinos_doassem_] dof: " << dof << std::endl;
@@ -352,9 +351,8 @@ void trilinos_doassem_(int &numNodesPerElement, const int *eqN,
   //converts eqN in local proc values to global values
   std::vector<int> localToGlobal(numNodesPerElement);
 
-  //subtract 1 since eqN is 1 based and C is 0 based indexing
   for (int i = 0; i < numNodesPerElement; ++i)
-    localToGlobal[i] = localToGlobalUnsorted[eqN[i] - 1];
+    localToGlobal[i] = localToGlobalUnsorted[eqN[i]];
 
   //loop over local nodes on the element
   for (int a = 0; a < numNodesPerElement; ++a)
@@ -1129,19 +1127,21 @@ TrilinosLinearAlgebra::TrilinosImpl::TrilinosImpl()
 //
 void TrilinosLinearAlgebra::TrilinosImpl::alloc(ComMod& com_mod, eqType& lEq) 
 {
-  //std::cout << "[TrilinosImpl] ---------- alloc ---------- " << std::endl;
+  std::cout << "[TrilinosImpl] ---------- alloc ---------- " << std::endl;
   int dof = com_mod.dof;
   int tnNo = com_mod.tnNo;
   int gtnNo = com_mod.gtnNo;
   auto& lhs = com_mod.lhs;
-  //std::cout << "[TrilinosImpl.alloc] dof: " << dof << std::endl;
-  //std::cout << "[TrilinosImpl.alloc] tnNo: " << tnNo << std::endl;
-  //std::cout << "[TrilinosImpl.alloc] gtnNo: " << gtnNo << std::endl;
-  //std::cout << "[TrilinosImpl.alloc] ltg_.size(): " << ltg_.size() << std::endl;
+  std::cout << "[TrilinosImpl.alloc] dof: " << dof << std::endl;
+  std::cout << "[TrilinosImpl.alloc] tnNo: " << tnNo << std::endl;
+  std::cout << "[TrilinosImpl.alloc] gtnNo: " << gtnNo << std::endl;
+  std::cout << "[TrilinosImpl.alloc] ltg_.size(): " << ltg_.size() << std::endl;
 
-  W_.clear();
-  R_.clear();
-  trilinos_lhs_free_();
+  if (W_.size() != 0) {
+    W_.clear();
+    R_.clear();
+    trilinos_lhs_free_();
+  }
 
   W_.resize(dof,tnNo); 
   R_.resize(dof,tnNo);
@@ -1245,6 +1245,7 @@ void TrilinosLinearAlgebra::TrilinosImpl::init_dir_and_coup_neu(ComMod& com_mod,
   }
 
   trilinos_bc_create_(v.data(), isCoupledBC);
+
 }
 
 //------------
@@ -1300,7 +1301,6 @@ void TrilinosLinearAlgebra::TrilinosImpl::solve_assembled(ComMod& com_mod, eqTyp
   std::cout << "[TrilinosImpl] ---------- TrilinosImpl solve_assembled ---------- " << std::endl;
 
   lEq.FSILS.RI.suc = false; 
-  auto& R = com_mod.R;
   int solver_type = static_cast<int>(lEq.ls.LS_type);
   int prec_type = static_cast<int>(preconditioner_);
   bool assembled = true;
@@ -1308,16 +1308,25 @@ void TrilinosLinearAlgebra::TrilinosImpl::solve_assembled(ComMod& com_mod, eqTyp
   std::cout << "[TrilinosImpl.solve_assembled] W_.size(): " << W_.size() << std::endl;
   std::cout << "[TrilinosImpl.solve_assembled] solver_type: " << solver_type << std::endl;
   std::cout << "[TrilinosImpl.solve_assembled] prec_type: " << prec_type << std::endl;
+  std::cout << "[TrilinosImpl.solve_assembled] lEq.FSILS.RI.suc: " << lEq.FSILS.RI.suc << std::endl;
 
   if (consts::trilinos_preconditioners.count(preconditioner_) == 0) {
     auto prec_name = consts::preconditioner_type_to_name.at(lEq.ls.PREC_Type); 
     throw std::runtime_error("[TrilinosLinearAlgebra] '" + prec_name + "' is not a valid Trilinos preconditioner.");
   }
 
+  init_dir_and_coup_neu(com_mod, incL, res);
+
   trilinos_solve_(R_.data(), W_.data(), lEq.FSILS.RI.fNorm, lEq.FSILS.RI.iNorm, 
       lEq.FSILS.RI.itr, lEq.FSILS.RI.callD, lEq.FSILS.RI.dB, lEq.FSILS.RI.suc, 
       solver_type, lEq.FSILS.RI.relTol, lEq.FSILS.RI.mItr, lEq.FSILS.RI.sD, 
       prec_type, assembled);
+
+  for (int a = 0; a < com_mod.tnNo; a++) {
+    for (int i = 0; i < com_mod.R.nrows(); i++) {
+      com_mod.R(i,a) = R_(i,com_mod.lhs.map(a));
+    }
+  }
 
 }
 

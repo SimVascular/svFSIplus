@@ -32,17 +32,7 @@
 #define LINEAR_ALGEBRA_H 
 
 #include "ComMod.h"
-
-//-------------------
-// LinearAlgebraType
-//-------------------
-//
-enum class LinearAlgebraType {
-  none,
-  fsils,
-  petsc,
-  trilinos
-};
+#include "consts.h"
 
 //---------------
 // LinearAlgebra
@@ -50,8 +40,8 @@ enum class LinearAlgebraType {
 //
 class LinearAlgebra {
   public:
-    static const std::map<std::string, LinearAlgebraType> name_to_type;
-    static const std::map<LinearAlgebraType, std::string> type_to_name;
+    static const std::map<std::string, consts::LinearAlgebraType> name_to_type;
+    static const std::map<consts::LinearAlgebraType, std::string> type_to_name;
 
     LinearAlgebra();
     virtual ~LinearAlgebra() { };
@@ -59,21 +49,21 @@ class LinearAlgebra {
     virtual void assemble(ComMod& com_mod, const int num_elem_nodes, const Vector<int>& eqN, 
         const Array3<double>& lK, const Array<double>& lR) = 0;
     virtual void initialize(ComMod& com_mod) = 0;
-    virtual void set_assembly(LinearAlgebraType assembly_type) = 0;
+    virtual void set_assembly(consts::LinearAlgebraType assembly_type) = 0;
     virtual void set_preconditioner(consts::PreconditionerType prec_type) = 0;
     virtual void solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res) = 0;
     virtual void solve_assembled(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res) = 0;
 
-    virtual LinearAlgebraType get_interface_type() { return interface_type; }
+    virtual consts::LinearAlgebraType get_interface_type() { return interface_type; }
 
-    LinearAlgebraType interface_type = LinearAlgebraType::none;
-    LinearAlgebraType assembly_type = LinearAlgebraType::none;
+    consts::LinearAlgebraType interface_type = consts::LinearAlgebraType::none;
+    consts::LinearAlgebraType assembly_type = consts::LinearAlgebraType::none;
     consts::PreconditionerType preconditioner_type = consts::PreconditionerType::PREC_NONE;
 };
 
 class LinearAlgebraFactory {
   public:
-    static LinearAlgebra* create_interface(LinearAlgebraType interface_type);
+    static LinearAlgebra* create_interface(consts::LinearAlgebraType interface_type);
 };
 
 

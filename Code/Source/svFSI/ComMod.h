@@ -1072,8 +1072,17 @@ class eqType
     /// @brief type of linear solver
     lsType ls;
 
+    /// @brief The type of interface to a numerical linear algebra library.
+    consts::LinearAlgebraType linear_algebra_type;
+
+    /// @brief The type of assembly interface to a numerical linear algebra library.
+    consts::LinearAlgebraType linear_algebra_assembly_type;
+
+    /// @brief The type of preconditioner used by the interface to a numerical linear algebra library.
+    consts::PreconditionerType linear_algebra_preconditioner = consts::PreconditionerType::PREC_FSILS;
+
     /// @brief Interface to a numerical linear algebra library.
-    LinearAlgebra* linear_algebra;
+    LinearAlgebra* linear_algebra = nullptr;
 
     /// @brief FSILS type of linear solver
     fsi_linear_solver::FSILS_lsType FSILS;

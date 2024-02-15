@@ -1967,7 +1967,7 @@ void read_ls(Simulation* simulation, EquationParameters* eq_params, consts::Solv
   using namespace consts;
   using namespace fsi_linear_solver;
 
-  #define debug_read_ls
+  #define n_debug_read_ls
   #ifdef debug_read_ls
   DebugMsg dmsg(__func__, simulation->com_mod.cm.idcm());
   dmsg.banner();
@@ -2019,26 +2019,29 @@ void read_ls(Simulation* simulation, EquationParameters* eq_params, consts::Solv
 
   // Process Linear_algebra parameters.
   //
+  // The LinearAlgebra object in lEq is just used to store
+  // parameters because parameter type (e.g. 
   auto& linear_algebra = eq_params->linear_solver.linear_algebra;
   #ifdef debug_read_ls
   dmsg << "linear_algebra.defined: " << linear_algebra.defined();
   dmsg << "linear_algebra.type: " << linear_algebra.type();
   dmsg << "linear_algebra.preconditioner: " << linear_algebra.preconditioner();
   #endif
-  auto lin_alg_type = LinearAlgebra::name_to_type.at(linear_algebra.type());
-  lEq.linear_algebra = LinearAlgebraFactory::create_interface(lin_alg_type);
-  lEq.linear_algebra->initialize(simulation->com_mod);
+  lEq.linear_algebra_type = LinearAlgebra::name_to_type.at(linear_algebra.type());
+  //lEq.linear_algebra = LinearAlgebraFactory::create_interface(lin_alg_type);
+  //lEq.linear_algebra->initialize(simulation->com_mod);
 
   // Set preconditioner type.
   //
   auto prec_type = consts::preconditioner_name_to_type.at(linear_algebra.preconditioner());
-  lEq.linear_algebra->set_preconditioner(prec_type);
+  lEq.linear_algebra_preconditioner = consts::preconditioner_name_to_type.at(linear_algebra.preconditioner());
+  //lEq.linear_algebra->set_preconditioner(prec_type);
   lEq.ls.PREC_Type = PreconditionerType::PREC_FSILS;
 
   // Set assembly type.
   //
-  auto assembly_type = LinearAlgebra::name_to_type.at(linear_algebra.assembly()); 
-  lEq.linear_algebra->set_assembly(assembly_type);
+  lEq.linear_algebra_assembly_type = LinearAlgebra::name_to_type.at(linear_algebra.assembly()); 
+  //lEq.linear_algebra->set_assembly(assembly_type);
 
   /*
   #ifdef WITH_TRILINOS
@@ -2111,6 +2114,10 @@ void read_ls(Simulation* simulation, EquationParameters* eq_params, consts::Solv
 
     lEq.FSILS.GM.sD = lEq.FSILS.RI.sD;
   } 
+
+  #ifdef debug_read_ls
+  dmsg << "Done " << " ";
+  #endif
 }
 
 //----------------

@@ -33,38 +33,38 @@
 #include "FsilsLinearAlgebra.h"
 #include "TrilinosLinearAlgebra.h"
 
-const std::map<std::string, LinearAlgebraType> LinearAlgebra::name_to_type = {
-  {"none", LinearAlgebraType::none},
-  {"fsils", LinearAlgebraType::fsils},
-  {"petsc", LinearAlgebraType::petsc},
-  {"trilinos", LinearAlgebraType::trilinos}
+const std::map<std::string, consts::LinearAlgebraType> LinearAlgebra::name_to_type = {
+  {"none", consts::LinearAlgebraType::none},
+  {"fsils", consts::LinearAlgebraType::fsils},
+  {"petsc", consts::LinearAlgebraType::petsc},
+  {"trilinos", consts::LinearAlgebraType::trilinos}
 };
 
-const std::map<LinearAlgebraType, std::string> LinearAlgebra::type_to_name = {
-  {LinearAlgebraType::none, "none"},
-  {LinearAlgebraType::fsils, "fsils"},
-  {LinearAlgebraType::petsc, "petsc"},
-  {LinearAlgebraType::trilinos, "trilinos"}
+const std::map<consts::LinearAlgebraType, std::string> LinearAlgebra::type_to_name = {
+  {consts::LinearAlgebraType::none, "none"},
+  {consts::LinearAlgebraType::fsils, "fsils"},
+  {consts::LinearAlgebraType::petsc, "petsc"},
+  {consts::LinearAlgebraType::trilinos, "trilinos"}
 };
 
 LinearAlgebra::LinearAlgebra()
 {
 }
 
-LinearAlgebra* LinearAlgebraFactory::create_interface(LinearAlgebraType interface_type)
+LinearAlgebra* LinearAlgebraFactory::create_interface(consts::LinearAlgebraType interface_type)
 {
   LinearAlgebra* interface = nullptr;
 
   switch (interface_type) {
-    case LinearAlgebraType::fsils:
+    case consts::LinearAlgebraType::fsils:
       interface = new FsilsLinearAlgebra();
     break;
 
-    case LinearAlgebraType::petsc:
+    case consts::LinearAlgebraType::petsc:
       interface = new PetscLinearAlgebra();
     break;
 
-    case LinearAlgebraType::trilinos:
+    case consts::LinearAlgebraType::trilinos:
       interface = new TrilinosLinearAlgebra();
     break;
   }

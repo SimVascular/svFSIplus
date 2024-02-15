@@ -59,7 +59,7 @@ namespace eq_assem {
 
 void b_assem_neu_bc(ComMod& com_mod, const faceType& lFa, const Vector<double>& hg, const Array<double>& Yg) 
 {
-  #define debug_b_assem_neu_bc
+  #define n_debug_b_assem_neu_bc
   #ifdef debug_b_assem_neu_bc
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
@@ -171,6 +171,9 @@ void b_assem_neu_bc(ComMod& com_mod, const faceType& lFa, const Vector<double>& 
 
     // Now doing the assembly part
 
+    eq.linear_algebra->assemble(com_mod, eNoN, ptr, lK, lR);
+
+#if 0
 #ifdef WITH_TRILINOS
     if (eq.assmTLS) {
       trilinos_doassem_(const_cast<int&>(eNoN), ptr.data(), lK.data(), lR.data());
@@ -179,6 +182,7 @@ void b_assem_neu_bc(ComMod& com_mod, const faceType& lFa, const Vector<double>& 
     }
 #else
     lhsa_ns::do_assem(com_mod, eNoN, ptr, lK, lR);
+#endif
 #endif
   }
 }

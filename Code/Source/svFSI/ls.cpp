@@ -148,6 +148,8 @@ void ls_alloc(ComMod& com_mod, eqType& lEq)
   int gtnNo = com_mod.gtnNo;
   auto& lhs = com_mod.lhs;
 
+  com_mod.R.resize(dof,tnNo);
+
   lEq.linear_algebra->alloc(com_mod, lEq);
 }
 
@@ -159,7 +161,7 @@ void ls_alloc(ComMod& com_mod, eqType& lEq)
 //
 void ls_solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res) 
 {
-  #define debug_ls_solve
+  #define n_debug_ls_solve
   #ifdef debug_ls_solve 
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();

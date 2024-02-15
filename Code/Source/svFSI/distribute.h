@@ -33,6 +33,8 @@
 #ifndef DISTRIBUTE_H
 #define DISTRIBUTE_H
 
+void add_eq_linear_algebra(ComMod& com_mod, eqType& lEq);
+
 void distribute(Simulation* simulation);
 
 void dist_bc(ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, bcType& lBc, const std::vector<mshType>& tMs,

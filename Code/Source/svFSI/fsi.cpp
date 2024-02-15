@@ -320,29 +320,7 @@ void construct_fsi(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Ar
     } // g: loop
 
     // Assembly
-    std::cout << "[construct_fsi] >>>>> linear_algebra->assemble " << std::endl;
     eq.linear_algebra->assemble(com_mod, eNoN, ptr, lK, lR);
-
-#if 0
-#ifdef WITH_TRILINOS
-    if (eq.assmTLS) {
-      if (cPhys == Equation_ustruct) {
-        throw std::runtime_error("[construct_fsi] Cannot assemble USTRUCT using Trilinos");
-      }
-      trilinos_doassem_(const_cast<int&>(eNoN), ptr.data(), lK.data(), lR.data());
-    } else {
-#endif
-      if (cPhys == Equation_ustruct) {
-        //CALL USTRUCT_DOASSEM(eNoN, ptr, lKd, lK, lR)
-        throw std::runtime_error("[construct_fsi] USTRUCT_DOASSEM not implemented");
-      } else {
-        eq.linear_algebra->assemble((com_mod, eNoN, ptr, lK, lR);
-        //lhsa_ns::do_assem(com_mod, eNoN, ptr, lK, lR);
-      }
-#ifdef WITH_TRILINOS
-    }
-#endif
-#endif
 
   } // e: loop
 

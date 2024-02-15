@@ -2162,7 +2162,7 @@ LinearAlgebraParameters::LinearAlgebraParameters()
   // A parameter that must be defined.
   bool required = true;
 
-  auto alg_type = LinearAlgebra::type_to_name.at(LinearAlgebraType::fsils);
+  auto alg_type = LinearAlgebra::type_to_name.at(consts::LinearAlgebraType::fsils);
   type = Parameter<std::string>("type", alg_type, required);
 
   set_parameter("Configuration_file", "", !required, configuration_file);
@@ -2170,7 +2170,7 @@ LinearAlgebraParameters::LinearAlgebraParameters()
   auto prec_type = consts::preconditioner_type_to_name.at(consts::PreconditionerType::PREC_FSILS);
   set_parameter("Preconditioner", prec_type, !required, preconditioner);
 
-  auto assemble_type = LinearAlgebra::type_to_name.at(LinearAlgebraType::none);
+  auto assemble_type = LinearAlgebra::type_to_name.at(consts::LinearAlgebraType::none);
   set_parameter("Assembly", assemble_type, !required, assembly);
 }
 
@@ -2204,7 +2204,7 @@ void LinearAlgebraParameters::set_values(tinyxml2::XMLElement* xml_elem)
   if (LinearAlgebra::name_to_type.count(type.value()) == 0) {
     std::string valid_types = "";
     std::for_each(LinearAlgebra::name_to_type.begin(), LinearAlgebra::name_to_type.end(), 
-        [&valid_types](std::pair<const std::string, const LinearAlgebraType> p) {valid_types += p.first+" ";}); 
+        [&valid_types](std::pair<const std::string, const consts::LinearAlgebraType> p) {valid_types += p.first+" ";}); 
     throw std::runtime_error("Unknown TYPE '" + type.value() + 
         "' given in the XML <Linear_algebra type=TYPE> element.\nValid types are: " + valid_types);
   }
@@ -2231,7 +2231,7 @@ void LinearAlgebraParameters::set_values(tinyxml2::XMLElement* xml_elem)
   if (LinearAlgebra::name_to_type.count(assembly()) == 0) {
     std::string valid_types = "";
     std::for_each(LinearAlgebra::name_to_type.begin(), LinearAlgebra::name_to_type.end(),
-        [&valid_types](std::pair<const std::string, const LinearAlgebraType> p) {valid_types += p.first+" ";});
+        [&valid_types](std::pair<const std::string, const consts::LinearAlgebraType> p) {valid_types += p.first+" ";});
     throw std::runtime_error("Unknown type '" + assembly() +
         "' given in the XML <Linear_algebra> <Assembly> element.\nValid types are: " + valid_types);
   }

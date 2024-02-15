@@ -63,8 +63,8 @@ TrilinosLinearAlgebra::TrilinosLinearAlgebra()
   throw std::runtime_error("[TrilinosLinearAlgebra] There is no Trilinos interface.");
   #else
   impl = new TrilinosLinearAlgebra::TrilinosImpl();
-  interface_type = LinearAlgebraType::trilinos; 
-  assembly_type = LinearAlgebraType::trilinos;
+  interface_type = consts::LinearAlgebraType::trilinos; 
+  assembly_type = consts::LinearAlgebraType::trilinos;
   preconditioner_type = consts::PreconditionerType::PREC_TRILINOS_DIAGONAL;
   #endif
 }
@@ -87,7 +87,7 @@ void TrilinosLinearAlgebra::initialize(ComMod& com_mod)
   impl->initialize(com_mod);
 }
 
-void TrilinosLinearAlgebra::set_assembly(LinearAlgebraType atype)
+void TrilinosLinearAlgebra::set_assembly(consts::LinearAlgebraType atype)
 {
   assembly_type = atype;
 }
@@ -106,7 +106,7 @@ void TrilinosLinearAlgebra::solve(ComMod& com_mod, eqType& lEq, const Vector<int
 
 void TrilinosLinearAlgebra::solve_assembled(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res)
 {
-  std::cout << "[TrilinosLinearAlgebra] ---------- solve ---------- " << std::endl;
+  std::cout << "[TrilinosLinearAlgebra] ---------- solve_assembled ---------- " << std::endl;
   impl->solve_assembled(com_mod, lEq, incL, res);
 }
 

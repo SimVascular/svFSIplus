@@ -462,6 +462,19 @@ std::ostream& operator<<(typename std::enable_if<std::is_enum<T>::value, std::os
     return stream << static_cast<typename std::underlying_type<T>::type>(e);
 }
 
+//-------------------
+// LinearAlgebraType
+//-------------------
+// The type of the numerical linear algebra library.
+//
+enum class LinearAlgebraType {
+  none,
+  fsils,
+  petsc,
+  trilinos
+};
+
+
 };
 
 #endif
