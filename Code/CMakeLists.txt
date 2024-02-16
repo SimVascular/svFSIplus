@@ -164,12 +164,3 @@ endif()
 include(SimVascularInstallLibs)
 add_subdirectory(Scripts)
 #-----------------------------------------------------------------------------
-
-
-# Add unit test 
-# add_subdirectory(
-#   "${CMAKE_CURRENT_SOURCE_DIR}/../tests/unitTests"  # Source directory, relative path from current CMakeLists.txt
-#   "${CMAKE_CURRENT_BINARY_DIR}/tests/unitTests"     # Binary directory, where the built files will go
-# )
-
-# add_executable(runUnitTest ../tests/unitTests/test.cpp)

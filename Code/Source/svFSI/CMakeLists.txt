@@ -71,15 +71,11 @@ endif()
 find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
 
-# Include VTK either from a local build using SV_LOCAL_VTK_PATH
-# or from a default installed version.
+# Including VTK produces warnings when compiling Fortran code.
 #
-if("${SV_LOCAL_VTK_PATH}" STREQUAL "")
-  find_package(VTK REQUIRED ) 
-else()
-  find_package(VTK PATHS ${SV_LOCAL_VTK_PATH} NO_DEFAULT_PATH REQUIRED) 
-endif()
-
+#   -iframe is valid for C/C++/ObjC/ObjC++ but not for Fortran
+#
+find_package(VTK REQUIRED)
 include(${VTK_USE_FILE})
 
 set(lib ${SV_LIB_SVFSI_NAME})
@@ -172,6 +168,9 @@ simvascular_add_executable(${SV_SVFSI_EXE}
   INSTALL_COMP CoreExecutables
   INSTALL_DESTINATION ${SV_INSTALL_RUNTIME_DIR})
 
+message("##### TINY  ${TINYXML_LIBRARY_NAME}")
+message("##### TET ${TETGEN_LIBRARY_NAME}")
+
 target_link_libraries(${SV_SVFSI_EXE}
   ${GLOBAL_LIBRARIES}
   ${INTELRUNTIME_LIBRARIES}
@@ -215,173 +214,125 @@ if(ENABLE_COVERAGE)
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 endif()
 
+# unit tests and Google Test
+if(ENABLE_UNIT_TEST)
+  # install Google Test
+  include(FetchContent)
+  FetchContent_Declare(
+    googletest
+    URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
+  )
+  FetchContent_MakeAvailable(googletest)
+  enable_testing()
+  include(GoogleTest)
 
-# add Google Test:
-
-include(FetchContent)
-FetchContent_Declare(
-  googletest
-  URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
-)
-# For Windows: Prevent overriding the parent project's compiler/linker settings
-# set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-
-FetchContent_MakeAvailable(googletest)
-
-enable_testing()
-
-add_executable(
-  hello_test
-  ../../../tests/unitTests/hello_test.cpp
-)
-target_link_libraries(
-  hello_test
-  GTest::gtest_main
-)
-
-set_target_properties(
-  hello_test 
-  PROPERTIES
-  RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../../../tests/unitTests/build"
-)
-
-include(GoogleTest)
-gtest_discover_tests(hello_test)
+  # add hello_test, a sample test file to check the installation of Google Test
+  add_executable(
+    hello_test
+    ../../../tests/unitTests/hello_test.cpp
+  )
+  target_link_libraries(
+    hello_test
+    GTest::gtest_main
+  )
+  gtest_discover_tests(hello_test)
 
 
+  # add test.cpp for unit test
+  # replace main.cpp
+  set(CSRCS_unitTest 
+  ../../../tests/unitTests/test.cpp
+
+    Array3.h Array3.cpp 
+    Array.h Array.cpp
+    Tensor4.h Tensor4.cpp
+    Vector.h Vector.cpp 
+
+    lapack_defs.h
+
+    DebugMsg.h 
+    Parameters.h Parameters.cpp
+    Simulation.h Simulation.cpp
+    SimulationLogger.h
+    VtkData.h VtkData.cpp
+
+    all_fun.h all_fun.cpp
+    baf_ini.h baf_ini.cpp
+    bf.h bf.cpp
+    cep.h cep.cpp
+    cep_ion.h cep_ion.cpp
+    cmm.h cmm.cpp
+    consts.h consts.cpp
+    contact.h contact.cpp
+    distribute.h distribute.cpp
+    eq_assem.h eq_assem.cpp
+    fluid.h fluid.cpp
+    fsi.h fsi.cpp
+    fs.h fs.cpp
+    fft.h fft.cpp
+    heatf.h heatf.cpp
+    heats.h heats.cpp
+    initialize.h initialize.cpp
+    l_elas.h l_elas.cpp
+    lhsa.h lhsa.cpp
+    ls.h ls.cpp
+
+    mat_fun.h mat_fun.cpp
+    mat_fun_carray.h mat_fun_carray.cpp
+    mat_models.h mat_models.cpp
+    mesh.h mesh.cpp
+    nn.h nn.cpp
+    output.h output.cpp
+    load_msh.h load_msh.cpp
+    pic.h pic.cpp
+    post.h post.cpp
+    read_files.h read_files.cpp
+    read_msh.h read_msh.cpp
+    remesh.h remesh.cpp
+    remeshTet.cpp
+    set_bc.h set_bc.cpp
+    shells.h shells.cpp
+    stokes.h stokes.cpp
+    sv_struct.h sv_struct.cpp
+    txt.h txt.cpp
+    utils.h utils.cpp
+    ustruct.h ustruct.cpp
+    vtk_xml.h vtk_xml.cpp
+    vtk_xml_parser.h vtk_xml_parser.cpp
+
+    CepMod.h CepMod.cpp
+    CepModAp.h CepModAp.cpp
+    CepModBo.h CepModBo.cpp
+    CepModFn.h CepModFn.cpp
+    CepModTtp.h CepModTtp.cpp
+    ChnlMod.h ChnlMod.cpp
+    CmMod.h CmMod.cpp
+    ComMod.h ComMod.cpp
+    Timer.h
+
+    SPLIT.c
+  )
+  
+  # include source files (same as what svFSI does except for main.cpp)
+  add_executable(runUnitTest ${CSRCS_unitTest})
+  
+  # libraries
+  target_link_libraries(runUnitTest
+    ${METIS_SVFSI_LIBRARY_NAME}
+    ${PARMETIS_SVFSI_LIBRARY_NAME}
+    ${TETGEN_LIBRARY_NAME}
+    ${TINYXML_LIBRARY_NAME}
+    ${SV_LIB_SVFSILS_NAME}${SV_MPI_NAME_EXT}
+    ${VTK_LIBRARIES}
+  )
+
+  # link Google Test
+  target_link_libraries(
+    runUnitTest
+    GTest::gtest_main
+  )
+  gtest_discover_tests(runUnitTest)
 
 
+endif()
 
-
-
-
-
-
-
-
-# add test.cpp:
-
-# replace main.cpp
-set(CSRCS_unitTest 
-../../../tests/unitTests/test.cpp
-
-  Array3.h Array3.cpp 
-  Array.h Array.cpp
-  Tensor4.h Tensor4.cpp
-  Vector.h Vector.cpp 
-
-  lapack_defs.h
-
-  DebugMsg.h 
-  Parameters.h Parameters.cpp
-  Simulation.h Simulation.cpp
-  SimulationLogger.h
-  VtkData.h VtkData.cpp
-
-  all_fun.h all_fun.cpp
-  baf_ini.h baf_ini.cpp
-  bf.h bf.cpp
-  cep.h cep.cpp
-  cep_ion.h cep_ion.cpp
-  cmm.h cmm.cpp
-  consts.h consts.cpp
-  contact.h contact.cpp
-  distribute.h distribute.cpp
-  eq_assem.h eq_assem.cpp
-  fluid.h fluid.cpp
-  fsi.h fsi.cpp
-  fs.h fs.cpp
-  fft.h fft.cpp
-  heatf.h heatf.cpp
-  heats.h heats.cpp
-  initialize.h initialize.cpp
-  l_elas.h l_elas.cpp
-  lhsa.h lhsa.cpp
-  ls.h ls.cpp
-
-  mat_fun.h mat_fun.cpp
-  mat_fun_carray.h mat_fun_carray.cpp
-  mat_models.h mat_models.cpp
-  mesh.h mesh.cpp
-  nn.h nn.cpp
-  output.h output.cpp
-  load_msh.h load_msh.cpp
-  pic.h pic.cpp
-  post.h post.cpp
-  read_files.h read_files.cpp
-  read_msh.h read_msh.cpp
-  remesh.h remesh.cpp
-  remeshTet.cpp
-  set_bc.h set_bc.cpp
-  shells.h shells.cpp
-  stokes.h stokes.cpp
-  sv_struct.h sv_struct.cpp
-  txt.h txt.cpp
-  utils.h utils.cpp
-  ustruct.h ustruct.cpp
-  vtk_xml.h vtk_xml.cpp
-  vtk_xml_parser.h vtk_xml_parser.cpp
-
-  CepMod.h CepMod.cpp
-  CepModAp.h CepModAp.cpp
-  CepModBo.h CepModBo.cpp
-  CepModFn.h CepModFn.cpp
-  CepModTtp.h CepModTtp.cpp
-  ChnlMod.h ChnlMod.cpp
-  CmMod.h CmMod.cpp
-  ComMod.h ComMod.cpp
-  Timer.h
-
-  SPLIT.c
-)
-
-set(UNIT_TEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../tests/unitTests/build")
-message(UNIT_TEST_DIR = "${UNIT_TEST_DIR}")
-
-# seems only the first line affects, IDN what other lines for......
-# simvascular_add_executable(runUnitTest
-#   SRCS ${CSRCS_unitTest}
-#   # DEV_SCRIPT_NAME "hhhhhmysvfsi"
-#   # INSTALL_SCRIPT_NAME "hhhhhcsvfsi"
-#   # INSTALL_COMP CoreExecutables
-#   # INSTALL_DESTINATION ${SV_INSTALL_RUNTIME_DIR}
-#   # INSTALL_DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/../../../tests/unitTests/build"
-#   # INSTALL_DESTINATION ${UNIT_TEST_DIR}   
-# )
-
-
-# the following line works to build in svFSI-build/bin/runUnitTest
-add_executable(runUnitTest ${CSRCS_unitTest})
-
-
-
-target_link_libraries(runUnitTest
-  ${GLOBAL_LIBRARIES}
-  ${INTELRUNTIME_LIBRARIES}
-  ${ZLIB_LIBRARY}
-  ${BLAS_LIBRARIES}
-  ${LAPACK_LIBRARIES}
-  ${METIS_SVFSI_LIBRARY_NAME}
-  ${PARMETIS_SVFSI_LIBRARY_NAME}
-  ${TETGEN_LIBRARY_NAME}
-  ${TINYXML_LIBRARY_NAME}
-  ${SV_LIB_SVFSILS_NAME}${SV_MPI_NAME_EXT}
-  ${VTK_LIBRARIES}
-)
-
-# PROBLEM: the following operations doesn't work for svFSIplus to read mesh file!!!!
-# SOLUTION: change all path in .xml file to absolute path
-#           for example: /Users/yuechengyu/Work/Cardiac/svFSIplus_unitTest/svFSIplus/tests/unitTests/and go on...
-set_target_properties(
-  runUnitTest 
-  PROPERTIES
-  RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../../../tests/unitTests/build"
-)
-
-# PROBLEM: the following linking to GTest will cause failure to read mesh file!!!!!
-target_link_libraries(
-  runUnitTest
-  GTest::gtest_main
-)
-
-gtest_discover_tests(runUnitTest)

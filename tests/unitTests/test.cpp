@@ -13,25 +13,9 @@
 #include "mat_models_carray.h"
 #include "Simulation.h"
 #include "sv_struct.h"
-
-// from main:
-#include "all_fun.h"
-#include "bf.h"
-#include "contact.h"
 #include "distribute.h"
-#include "eq_assem.h"
-#include "fs.h"
 #include "initialize.h"
-#include "ls.h"
-#include "output.h"
-#include "pic.h"
 #include "read_files.h"
-#include "read_msh.h"
-#include "remesh.h"
-#include "set_bc.h"
-#include "txt.h"
-#include "ustruct.h"
-#include "vtk_xml.h"
 
 
 // include libraries
@@ -64,18 +48,6 @@ void read_files(Simulation* simulation, const std::string& file_name)
   }
 
   read_files_ns::read_files(simulation, file_name);
-
-/*
-  try {
-    read_files_ns::read_files(simulation, file_name);
-
-  } catch (const std::exception& exception) {
-    std::cout << "[svFSIplus] ERROR The svFSIplus program has failed." << std::endl;
-    std::cout << "[svFSIplus] ERROR " << exception.what() << std::endl;
-    exit(1);
-  }
-*/
-  
 }
 
 TEST(Dummy, OneEqualsToOne) {
@@ -107,9 +79,10 @@ int main(int argc, char **argv) {
     simulation = new Simulation();
 
     // filename for the unit element .xml: (To be complete !!)
-    // current_path: /path_to_svFSIplus/svFSIplus/build/svFSI-build/Source/svFSI
-    std::string file_name = std::filesystem::current_path().string() + "/../../../../tests/unitTests/unitTest.xml";
-    // std::string file_name = "/Users/yuechengyu/Work/Cardiac/svFSIplus_unitTest/svFSIplus/tests/unitTests/unitTest.xml"; 
+    // current_path at compiling: /path_to_svFSIplus/svFSIplus/build/svFSI-build/Source/svFSI
+    // current_path at real run time: /Users/yuechengyu/Work/Cardiac/svFSIplus_unitTest/svFSIplus/tests/unitTests/build/
+    // std::string file_name = std::filesystem::current_path().string() + "/../../../../tests/unitTests/unitTest.xml";
+    std::string file_name = std::filesystem::current_path().string() + "/../../../../tests/unitTests/unitTest.xml"; 
     // std::string file_name(argv[1]);
 
 

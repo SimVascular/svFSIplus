@@ -86,6 +86,7 @@ set(SV_USE_TRILINOS OFF CACHE BOOL "Use Trilinos Library with svFSI")
 set(ENABLE_COVERAGE OFF CACHE BOOL "Enable code coverage")
 set(ENABLE_ARRAY_INDEX_CHECKING OFF CACHE BOOL "Enable Array index checking")
 set(SV_LOCAL_VTK_PATH "" CACHE STRING "Path to a local build of VTK.")
+set(ENABLE_UNIT_TEST ON CACHE BOOL "Enable Unit Test by Google Test")
 
 #-----------------------------------------------------------------------------
 # RPATH handling
@@ -143,6 +144,7 @@ ExternalProject_Add(svFSI
     -DSV_EXTERNALS_TOPLEVEL_DIR:PATH=${SV_EXTERNALS_TOPLEVEL_DIR}
     -DSV_USE_TRILINOS:BOOL=${SV_USE_TRILINOS}
     -DENABLE_COVERAGE:BOOL=${ENABLE_COVERAGE}
+    -DENABLE_UNIT_TEST:BOOL=${ENABLE_UNIT_TEST}
     -DENABLE_ARRAY_INDEX_CHECKING:BOOL=${ENABLE_ARRAY_INDEX_CHECKING}
     -DSV_LOCAL_VTK_PATH:STRING=${SV_LOCAL_VTK_PATH}
     ${SV_APPLE_CMAKE_ARGS}
