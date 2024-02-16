@@ -117,18 +117,20 @@ void calc_der_cpl_bc(ComMod& com_mod, const CmMod& cm_mod)
 
     if (ptr != -1) {
       auto& fa = com_mod.msh[iM].fa[iFa];
-
+      // Compute flowrates at 3D Neumann boundaries at timesteps n and n+1
       if (utils::btest(bc.bType, iBC_Neu)) {
-        // Compute flowrates at 3D Neumann boundaries at timesteps n and n+1
-        /// \todo: Do I need an if struct/ustruct here?
+        // If struct or ustruct, use old and new configurations to compute flowrate integral
         if ((cPhys == EquationType::phys_struct) || (cPhys == EquationType::phys_ustruct)) {
+
           // Must use follower pressure load for 0D coupling with struct/ustruct
           if (!bc.flwP) { 
             throw std::runtime_error("[calc_der_cpl_bc]  Follower pressure load must be used for 0D coupling with struct/ustruct");
           }
+
           cfg_o = 'o';
           cfg_n = 'n';
         }
+        // If fluid or FSI, use reference configuration to compute flowrate integral
         else if ((cPhys == EquationType::phys_fluid) || (cPhys == EquationType::phys_FSI)) {
           cfg_o = 'r';
           cfg_n = 'r';
@@ -136,8 +138,8 @@ void calc_der_cpl_bc(ComMod& com_mod, const CmMod& cm_mod)
         else {
           throw std::runtime_error("[calc_der_cpl_bc]  Invalid physics type for 0D coupling");
         }
-        cplBC.fa[ptr].Qo = all_fun::integ(com_mod, cm_mod, fa, com_mod.Yo, cfg_o);
-        cplBC.fa[ptr].Qn = all_fun::integ(com_mod, cm_mod, fa, com_mod.Yn, cfg_n);
+        cplBC.fa[ptr].Qo = all_fun::integ(com_mod, cm_mod, fa, com_mod.Yo, 0, nsd-1, false, cfg_o);
+        cplBC.fa[ptr].Qn = all_fun::integ(com_mod, cm_mod, fa, com_mod.Yn, 0, nsd-1, false,cfg_n);
         cplBC.fa[ptr].Po = 0.0;
         cplBC.fa[ptr].Pn = 0.0;
         #ifdef debug_calc_der_cpl_bc 
@@ -714,15 +716,18 @@ void set_bc_cpl(ComMod& com_mod, CmMod& cm_mod)
       if (ptr != -1) {
         // Compute flowrates at 3D Neumann boundaries at timesteps n and n+1
         if (utils::btest(bc.bType,iBC_Neu)) {
-          /// \todo: Do I need an if struct/ustruct here?
+          // If struct or ustruct, use old and new configurations to compute flowrate integral
           if ((cPhys == EquationType::phys_struct) || (cPhys == EquationType::phys_ustruct)) {
+
             // Must use follower pressure load for 0D coupling with struct/ustruct
             if (!bc.flwP) { 
               throw std::runtime_error("[set_bc_cpl]  Follower pressure load must be used for 0D coupling with struct/ustruct");
             }
+
             cfg_o = 'o';
             cfg_n = 'n';
           }
+          // If fluid or FSI, use reference configuration to compute flowrate integral
           else if ((cPhys == EquationType::phys_fluid) || (cPhys == EquationType::phys_FSI)) {
             cfg_o = 'r';
             cfg_n = 'r';
@@ -731,8 +736,8 @@ void set_bc_cpl(ComMod& com_mod, CmMod& cm_mod)
             throw std::runtime_error("[set_bc_cpl]  Invalid physics type for 0D coupling");
           }
         
-          cplBC.fa[ptr].Qo = all_fun::integ(com_mod, cm_mod, com_mod.msh[iM].fa[iFa], Yo, cfg_o);
-          cplBC.fa[ptr].Qn = all_fun::integ(com_mod, cm_mod, com_mod.msh[iM].fa[iFa], Yn, cfg_n);
+          cplBC.fa[ptr].Qo = all_fun::integ(com_mod, cm_mod, com_mod.msh[iM].fa[iFa], Yo, 0, nsd-1, false, cfg_o);
+          cplBC.fa[ptr].Qn = all_fun::integ(com_mod, cm_mod, com_mod.msh[iM].fa[iFa], Yn, 0, nsd-1, false, cfg_n);
           cplBC.fa[ptr].Po = 0.0;
           cplBC.fa[ptr].Pn = 0.0;
         } 

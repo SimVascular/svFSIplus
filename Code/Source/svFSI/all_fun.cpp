@@ -541,12 +541,13 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, int dId, const Array<do
 
 /// @brief This routine integrate a scalar field s over the face lFa.
 ///
+/// Reproduces 'FUNCTION IntegS(lFa, s, pflag)'.
+///
 /// @param lFa face type, representing a face on the computational mesh
 /// @param s an array containing a scalar value for each node in the mesh
 /// @param pFlag flag for using Taylor-Hood function space for pressure
 /// @param cfg denotes which configuration ('r': reference/timestep 0, 'o': old/timestep n, or 'n': new/timestep n+1). Default 'r'.
 //
-/// Reproduces 'FUNCTION IntegS(lFa, s, pflag)'.
 double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, const Vector<double>& s, bool pFlag, char cfg)
 {
   using namespace consts;
@@ -582,10 +583,10 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, co
   if (nNo != com_mod.tnNo) {
     if (com_mod.ibFlag) {
       if (nNo != com_mod.ib.tnNo) {
-        throw std::runtime_error("Incompatible vector size in Integ");
+        throw std::runtime_error("Incompatible vector size in IntegS 1");
       }
     } else {
-      throw std::runtime_error("Incompatible vector size in vInteg");
+      throw std::runtime_error("Incompatible vector size in IntegS 2");
     }
   }
 
@@ -697,12 +698,13 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, co
 /// over the face lFa. For example, if s contains the velocity at each node on 
 /// the face, this function computed the velocity flux through the face.
 ///
+/// Reproduces 'FUNCTION IntegV(lFa, s)'
+///
 /// @param lFa face type, representing a face on the computational mesh
 /// @param s an array containing a vector value for each node in the mesh
 /// @param pFlag flag for using Taylor-Hood function space for pressure
 /// @param cfg denotes which configuration ('r': reference/timestep 0, 'o': old/timestep n, or 'n': new/timestep n+1). Default 'r'.
 //
-/// Reproduces 'FUNCTION IntegV(lFa, s)'
 double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, 
             const Array<double>& s, char cfg)
 {
@@ -721,8 +723,13 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa,
   int insd = nsd - 1;
   int tnNo = com_mod.tnNo;
 
+  #ifdef debug_integ_V
+  dmsg << "s.nrows(): " << s.nrows();
+  dmsg << "nsd: " << nsd;
+  #endif
+
   if (s.nrows() != nsd) {
-    throw std::runtime_error("Incompatible vector size in integ");
+    throw std::runtime_error("Incompatible vector size in integV 1");
   }
 
   int nNo = s.ncols();
@@ -734,10 +741,10 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa,
   if (nNo != tnNo) {
     if (com_mod.ibFlag) {
       if (nNo != com_mod.ib.tnNo) {
-        throw std::runtime_error("Incompatible vector size in integ");
+        throw std::runtime_error("Incompatible vector size in integV 2");
       }
     } else {
-      throw std::runtime_error("Incompatible vector size in integ");
+      throw std::runtime_error("Incompatible vector size in integV 3");
     }
   }
 
@@ -813,6 +820,8 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa,
 ///
 /// Note that 'l' and 'u' should be 0-based and are used to index into 's'.
 ///
+/// Reproduces 'FUNCTION IntegG(lFa, s, l, uo, THflag)'.
+///
 /// @param lFa face type, representing a face on the computational mesh.
 /// @param s an array containing a vector value for each node in the mesh.
 /// @param l lower index of s
@@ -820,7 +829,6 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa,
 /// @param THlag flag for using Taylor-Hood function space for pressure.
 /// @param cfg denotes which configuration ('r': reference/timestep 0, 'o': old/timestep n, or 'n': new/timestep n+1). Default 'r'.
 ///
-/// Reproduces 'FUNCTION IntegG(lFa, s, l, uo, THflag)'.
 //
 double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, 
     const Array<double>& s, const int l, std::optional<int> uo, bool THflag, char cfg)

@@ -32,3 +32,20 @@ def test_tensile_adventitia_HGO(n_proc):
 def test_LV_Guccione_active(n_proc):
     test_folder = "LV_Guccione_active"
     run_with_reference(base_folder, test_folder, fields, n_proc)
+
+def test_LV_NeoHookean_passive_genBC(n_proc):
+    test_folder = "LV_NeoHookean_passive_genBC"
+
+    # Remove old genBC output
+    os.chdir(os.path.join("cases", base_folder, test_folder))
+    os.system("rm -f -r AllData InitialData GenBC.int ")
+
+    # Compile genBC
+    os.chdir( "genBC_svFSIplus")
+    os.system("make clean")
+    os.system("make")
+
+    # Change back to original directory
+    os.chdir("../../../../")
+
+    run_with_reference(base_folder, test_folder, fields, n_proc, t_max=3)
