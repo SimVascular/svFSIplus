@@ -30,6 +30,8 @@ jobs:
           cd build
           cmake -DENABLE_COVERAGE=ON -DENABLE_ARRAY_INDEX_CHECKING=ON ..
           make -j2
+          mpif90 --showme
+          which gfortran
       - name: Install test dependencies
         run: |
           conda create -n svfsiplus python=3.9
@@ -38,6 +40,8 @@ jobs:
         run: |
           git lfs pull
           cd tests
+          mpif90 --showme
+          which gfortran
           conda run -n svfsiplus pytest -v --durations=0
       - name: Generate code coverage
         if: startsWith(matrix.os, 'ubuntu-22.04')
