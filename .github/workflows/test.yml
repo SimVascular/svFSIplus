@@ -20,10 +20,12 @@ jobs:
       - name: Install MacOS dependencies
         if: startsWith(matrix.os, 'macos')
         run: | 
-          brew install gcc cmake vtk openblas lapack mesa open-mpi qt
+          brew reinstall -v gcc
+          brew install -v cmake vtk openblas lapack mesa open-mpi qt
           brew install lcov
           sudo ln -s /usr/local/opt/qt5/mkspecs /usr/local/mkspecs
           sudo ln -s /usr/local/opt/qt5/plugins /usr/local/plugins
+          export PATH=$PATH:/usr/local/Cellar
       - name: Build svFSIplus
         run: |
           mkdir build
@@ -31,7 +33,10 @@ jobs:
           cmake -DENABLE_COVERAGE=ON -DENABLE_ARRAY_INDEX_CHECKING=ON ..
           make -j2
           mpif90 --showme
-          which gfortran
+          mpicxx --showme
+          echo $PATH
+          which clang++
+          gfortran -v
       - name: Install test dependencies
         run: |
           conda create -n svfsiplus python=3.9
@@ -41,7 +46,8 @@ jobs:
           git lfs pull
           cd tests
           mpif90 --showme
-          which gfortran
+          mpicxx --showme
+          gfortran --version
           conda run -n svfsiplus pytest -rPv --durations=0
       - name: Generate code coverage
         if: startsWith(matrix.os, 'ubuntu-22.04')
