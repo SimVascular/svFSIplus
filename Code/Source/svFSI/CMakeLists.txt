@@ -239,82 +239,13 @@ if(ENABLE_UNIT_TEST)
 
 
   # add test.cpp for unit test
-  # replace main.cpp
-  set(CSRCS_unitTest 
-  ../../../tests/unitTests/test.cpp
 
-    Array3.h Array3.cpp 
-    Array.h Array.cpp
-    Tensor4.h Tensor4.cpp
-    Vector.h Vector.cpp 
-
-    lapack_defs.h
-
-    DebugMsg.h 
-    Parameters.h Parameters.cpp
-    Simulation.h Simulation.cpp
-    SimulationLogger.h
-    VtkData.h VtkData.cpp
-
-    all_fun.h all_fun.cpp
-    baf_ini.h baf_ini.cpp
-    bf.h bf.cpp
-    cep.h cep.cpp
-    cep_ion.h cep_ion.cpp
-    cmm.h cmm.cpp
-    consts.h consts.cpp
-    contact.h contact.cpp
-    distribute.h distribute.cpp
-    eq_assem.h eq_assem.cpp
-    fluid.h fluid.cpp
-    fsi.h fsi.cpp
-    fs.h fs.cpp
-    fft.h fft.cpp
-    heatf.h heatf.cpp
-    heats.h heats.cpp
-    initialize.h initialize.cpp
-    l_elas.h l_elas.cpp
-    lhsa.h lhsa.cpp
-    ls.h ls.cpp
-
-    mat_fun.h mat_fun.cpp
-    mat_fun_carray.h mat_fun_carray.cpp
-    mat_models.h mat_models.cpp
-    mesh.h mesh.cpp
-    nn.h nn.cpp
-    output.h output.cpp
-    load_msh.h load_msh.cpp
-    pic.h pic.cpp
-    post.h post.cpp
-    read_files.h read_files.cpp
-    read_msh.h read_msh.cpp
-    remesh.h remesh.cpp
-    remeshTet.cpp
-    set_bc.h set_bc.cpp
-    shells.h shells.cpp
-    stokes.h stokes.cpp
-    sv_struct.h sv_struct.cpp
-    txt.h txt.cpp
-    utils.h utils.cpp
-    ustruct.h ustruct.cpp
-    vtk_xml.h vtk_xml.cpp
-    vtk_xml_parser.h vtk_xml_parser.cpp
-
-    CepMod.h CepMod.cpp
-    CepModAp.h CepModAp.cpp
-    CepModBo.h CepModBo.cpp
-    CepModFn.h CepModFn.cpp
-    CepModTtp.h CepModTtp.cpp
-    ChnlMod.h ChnlMod.cpp
-    CmMod.h CmMod.cpp
-    ComMod.h ComMod.cpp
-    Timer.h
-
-    SPLIT.c
-  )
+  # remove the main.cpp and add test.cpp
+  list(APPEND CSRCS "../../../tests/unitTests/test.cpp")
+  list(REMOVE_ITEM CSRCS "main.cpp")
   
   # include source files (same as what svFSI does except for main.cpp)
-  add_executable(runUnitTest ${CSRCS_unitTest})
+  add_executable(runUnitTest ${CSRCS})
   
   # libraries
   target_link_libraries(runUnitTest
@@ -332,7 +263,6 @@ if(ENABLE_UNIT_TEST)
     GTest::gtest_main
   )
   gtest_discover_tests(runUnitTest)
-
 
 endif()
 
