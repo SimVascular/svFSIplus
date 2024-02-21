@@ -575,19 +575,22 @@ void gnnb(const ComMod& com_mod, const faceType& lFa, const int e, const int g, 
   for (int a = 0; a < eNoNb; a++) {
     int Ac = lFa.IEN(a,e);
     int b = 0;
+    bool found_node = false;
 
     for (int ib = 0; ib < eNoN; ib++) {
       b = ib;
       if (setIt[ib]) {
         int Bc = msh.IEN(ib,Ec);
         if (Bc == Ac) {
+          found_node = true;
           break;
         }
       }
     }
 
-    if (b > eNoN) {
-      throw std::runtime_error("could not find matching face nodes");
+    if (!found_node) {
+      throw std::runtime_error("[svFSIplus::gnnb] The '" + lFa.name + "' face node " + std::to_string(Ac) + 
+          " could not be matched to a node in the '" + msh.name + "' volume mesh.");
     }
 
     ptr(a) = b;
