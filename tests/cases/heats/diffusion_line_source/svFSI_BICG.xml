@@ -49,8 +49,8 @@
 <Add_equation type="heatS" > 
    <Coupled> true </Coupled>
    <Min_iterations> 1 </Min_iterations>  
-   <Max_iterations> 5 </Max_iterations> 
-   <Tolerance> 1e-6 </Tolerance> 
+   <Max_iterations> 3 </Max_iterations> 
+   <Tolerance> 1e-12 </Tolerance> 
 
    <Conductivity> 1.0 </Conductivity> 
    <Source_term> 0.0 </Source_term> 
@@ -63,7 +63,7 @@
 
    <LS type="BICG" >
       <Max_iterations> 100 </Max_iterations>
-      <Tolerance> 1e-6 </Tolerance>
+      <Tolerance> 1e-12 </Tolerance>
    </LS>
 
    <Add_BC name="left" > 

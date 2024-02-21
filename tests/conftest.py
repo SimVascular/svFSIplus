@@ -53,7 +53,8 @@ def run_by_name(folder, name, t_max, n_proc=1):
     fname = os.path.join(
         folder, str(n_proc) + "-procs", "result_" + str(t_max).zfill(3) + "_cpp.vtu"
     )
-    assert os.path.exists(fname), "no svFSIplus output: " + fname
+    if not os.path.exists(fname):
+        raise RuntimeError("No svFSIplus output: " + fname)
     return meshio.read(fname)
 
 
@@ -89,6 +90,7 @@ def run_with_reference(
     ref = meshio.read(fname)
 
     # check results
+    msg = ""
     for f in fields:
         # extract field
         if f not in res.point_data.keys():
@@ -117,23 +119,28 @@ def run_with_reference(
             # portion of individual results that are above the tolerance
             wrong = 1 - np.sum(close) / close.size
 
-            # location of absolute maximum difference
+            # relative difference as computed in isclose
             a_fl = a.flatten()
             b_fl = b.flatten()
-            i_max = np.argmax(np.abs(a_fl - b_fl))
+            rel_diff = np.abs(a_fl - b_fl) - rtol * np.abs(b_fl)
 
-            # maximum absolute difference
+            # location of maximum relative difference
+            i_max = rel_diff.argmax()
+
+            # maximum relative difference
+            max_rel = rel_diff[i_max]
+
+            # maximum absolute difference at same location
             max_abs = np.abs(a_fl[i_max] - b_fl[i_max])
-
-            # relative difference at same location
-            max_rel = np.abs(a_fl[i_max] / b_fl[i_max] - 1)
 
             # throw error message for pytest
             msg = "Test failed in field " + f + "."
             msg += " Results differ by more than rtol=" + str(rtol)
-            msg += " in {:.0%}".format(wrong)
-            msg += " out of results."
-            msg += " Max. abs. difference is"
-            msg += " {:.1e}".format(max_abs)
-            msg += " (rel. {:.1e}".format(max_rel) + ")"
-            raise ValueError(msg)
+            msg += " in {:.1%}".format(wrong)
+            msg += " of results."
+            msg += " Max. rel. difference is"
+            msg += " {:.1e}".format(max_rel)
+            msg += " (abs. {:.1e}".format(max_abs) + ")\n"
+    # check all fields first and then throw error if any failed
+    if msg:
+        raise AssertionError(msg)

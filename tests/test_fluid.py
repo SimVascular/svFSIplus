@@ -4,7 +4,7 @@ from .conftest import run_with_reference
 base_folder = "fluid"
 
 # Fields to test
-fields = ["Velocity", "Pressure", "Traction", "WSS"]
+fields = ["Velocity", "Pressure", "Traction", "WSS", "Vorticity", "Divergence"]
 
 
 def test_pipe_RCR_3d(n_proc):

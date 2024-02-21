@@ -58,8 +58,8 @@
 <Add_equation type="FSI" > 
    <Coupled> true </Coupled>
    <Min_iterations> 1 </Min_iterations>  
-   <Max_iterations> 10 </Max_iterations> 
-   <Tolerance> 1e-6 </Tolerance> 
+   <Max_iterations> 7 </Max_iterations> 
+   <Tolerance> 1e-12 </Tolerance> 
 
    <Domain id="0" >
       <Equation> fluid </Equation> 
@@ -82,7 +82,7 @@
    <LS type="GMRES" >
       <Preconditioner> FSILS </Preconditioner>
       <!--Preconditioner> Trilinos-ILUT </Preconditioner-->
-      <Tolerance> 1e-6 </Tolerance>
+      <Tolerance> 1e-12 </Tolerance>
       <Max_iterations> 100 </Max_iterations> 
       <Krylov_space_dimension> 50 </Krylov_space_dimension>
    </LS>
@@ -125,13 +125,13 @@
 <Add_equation type="mesh" >
    <Coupled> true </Coupled>
    <Min_iterations> 1 </Min_iterations>
-   <Max_iterations> 5 </Max_iterations>
-   <Tolerance> 1e-4 </Tolerance>
+   <Max_iterations> 7 </Max_iterations>
+   <Tolerance> 1e-12 </Tolerance>
    <Poisson_ratio> 0.3 </Poisson_ratio> 
 
    <LS type="CG" >
       <Preconditioner> FSILS </Preconditioner>
-      <Tolerance> 1e-4 </Tolerance>
+      <Tolerance> 1e-12 </Tolerance>
    </LS>
 
    <Output type="Spatial" >
