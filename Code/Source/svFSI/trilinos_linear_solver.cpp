@@ -347,9 +347,8 @@ void trilinos_doassem_(int &numNodesPerElement, const int *eqN,
   //converts eqN in local proc values to global values
   std::vector<int> localToGlobal(numNodesPerElement);
 
-  //subtract 1 since eqN is 1 based and C is 0 based indexing
   for (int i = 0; i < numNodesPerElement; ++i)
-    localToGlobal[i] = localToGlobalUnsorted[eqN[i] - 1];
+    localToGlobal[i] = localToGlobalUnsorted[eqN[i]];
 
   //loop over local nodes on the element
   for (int a = 0; a < numNodesPerElement; ++a)

@@ -943,7 +943,7 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
           for (int j = 0; j < N; j++) {
             for (int k = 0; k < N; k++) {
               for (int l = 0; l < N; l++) {
-                CCb[i][j][k][l] += g1 * Hss_prod[i][j][k][l];
+                CCb[i][j][k][l] += g2 * Hss_prod[i][j][k][l];
               }
             }
           }
