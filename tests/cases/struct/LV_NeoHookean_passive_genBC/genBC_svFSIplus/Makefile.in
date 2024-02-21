@@ -60,7 +60,7 @@ ifeq ($(debug),1)
    FFLAGS   = -O0 -cpp
 endif
 
-seq = 1
+seq = 0
 ifeq ($(seq),1)
    CC      = gcc
    CXX     = g++

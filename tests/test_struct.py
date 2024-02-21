@@ -1,5 +1,6 @@
 from .conftest import run_with_reference
 import os
+import subprocess
 
 # Common folder for all tests in this file
 base_folder = "struct"
@@ -54,12 +55,14 @@ def test_LV_NeoHookean_passive_genBC(n_proc):
 
     # Remove old genBC output
     os.chdir(os.path.join("cases", base_folder, test_folder))
-    os.system("rm -f -r AllData InitialData GenBC.int ")
+    for name in ["AllData", "InitialData", "GenBC.int"]:
+        if os.path.isfile(name):
+            os.remove(name)
 
     # Compile genBC
-    os.chdir( "genBC_svFSIplus")
-    os.system("make clean")
-    os.system("make")
+    os.chdir("genBC_svFSIplus")
+    subprocess.run(["make", "clean"], check=True)
+    subprocess.run(["make"], check=True)
 
     # Change back to original directory
     os.chdir("../../../../")
