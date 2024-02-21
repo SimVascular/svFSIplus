@@ -130,8 +130,9 @@ void calc_der_cpl_bc(ComMod& com_mod, const CmMod& cm_mod)
           cfg_o = 'o';
           cfg_n = 'n';
         }
-        // If fluid or FSI, use reference configuration to compute flowrate integral
-        else if ((cPhys == EquationType::phys_fluid) || (cPhys == EquationType::phys_FSI)) {
+        // If fluid, FSI, or CMM, use reference configuration to compute flowrate integral
+        // Note that for FSI, mvMsh will modify geometry in gnnb()
+        else if ((cPhys == EquationType::phys_fluid) || (cPhys == EquationType::phys_FSI) || (cPhys == EquationType::phys_CMM)) {
           cfg_o = 'r';
           cfg_n = 'r';
         }
@@ -139,7 +140,7 @@ void calc_der_cpl_bc(ComMod& com_mod, const CmMod& cm_mod)
           throw std::runtime_error("[calc_der_cpl_bc]  Invalid physics type for 0D coupling");
         }
         cplBC.fa[ptr].Qo = all_fun::integ(com_mod, cm_mod, fa, com_mod.Yo, 0, nsd-1, false, cfg_o);
-        cplBC.fa[ptr].Qn = all_fun::integ(com_mod, cm_mod, fa, com_mod.Yn, 0, nsd-1, false,cfg_n);
+        cplBC.fa[ptr].Qn = all_fun::integ(com_mod, cm_mod, fa, com_mod.Yn, 0, nsd-1, false, cfg_n);
         cplBC.fa[ptr].Po = 0.0;
         cplBC.fa[ptr].Pn = 0.0;
         #ifdef debug_calc_der_cpl_bc 
@@ -727,8 +728,9 @@ void set_bc_cpl(ComMod& com_mod, CmMod& cm_mod)
             cfg_o = 'o';
             cfg_n = 'n';
           }
-          // If fluid or FSI, use reference configuration to compute flowrate integral
-          else if ((cPhys == EquationType::phys_fluid) || (cPhys == EquationType::phys_FSI)) {
+          // If fluid, FSI, or CMM, use reference configuration to compute flowrate integral
+          // Note that for FSI, mvMsh will modify geometry in gnnb()
+          else if ((cPhys == EquationType::phys_fluid) || (cPhys == EquationType::phys_FSI) || (cPhys == EquationType::phys_CMM)) {
             cfg_o = 'r';
             cfg_n = 'r';
           }
