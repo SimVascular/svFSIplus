@@ -27,7 +27,9 @@ jobs:
       - name: Apple Silicon fix
         if: startsWith(matrix.os, 'macos')
         run: | 
-          export HDF5_DIR=/opt/homebrew/opt/hdf5 
+          export HDF5_DIR=/opt/homebrew/opt/hdf5
+          export HDF5_LIBRARIES=$HDF5_DIR/lib/libhdf5.dylib
+          export HDF5_INCLUDE_DIRS=$HDF5_DIR/include
       - name: Build svFSIplus
         run: |
           mkdir build
