@@ -92,7 +92,7 @@
    <Add_BC name="X0" > 
       <Type> Dir </Type> 
       <Value> 0.0 </Value> 
-      <Effective_direction> (1, 0, 0) </Effective_direction> 
+      <Effective_direction> (0, 0, 1) </Effective_direction> 
    </Add_BC> 
 
    <Add_BC name="Y0" > 
@@ -104,7 +104,7 @@
    <Add_BC name="Z0" > 
       <Type> Dir </Type> 
       <Value> 0.0 </Value> 
-      <Effective_direction> (0, 0, 1) </Effective_direction> 
+      <Effective_direction> (1, 0, 0) </Effective_direction> 
    </Add_BC> 
 
    <Add_BC name="Z1" > 
