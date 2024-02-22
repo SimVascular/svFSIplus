@@ -39,6 +39,10 @@ jobs:
           git lfs pull
           cd tests
           conda run -n svfsiplus pytest -rPv --durations=0
+      - name: Run unit tests
+        run: |
+          cd build/svFSI-build/Source/svFSI
+          ctest --output-on-failure
       - name: Generate code coverage
         if: startsWith(matrix.os, 'ubuntu-22.04')
         run: |

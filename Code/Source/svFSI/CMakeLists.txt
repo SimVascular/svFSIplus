@@ -107,11 +107,15 @@ endif()
 find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
 
-# Including VTK produces warnings when compiling Fortran code.
+# Include VTK either from a local build using SV_LOCAL_VTK_PATH
+# or from a default installed version.
 #
-#   -iframe is valid for C/C++/ObjC/ObjC++ but not for Fortran
-#
-find_package(VTK REQUIRED)
+if("${SV_LOCAL_VTK_PATH}" STREQUAL "")
+  find_package(VTK REQUIRED ) 
+else()
+  find_package(VTK PATHS ${SV_LOCAL_VTK_PATH} NO_DEFAULT_PATH REQUIRED) 
+endif()
+
 include(${VTK_USE_FILE})
 
 set(lib ${SV_LIB_SVFSI_NAME})
@@ -208,9 +212,6 @@ simvascular_add_executable(${SV_SVFSI_EXE}
   INSTALL_SCRIPT_NAME "svfsi"
   INSTALL_COMP CoreExecutables
   INSTALL_DESTINATION ${SV_INSTALL_RUNTIME_DIR})
-
-message("##### TINY  ${TINYXML_LIBRARY_NAME}")
-message("##### TET ${TETGEN_LIBRARY_NAME}")
 
 target_link_libraries(${SV_SVFSI_EXE}
   ${GLOBAL_LIBRARIES}
