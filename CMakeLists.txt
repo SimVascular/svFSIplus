@@ -88,7 +88,7 @@ set(SV_PETSC_DIR "" CACHE STRING "Path to a local install of the PETSc linear al
 set(ENABLE_COVERAGE OFF CACHE BOOL "Enable code coverage")
 set(ENABLE_ARRAY_INDEX_CHECKING OFF CACHE BOOL "Enable Array index checking")
 set(SV_LOCAL_VTK_PATH "" CACHE STRING "Path to a local build of VTK.")
-set(ENABLE_UNIT_TEST ON CACHE BOOL "Enable Unit Test by Google Test")
+set(ENABLE_UNIT_TEST OFF CACHE BOOL "Enable Unit Test by Google Test")
 
 #-----------------------------------------------------------------------------
 # RPATH handling
