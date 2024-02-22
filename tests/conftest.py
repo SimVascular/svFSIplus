@@ -21,6 +21,7 @@ RTOL = {
     "WSS": 1.0e-8,
     "Vorticity": 1.0e-9,
     "Divergence": 1.0e-9,
+    "Velocity": 1.0e-9,
 }
 
 # Number of processors to test
