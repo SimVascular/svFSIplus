@@ -1,3 +1,9 @@
+/**
+ * This function is adapted from Google Test's Quickstart Guide.
+ * Source: Google Test Quickstart for Google Test and CMake
+ * URL: https://google.github.io/googletest/quickstart-cmake.html
+ */
+
 #include <gtest/gtest.h>
 
 // Demonstrate some basic assertions.

@@ -28,7 +28,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake -DENABLE_COVERAGE=ON -DENABLE_ARRAY_INDEX_CHECKING=ON ..
+          cmake -DENABLE_COVERAGE=ON -DENABLE_ARRAY_INDEX_CHECKING=ON -DENABLE_UNIT_TEST=ON..
           make -j2
       - name: Install test dependencies
         run: |
