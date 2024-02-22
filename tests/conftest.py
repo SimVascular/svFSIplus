@@ -8,20 +8,23 @@ import meshio
 this_file_dir = os.path.abspath(os.path.dirname(__file__))
 cpp_exec = os.path.join(this_file_dir, "..", "build", "svFSI-build", "bin", "svFSI")
 
-# Default relative tolerances for tested results
-DEFAULT_TOL = 1.0e-10
-
-# Dictionary with exceptions from DEFAULT_TOL
+# Relative tolerances for each tested field
 RTOL = {
-    "Traction": 1.0e-6,
+    "Action_potential": 1.0e-10,
+    "Cauchy_stress": 1.0e-4,
+    "Def_grad": 1.0e-10,
+    "Divergence": 1.0e-9,
+    "Displacement": 1.0e-10,
+    "Jacobian": 1.0e-10,
     "Pressure": 1.0e-7,
     "Stress": 1.0e-4,
-    "Cauchy_stress": 1.0e-4,
-    "VonMises_stress": 1.0e-3,
-    "WSS": 1.0e-8,
-    "Vorticity": 1.0e-9,
-    "Divergence": 1.0e-9,
+    "Strain": 1.0e-10,
+    "Temperature": 1.0e-10,
+    "Traction": 1.0e-6,
     "Velocity": 1.0e-9,
+    "VonMises_stress": 1.0e-3,
+    "Vorticity": 1.0e-9,
+    "WSS": 1.0e-8,
 }
 
 # Number of processors to test
@@ -118,10 +121,9 @@ def run_with_reference(
                 b = b[:, :2]
 
         # pick tolerance for current field
-        if f in RTOL:
-            rtol = RTOL[f]
-        else:
-            rtol = DEFAULT_TOL
+        if f not in RTOL:
+            raise ValueError("No tolerance defined for field " + f)
+        rtol = RTOL[f]
 
         # relative difference (as computed in np.isclose)
         # note that we consider rtol as absolute zero (and as relative tolerance)

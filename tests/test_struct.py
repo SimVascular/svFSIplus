@@ -5,13 +5,14 @@ base_folder = "struct"
 
 # Fields to test
 fields = [
+    "Cauchy_stress",
+    "Def_grad",
     "Displacement",
-    "Velocity",
+    "Jacobian",
     "Jacobian",
     "Stress",
     "Strain",
-    "Cauchy_stress",
-    "Def_grad",
+    "Velocity",
     "VonMises_stress",
 ]
 
