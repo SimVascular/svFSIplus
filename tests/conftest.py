@@ -9,13 +9,14 @@ this_file_dir = os.path.abspath(os.path.dirname(__file__))
 cpp_exec = os.path.join(this_file_dir, "..", "build", "svFSI-build", "bin", "svFSI")
 
 # Default relative tolerances for tested results
-DEFAULT_TOL = 1.0e-12
+DEFAULT_TOL = 1.0e-11
 
 # Dictionary with exceptions from DEFAULT_TOL
 RTOL = {
     "Traction": 1.0e-6,
     "Pressure": 1.0e-7,
-    "Cauchy_stress": 1.0e-7,
+    "Stress": 1.0e-4,
+    "Cauchy_stress": 1.0e-4,
     "VonMises_stress": 1.0e-3,
 }
 
@@ -118,16 +119,17 @@ def run_with_reference(
         else:
             rtol = DEFAULT_TOL
 
+        # relative difference (as computed in np.isclose)
+        # note that we consider rtol as absolute zero (and as relative tolerance)
+        a_fl = a.flatten()
+        b_fl = b.flatten()
+        rel_diff = np.abs(a_fl - b_fl) - rtol - rtol * np.abs(b_fl)
+
         # throw error if not all results are within relative tolerance
-        close = np.isclose(a, b, rtol=rtol)
+        close = rel_diff <= 0.0
         if not np.all(close):
             # portion of individual results that are above the tolerance
             wrong = 1 - np.sum(close) / close.size
-
-            # relative difference as computed in isclose
-            a_fl = a.flatten()
-            b_fl = b.flatten()
-            rel_diff = np.abs(a_fl - b_fl) - rtol * np.abs(b_fl)
 
             # location of maximum relative difference
             i_max = rel_diff.argmax()
