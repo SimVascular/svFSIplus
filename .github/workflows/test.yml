@@ -5,7 +5,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, macos-12, macos-14]
+        os: [macos-14]
       fail-fast: false
     steps:
       - uses: actions/checkout@v3
@@ -25,12 +25,12 @@ jobs:
           sudo ln -s /usr/local/opt/qt5/mkspecs /usr/local/mkspecs
           sudo ln -s /usr/local/opt/qt5/plugins /usr/local/plugins
       - name: Apple Silicon fix
-        if: startsWith(matrix.os, 'macos')
+        if: startsWith(matrix.os, 'macos-14')
         run: | 
-          brew install hdf5
-          export HDF5_DIR=/opt/homebrew/opt/hdf5
-          export HDF5_LIBRARIES=$HDF5_DIR/lib/libhdf5.dylib
-          export HDF5_INCLUDE_DIRS=$HDF5_DIR/include
+          mkdir build
+          cd build
+          cmake -DHDF5_DIR=/opt/homebrew/opt/hdf5 -DENABLE_COVERAGE=ON -DENABLE_ARRAY_INDEX_CHECKING=ON ..
+          make -j2
       - name: Build svFSIplus
         run: |
           mkdir build
