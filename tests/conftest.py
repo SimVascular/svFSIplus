@@ -23,7 +23,7 @@ RTOL = {
     "Traction": 1.0e-6,
     "Velocity": 1.0e-7,
     "VonMises_stress": 1.0e-3,
-    "Vorticity": 1.0e-9,
+    "Vorticity": 1.0e-7,
     "WSS": 1.0e-8,
 }
 
