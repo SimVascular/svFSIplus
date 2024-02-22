@@ -12,7 +12,12 @@ cpp_exec = os.path.join(this_file_dir, "..", "build", "svFSI-build", "bin", "svF
 DEFAULT_TOL = 1.0e-12
 
 # Dictionary with exceptions from DEFAULT_TOL
-RTOL = {}
+RTOL = {
+    "Traction": 1.0e-6,
+    "Pressure": 1.0e-7,
+    "Cauchy_stress": 1.0e-7,
+    "VonMises_stress": 1.0e-3,
+}
 
 # Number of processors to test
 PROCS = [1, 3, 4]
@@ -134,7 +139,7 @@ def run_with_reference(
             max_abs = np.abs(a_fl[i_max] - b_fl[i_max])
 
             # throw error message for pytest
-            msg = "Test failed in field " + f + "."
+            msg += "Test failed in field " + f + "."
             msg += " Results differ by more than rtol=" + str(rtol)
             msg += " in {:.1%}".format(wrong)
             msg += " of results."

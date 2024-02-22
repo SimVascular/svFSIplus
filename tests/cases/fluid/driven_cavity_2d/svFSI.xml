@@ -70,7 +70,7 @@
      <Divergence> true </Divergence>
    </Output>
 
-   <LS type="BICG" >
+   <LS type="GMRES" >
       <Preconditioner> FSILS </Preconditioner> 
       <Max_iterations> 1000 </Max_iterations> 
       <Tolerance> 1e-12 </Tolerance>
