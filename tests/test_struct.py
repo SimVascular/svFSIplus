@@ -61,11 +61,6 @@ def test_LV_NeoHookean_passive_genBC(n_proc):
 
     # Compile genBC
     os.chdir("genBC_svFSIplus")
-    subprocess.run(["which", "gfortran"], check=True)
-    subprocess.run(["echo", "PATH"], check=True)
-    subprocess.run(["mpif90", "--showme"], check=True)
-    subprocess.run(["mpicxx", "--showme"], check=True)
-
     subprocess.run(["make", "clean"], check=True)
     subprocess.run(["make"], check=True)
 
