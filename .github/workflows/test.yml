@@ -27,8 +27,7 @@ jobs:
       - name: Install MacOS dependencies (macos-14 only)
         if: startsWith(matrix.os, 'macos-14')
         run: | 
-          brew install cmake vtk openblas lapack mesa open-mpi qt
-          brew install lcov
+          brew list
       - name: Build svFSIplus (macos-14 only)
         if: startsWith(matrix.os, 'macos-14')
         run: | 
