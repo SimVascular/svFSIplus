@@ -3,7 +3,7 @@ import pytest
 
 import pandas as pd
 
-from .conftest import run_with_reference, DEFAULT_TOL
+from .conftest import run_with_reference, RTOL
 
 # Common folder for all tests in this file
 base_folder = "cep"
@@ -60,12 +60,12 @@ def test_niederer_benchmark_ECGs_quadrature(confs_ecgs, n_proc):
         )
         assert (
             abs((ecg_trace.iloc[-1, 1] - confs_ecgs[jj + 1]) / confs_ecgs[jj + 1])
-            < DEFAULT_TOL
+            < RTOL[fields[0]]
         ), (
             "Results in field ecglead_"
             + str(jj + 1)
             + ".txt differ by more than rtol="
-            + str(DEFAULT_TOL)
+            + str(RTOL[fields[0]])
             + " for test case "
             + confs_ecgs[0]
         )
