@@ -2,7 +2,7 @@
 
 [TOC]
 
-The following sections describe how to build and use svFSIplus. Implementation details can be found [here](@ref implementation).
+The following sections describe how to build and use svFSIplus. Implementation details can be found [here](@ref implementation). See the [testing guide](@ref testing) for instructions on running the provided examples.
 
 # Solver Parameter Input XML File
 
