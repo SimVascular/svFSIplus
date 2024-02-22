@@ -52,7 +52,7 @@
 
    <Coupled> true </Coupled>
    <Min_iterations> 3 </Min_iterations>  
-   <Max_iterations> 30 </Max_iterations> 
+   <Max_iterations> 4 </Max_iterations> 
    <Tolerance> 1e-10 </Tolerance> 
 
    <Density> 1.0 </Density> 

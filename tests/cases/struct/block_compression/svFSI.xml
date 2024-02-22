@@ -61,7 +61,7 @@
 
    <Coupled> true </Coupled>
    <Min_iterations> 1</Min_iterations>  
-   <Max_iterations> 10 </Max_iterations> 
+   <Max_iterations> 3 </Max_iterations> 
    <Tolerance> 1e-9 </Tolerance> 
 
    <Constitutive_model type="nHK"> </Constitutive_model>
@@ -85,7 +85,7 @@
 
    <LS type="BICG" >
       <Preconditioner> FSILS </Preconditioner> 
-      <Tolerance> 1e-11 </Tolerance>
+      <Tolerance> 1e-12 </Tolerance>
       <Max_iterations> 600 </Max_iterations> 
    </LS>
 
