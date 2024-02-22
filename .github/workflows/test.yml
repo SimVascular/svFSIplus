@@ -18,12 +18,17 @@ jobs:
           sudo apt install -y libvtk7-dev openmpi-bin libopenmpi-dev
           sudo apt install -y lcov
       - name: Install MacOS dependencies
-        if: startsWith(matrix.os, 'macos')
+        if: startsWith(matrix.os, 'macos-12')
         run: | 
           brew install cmake vtk openblas lapack mesa open-mpi qt
           brew install lcov
           sudo ln -s /usr/local/opt/qt5/mkspecs /usr/local/mkspecs
           sudo ln -s /usr/local/opt/qt5/plugins /usr/local/plugins
+      - name: Install MacOS dependencies (macos-14 only)
+        if: startsWith(matrix.os, 'macos-14')
+        run: | 
+          brew install cmake vtk openblas lapack mesa open-mpi qt
+          brew install lcov
       - name: Build svFSIplus (macos-14 only)
         if: startsWith(matrix.os, 'macos-14')
         run: | 
@@ -38,7 +43,7 @@ jobs:
           cd build
           cmake -DENABLE_COVERAGE=ON -DENABLE_ARRAY_INDEX_CHECKING=ON ..
           make -j2
-      - name: Install test dependencies (macos-14 only)
+      - name: Install miniconda (macos-14 only)
         if: startsWith(matrix.os, 'macos-14')
         run: | 
           wget https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O ~/miniconda.sh
