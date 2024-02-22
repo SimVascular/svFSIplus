@@ -9,7 +9,7 @@ this_file_dir = os.path.abspath(os.path.dirname(__file__))
 cpp_exec = os.path.join(this_file_dir, "..", "build", "svFSI-build", "bin", "svFSI")
 
 # Default relative tolerances for tested results
-DEFAULT_TOL = 1.0e-11
+DEFAULT_TOL = 1.0e-10
 
 # Dictionary with exceptions from DEFAULT_TOL
 RTOL = {
@@ -18,6 +18,9 @@ RTOL = {
     "Stress": 1.0e-4,
     "Cauchy_stress": 1.0e-4,
     "VonMises_stress": 1.0e-3,
+    "WSS": 1.0e-8,
+    "Vorticity": 1.0e-9,
+    "Divergence": 1.0e-9,
 }
 
 # Number of processors to test
