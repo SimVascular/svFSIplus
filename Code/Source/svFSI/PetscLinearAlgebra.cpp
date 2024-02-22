@@ -29,6 +29,7 @@
  */
 
 #include "PetscLinearAlgebra.h"
+
 #include <iostream>
 
 // Include PETSc-dependent data structures and functions. 
@@ -42,7 +43,7 @@
 class PetscLinearAlgebra::PetscImpl {
   public:
     PetscImpl(){};
-    void initialize(ComMod& com_mod) {};
+    void initialize(ComMod& com_mod, eqType& lEq) {};
     void solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res) {};
 };
 #endif
@@ -54,7 +55,6 @@ class PetscLinearAlgebra::PetscImpl {
 
 PetscLinearAlgebra::PetscLinearAlgebra()
 {
-  std::cout << "[PetscLinearAlgebra] ---------- PetscLinearAlgebra ---------- " << std::endl;
   #ifndef USE_PETSC
   throw std::runtime_error("[PetscLinearAlgebra] There is no PETSc interface.");
   #else
@@ -65,38 +65,64 @@ PetscLinearAlgebra::PetscLinearAlgebra()
   #endif
 }
 
+void PetscLinearAlgebra::alloc(ComMod& com_mod, eqType& lEq)
+{
+  initialize_fsils(com_mod, lEq);
+}
+
+//----------
+// assemble
+//----------
+//
 void PetscLinearAlgebra::assemble(ComMod& com_mod, const int num_elem_nodes, const Vector<int>& eqN, 
     const Array3<double>& lK, const Array<double>& lR)
 {
+  fsils_solver->assemble(com_mod, num_elem_nodes, eqN, lK, lR);
 }
 
-void PetscLinearAlgebra::initialize(ComMod& com_mod)
+//------------
+// initialize
+//------------
+//
+void PetscLinearAlgebra::initialize(ComMod& com_mod, eqType& lEq)
 {
-  std::cout << "[PetscLinearAlgebra] ---------- initialize ---------- " << std::endl;
-  impl->initialize(com_mod);
+  impl->initialize(com_mod, lEq);
 }
 
+//------------------
+// initialize_fsils
+//------------------
+//
+void PetscLinearAlgebra::initialize_fsils(ComMod& com_mod, eqType& lEq)
+{
+  fsils_solver = LinearAlgebraFactory::create_interface(consts::LinearAlgebraType::fsils);
+  fsils_solver->initialize(com_mod, lEq);
+  fsils_solver->alloc(com_mod, lEq);
+  fsils_solver->set_preconditioner(preconditioner_type);
+}
+
+//--------------
+// set_assembly
+//--------------
+//
 void PetscLinearAlgebra::set_assembly(consts::LinearAlgebraType atype)
 {
   assembly_type = atype;
 }
-
 
 void PetscLinearAlgebra::set_preconditioner(consts::PreconditionerType prec_type)
 {
   preconditioner_type = prec_type;
 }
 
-
 void PetscLinearAlgebra::solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res)
 {
-  std::cout << "[PetscLinearAlgebra] ---------- solve ---------- " << std::endl;
+  std::cout << "[PetscLinearAlgebra] solve" << std::endl;
   impl->solve(com_mod, lEq, incL, res);
 }
 
 void PetscLinearAlgebra::solve_assembled(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res)
 {
-  std::cout << "[PetscLinearAlgebra] ---------- solve ---------- " << std::endl;
   impl->solve(com_mod, lEq, incL, res);
 }
 

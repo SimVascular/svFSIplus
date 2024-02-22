@@ -931,8 +931,11 @@ PetscErrorCode petsc_debug_save_mat(const char *filename, Mat mat)
 //
 class PetscLinearAlgebra::PetscImpl {
   public:
+    // True if PESc has been initialized.
+    static bool pesc_initialized;
+
     PetscImpl();
-    void initialize(ComMod& com_mod);
+    void initialize(ComMod& com_mod, eqType& lEq);
     void solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res);
     void init_dir_and_coupneu_bc(ComMod& com_mod, const Vector<int>& incL, const Vector<double>& res);
 
@@ -947,11 +950,13 @@ class PetscLinearAlgebra::PetscImpl {
 
     // Factor for Lumped Parameter BCs
     Array<double> V_;
+
 };
+
+bool PetscLinearAlgebra::PetscImpl::pesc_initialized = false;
 
 PetscLinearAlgebra::PetscImpl::PetscImpl()
 {
-  std::cout << "[PetscInterface] ---------- PetscInterface() ---------- " << std::endl;
 }
 
 //-------------------------
@@ -1033,41 +1038,52 @@ void PetscLinearAlgebra::PetscImpl::init_dir_and_coupneu_bc(ComMod& com_mod,
   }
 }
 
-void PetscLinearAlgebra::PetscImpl::initialize(ComMod& com_mod)
+//------------
+// initialize
+//------------
+// Initialize PETSc and create a linear solver.
+//
+void PetscLinearAlgebra::PetscImpl::initialize(ComMod& com_mod, eqType& equation)
 {
-  std::cout << "[PetscImpl] ---------- initialize ---------- " << std::endl;
+  if (!pesc_initialized) {
+    petsc_destroy_all(com_mod.nEq);
 
-  petsc_destroy_all(com_mod.nEq);
+    petsc_initialize(com_mod.lhs.nNo, com_mod.lhs.mynNo, com_mod.lhs.nnz, com_mod.nEq, 
+        com_mod.ltg.data(), com_mod.lhs.map.data(), com_mod.lhs.rowPtr.data(), 
+        com_mod.lhs.colPtr.data(), com_mod.eq[0].ls.config.data());
 
-  petsc_initialize(com_mod.lhs.nNo, com_mod.lhs.mynNo, com_mod.lhs.nnz, com_mod.nEq, 
-      com_mod.ltg.data(), com_mod.lhs.map.data(), com_mod.lhs.rowPtr.data(), 
-      com_mod.lhs.colPtr.data(), com_mod.eq[0].ls.config.data());
-
-  for (int a = 0; a < com_mod.nEq; a++) {
-    auto prec_type = com_mod.eq[a].ls.PREC_Type;
-    auto ls_type = com_mod.eq[a].ls.LS_type;
-    auto phys = com_mod.eq[a].phys;
-
-    petsc_create_linearsolver(ls_type, prec_type, com_mod.eq[a].ls.sD, com_mod.eq[a].ls.mItr, 
-        com_mod.eq[a].ls.relTol, com_mod.eq[a].ls.absTol, phys, com_mod.eq[a].dof, a, com_mod.nEq);
+    pesc_initialized = true;
   }
 
-  std::cout << "[PetscImpl::initialize] com_mod.dof: " << com_mod.dof << std::endl;
-  std::cout << "[PetscImpl::initialize] com_mod.tnNo: " << com_mod.tnNo << std::endl;
-  W_.resize(com_mod.dof, com_mod.tnNo);
-  V_.resize(com_mod.dof, com_mod.tnNo);
+  auto prec_type = equation.ls.PREC_Type;
+  auto ls_type = equation.ls.LS_type;
+  auto phys = equation.phys;
+  auto& ls = equation.ls;
+
+  // Find the equation number of `equation` in com_mod.eq[].
+  //
+  int eq_num = -1;
+
+  for (int a = 0; a < com_mod.nEq; a++) {
+    if (std::addressof(com_mod.eq[a]) == std::addressof(equation)) {
+      eq_num = a;
+    }
+  }
+
+  petsc_create_linearsolver(ls_type, prec_type, ls.sD, ls.mItr, ls.relTol, ls.absTol, 
+      phys, equation.dof, eq_num, com_mod.nEq);
 }
 
+//-------
+// solve
+//-------
+//
 void PetscLinearAlgebra::PetscImpl::solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res)
 {
-  std::cout << "[PetscImpl::solve] ---------- solve ---------- " << std::endl;
-  std::cout << "[PetscImpl::solve] com_mod.dof: " << com_mod.dof << std::endl;
-  std::cout << "[PetscImpl::solve] com_mod.tnNo: " << com_mod.tnNo << std::endl;
-
   W_.resize(com_mod.dof, com_mod.tnNo);
   V_.resize(com_mod.dof, com_mod.tnNo);
 
-  init_dir_and_coupneu_bc_petsc(com_mod, incL, res);
+  init_dir_and_coupneu_bc(com_mod, incL, res);
 
   // only excute once for each equation
   //

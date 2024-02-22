@@ -224,7 +224,6 @@ void distribute(Simulation* simulation)
   if (cm.seq()) {
     for (int iEq = 0; iEq < com_mod.nEq; iEq++) {
       auto& eq = com_mod.eq[iEq];
-      add_eq_linear_algebra(com_mod, eq);
 
       for (int iBf = 0; iBf < eq.nBf; iBf++) {
         auto& bf = eq.bf[iBf];
@@ -485,7 +484,8 @@ void distribute(Simulation* simulation)
 
   auto& cep_mod = simulation->cep_mod;
   for (int iEq = 0; iEq < com_mod.nEq; iEq++) {
-    dist_eq(com_mod, cm_mod, cm, tMs, gmtl, cep_mod, com_mod.eq[iEq]);
+    auto& eq = com_mod.eq[iEq];
+    dist_eq(com_mod, cm_mod, cm, tMs, gmtl, cep_mod, eq);
   }
 
   // For CMM initialization
@@ -928,19 +928,6 @@ void dist_bf(ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, bfType& lBf
   }
 }
 
-//------------------------
-// add_eq_linear_algebra
-//------------------------
-// Create a LinearAlgebra object for an equation.
-//
-void add_eq_linear_algebra(ComMod& com_mod, eqType& lEq)
-{
-  lEq.linear_algebra = LinearAlgebraFactory::create_interface(lEq.linear_algebra_type);
-  lEq.linear_algebra->initialize(com_mod);
-  lEq.linear_algebra->set_assembly(lEq.linear_algebra_assembly_type);
-  lEq.linear_algebra->set_preconditioner(lEq.linear_algebra_preconditioner);
-}
-
 void dist_eq(ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, const std::vector<mshType>& tMs,
              const Vector<int>& gmtl, CepMod& cep_mod, eqType& lEq)
 {
@@ -1006,12 +993,6 @@ void dist_eq(ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, const std::
   cm.bcast(cm_mod, &lEq.ls.absTol);
   cm.bcast(cm_mod, &lEq.ls.mItr);
   cm.bcast(cm_mod, &lEq.ls.sD);
-
-  // Create an interface to a numerical linear algebra library.
-  lEq.linear_algebra = LinearAlgebraFactory::create_interface(lEq.linear_algebra_type);
-  lEq.linear_algebra->initialize(com_mod);
-  lEq.linear_algebra->set_preconditioner(lEq.linear_algebra_preconditioner);
-  lEq.linear_algebra->set_assembly(lEq.linear_algebra_assembly_type);
 
   #ifdef dist_eq
   dmsg << "lEq.phys: " << lEq.phys;

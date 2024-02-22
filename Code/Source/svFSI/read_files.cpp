@@ -2017,10 +2017,8 @@ void read_ls(Simulation* simulation, EquationParameters* eq_params, consts::Solv
   lEq.ls.LS_type = solver_type;
   fsi_linear_solver::fsils_ls_create(lEq.FSILS, FSILSType);
 
-  // Process Linear_algebra parameters.
+  // Process linear_algebra parameters.
   //
-  // The LinearAlgebra object in lEq is just used to store
-  // parameters because parameter type (e.g. 
   auto& linear_algebra = eq_params->linear_solver.linear_algebra;
   #ifdef debug_read_ls
   dmsg << "linear_algebra.defined: " << linear_algebra.defined();
@@ -2028,34 +2026,16 @@ void read_ls(Simulation* simulation, EquationParameters* eq_params, consts::Solv
   dmsg << "linear_algebra.preconditioner: " << linear_algebra.preconditioner();
   #endif
   lEq.linear_algebra_type = LinearAlgebra::name_to_type.at(linear_algebra.type());
-  //lEq.linear_algebra = LinearAlgebraFactory::create_interface(lin_alg_type);
-  //lEq.linear_algebra->initialize(simulation->com_mod);
 
   // Set preconditioner type.
   //
   auto prec_type = consts::preconditioner_name_to_type.at(linear_algebra.preconditioner());
   lEq.linear_algebra_preconditioner = consts::preconditioner_name_to_type.at(linear_algebra.preconditioner());
-  //lEq.linear_algebra->set_preconditioner(prec_type);
   lEq.ls.PREC_Type = PreconditionerType::PREC_FSILS;
 
   // Set assembly type.
   //
   lEq.linear_algebra_assembly_type = LinearAlgebra::name_to_type.at(linear_algebra.assembly()); 
-  //lEq.linear_algebra->set_assembly(assembly_type);
-
-  /*
-  #ifdef WITH_TRILINOS
-  if (FSILSType == LinearSolverType::LS_TYPE_NS) {
-    lEq.ls.PREC_Type = PreconditionerType::PREC_FSILS;
-  } else {
-    lEq.useTLS = true; 
-    lEq.ls.PREC_Type = PreconditionerType::PREC_TRILINOS_DIAGONAL;
-  }
-  #endif
-
-  lEq.ls.PREC_Type = PreconditionerType::PREC_FSILS;
-  lEq.useTLS = false; 
-  */
 
   if (!solver_type_defined) {
     return;

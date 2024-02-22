@@ -156,15 +156,9 @@ void trilinos_lhs_create_(int &numGlobalNodes, int &numLocalNodes,
         int &numGhostAndLocalNodes, int &nnz, const int *ltgSorted,
         const int *ltgUnsorted, const int *rowPtr, const int *colInd, int &Dof,
         int& cpp_index, int& proc_id)
-
-/*
-void trilinos_lhs_create_(unsigned &numGlobalNodes, unsigned &numLocalNodes,
-        unsigned &numGhostAndLocalNodes, unsigned &nnz, const int *ltgSorted,
-        const int *ltgUnsorted, const int *rowPtr, const int *colInd, int &Dof)
-*/
 {
 
-  #ifdef debug_trilinos_lhs_create
+  #ifdef n_debug_trilinos_lhs_create
   std::string msg_prefix;
   msg_prefix = std::string("[trilinos_lhs_create:") + std::to_string(proc_id) + "] ";
   std::cout << msg_prefix << std::endl;
@@ -341,9 +335,11 @@ void trilinos_lhs_create_(unsigned &numGlobalNodes, unsigned &numLocalNodes,
  */
 void trilinos_doassem_(int &numNodesPerElement, const int *eqN, const double *lK, double *lR)
 {
+  #ifdef debug_trilinos_doassem
   std::cout << "[trilinos_doassem_] ========== trilinos_doassem_ ===========" << std::endl;
   std::cout << "[trilinos_doassem_] dof: " << dof << std::endl;
   std::cout << "[trilinos_doassem_] numNodesPerElement: " << numNodesPerElement << std::endl;
+  #endif
 
   //dof values per global ID in the force vector
   int numValuesPerID = dof;
@@ -447,10 +443,6 @@ void trilinos_global_solve_(const double *Val, const double *RHS, double *x,
         double &solverTime, double &dB, bool &converged, int &lsType,
         double &relTol, int &maxIters, int &kspace, int &precondType)
 {
-
-  //std::cout << "[trilinos_global_solve] ========== trilinos_global_solve ==========" << std::endl;
-  //std::cout << "[trilinos_global_solve] ghostAndLocalNodes: " << ghostAndLocalNodes << std::endl;
-
   int nnzCount = 0; //cumulate count of block nnz per rows
   int count = 0;
   int numValuesPerID = dof; //dof values per id pointer to dof
@@ -1118,7 +1110,6 @@ class TrilinosLinearAlgebra::TrilinosImpl {
 
 TrilinosLinearAlgebra::TrilinosImpl::TrilinosImpl()
 {
-  //std::cout << "[TrilinosImpl] ---------- TrilinosImpl() ---------- " << std::endl;
 }
 
 //-------
@@ -1127,15 +1118,16 @@ TrilinosLinearAlgebra::TrilinosImpl::TrilinosImpl()
 //
 void TrilinosLinearAlgebra::TrilinosImpl::alloc(ComMod& com_mod, eqType& lEq) 
 {
-  std::cout << "[TrilinosImpl] ---------- alloc ---------- " << std::endl;
   int dof = com_mod.dof;
   int tnNo = com_mod.tnNo;
   int gtnNo = com_mod.gtnNo;
   auto& lhs = com_mod.lhs;
+  #ifdef debug_alloc
   std::cout << "[TrilinosImpl.alloc] dof: " << dof << std::endl;
   std::cout << "[TrilinosImpl.alloc] tnNo: " << tnNo << std::endl;
   std::cout << "[TrilinosImpl.alloc] gtnNo: " << gtnNo << std::endl;
   std::cout << "[TrilinosImpl.alloc] ltg_.size(): " << ltg_.size() << std::endl;
+  #endif
 
   if (W_.size() != 0) {
     W_.clear();
@@ -1148,12 +1140,10 @@ void TrilinosLinearAlgebra::TrilinosImpl::alloc(ComMod& com_mod, eqType& lEq)
 
   int cpp_index = 1;
   int task_id = com_mod.cm.idcm();
-  //std::cout << "[TrilinosImpl.alloc] task_id: " << task_id << std::endl;
 
   trilinos_lhs_create_(gtnNo, lhs.mynNo, tnNo, lhs.nnz, ltg_.data(), com_mod.ltg.data(), com_mod.rowPtr.data(), 
       com_mod.colPtr.data(), dof, cpp_index, task_id);
 
-  //std::cout << "[TrilinosImpl.alloc] Done " << std::endl;
 }
 
 //----------
@@ -1254,8 +1244,10 @@ void TrilinosLinearAlgebra::TrilinosImpl::init_dir_and_coup_neu(ComMod& com_mod,
 //
 void TrilinosLinearAlgebra::TrilinosImpl::initialize(ComMod& com_mod)
 {
-  //std::cout << "[TrilinosImpl] ---------- initialize ---------- " << std::endl;
-  //std::cout << "[TrilinosImpl.initialize] com_mod.tnNo: " << com_mod.tnNo << std::endl;
+  #ifdef debug_initialize
+  std::cout << "[TrilinosImpl] ---------- initialize ---------- " << std::endl;
+  std::cout << "[TrilinosImpl.initialize] com_mod.tnNo: " << com_mod.tnNo << std::endl;
+  #endif
   ltg_.resize(com_mod.tnNo);
 
   for (int a = 0; a < com_mod.tnNo; a++) {
@@ -1269,16 +1261,12 @@ void TrilinosLinearAlgebra::TrilinosImpl::initialize(ComMod& com_mod)
 //
 void TrilinosLinearAlgebra::TrilinosImpl::solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res)
 {
-  std::cout << "[TrilinosImpl] ---------- TrilinosImpl solve ---------- " << std::endl;
-
   init_dir_and_coup_neu(com_mod, incL, res);
 
   auto& Val = com_mod.Val;
   auto& R = com_mod.R;
   int solver_type = static_cast<int>(lEq.ls.LS_type);
   int prec_type = static_cast<int>(preconditioner_);
-  std::cout << "[TrilinosImpl.solve] solver_type: " << solver_type << std::endl;
-  std::cout << "[TrilinosImpl.solve] prec_type: " << prec_type << std::endl;
 
   if (consts::trilinos_preconditioners.count(preconditioner_) == 0) {
     auto prec_name = consts::preconditioner_type_to_name.at(lEq.ls.PREC_Type); 
@@ -1298,17 +1286,17 @@ void TrilinosLinearAlgebra::TrilinosImpl::solve(ComMod& com_mod, eqType& lEq, co
 
 void TrilinosLinearAlgebra::TrilinosImpl::solve_assembled(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res)
 {
-  std::cout << "[TrilinosImpl] ---------- TrilinosImpl solve_assembled ---------- " << std::endl;
-
   lEq.FSILS.RI.suc = false; 
   int solver_type = static_cast<int>(lEq.ls.LS_type);
   int prec_type = static_cast<int>(preconditioner_);
   bool assembled = true;
+  #ifdef debug_solve_assembled
   std::cout << "[TrilinosImpl.solve_assembled] R_.size(): " << R_.size() << std::endl;
   std::cout << "[TrilinosImpl.solve_assembled] W_.size(): " << W_.size() << std::endl;
   std::cout << "[TrilinosImpl.solve_assembled] solver_type: " << solver_type << std::endl;
   std::cout << "[TrilinosImpl.solve_assembled] prec_type: " << prec_type << std::endl;
   std::cout << "[TrilinosImpl.solve_assembled] lEq.FSILS.RI.suc: " << lEq.FSILS.RI.suc << std::endl;
+  #endif
 
   if (consts::trilinos_preconditioners.count(preconditioner_) == 0) {
     auto prec_name = consts::preconditioner_type_to_name.at(lEq.ls.PREC_Type); 
@@ -1329,8 +1317,4 @@ void TrilinosLinearAlgebra::TrilinosImpl::solve_assembled(ComMod& com_mod, eqTyp
   }
 
 }
-
- 
-
- 
 

@@ -58,6 +58,19 @@
 #include <iomanip>
 #include <iostream>
 
+//------------------------
+// add_eq_linear_algebra
+//------------------------
+// Create a LinearAlgebra object for an equation.
+//
+void add_eq_linear_algebra(ComMod& com_mod, eqType& lEq)
+{
+  lEq.linear_algebra = LinearAlgebraFactory::create_interface(lEq.linear_algebra_type);
+  lEq.linear_algebra->initialize(com_mod, lEq);
+  lEq.linear_algebra->set_assembly(lEq.linear_algebra_assembly_type);
+  lEq.linear_algebra->set_preconditioner(lEq.linear_algebra_preconditioner);
+}
+
 /// @brief Read in a solver XML file and all mesh and BC data.  
 //
 void read_files(Simulation* simulation, const std::string& file_name)
@@ -720,6 +733,13 @@ int main(int argc, char *argv[])
     dmsg << "Initialize " << " ... ";
     #endif
     initialize(simulation, init_time);
+
+    // Create LinearAlgebra objects for each equation.
+    //
+    for (int iEq = 0; iEq < simulation->com_mod.nEq; iEq++) {
+      auto& eq = simulation->com_mod.eq[iEq];
+      add_eq_linear_algebra(simulation->com_mod, eq);
+    }
 
     #ifdef debug_main
     for (int iM = 0; iM < simulation->com_mod.nMsh; iM++) {

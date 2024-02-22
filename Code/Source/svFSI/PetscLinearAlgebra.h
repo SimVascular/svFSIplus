@@ -44,16 +44,18 @@ class PetscLinearAlgebra : public virtual LinearAlgebra {
   public:
     PetscLinearAlgebra();
     ~PetscLinearAlgebra() { };
-    virtual void alloc(ComMod& com_mod, eqType& lEq) {};
+    virtual void alloc(ComMod& com_mod, eqType& lEq);
     virtual void assemble(ComMod& com_mod, const int num_elem_nodes, const Vector<int>& eqN, 
         const Array3<double>& lK, const Array<double>& lR);
-    virtual void initialize(ComMod& com_mod);
+    virtual void initialize(ComMod& com_mod, eqType& lEq);
     virtual void solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res);
     virtual void solve_assembled(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res);
     virtual void set_assembly(consts::LinearAlgebraType assembly_type);
     virtual void set_preconditioner(consts::PreconditionerType prec_type);
 
   private:
+    void initialize_fsils(ComMod& com_mod, eqType& lEq);
+    LinearAlgebra* fsils_solver = nullptr;
     // Private class used to hide PETSc implementation details.
     class PetscImpl;
     PetscImpl* impl = nullptr;

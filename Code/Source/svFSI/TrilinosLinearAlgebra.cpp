@@ -45,7 +45,7 @@ class TrilinosLinearAlgebra::TrilinosImpl {
     void alloc(ComMod& com_mod, eqType& lEq){};
     void assemble(ComMod& com_mod, const int num_elem_nodes, const Vector<int>& eqN,
         const Array3<double>& lK, const Array<double>& lR){};
-    void initialize(ComMod& com_mod) {};
+    void initialize(ComMod& com_mod, eqType& lEq) {};
     void solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res) {};
     void solve_assembled(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res) {};
 };
@@ -58,7 +58,6 @@ class TrilinosLinearAlgebra::TrilinosImpl {
 
 TrilinosLinearAlgebra::TrilinosLinearAlgebra()
 {
-  //std::cout << "[TrilinosLinearAlgebra] ---------- TrilinosLinearAlgebra ---------- " << std::endl;
   #ifndef WITH_TRILINOS
   throw std::runtime_error("[TrilinosLinearAlgebra] There is no Trilinos interface.");
   #else
@@ -71,7 +70,6 @@ TrilinosLinearAlgebra::TrilinosLinearAlgebra()
 
 void TrilinosLinearAlgebra::alloc(ComMod& com_mod, eqType& lEq)
 {
-  //std::cout << "[TrilinosLinearAlgebra] ---------- alloc ---------- " << std::endl;
   impl->alloc(com_mod, lEq);
 }
 
@@ -81,9 +79,8 @@ void TrilinosLinearAlgebra::assemble(ComMod& com_mod, const int num_elem_nodes, 
   impl->assemble(com_mod, num_elem_nodes, eqN, lK, lR);
 }
 
-void TrilinosLinearAlgebra::initialize(ComMod& com_mod)
+void TrilinosLinearAlgebra::initialize(ComMod& com_mod, eqType& lEq)
 {
-  //std::cout << "[TrilinosLinearAlgebra] ---------- initialize ---------- " << std::endl;
   impl->initialize(com_mod);
 }
 
@@ -100,13 +97,13 @@ void TrilinosLinearAlgebra::set_preconditioner(consts::PreconditionerType prec_t
 
 void TrilinosLinearAlgebra::solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res)
 {
-  std::cout << "[TrilinosLinearAlgebra] ---------- solve ---------- " << std::endl;
+  std::cout << "[TrilinosLinearAlgebra::solve] solve " << std::endl;
   impl->solve(com_mod, lEq, incL, res);
 }
 
 void TrilinosLinearAlgebra::solve_assembled(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res)
 {
-  std::cout << "[TrilinosLinearAlgebra] ---------- solve_assembled ---------- " << std::endl;
+  std::cout << "[TrilinosLinearAlgebra::solve_assembled] solve_assembled " << std::endl;
   impl->solve_assembled(com_mod, lEq, incL, res);
 }
 
