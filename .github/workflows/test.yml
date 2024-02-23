@@ -38,14 +38,6 @@ jobs:
           cd build
           cmake -DENABLE_COVERAGE=ON -DENABLE_ARRAY_INDEX_CHECKING=ON ..
           make -j2
-# This can be removed once the macos-14 runner also comes with miniconda installed
-      - name: Install Miniconda (macos-14 only)
-        if: startsWith(matrix.os, 'macos-14')
-        run: | 
-          wget https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O ~/miniconda.sh
-          bash ~/miniconda.sh -b -p $HOME/miniconda
-          source $HOME/miniconda/bin/activate
-          conda init zsh
       - name: Install test dependencies
         run: |
           conda create -n svfsiplus python=3.9
