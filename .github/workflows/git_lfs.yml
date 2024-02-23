@@ -7,7 +7,9 @@ on:
   pull_request:
     branches:
       - main
-permissions: write-all
+permissions:
+  contents: read
+  issues: write
 jobs:
   check_git_lfs:
     runs-on: ubuntu-latest
