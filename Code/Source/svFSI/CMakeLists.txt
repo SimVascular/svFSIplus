@@ -262,6 +262,12 @@ endif()
 
 # unit tests and Google Test
 if(ENABLE_UNIT_TEST)
+  # Force Google Test to use pthreads (for ubuntu20)
+  add_definitions(-DGTEST_HAS_PTHREAD=1)
+
+  # Find pthreads package
+  find_package(Threads REQUIRED)
+
   # install Google Test
   include(FetchContent)
   FetchContent_Declare(
@@ -280,7 +286,7 @@ if(ENABLE_UNIT_TEST)
   target_link_libraries(
     hello_test
     GTest::gtest_main
-    pthread
+    Threads::Threads   # link threads library 
   )
   # gtest_discover_tests(hello_test)
   add_test(NAME GTestSample COMMAND hello_test)
@@ -314,7 +320,7 @@ if(ENABLE_UNIT_TEST)
   target_link_libraries(
     runUnitTest
     GTest::gtest_main
-    pthread
+    Threads::Threads   # link threads library 
   )
   # gtest_discover_tests(runUnitTest)
   add_test(NAME UnitTest COMMAND runUnitTest)
