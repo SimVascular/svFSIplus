@@ -2236,7 +2236,6 @@ void LinearAlgebraParameters::set_values(tinyxml2::XMLElement* xml_elem)
         "' given in the XML <Linear_algebra> <Assembly> element.\nValid types are: " + valid_types);
   }
 
-
   values_set_ = true;
 }
 

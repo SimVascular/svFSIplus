@@ -33,12 +33,9 @@
 
 #include "LinearAlgebra.h"
 
-//-----------------------
-// TrilinosLinearAlgebra
-//--------------------
-// The TrilinosLinearAlgebra class implements the LinearAlgebra 
-// interface for the Trilinos numerical linear algebra package.
-//
+/// @brief The TrilinosLinearAlgebra class implements the LinearAlgebra 
+/// interface for the Trilinos numerical linear algebra package.
+///
 class TrilinosLinearAlgebra : public virtual LinearAlgebra {
 
   public:

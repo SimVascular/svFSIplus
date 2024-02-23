@@ -34,9 +34,8 @@
 #include "ComMod.h"
 #include "consts.h"
 
-//---------------
-// LinearAlgebra
-//---------------
+/// @brief The LinearAlgebra class provides an abstract interface to linear algebra 
+/// frameworks: Trilinos, PETSc, etc.
 //
 class LinearAlgebra {
   public:

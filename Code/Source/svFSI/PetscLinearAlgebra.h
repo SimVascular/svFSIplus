@@ -33,12 +33,9 @@
 
 #include "LinearAlgebra.h"
 
-//--------------------
-// PetscLinearAlgebra
-//--------------------
-// The PetscLinearAlgebra class implements the LinearAlgebra 
-// interface for the PETSc numerical linear algebra package.
-//
+/// @brief The PetscLinearAlgebra class implements the LinearAlgebra 
+/// interface for the PETSc numerical linear algebra package.
+///
 class PetscLinearAlgebra : public virtual LinearAlgebra {
 
   public:

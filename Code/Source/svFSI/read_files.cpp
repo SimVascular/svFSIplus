@@ -2034,7 +2034,6 @@ void read_ls(Simulation* simulation, EquationParameters* eq_params, consts::Solv
   lEq.ls.PREC_Type = PreconditionerType::PREC_FSILS;
 
   // Set assembly type.
-  //
   lEq.linear_algebra_assembly_type = LinearAlgebra::name_to_type.at(linear_algebra.assembly()); 
 
   if (!solver_type_defined) {

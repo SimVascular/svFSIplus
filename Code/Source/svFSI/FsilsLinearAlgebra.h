@@ -36,9 +36,9 @@
 //--------------------
 // FsilsLinearAlgebra
 //--------------------
-// The FsilsLinearAlgebra class implements the LinearAlgebra 
-// interface for the FSILS numerical linear algebra package.
-//
+/// @brief The FsilsLinearAlgebra class implements the LinearAlgebra 
+/// interface for the FSILS numerical linear algebra package.
+///
 class FsilsLinearAlgebra : public virtual LinearAlgebra {
 
   public:

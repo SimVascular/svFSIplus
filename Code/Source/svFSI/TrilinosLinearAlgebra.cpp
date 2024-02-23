@@ -54,7 +54,7 @@ class TrilinosLinearAlgebra::TrilinosImpl {
 /////////////////////////////////////////////////////////////////
 //          T r i l i n o s L i n e a r A l g e b r a          //
 /////////////////////////////////////////////////////////////////
-// The following methods implement the LinearAlgebra interface.
+// The following methods implement the Trilinos LinearAlgebra interface.
 
 TrilinosLinearAlgebra::TrilinosLinearAlgebra()
 {
@@ -68,39 +68,61 @@ TrilinosLinearAlgebra::TrilinosLinearAlgebra()
   #endif
 }
 
+/// @brief Allocate data arrays.
 void TrilinosLinearAlgebra::alloc(ComMod& com_mod, eqType& lEq)
 {
   impl->alloc(com_mod, lEq);
 }
 
+/// @brief Assemble local element arrays.
 void TrilinosLinearAlgebra::assemble(ComMod& com_mod, const int num_elem_nodes, const Vector<int>& eqN,
         const Array3<double>& lK, const Array<double>& lR)
 {
+  //std::cout << "[TrilinosLinearAlgebra::assemble] assemble " << std::endl;
   impl->assemble(com_mod, num_elem_nodes, eqN, lK, lR);
 }
 
+/// @brief Initialize Trilinos framework.
 void TrilinosLinearAlgebra::initialize(ComMod& com_mod, eqType& lEq)
 {
   impl->initialize(com_mod);
 }
 
+/// @brief Set the linear algebra package for assmbly.
 void TrilinosLinearAlgebra::set_assembly(consts::LinearAlgebraType atype)
 {
+  if (assembly_type == consts::LinearAlgebraType::none) {
+    return;
+  }
+
+  if (assembly_type != consts::LinearAlgebraType::trilinos) { 
+    auto str_type = LinearAlgebra::type_to_name.at(atype);
+    throw std::runtime_error("[TrilinosLinearAlgebra] ERROR: Can't set Trilinos linear algebra to use '" + 
+      str_type + "' for assembly." + " Trilinos can only use 'trilinos' for assembly.");
+  }
+
   assembly_type = atype;
 }
  
+/// @brief Set the proconditioner.
 void TrilinosLinearAlgebra::set_preconditioner(consts::PreconditionerType prec_type)
 {
   preconditioner_type = prec_type;
   impl->preconditioner_ = prec_type;
 }
 
+/// @brief Solve a system of linear equations.
 void TrilinosLinearAlgebra::solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res)
 {
   std::cout << "[TrilinosLinearAlgebra::solve] solve " << std::endl;
-  impl->solve(com_mod, lEq, incL, res);
+  if (assembly_type == consts::LinearAlgebraType::trilinos) {
+    impl->solve_assembled(com_mod, lEq, incL, res);
+  } else {
+    impl->solve(com_mod, lEq, incL, res);
+  }
 }
 
+/// @brief Solve a system of linear equations assembled by Trilinos.
 void TrilinosLinearAlgebra::solve_assembled(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res)
 {
   std::cout << "[TrilinosLinearAlgebra::solve_assembled] solve_assembled " << std::endl;

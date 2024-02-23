@@ -65,34 +65,26 @@ PetscLinearAlgebra::PetscLinearAlgebra()
   #endif
 }
 
+/// @brief Allocate data arrays.
 void PetscLinearAlgebra::alloc(ComMod& com_mod, eqType& lEq)
 {
   initialize_fsils(com_mod, lEq);
 }
 
-//----------
-// assemble
-//----------
-//
+/// @brief Assemble local element arrays.
 void PetscLinearAlgebra::assemble(ComMod& com_mod, const int num_elem_nodes, const Vector<int>& eqN, 
     const Array3<double>& lK, const Array<double>& lR)
 {
   fsils_solver->assemble(com_mod, num_elem_nodes, eqN, lK, lR);
 }
 
-//------------
-// initialize
-//------------
-//
+/// @brief Initialize the PETSc framework.
 void PetscLinearAlgebra::initialize(ComMod& com_mod, eqType& lEq)
 {
   impl->initialize(com_mod, lEq);
 }
 
-//------------------
-// initialize_fsils
-//------------------
-//
+/// @brief Initialize an FsilsLinearAlgebra object used for assembly and preconditioner. 
 void PetscLinearAlgebra::initialize_fsils(ComMod& com_mod, eqType& lEq)
 {
   fsils_solver = LinearAlgebraFactory::create_interface(consts::LinearAlgebraType::fsils);
@@ -101,26 +93,32 @@ void PetscLinearAlgebra::initialize_fsils(ComMod& com_mod, eqType& lEq)
   fsils_solver->set_preconditioner(preconditioner_type);
 }
 
-//--------------
-// set_assembly
-//--------------
-//
+/// @brief Set the linear algebra package for assmbly.
 void PetscLinearAlgebra::set_assembly(consts::LinearAlgebraType atype)
 {
-  assembly_type = atype;
+  if (atype == consts::LinearAlgebraType::none) {
+    return;
+  }
+
+  auto str_type = LinearAlgebra::type_to_name.at(atype);
+  throw std::runtime_error("[PetscLinearAlgebra] ERROR: Can't set Petsc linear algebra to use '" +
+      str_type + "' for assembly." + " Petsc can't be used with assembly.");
 }
 
+/// @brief Set the proconditioner.
 void PetscLinearAlgebra::set_preconditioner(consts::PreconditionerType prec_type)
 {
   preconditioner_type = prec_type;
 }
 
+/// @brief Solve a system of linear equations.
 void PetscLinearAlgebra::solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res)
 {
   std::cout << "[PetscLinearAlgebra] solve" << std::endl;
   impl->solve(com_mod, lEq, incL, res);
 }
 
+/// @brief Solve a system of linear equations assembled by Trilinos.
 void PetscLinearAlgebra::solve_assembled(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res)
 {
   impl->solve(com_mod, lEq, incL, res);

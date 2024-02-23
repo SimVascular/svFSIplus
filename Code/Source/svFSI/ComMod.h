@@ -1302,22 +1302,6 @@ class ibType
     ibCommType cm;
 };
 
-/// @brief Data type for Trilinos Linear Solver related arrays
-//
-class tlsType
-{
-  public:
-
-    /// @brief Local to global mapping
-    Vector<int> ltg;
-
-    /// @brief Factor for Dirichlet BCs
-    Array<double> W;
-
-    /// @brief Residual
-    Array<double> R;
-};
-
 /// @brief The ComMod class duplicates the data structures in the Fortran COMMOD module
 /// defined in MOD.f. 
 ///
