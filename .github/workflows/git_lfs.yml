@@ -1,6 +1,12 @@
 # This workflow checks for large files that are not tracked with git lfs
 name: Check for git lfs
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 permissions: write-all
 jobs:
   check_git_lfs:
