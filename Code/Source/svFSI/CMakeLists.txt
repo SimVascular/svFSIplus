@@ -281,7 +281,8 @@ if(ENABLE_UNIT_TEST)
     hello_test
     GTest::gtest_main
   )
-  gtest_discover_tests(hello_test)
+  # gtest_discover_tests(hello_test)
+  add_test(NAME GTestSample COMMAND hello_test)
 
 
   # add test.cpp for unit test
@@ -308,7 +309,8 @@ if(ENABLE_UNIT_TEST)
     runUnitTest
     GTest::gtest_main
   )
-  gtest_discover_tests(runUnitTest)
+  # gtest_discover_tests(runUnitTest)
+  add_test(NAME UnitTest COMMAND runUnitTest)
 
 endif()
 

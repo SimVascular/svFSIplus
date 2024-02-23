@@ -120,6 +120,7 @@ int main(int argc, char **argv) {
     auto simulation = new Simulation();
 
     std::string file_name = "../../../../tests/unitTests/unitTest.xml";
+    // std::string file_name = "";
 
     read_files(simulation, file_name);
 
