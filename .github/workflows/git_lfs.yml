@@ -4,10 +4,8 @@ on: [push, pull_request]
 jobs:
   check_git_lfs:
     runs-on: ubuntu-latest
-    permissions: read-all
     steps:
         - name: Check for large files without git lfs
           uses: ppremk/lfs-warning@v3.2
           with:
-            token: ${{ secrets.GITHUB_TOKEN }}
             filesizelimit: 1MB
