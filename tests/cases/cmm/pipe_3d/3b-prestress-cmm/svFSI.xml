@@ -49,8 +49,8 @@
 <Add_equation type="CMM" > 
    <Coupled> true </Coupled>   
    <Min_iterations> 3 </Min_iterations>  
-   <Max_iterations> 10 </Max_iterations>
-   <Tolerance> 1e-4 </Tolerance> 
+   <Max_iterations> 30 </Max_iterations>
+   <Tolerance> 1e-12 </Tolerance> 
    <!--Prestress> true </Prestress-->
 
    <Fluid_density> 1.06 </Fluid_density>
@@ -67,12 +67,13 @@
       <Velocity> true </Velocity>
       <Pressure> true</Pressure>
       <WSS> true </WSS>
+      <Traction> true</Traction>
    </Output>
 
    <LS type="GMRES" >
      <Preconditioner> FSILS </Preconditioner>
      <Max_iterations> 100 </Max_iterations>
-     <Tolerance> 1e-4 </Tolerance>
+     <Tolerance> 1e-12 </Tolerance>
    </LS>
   
 

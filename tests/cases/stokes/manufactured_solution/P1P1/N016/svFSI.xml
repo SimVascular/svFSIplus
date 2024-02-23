@@ -44,7 +44,7 @@
    <Coupled> true </Coupled>
    <Min_iterations> 1 </Min_iterations>  
    <Max_iterations> 2 </Max_iterations> 
-   <Tolerance> 1e-9 </Tolerance> 
+   <Tolerance> 1e-12 </Tolerance> 
    <Use_taylor_hood_type_basis> false </Use_taylor_hood_type_basis> 
 
    <Viscosity model="Constant" >
@@ -55,16 +55,18 @@
 
    <LS type="GMRES" >
       <Preconditioner> svfsi </Preconditioner> 
-      <Tolerance> 1e-9 </Tolerance>
+      <Tolerance> 1e-12 </Tolerance>
       <Max_iterations> 100 </Max_iterations> 
       <Krylov_space_dimension> 50 </Krylov_space_dimension>
    </LS>
-
+      
    <Output type="Spatial" >
-     <Velocity> true </Velocity>
-     <Pressure> true </Pressure>
-     <Traction> true </Traction>
-     <WSS> true </WSS>
+      <Velocity> true </Velocity>
+      <Pressure> true </Pressure>
+      <Traction> true </Traction>
+      <Vorticity> true</Vorticity>
+      <Divergence> true</Divergence>
+      <WSS> true </WSS>
    </Output>
 
    <Add_BF mesh="msh" >
