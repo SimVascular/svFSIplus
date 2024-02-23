@@ -1,0 +1,9 @@
+# configuration for code coverage testing with codecov
+coverage:
+  status:
+    project:
+      default:
+        informational: true
+    patch:
+      default:
+        informational: true

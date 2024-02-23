@@ -50,8 +50,8 @@
 
    <Coupled> true </Coupled>
    <Min_iterations> 1 </Min_iterations>  
-   <Max_iterations> 100 </Max_iterations> 
-   <Tolerance> 1e-9 </Tolerance> 
+   <Max_iterations> 4 </Max_iterations> 
+   <Tolerance> 1e-10 </Tolerance> 
 
    <Constitutive_model type="Gucci"> 
      <c> 880 </c>
@@ -71,11 +71,16 @@
      <Displacement> true </Displacement>
      <Velocity> true </Velocity>
      <Jacobian> true </Jacobian>
+     <Stress> true </Stress>
+     <Strain> true </Strain>
+     <Cauchy_stress> true </Cauchy_stress>
+     <Def_grad> true </Def_grad>
+     <VonMises_stress> true </VonMises_stress>
    </Output>
 
    <LS type="BICG" >
       <Preconditioner> FSILS </Preconditioner> 
-      <Tolerance> 1e-9 </Tolerance>
+      <Tolerance> 1e-14 </Tolerance>
       <Max_iterations> 400 </Max_iterations> 
    </LS>
 

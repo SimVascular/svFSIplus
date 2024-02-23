@@ -49,8 +49,8 @@
 <Add_equation type="CMM" > 
    <Coupled> true </Coupled>   
    <Min_iterations> 3 </Min_iterations>  
-   <Max_iterations> 10 </Max_iterations>
-   <Tolerance> 1e-4 </Tolerance> 
+   <Max_iterations> 20 </Max_iterations>
+   <Tolerance> 1e-12 </Tolerance> 
 
    <Fluid_density> 1.06 </Fluid_density>
    <Viscosity model="Constant" >
@@ -65,13 +65,15 @@
       <Displacement> true </Displacement>
       <Velocity> true </Velocity>
       <Pressure> true</Pressure>
+      <Traction> true </Traction>
       <WSS> true </WSS>
    </Output>
 
    <LS type="GMRES" >
      <Preconditioner> FSILS </Preconditioner>
-     <Max_iterations> 100 </Max_iterations>
-     <Tolerance> 1e-4 </Tolerance>
+     <Max_iterations> 10 </Max_iterations>
+     <Tolerance> 1e-12 </Tolerance>
+     <Krylov_space_dimension> 50 </Krylov_space_dimension>
    </LS>
   
 

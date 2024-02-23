@@ -106,7 +106,8 @@ WARN_LOGFILE           =
 # Configuration options related to the input files
 #---------------------------------------------------------------------------
 INPUT                  = "Code/Source" \
-                         "Documentation/pages"
+                         "Documentation/pages" \
+                         "tests"
 INPUT_ENCODING         = UTF-8
 FILE_PATTERNS          = *.cpp \
                          *.h \

@@ -61,8 +61,8 @@
 
    <Coupled> true </Coupled>
    <Min_iterations> 4 </Min_iterations>  
-   <Max_iterations> 10 </Max_iterations> 
-   <Tolerance> 1e-8 </Tolerance> 
+   <Max_iterations> 5 </Max_iterations> 
+   <Tolerance> 1e-12 </Tolerance> 
 
    <Constitutive_model type="nHK"> </Constitutive_model>
    <Density> 1e-3 </Density> 
@@ -74,12 +74,16 @@
    <Continuity_stabilization_coefficient> 1e-3 </Continuity_stabilization_coefficient> 
 
    <Output type="Spatial" >
+     <Divergence> true </Divergence>
+     <Pressure> true </Pressure>
      <Displacement> true </Displacement>
      <Velocity> true </Velocity>
-     <Pressure> true </Pressure>
-     <Stress> true </Stress>
+     <Def_grad> true </Def_grad>
      <Jacobian> true </Jacobian>
-     <Divergence> true </Divergence>
+     <Stress> true </Stress>
+     <Strain> true </Strain>
+     <Cauchy_stress> true </Cauchy_stress>
+     <VonMises_stress> true </VonMises_stress>
    </Output>
 
    <Output type="Volume_integral" >
@@ -88,9 +92,9 @@
 
    <LS type="GMRES" >
       <Preconditioner> svfsi </Preconditioner>
-      <Tolerance> 1e-8 </Tolerance>
+      <Tolerance> 1e-12 </Tolerance>
       <Max_iterations> 100 </Max_iterations> 
-      <Krylov_space_dimension> 50 </Krylov_space_dimension> 
+      <Krylov_space_dimension> 500 </Krylov_space_dimension> 
    </LS>
 
    <Add_BC name="X0" > 
