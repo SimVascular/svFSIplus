@@ -7,7 +7,7 @@ from .conftest import run_with_reference
 base_folder = "stokes"
 
 # Fields to test
-fields = ["Pressure", "Velocity"]
+fields = ["Pressure", "Velocity", "Traction", "WSS", "Vorticity", "Divergence"]
 
 
 @pytest.mark.parametrize("mesh", ["N" + str(2**i).zfill(3) for i in range(2, 3)])

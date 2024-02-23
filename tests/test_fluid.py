@@ -4,7 +4,7 @@ from .conftest import run_with_reference
 base_folder = "fluid"
 
 # Fields to test
-fields = ["Velocity", "Pressure", "Traction", "WSS"]
+fields = ["Velocity", "Pressure", "Traction", "WSS", "Vorticity", "Divergence"]
 
 
 def test_pipe_RCR_3d(n_proc):
@@ -13,7 +13,7 @@ def test_pipe_RCR_3d(n_proc):
     run_with_reference(base_folder, test_folder, fields, n_proc, t_max)
 
 
-def test_cavity_2d(n_proc):
+def test_driven_cavity_2d(n_proc):
     test_folder = "driven_cavity_2d"
     t_max = 2
     run_with_reference(base_folder, test_folder, fields, n_proc, t_max)

@@ -33,8 +33,8 @@
 <Add_equation type="CMM" > 
    <Coupled> true </Coupled>   
    <Min_iterations> 3 </Min_iterations>  
-   <Max_iterations> 10 </Max_iterations>
-   <Tolerance> 1e-7 </Tolerance> 
+   <Max_iterations> 13 </Max_iterations>
+   <Tolerance> 1e-12 </Tolerance>
 
    <Initialize> inflate </Initialize>
    <Poisson_ratio> 0.5 </Poisson_ratio>
@@ -49,7 +49,8 @@
 
    <LS type="CG" >
      <Max_iterations> 500 </Max_iterations>
-     <Tolerance> 1e-7 </Tolerance>
+     <Tolerance> 1e-12 </Tolerance>
+     <Krylov_space_dimension> 50 </Krylov_space_dimension>
    </LS>
   
 

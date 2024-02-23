@@ -82,9 +82,12 @@ include(SimVascularFunctionCheckCompilerFlags)
 #
 # These variables must later be add to 'ExternalProject_Add(svFSI' as -D options. 
 #
-set(SV_USE_TRILINOS OFF CACHE BOOL "Use Trilinos Library with svFSI")
+set(SV_USE_TRILINOS OFF CACHE BOOL "Build with the Trilinos linear algebra package")
+#set(SV_USE_PETSC OFF CACHE BOOL "Build with the PETSc linear algebra package")
+set(SV_PETSC_DIR "" CACHE STRING "Path to a local install of the PETSc linear algebra package")
 set(ENABLE_COVERAGE OFF CACHE BOOL "Enable code coverage")
 set(ENABLE_ARRAY_INDEX_CHECKING OFF CACHE BOOL "Enable Array index checking")
+set(SV_LOCAL_VTK_PATH "" CACHE STRING "Path to a local build of VTK.")
 
 #-----------------------------------------------------------------------------
 # RPATH handling
@@ -117,7 +120,7 @@ set(SV_EXTERNALS_TOPLEVEL_DIR "${CMAKE_BINARY_DIR}/Externals-build/sv_externals"
 #-----------------------------------------------------------------------------
 
 #-----------------------------------------------------------------------------
-# svSolver!
+# svFSIplus solver.
 set(SV_ADDITIONAL_CMAKE_ARGS "" CACHE STRING "If more options want to be provided to the sv_externals build, they can be with this string")
 set(SV_APPLE_CMAKE_ARGS)
 ExternalProject_Add(svFSI
@@ -141,8 +144,11 @@ ExternalProject_Add(svFSI
     -DSV_EXTERNALS_USE_TOPLEVEL_DIR:BOOL=ON
     -DSV_EXTERNALS_TOPLEVEL_DIR:PATH=${SV_EXTERNALS_TOPLEVEL_DIR}
     -DSV_USE_TRILINOS:BOOL=${SV_USE_TRILINOS}
+    #-DSV_USE_PETSC:BOOL=${SV_USE_PETSC}
+    -DSV_PETSC_DIR:STRING=${SV_PETSC_DIR}
     -DENABLE_COVERAGE:BOOL=${ENABLE_COVERAGE}
     -DENABLE_ARRAY_INDEX_CHECKING:BOOL=${ENABLE_ARRAY_INDEX_CHECKING}
+    -DSV_LOCAL_VTK_PATH:STRING=${SV_LOCAL_VTK_PATH}
     ${SV_APPLE_CMAKE_ARGS}
     ${SV_ADDITIONAL_CMAKE_ARGS}
     )
