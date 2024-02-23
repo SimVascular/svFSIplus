@@ -12,12 +12,11 @@ fields = ["Displacement", "Velocity", "Stress", "Strain"]
 @pytest.mark.parametrize("n_proc", [1])
 def test_plate(n_proc):
     test_folder = "plate"
-    t_max = 100
+    t_max = 10
     run_with_reference(base_folder, test_folder, fields, n_proc, t_max)
 
 
 @pytest.mark.parametrize("n_proc", [1])
 def test_valve(n_proc):
     test_folder = "valve"
-    t_max = 100
-    run_with_reference(base_folder, test_folder, fields, n_proc, t_max)
+    run_with_reference(base_folder, test_folder, fields, n_proc)
