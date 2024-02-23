@@ -2,7 +2,7 @@
 
 [TOC]
 
-[Integration testing](https://en.wikipedia.org/wiki/Integration_testing) is an essential part of software development. Essentially, assume that every untested line in `svFSIplus` is not working correctly. Below is a quick guide on how to run and add integration tests for `svFSI`.
+[Integration testing](https://en.wikipedia.org/wiki/Integration_testing) is an essential part of software development. It is performed when integrating code changes into the main development branch to verify that the code works as expected. Below is a quick guide on how to run and add integration tests for `svFSI`.
 
 ## Prerequisites
 There are two things you need to do before you can run a test case: Build `svFSI` and install `Git LFS` to download the test cases.
@@ -15,7 +15,7 @@ Follow the build instructions outlined [here](https://simvascular.github.io/svFS
 in the repository root.
 
 ### Install Git LFS
-You need to install `Git LFS` ([*Large File Storage*](https://git-lfs.com/)) to run any test, which we use to track large files. Tracking large files with `Git` can significantly add to the repository size. These large files include meshes and boundary conditions for all test cases. They are stored on `GitHub`, but the files themselves just contain a hash or Object ID that is tracked with `Git`. All file extensions currently tracked with Git LFS are listed under [in this file](../.gitattributes).
+You need to install `Git LFS` ([*Large File Storage*](https://git-lfs.com/)) to run any test, which we use to track large files. Tracking large files with `Git` can significantly add to the repository size. These large files include meshes and boundary conditions for all test cases. They are stored on `GitHub`, but the files themselves just contain a hash or Object ID that is tracked with `Git`. All file extensions currently tracked with `Git LFS` are listed under [in this file](../.gitattributes).
 
 When using `Git LFS` for the first time, you need to follow these simple steps:
 1. Install on your platform by following [this guide](https://docs.github.com/en/repositories/working-with-files/managing-large-files/installing-git-large-file-storage).
@@ -30,7 +30,7 @@ When using `Git LFS` for the first time, you need to follow these simple steps:
 After performing these steps once, you never need to worry about Git LFS again. All large files are handled automatically during all Git operations, like `push`, `pull`, or `commit`.
 
 ## Running tests with pytest
-You can run an individual test by navigating to the `./tests/cases/<physics>/<test>` folder you want to run and execute `svFSIplis` with the `svFSI.xml` input file as an argument. A more elegant way, e.g., to run a whole group of tests, is using [`pytest`](https://docs.pytest.org/). By default, it will run all tests defined in the `test_*.py` files in the [./tests](https://github.com/SimVascular/svFSIplus/tree/main/tests) folder. Tests and input files in [./tests/cases](https://github.com/SimVascular/svFSIplus/tree/main/tests/cases) are grouped by physics type, e.g., [struct](https://github.com/SimVascular/svFSIplus/tree/main/tests/cases/struct), [fluid](https://github.com/SimVascular/svFSIplus/tree/main/tests/cases/fluid), or [fsi](https://github.com/SimVascular/svFSIplus/tree/main/tests/cases/fsi) (using the naming convention from `EquationType`). Here are a couple of useful `Pytest` commands:
+You can run an individual test by navigating to the `./tests/cases/<physics>/<test>` folder you want to run and execute `svFSIplus` with the `svFSI.xml` input file as an argument. A more elegant way, e.g., to run a whole group of tests, is using [`pytest`](https://docs.pytest.org/). By default, it will run all tests defined in the `test_*.py` files in the [./tests](https://github.com/SimVascular/svFSIplus/tree/main/tests) folder. Tests and input files in [./tests/cases](https://github.com/SimVascular/svFSIplus/tree/main/tests/cases) are grouped by physics type, e.g., [struct](https://github.com/SimVascular/svFSIplus/tree/main/tests/cases/struct), [fluid](https://github.com/SimVascular/svFSIplus/tree/main/tests/cases/fluid), or [fsi](https://github.com/SimVascular/svFSIplus/tree/main/tests/cases/fsi) (using the naming convention from `EquationType`). Here are a couple of useful `Pytest` commands:
 
 - Run only tests matching a pattern (can be physics or test case name):
     ```
@@ -61,6 +61,6 @@ Here are some steps you can follow to create a new test for the code you impleme
 5. Set the **maximum number** of nonlinear iterations to the one where it currently achieves the set tolerance. This way, the test will fail if the linearization gets broken in the future (but the test still slowly converges to the correct solution).
 6. **Test the test**: Does it fail if you change parts of your input file that the test should be sensitive to (e.g., material parameters if you implemented a new solid material)?
 7. Put your files in the appropriate **folder** under `./tests/cases` and append the test to the Python `test_*.py` file. If you created a new physics type, create new ones for both.
-8. Check that the test is executed correctly in `GitHub Actions` when opening your pull request. You should see in your coverage report that your new code is covered.
+8. Check that the test is **executed** correctly in `GitHub Actions` when opening your pull request. You should see in your coverage report that your new code is covered.
 
 If you want to parameterize values in your test case, you can use `@pytest` [fixtures](https://docs.pytest.org/en/6.2.x/fixture.html). We currently use them to automatically loop different numbers of processors, meshes, or input files.
