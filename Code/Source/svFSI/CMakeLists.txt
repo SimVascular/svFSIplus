@@ -263,7 +263,8 @@ endif()
 # unit tests and Google Test
 if(ENABLE_UNIT_TEST)
   # Force Google Test to use pthreads (for ubuntu20)
-  add_definitions(-DGTEST_HAS_PTHREAD=1)
+  # add_definitions(-DGTEST_HAS_PTHREAD=1)
+  add_compile_definitions(GTEST_HAS_PTHREAD=1)
 
   # Find pthreads package
   find_package(Threads REQUIRED)
@@ -283,10 +284,12 @@ if(ENABLE_UNIT_TEST)
     hello_test
     ../../../tests/unitTests/hello_test.cpp
   )
+  target_compile_definitions(hello_test PRIVATE GTEST_HAS_PTHREAD=1)
   target_link_libraries(
     hello_test
     GTest::gtest_main
     Threads::Threads   # link threads library 
+    pthread
   )
   # gtest_discover_tests(hello_test)
   add_test(NAME GTestSample COMMAND hello_test)
@@ -317,11 +320,15 @@ if(ENABLE_UNIT_TEST)
   )
 
   # link Google Test
+  target_compile_definitions(runUnitTest PRIVATE GTEST_HAS_PTHREAD=1)
   target_link_libraries(
     runUnitTest
     GTest::gtest_main
     Threads::Threads   # link threads library 
+    pthread
   )
+  target_compile_definitions(runUnitTest PRIVATE GTEST_HAS_PTHREAD=1)
+
   # gtest_discover_tests(runUnitTest)
   add_test(NAME UnitTest COMMAND runUnitTest)
 
