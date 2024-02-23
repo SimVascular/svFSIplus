@@ -1,5 +1,8 @@
 var searchData=
 [
-  ['z_5fcoords_560',['z_coords',['../classecg_leads_type.html#ad359b7b81451946e4a72482f5ec2c171',1,'ecgLeadsType']]],
-  ['zeroave_561',['zeroAve',['../class_com_mod.html#a11d9003b6ca95c2696df556c1d34b441',1,'ComMod']]]
+  ['y_5fcoords_557',['y_coords',['../classecg_leads_type.html#a77e40f133d90ebe13ec836f1d02653d7',1,'ecgLeadsType']]],
+  ['ya_558',['Ya',['../classcem_model_type.html#ad841b0cea097fde32f8e026dfa5893be',1,'cemModelType']]],
+  ['yb_559',['Yb',['../classib_type.html#a5abf4b805274776e1bc052bec0b0e25b',1,'ibType']]],
+  ['yn_560',['Yn',['../class_com_mod.html#a4823dd0ac7ac43932cea78655bf25eb7',1,'ComMod']]],
+  ['yo_561',['Yo',['../class_com_mod.html#af1802dc394d8962067547116939dd1d0',1,'ComMod']]]
 ];
