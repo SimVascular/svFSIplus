@@ -280,6 +280,7 @@ if(ENABLE_UNIT_TEST)
   target_link_libraries(
     hello_test
     GTest::gtest_main
+    pthread
   )
   # gtest_discover_tests(hello_test)
   add_test(NAME GTestSample COMMAND hello_test)
@@ -296,6 +297,11 @@ if(ENABLE_UNIT_TEST)
   
   # libraries
   target_link_libraries(runUnitTest
+    ${GLOBAL_LIBRARIES}
+    ${INTELRUNTIME_LIBRARIES}
+    ${ZLIB_LIBRARY}
+    ${BLAS_LIBRARIES}
+    ${LAPACK_LIBRARIES}
     ${METIS_SVFSI_LIBRARY_NAME}
     ${PARMETIS_SVFSI_LIBRARY_NAME}
     ${TETGEN_LIBRARY_NAME}
@@ -308,6 +314,7 @@ if(ENABLE_UNIT_TEST)
   target_link_libraries(
     runUnitTest
     GTest::gtest_main
+    pthread
   )
   # gtest_discover_tests(runUnitTest)
   add_test(NAME UnitTest COMMAND runUnitTest)
