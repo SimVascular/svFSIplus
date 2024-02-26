@@ -290,6 +290,7 @@ if(ENABLE_UNIT_TEST)
     GTest::gtest_main
     Threads::Threads   # link threads library 
     pthread
+    ${CMAKE_THREAD_LIBS_INIT}
   )
   # gtest_discover_tests(hello_test)
   add_test(NAME GTestSample COMMAND hello_test)
@@ -326,6 +327,7 @@ if(ENABLE_UNIT_TEST)
     GTest::gtest_main
     Threads::Threads   # link threads library 
     pthread
+    ${CMAKE_THREAD_LIBS_INIT}
   )
   target_compile_definitions(runUnitTest PRIVATE GTEST_HAS_PTHREAD=1)
 
