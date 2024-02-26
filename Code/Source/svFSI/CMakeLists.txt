@@ -283,6 +283,7 @@ if(ENABLE_UNIT_TEST)
   )
   target_link_libraries(
     hello_test
+    gtest
     GTest::gtest_main
     pthread   # link pthread on ubuntu20
   )
@@ -317,6 +318,7 @@ if(ENABLE_UNIT_TEST)
   # link Google Test
   target_link_libraries(
     runUnitTest
+    gtest
     GTest::gtest_main 
     pthread   # link pthread on ubuntu20
   )
