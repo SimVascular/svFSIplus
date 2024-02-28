@@ -39,7 +39,7 @@
 <Add_equation type="ustruct" > 
    <Coupled> true </Coupled>
    <Min_iterations> 1 </Min_iterations>  
-   <Max_iterations> 19 </Max_iterations> 
+   <Max_iterations> 10 </Max_iterations> 
    <Tolerance> 1e-12 </Tolerance> 
    <Use_taylor_hood_type_basis> false </Use_taylor_hood_type_basis>
 

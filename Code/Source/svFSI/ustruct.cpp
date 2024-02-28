@@ -142,7 +142,7 @@ void b_ustruct_3d(const ComMod& com_mod, const int eNoN, const double w, const V
   for (int a = 0; a  < eNoN; a++) {
     NxFi(0,a) = Nx(0,a)*Fi(0,0) + Nx(1,a)*Fi(1,0) + Nx(2,a)*Fi(2,0);
     NxFi(1,a) = Nx(0,a)*Fi(0,1) + Nx(1,a)*Fi(1,1) + Nx(2,a)*Fi(2,1);
-    NxFi(2,a) = Nx(1,a)*Fi(1,2) + Nx(1,a)*Fi(1,2) + Nx(2,a)*Fi(2,2);
+    NxFi(2,a) = Nx(0,a)*Fi(0,2) + Nx(1,a)*Fi(1,2) + Nx(2,a)*Fi(2,2);
   }
 
   nFi(0) = nV(0)*Fi(0,0) + nV(1)*Fi(1,0) + nV(2)*Fi(2,0);
