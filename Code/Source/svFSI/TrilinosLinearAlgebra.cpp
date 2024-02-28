@@ -46,6 +46,7 @@ class TrilinosLinearAlgebra::TrilinosImpl {
     void assemble(ComMod& com_mod, const int num_elem_nodes, const Vector<int>& eqN,
         const Array3<double>& lK, const Array<double>& lR){};
     void initialize(ComMod& com_mod) {};
+    void set_preconditioner(consts::PreconditionerType prec_type) {};
     void solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res) {};
     void solve_assembled(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res) {};
 };
@@ -56,6 +57,12 @@ class TrilinosLinearAlgebra::TrilinosImpl {
 /////////////////////////////////////////////////////////////////
 // The following methods implement the Trilinos LinearAlgebra interface.
 
+std::set<consts::LinearAlgebraType> TrilinosLinearAlgebra::valid_assemblers = {
+  consts::LinearAlgebraType::none,
+  consts::LinearAlgebraType::fsils,
+  consts::LinearAlgebraType::trilinos
+};
+ 
 TrilinosLinearAlgebra::TrilinosLinearAlgebra()
 {
   #ifndef WITH_TRILINOS
@@ -71,6 +78,11 @@ TrilinosLinearAlgebra::TrilinosLinearAlgebra()
 /// @brief Allocate data arrays.
 void TrilinosLinearAlgebra::alloc(ComMod& com_mod, eqType& lEq)
 {
+  if (use_fsils_assembly) {
+    com_mod.Val.resize(dof*dof, com_mod.lhs.nnz);
+    initialize_fsils(com_mod, lEq);
+  }
+
   impl->alloc(com_mod, lEq);
 }
 
@@ -78,14 +90,60 @@ void TrilinosLinearAlgebra::alloc(ComMod& com_mod, eqType& lEq)
 void TrilinosLinearAlgebra::assemble(ComMod& com_mod, const int num_elem_nodes, const Vector<int>& eqN,
         const Array3<double>& lK, const Array<double>& lR)
 {
-  //std::cout << "[TrilinosLinearAlgebra::assemble] assemble " << std::endl;
-  impl->assemble(com_mod, num_elem_nodes, eqN, lK, lR);
+  if (use_fsils_assembly) {
+    fsils_solver->assemble(com_mod, num_elem_nodes, eqN, lK, lR);
+  } else {
+    impl->assemble(com_mod, num_elem_nodes, eqN, lK, lR);
+  }
+}
+
+/// @brief Check the validity of the precondition and assembly options. 
+bool TrilinosLinearAlgebra::check_options(const consts::PreconditionerType prec_cond_type, 
+    const consts::LinearAlgebraType assembly_type)
+{
+  using namespace consts;
+  std::string error_msg;
+
+  if (trilinos_preconditioners.count(prec_cond_type) == 0) {
+    auto prec_cond_type_name = consts::preconditioner_type_to_name.at(prec_cond_type);
+    error_msg = "trilinos linear algebra can't use '" + prec_cond_type_name + "' for a preconditioner.";
+  }
+
+  if (valid_assemblers.count(assembly_type) == 0) {
+    auto assembly_type_name = LinearAlgebra::type_to_name.at(assembly_type);
+    error_msg = "trilinos linear algebra can't use '" + assembly_type_name + "' for assembly.";
+  }
+
+  if (error_msg != "") {
+    throw std::runtime_error("[svFSIplus] ERROR: " + error_msg);
+  }
 }
 
 /// @brief Initialize Trilinos framework.
 void TrilinosLinearAlgebra::initialize(ComMod& com_mod, eqType& lEq)
 {
   impl->initialize(com_mod);
+}
+
+/// @brief Initialize a fsils linear algebra interface for using Trilinos for assembly and preoconditioner.
+void TrilinosLinearAlgebra::initialize_fsils(ComMod& com_mod, eqType& lEq)
+{
+  #define n_debug_initialize_fsils
+  #ifdef debug_initialize_fsils
+  std::cout << "[TrilinosLinearAlgebra::initialize_fsils] ---------- initialize_fsils ---------- " << std::endl;
+  std::cout << "[TrilinosLinearAlgebra::initialize_fsils] preconditioner_type: " << preconditioner_type << std::endl;
+  #endif
+
+  if (fsils_solver != nullptr) { 
+    delete fsils_solver;
+  }
+
+  fsils_solver = LinearAlgebraFactory::create_interface(consts::LinearAlgebraType::fsils);
+  fsils_solver = LinearAlgebraFactory::create_interface(consts::LinearAlgebraType::fsils);
+  fsils_solver->initialize(com_mod, lEq);
+  fsils_solver->alloc(com_mod, lEq);
+  //fsils_solver->set_preconditioner(preconditioner_type);
+  fsils_solver->set_assembly(consts::LinearAlgebraType::fsils);
 }
 
 /// @brief Set the linear algebra package for assmbly.
@@ -95,19 +153,30 @@ void TrilinosLinearAlgebra::set_assembly(consts::LinearAlgebraType atype)
     return;
   }
 
-  if (assembly_type != consts::LinearAlgebraType::trilinos) { 
+  if (valid_assemblers.count(atype) == 0) {
     auto str_type = LinearAlgebra::type_to_name.at(atype);
     throw std::runtime_error("[TrilinosLinearAlgebra] ERROR: Can't set Trilinos linear algebra to use '" + 
       str_type + "' for assembly." + " Trilinos can only use 'trilinos' for assembly.");
   }
 
   assembly_type = atype;
+
+  if (assembly_type == consts::LinearAlgebraType::fsils) {
+    use_fsils_assembly = true;
+  }
 }
  
 /// @brief Set the proconditioner.
 void TrilinosLinearAlgebra::set_preconditioner(consts::PreconditionerType prec_type)
 {
+  if (consts::trilinos_preconditioners.count(prec_type) == 0) {
+    auto str_type = consts::preconditioner_type_to_name.at(prec_type);
+    throw std::runtime_error("[TrilinosLinearAlgebra] ERROR: trilinos linear algebra can't use '" +
+        str_type + "' for a preconditioner.");
+  }
+
   preconditioner_type = prec_type;
+  impl->set_preconditioner(prec_type);
 }
 
 /// @brief Solve a system of linear equations.
@@ -119,12 +188,5 @@ void TrilinosLinearAlgebra::solve(ComMod& com_mod, eqType& lEq, const Vector<int
   } else {
     impl->solve(com_mod, lEq, incL, res);
   }
-}
-
-/// @brief Solve a system of linear equations assembled by Trilinos.
-void TrilinosLinearAlgebra::solve_assembled(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res)
-{
-  std::cout << "[TrilinosLinearAlgebra::solve_assembled] solve_assembled " << std::endl;
-  impl->solve_assembled(com_mod, lEq, incL, res);
 }
 

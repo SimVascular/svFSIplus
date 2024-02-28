@@ -426,6 +426,8 @@ enum class PreconditionerType
   PREC_RCS = 709
 };
 
+extern const std::set<PreconditionerType> fsils_preconditioners;
+extern const std::set<PreconditionerType> petsc_preconditioners;
 extern const std::set<PreconditionerType> trilinos_preconditioners;
 extern const std::map<PreconditionerType, std::string> preconditioner_type_to_name;
 

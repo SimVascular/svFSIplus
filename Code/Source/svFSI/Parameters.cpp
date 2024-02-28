@@ -2167,7 +2167,7 @@ LinearAlgebraParameters::LinearAlgebraParameters()
 
   set_parameter("Configuration_file", "", !required, configuration_file);
 
-  auto prec_type = consts::preconditioner_type_to_name.at(consts::PreconditionerType::PREC_FSILS);
+  auto prec_type = consts::preconditioner_type_to_name.at(consts::PreconditionerType::PREC_NONE);
   set_parameter("Preconditioner", prec_type, !required, preconditioner);
 
   auto assemble_type = LinearAlgebra::type_to_name.at(consts::LinearAlgebraType::none);
@@ -2201,6 +2201,10 @@ void LinearAlgebraParameters::set_values(tinyxml2::XMLElement* xml_elem)
   }
   type.set(std::string(stype));
 
+  // Check Linear_algebra type=TYPE> element.
+  //
+  // TYPE in (fsils petsc trilinos)
+  //
   if (LinearAlgebra::name_to_type.count(type.value()) == 0) {
     std::string valid_types = "";
     std::for_each(LinearAlgebra::name_to_type.begin(), LinearAlgebra::name_to_type.end(), 
@@ -2228,15 +2232,20 @@ void LinearAlgebraParameters::set_values(tinyxml2::XMLElement* xml_elem)
         "' given in the XML <Linear_algebra> <Preconditioner> element.\nValid types are: " + valid_types);
   }     
 
-  if (LinearAlgebra::name_to_type.count(assembly()) == 0) {
-    std::string valid_types = "";
-    std::for_each(LinearAlgebra::name_to_type.begin(), LinearAlgebra::name_to_type.end(),
-        [&valid_types](std::pair<const std::string, const consts::LinearAlgebraType> p) {valid_types += p.first+" ";});
-    throw std::runtime_error("Unknown type '" + assembly() +
-        "' given in the XML <Linear_algebra> <Assembly> element.\nValid types are: " + valid_types);
-  }
+  check_input_parameters();
 
   values_set_ = true;
+}
+
+/// @brief Check the validity of the input parameters.
+void LinearAlgebraParameters::check_input_parameters()
+{
+  auto linear_algebra_type = LinearAlgebra::name_to_type.at(type());
+  auto prec_cond_type = consts::preconditioner_name_to_type.at(preconditioner.value()); 
+  auto assembly_type = LinearAlgebra::name_to_type.at(assembly.value()); 
+
+  auto linear_algebra = LinearAlgebraFactory::create_interface(linear_algebra_type);
+  linear_algebra->check_options(prec_cond_type, assembly_type);
 }
 
 //////////////////////////////////////////////////////////
@@ -2268,7 +2277,7 @@ LinearSolverParameters::LinearSolverParameters()
   set_parameter("NS_GM_max_iterations", 1000, !required, ns_gm_max_iterations);
   set_parameter("NS_GM_tolerance", 1.0e-2, !required, ns_gm_tolerance);
 
-  set_parameter("Preconditioner", "", !required, preconditioner);
+  //set_parameter("Preconditioner", "", !required, preconditioner);
 
   set_parameter("Tolerance", 0.5, !required, tolerance);
 }

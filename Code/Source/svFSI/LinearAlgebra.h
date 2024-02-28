@@ -47,11 +47,11 @@ class LinearAlgebra {
     virtual void alloc(ComMod& com_mod, eqType& lEq) = 0;
     virtual void assemble(ComMod& com_mod, const int num_elem_nodes, const Vector<int>& eqN, 
         const Array3<double>& lK, const Array<double>& lR) = 0;
+    virtual bool check_options(const consts::PreconditionerType prec_cond_type, const consts::LinearAlgebraType assembly_type) = 0;
     virtual void initialize(ComMod& com_mod, eqType& lEq) = 0;
     virtual void set_assembly(consts::LinearAlgebraType assembly_type) = 0;
     virtual void set_preconditioner(consts::PreconditionerType prec_type) = 0;
     virtual void solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res) = 0;
-    virtual void solve_assembled(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res) = 0;
 
     virtual consts::LinearAlgebraType get_interface_type() { return interface_type; }
 

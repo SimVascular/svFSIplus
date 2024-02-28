@@ -840,6 +840,7 @@ class LinearAlgebraParameters : public ParameterLists
   public:
     static const std::string xml_element_name_;
     LinearAlgebraParameters();
+    void check_input_parameters();
     void print_parameters();
     void set_values(tinyxml2::XMLElement* fsi_file);
     bool defined() const { return values_set_; };
@@ -875,7 +876,7 @@ class LinearSolverParameters : public ParameterLists
     Parameter<int> ns_gm_max_iterations; 
     Parameter<double> ns_gm_tolerance;
 
-    Parameter<std::string> preconditioner;
+    //Parameter<std::string> preconditioner;
 
     Parameter<double> tolerance;
 

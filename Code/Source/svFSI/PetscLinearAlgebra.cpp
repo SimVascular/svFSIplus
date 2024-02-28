@@ -78,6 +78,28 @@ void PetscLinearAlgebra::assemble(ComMod& com_mod, const int num_elem_nodes, con
   fsils_solver->assemble(com_mod, num_elem_nodes, eqN, lK, lR);
 }
 
+/// @brief Check the validity of the precondition and assembly types options. 
+bool PetscLinearAlgebra::check_options(const consts::PreconditionerType prec_cond_type, 
+    const consts::LinearAlgebraType assembly_type)
+{
+  using namespace consts;
+  auto prec_cond_type_name = consts::preconditioner_type_to_name.at(prec_cond_type);
+  auto assembly_type_name = LinearAlgebra::type_to_name.at(assembly_type);
+  std::string error_msg;
+
+  if (assembly_type != LinearAlgebraType::none) {
+    error_msg = "petsc linear algebra can't be used for assembly.";
+  }
+
+  if (prec_cond_type != PreconditionerType::PREC_NONE) { 
+    error_msg = "petsc linear algebra can't use '" + prec_cond_type_name + "' for preconditioning.";
+  }
+
+  if (error_msg != "") {
+    throw std::runtime_error("[svFSIplus] ERROR: " + error_msg);
+  }
+}
+
 /// @brief Initialize the PETSc framework.
 void PetscLinearAlgebra::initialize(ComMod& com_mod, eqType& lEq)
 {
@@ -90,7 +112,6 @@ void PetscLinearAlgebra::initialize_fsils(ComMod& com_mod, eqType& lEq)
   fsils_solver = LinearAlgebraFactory::create_interface(consts::LinearAlgebraType::fsils);
   fsils_solver->initialize(com_mod, lEq);
   fsils_solver->alloc(com_mod, lEq);
-  fsils_solver->set_preconditioner(preconditioner_type);
 }
 
 /// @brief Set the linear algebra package for assmbly.
@@ -115,12 +136,6 @@ void PetscLinearAlgebra::set_preconditioner(consts::PreconditionerType prec_type
 void PetscLinearAlgebra::solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res)
 {
   std::cout << "[PetscLinearAlgebra] solve" << std::endl;
-  impl->solve(com_mod, lEq, incL, res);
-}
-
-/// @brief Solve a system of linear equations assembled by Trilinos.
-void PetscLinearAlgebra::solve_assembled(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res)
-{
   impl->solve(com_mod, lEq, incL, res);
 }
 

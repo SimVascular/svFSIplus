@@ -2042,28 +2042,6 @@ void read_ls(Simulation* simulation, EquationParameters* eq_params, consts::Solv
 
   auto& linear_solver = eq_params->linear_solver;
 
-  if (linear_solver.preconditioner.defined()) { 
-    auto precon_str = linear_solver.preconditioner.value();
-    std::transform(precon_str.begin(), precon_str.end(), precon_str.begin(), ::tolower);
-    try {
-      lEq.ls.PREC_Type = preconditioner_name_to_type.at(precon_str);
-      //lEq.useTLS = precon_entry.second;
-    } catch (const std::out_of_range& exception) {
-      throw std::runtime_error("Unknown preconditioner '" + precon_str + ".");
-    }
-
-    //lEq.useTLS = use_trilinos;
-  }
-
-  /*
-  if (lEq.useTLS) {
-    lEq.assmTLS = linear_solver.use_trilinos_for_assembly.value();
-    if (lEq.assmTLS && simulation->com_mod.ibFlag) {
-      throw std::runtime_error("Cannot assemble immersed bodies using Trilinos");
-    } 
-  } 
-  */
-
   lEq.ls.mItr = linear_solver.max_iterations.value();
   lEq.FSILS.RI.mItr = lEq.ls.mItr;
 

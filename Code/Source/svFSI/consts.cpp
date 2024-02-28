@@ -203,7 +203,7 @@ const std::map<std::string,MeshGeneratorType> mesh_generator_name_to_type = {
     {"Meshsim", MeshGeneratorType::RMSH_MESHSIM}
 };
 
-/// @brief A list of Trilinos preconditioners. 
+/// @brief The list of Trilinos preconditioners. 
 const std::set<PreconditionerType> trilinos_preconditioners = {
   PreconditionerType::PREC_TRILINOS_DIAGONAL,
   PreconditionerType::PREC_TRILINOS_BLOCK_JACOBI,
@@ -214,11 +214,22 @@ const std::set<PreconditionerType> trilinos_preconditioners = {
   PreconditionerType::PREC_TRILINOS_ML
 };
 
+/// @brief The list of FSILS preconditioners. 
+const std::set<PreconditionerType> fsils_preconditioners = {
+  PreconditionerType::PREC_FSILS,
+  PreconditionerType::PREC_RCS
+};
+
+/// @brief The list of PETSc preconditioners. 
+const std::set<PreconditionerType> petsc_preconditioners = {};
+
 /// @brief Map for preconditioner type string to PreconditionerType enum
 //
 const std::map<std::string,PreconditionerType> preconditioner_name_to_type =
 {
   {"fsils", PreconditionerType::PREC_FSILS},
+
+  {"none", PreconditionerType::PREC_NONE},
 
   {"row-column-scaling", PreconditionerType::PREC_RCS},
 
@@ -239,6 +250,7 @@ const std::map<std::string,PreconditionerType> preconditioner_name_to_type =
 //
 const std::map<PreconditionerType, std::string> preconditioner_type_to_name {
   {PreconditionerType::PREC_FSILS, "fsils"}, 
+  {PreconditionerType::PREC_NONE, "none"}, 
   {PreconditionerType::PREC_RCS, "row-column-scaling"}, 
   {PreconditionerType::PREC_TRILINOS_DIAGONAL, "trilinos-diagonal"}, 
   {PreconditionerType::PREC_TRILINOS_BLOCK_JACOBI, "trilinos-blockjacobi"}, 
