@@ -45,10 +45,6 @@
 #include "nn.h"
 #include "utils.h"
 
-#ifdef WITH_TRILINOS
-#include "trilinos_impl.h"
-#endif
-
 namespace struct_ns {
 
 void b_struct_2d(const ComMod& com_mod, const int eNoN, const double w, const Vector<double>& N, 
@@ -349,28 +345,7 @@ void construct_dsolid(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const
       }
     } 
 
-#if 0
-    if (e+1 == 100) {
-      Array3<double>::write_enabled = true;
-      Array<double>::write_enabled = true;
-      lR.write("lR");
-      lK.write("lK");
-      exit(0);
-    }
-#endif
-
-    // Assembly
-    //
-#ifdef WITH_TRILINOS
-    if (eq.assmTLS) {
-      trilinos_doassem_(const_cast<int&>(eNoN), ptr.data(), lK.data(), lR.data());
-    } else {
-#endif
-      lhsa_ns::do_assem(com_mod, eNoN, ptr, lK, lR);
-#ifdef WITH_TRILINOS
-    }
-#endif
-
+    eq.linear_algebra->assemble(com_mod, eNoN, ptr, lK, lR);
   } 
 }
 

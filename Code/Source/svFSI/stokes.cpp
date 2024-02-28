@@ -43,10 +43,6 @@
 #include <iomanip>
 #include <math.h>
 
-#ifdef WITH_TRILINOS
-#include "trilinos_impl.h"
-#endif
-
 namespace stokes {
 
 void construct_stokes(ComMod& com_mod, const mshType& lM, const Array<double>& Ag, const Array<double>& Yg)
@@ -230,18 +226,7 @@ void construct_stokes(ComMod& com_mod, const mshType& lM, const Array<double>& A
 
     } // g: loop
 
-    // Assembly
-
-#ifdef WITH_TRILINOS
-    if (eq.assmTLS) {
-      trilinos_doassem_(const_cast<int&>(eNoN), ptr.data(), lK.data(), lR.data());
-    } else {
-#endif
-      lhsa_ns::do_assem(com_mod, eNoN, ptr, lK, lR);
-#ifdef WITH_TRILINOS
-    }
-
-#endif 
+    eq.linear_algebra->assemble(com_mod, eNoN, ptr, lK, lR);
 
   } // e: loop
 

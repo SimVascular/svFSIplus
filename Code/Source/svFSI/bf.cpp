@@ -40,10 +40,6 @@
 #include "shells.h"
 #include "utils.h"
 
-#ifdef WITH_TRILINOS
-#include "trilinos_impl.h"
-#endif
-
 namespace bf {
 
 /// @brief This subroutine is reached only for shell follower pressre loads
@@ -112,21 +108,8 @@ void bf_construct(ComMod& com_mod, const mshType& lM, const int e, const int eNo
     }
   }
 
- // Now doing the assembly part
-
-#ifdef WITH_TRILINOS
-
-  if (eq.assmTLS) {
-    trilinos_doassem_(const_cast<int&>(eNoN), const_cast<int*>(ptr.data()), lK.data(), lR.data());
-  } else { 
-
-#endif
-
-   lhsa_ns::do_assem(com_mod, eNoN, ptr, lK, lR);
-
-#ifdef WITH_TRILINOS
-  }
-#endif
+  // Now doing the assembly part
+  eq.linear_algebra->assemble(com_mod, eNoN, ptr, lK, lR);
 }
 
 /// @brief Modifes: com_mod.Bf, Dg

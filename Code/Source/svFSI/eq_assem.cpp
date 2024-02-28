@@ -51,10 +51,6 @@
 
 #include <math.h>
 
-#ifdef WITH_TRILINOS
-#include "trilinos_impl.h"
-#endif
-
 namespace eq_assem {
 
 void b_assem_neu_bc(ComMod& com_mod, const faceType& lFa, const Vector<double>& hg, const Array<double>& Yg) 
@@ -169,24 +165,9 @@ void b_assem_neu_bc(ComMod& com_mod, const faceType& lFa, const Vector<double>& 
       }
     }
 
-    // Now doing the assembly part
-
     eq.linear_algebra->assemble(com_mod, eNoN, ptr, lK, lR);
-
-#if 0
-#ifdef WITH_TRILINOS
-    if (eq.assmTLS) {
-      trilinos_doassem_(const_cast<int&>(eNoN), ptr.data(), lK.data(), lR.data());
-    } else {
-      lhsa_ns::do_assem(com_mod, eNoN, ptr, lK, lR);
-    }
-#else
-    lhsa_ns::do_assem(com_mod, eNoN, ptr, lK, lR);
-#endif
-#endif
   }
 }
-
 
 /// @brief For struct/ustruct - construct follower pressure load.
 ///
@@ -304,24 +285,13 @@ void b_neu_folw_p(ComMod& com_mod, const faceType& lFa, const Vector<double>& hg
       }
     }
 
-    // Now doing the assembly part
-    //
-#ifdef WITH_TRILINOS
-    if (eq.assmTLS) {
-      trilinos_doassem_(const_cast<int&>(eNoN), const_cast<int*>(ptr.data()), lK.data(), lR.data());
-    } else {
-#endif
-      if (cPhys == EquationType::phys_ustruct) {
-        ustruct::ustruct_do_assem(com_mod, eNoN, ptr, lKd, lK, lR);
-      } else if (cPhys == EquationType::phys_struct) {
-        lhsa_ns::do_assem(com_mod, eNoN, ptr, lK, lR);
-      }
-#ifdef WITH_TRILINOS
+    if (cPhys == EquationType::phys_ustruct) {
+      ustruct::ustruct_do_assem(com_mod, eNoN, ptr, lKd, lK, lR);
+    } else if (cPhys == EquationType::phys_struct) {
+      eq.linear_algebra->assemble(com_mod, eNoN, ptr, lK, lR);
     }
-#endif
   }
 }
-
 
 /// @brief This routine assembles the equation on a given mesh.
 ///

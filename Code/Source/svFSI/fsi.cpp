@@ -43,10 +43,6 @@
 #include <iomanip>
 #include <math.h>
 
-#ifdef WITH_TRILINOS
-#include "trilinos_impl.h"
-#endif
-
 namespace fsi {
 
 void construct_fsi(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Array<double>& Ag, 
@@ -319,7 +315,6 @@ void construct_fsi(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Ar
       }
     } // g: loop
 
-    // Assembly
     eq.linear_algebra->assemble(com_mod, eNoN, ptr, lK, lR);
 
   } // e: loop

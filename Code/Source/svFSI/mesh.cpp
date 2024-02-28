@@ -44,10 +44,6 @@
 #include <iomanip>
 #include <math.h>
 
-#ifdef WITH_TRILINOS
-#include "trilinos_impl.h"
-#endif
-
 namespace mesh {
 
 void construct_mesh(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Array<double>& Ag, const Array<double>& Dg)
@@ -160,20 +156,7 @@ void construct_mesh(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const A
       }
     }
 
-    // Assembly
-    //
-#ifdef WITH_TRILINOS
-    if (eq.assmTLS) {
-      trilinos_doassem_(const_cast<int&>(eNoN), ptr.data(), lK.data(), lR.data());
-    } else {
-#endif
-      //lhsa_ns::do_assem(com_mod, eNoN, ptr, lK, lR);
-#ifdef WITH_TRILINOS
-    }
-#endif
-
-   eq.linear_algebra->assemble(com_mod, eNoN, ptr, lK, lR);
-
+    eq.linear_algebra->assemble(com_mod, eNoN, ptr, lK, lR);
   }
 }
 
