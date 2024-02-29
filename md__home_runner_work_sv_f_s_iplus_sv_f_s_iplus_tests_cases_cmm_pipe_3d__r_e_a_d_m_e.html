@@ -108,7 +108,7 @@ FSI using CMM (Step 3)</h1>
 <h2><a class="anchor" id="autotoc_md77"></a>
 (I) Initialize flow field</h2>
 <p>For faster convergence, we initialize the flow for the FSI simulation using data from <b>Step 1</b> within <code>Add mesh</code> keyword as,</p>
-<p>&lt;Add_mesh name="msh" &gt; ... &lt;Initial_velocities_file_path&gt; ../1-rigid-solution/result_800_cpp.vtu &lt;/Initial_velocities_file_path&gt; &lt;Initial_pressures_file_path&gt; ../1-rigid-solution/result_800_cpp.vtu &lt;/Initial_pressures_file_path&gt; ... &lt;/Add_mesh&gt;</p>
+<p>&lt;Add_mesh name="msh" &gt; ... &lt;Initial_velocities_file_path&gt; ../1-rigid-solution/result_800.vtu &lt;/Initial_velocities_file_path&gt; &lt;Initial_pressures_file_path&gt; ../1-rigid-solution/result_800.vtu &lt;/Initial_pressures_file_path&gt; ... &lt;/Add_mesh&gt;</p>
 <p>In this case, the solution from the rigid wall simulation at time step 800 is used to initialize the velocity and pressure fields.</p>
 <h2><a class="anchor" id="autotoc_md78"></a>
 (II) CMM loading initial displacement/prestress fields</h2>
