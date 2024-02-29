@@ -158,7 +158,7 @@ void trilinos_lhs_create_(int &numGlobalNodes, int &numLocalNodes,
         int& cpp_index, int& proc_id)
 {
 
-  #ifdef n_debug_trilinos_lhs_create
+  #ifdef debug_trilinos_lhs_create
   std::string msg_prefix;
   msg_prefix = std::string("[trilinos_lhs_create:") + std::to_string(proc_id) + "] ";
   std::cout << msg_prefix << std::endl;
@@ -1258,6 +1258,17 @@ void TrilinosLinearAlgebra::TrilinosImpl::solve(ComMod& com_mod, eqType& lEq, co
   auto& R = com_mod.R;
   int solver_type = static_cast<int>(lEq.ls.LS_type);
   int prec_type = static_cast<int>(preconditioner_);
+  #define n_debug_solve
+  #ifdef debug_solve
+  std::cout << "[TrilinosImpl::solve] ---------- solve ---------- " << std::endl;
+  auto prec_name = consts::preconditioner_type_to_name.at(preconditioner_); 
+  std::cout << "[TrilinosImpl::solve] solver_type: " << solver_type << std::endl;
+  std::cout << "[TrilinosImpl::solve] prec_type: " << prec_name << std::endl;
+  std::cout << "[TrilinosImpl::solve] Val.size(): " << Val.size() << std::endl;
+  std::cout << "[TrilinosImpl::solve] R_.size(): " << R_.size() << std::endl;
+  std::cout << "[TrilinosImpl::solve] W_.size(): " << W_.size() << std::endl;
+  std::cout << "[TrilinosImpl::solve] Call trilinos_global_solve_ " << std::endl;
+  #endif
 
   if (consts::trilinos_preconditioners.count(preconditioner_) == 0) {
     auto prec_name = consts::preconditioner_type_to_name.at(preconditioner_); 
@@ -1282,12 +1293,15 @@ void TrilinosLinearAlgebra::TrilinosImpl::solve_assembled(ComMod& com_mod, eqTyp
   int solver_type = static_cast<int>(lEq.ls.LS_type);
   int prec_type = static_cast<int>(preconditioner_);
   bool assembled = true;
-  #ifdef n_debug_solve_assembled
-  std::cout << "[TrilinosImpl.solve_assembled] R_.size(): " << R_.size() << std::endl;
-  std::cout << "[TrilinosImpl.solve_assembled] W_.size(): " << W_.size() << std::endl;
-  std::cout << "[TrilinosImpl.solve_assembled] solver_type: " << solver_type << std::endl;
-  std::cout << "[TrilinosImpl.solve_assembled] prec_type: " << prec_type << std::endl;
-  std::cout << "[TrilinosImpl.solve_assembled] lEq.FSILS.RI.suc: " << lEq.FSILS.RI.suc << std::endl;
+  #define n_debug_solve_assembled
+  #ifdef debug_solve_assembled
+  auto prec_name = consts::preconditioner_type_to_name.at(preconditioner_); 
+  std::cout << "[TrilinosImpl::solve_assembled] ---------- solve_assembled ---------- " << std::endl;
+  std::cout << "[TrilinosImpl::solve_assembled] solver_type: " << solver_type << std::endl;
+  std::cout << "[TrilinosImpl::solve_assembled] prec_type: " << prec_name << std::endl;
+  std::cout << "[TrilinosImpl::solve_assembled] R_.size(): " << R_.size() << std::endl;
+  std::cout << "[TrilinosImpl::solve_assembled] W_.size(): " << W_.size() << std::endl;
+  std::cout << "[TrilinosImpl::solve_assembled] lEq.FSILS.RI.suc: " << lEq.FSILS.RI.suc << std::endl;
   #endif
 
   if (consts::trilinos_preconditioners.count(preconditioner_) == 0) {

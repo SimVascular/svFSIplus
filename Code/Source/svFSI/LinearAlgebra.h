@@ -41,6 +41,8 @@ class LinearAlgebra {
   public:
     static const std::map<std::string, consts::LinearAlgebraType> name_to_type;
     static const std::map<consts::LinearAlgebraType, std::string> type_to_name;
+    static void check_equation_compatibility(const consts::EquationType eq_phys, 
+        const consts::LinearAlgebraType lin_alg_type, const consts::LinearAlgebraType assembly_type);
 
     LinearAlgebra();
     virtual ~LinearAlgebra() { };

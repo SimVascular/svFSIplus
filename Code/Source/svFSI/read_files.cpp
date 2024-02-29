@@ -1967,7 +1967,7 @@ void read_ls(Simulation* simulation, EquationParameters* eq_params, consts::Solv
   using namespace consts;
   using namespace fsi_linear_solver;
 
-  #define n_debug_read_ls
+  #define debug_read_ls
   #ifdef debug_read_ls
   DebugMsg dmsg(__func__, simulation->com_mod.cm.idcm());
   dmsg.banner();
@@ -2035,6 +2035,11 @@ void read_ls(Simulation* simulation, EquationParameters* eq_params, consts::Solv
 
   // Set assembly type.
   lEq.linear_algebra_assembly_type = LinearAlgebra::name_to_type.at(linear_algebra.assembly()); 
+
+  // Check that equation physics is compatible with the LinearAlgebra type. 
+  for (auto& domain : lEq.dmn) {
+    LinearAlgebra::check_equation_compatibility(domain.phys,  lEq.linear_algebra_type, lEq.linear_algebra_assembly_type);
+  }
 
   if (!solver_type_defined) {
     return;

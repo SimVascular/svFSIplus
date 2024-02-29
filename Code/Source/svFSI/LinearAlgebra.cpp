@@ -47,6 +47,23 @@ const std::map<consts::LinearAlgebraType, std::string> LinearAlgebra::type_to_na
   {consts::LinearAlgebraType::trilinos, "trilinos"}
 };
 
+/// @brief Check that equation physics is compatible with LinearAlgebra type.
+//
+void LinearAlgebra::check_equation_compatibility(const consts::EquationType eq_physics,
+    const consts::LinearAlgebraType lin_alg_type, const consts::LinearAlgebraType assembly_type)
+{
+  using namespace consts;
+
+  // ustruct physics requires fsils assembly. 
+  //
+  if (eq_physics == EquationType::phys_ustruct) {
+    if ((lin_alg_type == LinearAlgebraType::trilinos) &&
+        (assembly_type != LinearAlgebraType::fsils)) {
+      throw std::runtime_error("[svFSIplus] Equations with ustruct physics must use fsils for assembly.");
+    }
+  }
+}
+
 LinearAlgebra::LinearAlgebra()
 {
 }
