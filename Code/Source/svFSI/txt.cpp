@@ -324,12 +324,12 @@ void txt(Simulation* simulation, const bool flag)
       fName[1] = fName[0];
 
       if (l == nsd) {
-        fName[0] = appPath + "B_" + fName[0] + "_flux_cpp.txt";
+        fName[0] = appPath + "B_" + fName[0] + "_flux.txt";
       } else {
-        fName[0] = appPath + "B_" + fName[0] + "_average_cpp.txt";
+        fName[0] = appPath + "B_" + fName[0] + "_average.txt";
       }
 
-      fName[1] = appPath + "V_" + fName[1] + "_flux_cpp.txt";
+      fName[1] = appPath + "V_" + fName[1] + "_flux.txt";
       #ifdef debug_txt
       dmsg << "flag: " << flag;
       dmsg << "fName[0]: " << fName[0];

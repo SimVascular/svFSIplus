@@ -78,8 +78,8 @@ For faster convergence, we initialize the flow for the FSI simulation using data
 
 <Add_mesh name="msh" >
 ...
-  <Initial_velocities_file_path> ../1-rigid-solution/result_800_cpp.vtu </Initial_velocities_file_path>
-  <Initial_pressures_file_path> ../1-rigid-solution/result_800_cpp.vtu </Initial_pressures_file_path>
+  <Initial_velocities_file_path> ../1-rigid-solution/result_800.vtu </Initial_velocities_file_path>
+  <Initial_pressures_file_path> ../1-rigid-solution/result_800.vtu </Initial_pressures_file_path>
 ...
 </Add_mesh>
 
