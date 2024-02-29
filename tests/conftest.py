@@ -64,7 +64,7 @@ def run_by_name(folder, name, t_max, n_proc=1):
 
     # read results
     fname = os.path.join(
-        folder, str(n_proc) + "-procs", "result_" + str(t_max).zfill(3) + "_cpp.vtu"
+        folder, str(n_proc) + "-procs", "result_" + str(t_max).zfill(3) + ".vtu"
     )
     if not os.path.exists(fname):
         raise RuntimeError("No svFSIplus output: " + fname)
