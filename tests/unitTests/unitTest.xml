@@ -26,33 +26,7 @@
 
 <Add_mesh name="msh" > 
 
-  <Mesh_file_path>  ../../../../tests/unitTests/mesh/unitCube/unit_cube_volume.vtu </Mesh_file_path>
-
-  <Add_face name="Z0">
-      <Face_file_path>  ../../../../tests/unitTests/mesh/unitCube/mesh_surfaces/Z0.vtp </Face_file_path>
-  </Add_face>
-
-  <Add_face name="Z1">
-      <Face_file_path>  ../../../../tests/unitTests/mesh/unitCube/mesh_surfaces/Z1.vtp </Face_file_path>
-  </Add_face>
-
-  <Add_face name="Y0">
-      <Face_file_path>  ../../../../tests/unitTests/mesh/unitCube/mesh_surfaces/Y0.vtp </Face_file_path>
-  </Add_face>
-
-  <Add_face name="Y1">
-      <Face_file_path>  ../../../../tests/unitTests/mesh/unitCube/mesh_surfaces/Y1.vtp </Face_file_path>
-  </Add_face>
-
-  <Add_face name="X0">
-      <Face_file_path>  ../../../../tests/unitTests/mesh/unitCube/mesh_surfaces/X0.vtp </Face_file_path>
-  </Add_face>
-
-  <Add_face name="X1">
-      <Face_file_path>  ../../../../tests/unitTests/mesh/unitCube/mesh_surfaces/X1.vtp </Face_file_path>
-  </Add_face>
-
-  <Mesh_scale_factor> 0.001 </Mesh_scale_factor> 
+  <Mesh_file_path>  ../../../../tests/unitTests/mesh/unit_cube_volume.vtu </Mesh_file_path>
 
 </Add_mesh>
 
@@ -71,41 +45,6 @@
 
    <Dilational_penalty_model> ST91 </Dilational_penalty_model>
    <Penalty_parameter> 4.0E9 </Penalty_parameter> 
-
-   <Output type="Spatial" >
-     <Displacement> true </Displacement>
-     <Velocity> true </Velocity>
-     <Jacobian> true </Jacobian>
-     <Stress> true </Stress>
-     <Strain> true </Strain>
-     <Cauchy_stress> true </Cauchy_stress>
-     <Def_grad> true </Def_grad>
-     <VonMises_stress> true </VonMises_stress>
-   </Output>
-
-   <LS type="BICG" >
-      <Preconditioner> FSILS </Preconditioner> 
-      <Tolerance> 1e-6 </Tolerance>
-      <Max_iterations> 1000 </Max_iterations> 
-   </LS>
-
-   <Add_BC name="Z0" > 
-      <Type> Dir </Type> 
-      <Value> 0.0 </Value> 
-      <Effective_direction> (0, 0, 1) </Effective_direction> 
-   </Add_BC> 
-
-   <Add_BC name="Y0" > 
-      <Type> Dir </Type> 
-      <Value> 0.0 </Value> 
-      <Effective_direction> (0, 1, 0) </Effective_direction> 
-   </Add_BC> 
-
-   <Add_BC name="X0" > 
-      <Type> Dir </Type> 
-      <Value> 0.0 </Value> 
-      <Effective_direction> (1, 0, 0) </Effective_direction> 
-   </Add_BC> 
 
 </Add_equation>
 

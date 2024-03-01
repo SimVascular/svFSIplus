@@ -276,21 +276,6 @@ if(ENABLE_UNIT_TEST)
   enable_testing()
   include(GoogleTest)
 
-  # add hello_test, a sample test file to check the installation of Google Test
-  add_executable(
-    hello_test
-    ../../../tests/unitTests/hello_test.cpp
-  )
-  target_link_libraries(
-    hello_test
-    gtest
-    GTest::gtest_main
-    pthread   # link pthread on ubuntu20
-  )
-  # gtest_discover_tests(hello_test)
-  add_test(NAME GTestSample COMMAND hello_test)
-
-
   # add test.cpp for unit test
 
   # remove the main.cpp and add test.cpp
@@ -298,10 +283,10 @@ if(ENABLE_UNIT_TEST)
   list(REMOVE_ITEM CSRCS "main.cpp")
   
   # include source files (same as what svFSI does except for main.cpp)
-  add_executable(runUnitTest ${CSRCS})
+  add_executable(run_all_unit_tests ${CSRCS})
   
   # libraries
-  target_link_libraries(runUnitTest
+  target_link_libraries(run_all_unit_tests
     ${GLOBAL_LIBRARIES}
     ${INTELRUNTIME_LIBRARIES}
     ${ZLIB_LIBRARY}
@@ -317,15 +302,14 @@ if(ENABLE_UNIT_TEST)
 
   # link Google Test
   target_link_libraries(
-    runUnitTest
+    run_all_unit_tests
     gtest
     GTest::gtest_main 
     pthread   # link pthread on ubuntu20
   )
-  target_compile_definitions(runUnitTest PRIVATE GTEST_HAS_PTHREAD=1)
 
   # gtest_discover_tests(runUnitTest)
-  add_test(NAME UnitTest COMMAND runUnitTest)
+  add_test(NAME UnitTest COMMAND run_all_unit_tests)
 
 endif()
 
