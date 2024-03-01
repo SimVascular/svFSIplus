@@ -35,7 +35,7 @@
 #include "consts.h"
 
 /// @brief The LinearAlgebra class provides an abstract interface to linear algebra 
-/// frameworks: Trilinos, PETSc, etc.
+/// frameworks: FSILS, Trilinos, PETSc, etc.
 //
 class LinearAlgebra {
   public:
@@ -62,6 +62,7 @@ class LinearAlgebra {
     consts::PreconditionerType preconditioner_type = consts::PreconditionerType::PREC_NONE;
 };
 
+/// @brief The LinearAlgebraFactory class provides a factory used to create objects derived from LinearAlgebra. 
 class LinearAlgebraFactory {
   public:
     static LinearAlgebra* create_interface(consts::LinearAlgebraType interface_type);

@@ -40,7 +40,7 @@ class PetscLinearAlgebra : public virtual LinearAlgebra {
 
   public:
     PetscLinearAlgebra();
-    ~PetscLinearAlgebra() { };
+    ~PetscLinearAlgebra();
     virtual void alloc(ComMod& com_mod, eqType& lEq);
     virtual void assemble(ComMod& com_mod, const int num_elem_nodes, const Vector<int>& eqN, 
         const Array3<double>& lK, const Array<double>& lR);
@@ -51,11 +51,14 @@ class PetscLinearAlgebra : public virtual LinearAlgebra {
     virtual void set_preconditioner(consts::PreconditionerType prec_type);
 
   private:
+    static std::set<consts::LinearAlgebraType> valid_assemblers;
     void initialize_fsils(ComMod& com_mod, eqType& lEq);
+    /// @brief The FsilsLinearAlgebra object used to assemble local element matrices.
     LinearAlgebra* fsils_solver = nullptr;
     // Private class used to hide PETSc implementation details.
     class PetscImpl;
     PetscImpl* impl = nullptr;
+    bool use_fsils_assembly = false;
 };
 
 #endif

@@ -58,9 +58,6 @@ void FsilsLinearAlgebra::alloc(ComMod& com_mod, eqType& lEq)
   std::cout << "[FsilsLinearAlgebra::alloc] ---------- alloc ---------- " << std::endl;
   #endif
   int dof = com_mod.dof;
-  int tnNo = com_mod.tnNo;
-  int gtnNo = com_mod.gtnNo;
-  auto& lhs = com_mod.lhs;
 
   com_mod.Val.resize(dof*dof, com_mod.lhs.nnz);
 }
@@ -81,7 +78,7 @@ void FsilsLinearAlgebra::assemble(ComMod& com_mod, const int num_elem_nodes, con
   lhsa_ns::do_assem(com_mod, num_elem_nodes, eqN, lK, lR);
 }
 
-/// @brief Check the validity of the precondition and assembly types options. 
+/// @brief Check the validity of the preconditioner and assembly types options. 
 bool FsilsLinearAlgebra::check_options(const consts::PreconditionerType prec_cond_type, 
   const consts::LinearAlgebraType assembly_type)
 {
@@ -143,9 +140,10 @@ void FsilsLinearAlgebra::solve(ComMod& com_mod, eqType& lEq, const Vector<int>& 
 {
   auto& lhs = com_mod.lhs;
   int dof = com_mod.dof;
-  auto& R = com_mod.R;      // Residual vector
-  auto& Val = com_mod.Val;  // LHS matrix
+  auto& R = com_mod.R;      
+  auto& Val = com_mod.Val;
+  auto preconditioner = lEq.linear_algebra_preconditioner;
 
-  fsi_linear_solver::fsils_solve(lhs, lEq.FSILS, dof, R, Val, lEq.ls.PREC_Type, incL, res);
+  fsi_linear_solver::fsils_solve(lhs, lEq.FSILS, dof, R, Val, preconditioner, incL, res);
 }
 

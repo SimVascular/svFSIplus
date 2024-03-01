@@ -983,7 +983,6 @@ void dist_eq(ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, const std::
   cm.bcast(cm_mod, &lEq.FSILS.CG.sD);
 
   cm.bcast_enum(cm_mod, &lEq.ls.LS_type);
-  cm.bcast_enum(cm_mod, &lEq.ls.PREC_Type);
 
   cm.bcast_enum(cm_mod, &lEq.linear_algebra_type);
   cm.bcast_enum(cm_mod, &lEq.linear_algebra_preconditioner);

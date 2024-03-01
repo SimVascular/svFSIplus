@@ -33,11 +33,8 @@
 
 #include "LinearAlgebra.h"
 
-//--------------------
-// FsilsLinearAlgebra
-//--------------------
 /// @brief The FsilsLinearAlgebra class implements the LinearAlgebra 
-/// interface for the FSILS numerical linear algebra package.
+/// interface for the FSILS numerical linear algebra included in svFSIplus.
 ///
 class FsilsLinearAlgebra : public virtual LinearAlgebra {
 
@@ -55,6 +52,7 @@ class FsilsLinearAlgebra : public virtual LinearAlgebra {
     virtual void set_preconditioner(consts::PreconditionerType prec_type);
 
   private:
+    /// @brief A list of linear algebra interfaces that can be used for assembly.
     static std::set<consts::LinearAlgebraType> valid_assemblers; 
 };
 

@@ -615,7 +615,6 @@ class outputType
     std::string name;
 };
 
-
 /// @brief Linear system of equations solver type
 //
 class lsType
@@ -624,9 +623,6 @@ class lsType
 
     /// @brief LS solver                     (IN)
     consts::SolverType LS_type = consts::SolverType::lSolver_NA;
-
-    /// @brief Preconditioner                (IN)
-    consts::PreconditionerType PREC_Type = consts::PreconditionerType::PREC_NONE;
 
     /// @brief Successful solving            (OUT)
     bool suc = false;

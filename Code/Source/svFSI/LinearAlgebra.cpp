@@ -68,6 +68,7 @@ LinearAlgebra::LinearAlgebra()
 {
 }
 
+/// @brief Create objects derived from LinearAlgebra. 
 LinearAlgebra* LinearAlgebraFactory::create_interface(consts::LinearAlgebraType interface_type)
 {
   LinearAlgebra* interface = nullptr;

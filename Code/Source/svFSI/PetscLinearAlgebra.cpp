@@ -54,16 +54,25 @@ class PetscLinearAlgebra::PetscImpl {
 /////////////////////////////////////////////////////////////////
 // The following methods implement the LinearAlgebra interface.
 
+std::set<consts::LinearAlgebraType> PetscLinearAlgebra::valid_assemblers = {
+  consts::LinearAlgebraType::none,
+  consts::LinearAlgebraType::fsils
+};
+
 PetscLinearAlgebra::PetscLinearAlgebra()
 {
   #ifndef USE_PETSC
-  throw std::runtime_error("[PetscLinearAlgebra] There is no PETSc interface.");
+  throw std::runtime_error("[PetscLinearAlgebra] svFSIplus hase not been built with the PETSc package.");
   #else
   impl = new PetscLinearAlgebra::PetscImpl();
   interface_type = consts::LinearAlgebraType::petsc; 
   assembly_type = consts::LinearAlgebraType::none;
   preconditioner_type = consts::PreconditionerType::PREC_PETSC_JACOBI;
   #endif
+}
+
+PetscLinearAlgebra::~PetscLinearAlgebra()
+{
 }
 
 /// @brief Allocate data arrays.
@@ -88,8 +97,9 @@ bool PetscLinearAlgebra::check_options(const consts::PreconditionerType prec_con
   auto assembly_type_name = LinearAlgebra::type_to_name.at(assembly_type);
   std::string error_msg;
 
-  if (assembly_type != LinearAlgebraType::none) {
-    error_msg = "petsc linear algebra can't be used for assembly.";
+  if (valid_assemblers.count(assembly_type) == 0) {
+    auto assembly_type_name = LinearAlgebra::type_to_name.at(assembly_type);
+    error_msg = "petsc linear algebra can't use '" + assembly_type_name + "' for assembly.";
   }
 
   if (petsc_preconditioners.count(prec_cond_type) == 0) { 
@@ -107,7 +117,7 @@ void PetscLinearAlgebra::initialize(ComMod& com_mod, eqType& lEq)
   impl->initialize(com_mod, lEq);
 }
 
-/// @brief Initialize an FsilsLinearAlgebra object used for assembly and preconditioner. 
+/// @brief Initialize an FsilsLinearAlgebra object used for assembly.
 void PetscLinearAlgebra::initialize_fsils(ComMod& com_mod, eqType& lEq)
 {
   fsils_solver = LinearAlgebraFactory::create_interface(consts::LinearAlgebraType::fsils);
@@ -115,22 +125,29 @@ void PetscLinearAlgebra::initialize_fsils(ComMod& com_mod, eqType& lEq)
   fsils_solver->alloc(com_mod, lEq);
 }
 
-/// @brief Set the linear algebra package for assmbly.
+/// @brief Set the linear algebra package for assembly.
 void PetscLinearAlgebra::set_assembly(consts::LinearAlgebraType atype)
 {
   if (atype == consts::LinearAlgebraType::none) {
     return;
   }
 
-  auto str_type = LinearAlgebra::type_to_name.at(atype);
-  throw std::runtime_error("[PetscLinearAlgebra] ERROR: Can't set Petsc linear algebra to use '" +
-      str_type + "' for assembly." + " Petsc can't be used with assembly.");
+  if (valid_assemblers.count(atype) == 0) {
+    auto str_type = LinearAlgebra::type_to_name.at(atype);
+    throw std::runtime_error("[PetscLinearAlgebra] ERROR: Can't set petsc linear algebra to use '" +
+      str_type + "' for assembly." + " petsc can only use 'fsils' for assembly.");
+  }
+
+  assembly_type = atype;
+
+  if (assembly_type == consts::LinearAlgebraType::fsils) {
+    use_fsils_assembly = true;
+  }
 }
 
 /// @brief Set the proconditioner.
 void PetscLinearAlgebra::set_preconditioner(consts::PreconditionerType prec_type)
 {
-  std::cout << "[PetscLinearAlgebra::set_preconditioner] prec_type: " << prec_type << std::endl;
   if (consts::petsc_preconditioners.count(prec_type) == 0) {
     auto str_type = consts::preconditioner_type_to_name.at(prec_type);
     throw std::runtime_error("[PetscLinearAlgebra] ERROR: petsc linear algebra can't use '" +
@@ -144,7 +161,7 @@ void PetscLinearAlgebra::set_preconditioner(consts::PreconditionerType prec_type
 /// @brief Solve a system of linear equations.
 void PetscLinearAlgebra::solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res)
 {
-  std::cout << "[PetscLinearAlgebra] solve" << std::endl;
+  //std::cout << "[PetscLinearAlgebra] solve" << std::endl;
   impl->solve(com_mod, lEq, incL, res);
 }
 
