@@ -166,7 +166,7 @@ void dist_msh_srf(ComMod& com_mod, ChnlMod& chnl_mod, faceType& lFa, mshType& lM
     }
 
     if (iOpt == 1) {
-      std::string fTmp = sTmp + "/" + lM.fa[iFa].name + "_" + std::to_string(rmsh.rTS) + "_cpp.vtp";
+      std::string fTmp = sTmp + "/" + lM.fa[iFa].name + "_" + std::to_string(rmsh.rTS) + ".vtp";
       Vector<int> incNd(lM.gnNo);
 
       for (int a = 0; a < lM.fa[iFa].nNo; a++) {
@@ -1466,7 +1466,7 @@ void remesh_restart(Simulation* simulation)
   auto& stFileName = com_mod.stFileName;
   auto& rmsh = com_mod.rmsh;
 
-  auto sTmp = stFileName + "_last_cpp.bin";
+  auto sTmp = stFileName + "_last.bin";
   #ifdef debug_remesh_restart 
   dmsg << "rmsh.rTS: " << rmsh.rTS;
   dmsg << "tDof: " << com_mod.tDof;
@@ -1485,7 +1485,7 @@ void remesh_restart(Simulation* simulation)
 
   // Write something.
   //
-  auto fTmp = stFileName + "_" + std::to_string(rmsh.rTS) + "_cpp.bin";
+  auto fTmp = stFileName + "_" + std::to_string(rmsh.rTS) + ".bin";
   auto const recLn = com_mod.recLn;
   const bool dFlag = com_mod.dFlag;
   auto& timeP = com_mod.timeP;
@@ -1715,7 +1715,7 @@ void remesh_restart(Simulation* simulation)
         dist_msh_srf(com_mod, chnl_mod, tMsh.fa[0], msh, 1);
 
         sTmp = chnl_mod.appPath + "/" + ".remesh_tmp.dir";
-        fTmp = sTmp + "/" + msh.name +  "_" + std::to_string(rmsh.rTS) + "_cpp.vtu";
+        fTmp = sTmp + "/" + msh.name +  "_" + std::to_string(rmsh.rTS) + ".vtu";
         vtk_xml::write_vtu(com_mod, msh, fTmp);
       } 
 

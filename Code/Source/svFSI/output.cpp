@@ -232,7 +232,7 @@ void write_restart(Simulation* simulation, std::array<double,3>& timeP)
   int fid = 27;
   int myID = cm.tF(cm_mod);
 
-  auto fName = stFileName + "_last_cpp.bin";
+  auto fName = stFileName + "_last.bin";
   auto tmpS = fName;
   #ifdef debug_write_restart
   dmsg;
@@ -255,7 +255,7 @@ void write_restart(Simulation* simulation, std::array<double,3>& timeP)
     } else {
       sprintf(fName_num, "%03d", cTS);
     }
-    fName = stFileName + "_" + fName_num + "_cpp.bin";
+    fName = stFileName + "_" + fName_num + ".bin";
   }
 
   // Create the file.
