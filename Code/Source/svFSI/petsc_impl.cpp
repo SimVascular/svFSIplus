@@ -214,25 +214,24 @@ void petsc_create_linearsolver(const consts::SolverType lsType, const consts::Pr
 
     switch (pcType)
     {
-        //case PETSc_PC:
-        case PreconditionerType::PREC_FSILS:
+        case PreconditionerType::PREC_PETSC_JACOBI:
             PCSetType(pc, PCJACOBI);
-            break;
+        break;
 
-        case PreconditionerType::PREC_RCS:
+        case PreconditionerType::PREC_PETSC_RCS:
             psol[cEq].rcs = PETSC_TRUE;
             PetscPrintf(MPI_COMM_WORLD, "WARNING <PETSC_CREATE_LINEARSOLVER>: "
             "precondition the linear system with RCS first.\n"
             "WARNING <PETSC_CREATE_LINEARSOLVER>: "
             "This will NOT be overwritten by petsc_option.inp!\n");
-            break;
+        break;
 
         default:
             PetscPrintf(MPI_COMM_WORLD, "ERROR <PETSC_CREATE_LINEARSOLVER>: "
             "preconditioner type not supported through svFSI input file.\n"
             "ERROR <PETSC_CREATE_LINEARSOLVER>: "
             "More preconditioner options can be set through petsc_option.inp.\n");   
-            break;
+        break;
     }
     
     /* Run time options */
@@ -936,8 +935,11 @@ class PetscLinearAlgebra::PetscImpl {
 
     PetscImpl();
     void initialize(ComMod& com_mod, eqType& lEq);
+    void set_preconditioner(consts::PreconditionerType prec_type);
     void solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res);
     void init_dir_and_coupneu_bc(ComMod& com_mod, const Vector<int>& incL, const Vector<double>& res);
+
+    consts::PreconditionerType preconditioner_;
 
     // Local to global mapping
     Vector<int> ltg_;
@@ -1055,7 +1057,7 @@ void PetscLinearAlgebra::PetscImpl::initialize(ComMod& com_mod, eqType& equation
     pesc_initialized = true;
   }
 
-  auto prec_type = equation.ls.PREC_Type;
+  auto prec_type = preconditioner_;
   auto ls_type = equation.ls.LS_type;
   auto phys = equation.phys;
   auto& ls = equation.ls;
@@ -1072,6 +1074,11 @@ void PetscLinearAlgebra::PetscImpl::initialize(ComMod& com_mod, eqType& equation
 
   petsc_create_linearsolver(ls_type, prec_type, ls.sD, ls.mItr, ls.relTol, ls.absTol, 
       phys, equation.dof, eq_num, com_mod.nEq);
+}
+
+void PetscLinearAlgebra::PetscImpl::set_preconditioner(consts::PreconditionerType prec_type)
+{
+  preconditioner_ = prec_type;
 }
 
 //-------

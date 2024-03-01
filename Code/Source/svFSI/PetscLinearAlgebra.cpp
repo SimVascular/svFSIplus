@@ -44,6 +44,7 @@ class PetscLinearAlgebra::PetscImpl {
   public:
     PetscImpl(){};
     void initialize(ComMod& com_mod, eqType& lEq) {};
+    void set_preconditioner(consts::PreconditionerType prec_type) {};
     void solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res) {};
 };
 #endif
@@ -61,7 +62,7 @@ PetscLinearAlgebra::PetscLinearAlgebra()
   impl = new PetscLinearAlgebra::PetscImpl();
   interface_type = consts::LinearAlgebraType::petsc; 
   assembly_type = consts::LinearAlgebraType::none;
-  preconditioner_type = consts::PreconditionerType::PREC_NONE;
+  preconditioner_type = consts::PreconditionerType::PREC_PETSC_JACOBI;
   #endif
 }
 
@@ -91,7 +92,7 @@ bool PetscLinearAlgebra::check_options(const consts::PreconditionerType prec_con
     error_msg = "petsc linear algebra can't be used for assembly.";
   }
 
-  if (prec_cond_type != PreconditionerType::PREC_NONE) { 
+  if (petsc_preconditioners.count(prec_cond_type) == 0) { 
     error_msg = "petsc linear algebra can't use '" + prec_cond_type_name + "' for preconditioning.";
   }
 
@@ -129,7 +130,15 @@ void PetscLinearAlgebra::set_assembly(consts::LinearAlgebraType atype)
 /// @brief Set the proconditioner.
 void PetscLinearAlgebra::set_preconditioner(consts::PreconditionerType prec_type)
 {
+  std::cout << "[PetscLinearAlgebra::set_preconditioner] prec_type: " << prec_type << std::endl;
+  if (consts::petsc_preconditioners.count(prec_type) == 0) {
+    auto str_type = consts::preconditioner_type_to_name.at(prec_type);
+    throw std::runtime_error("[PetscLinearAlgebra] ERROR: petsc linear algebra can't use '" +
+        str_type + "' for a preconditioner.");
+  }
+
   preconditioner_type = prec_type;
+  impl->set_preconditioner(prec_type);
 }
 
 /// @brief Solve a system of linear equations.

@@ -1250,7 +1250,8 @@ void TrilinosLinearAlgebra::TrilinosImpl::set_preconditioner(consts::Preconditio
 }
 
 /// @brief Solve a system of linear equations assembled by fsils.
-void TrilinosLinearAlgebra::TrilinosImpl::solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res)
+void TrilinosLinearAlgebra::TrilinosImpl::solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, 
+    const Vector<double>& res)
 {
   init_dir_and_coup_neu(com_mod, incL, res);
 

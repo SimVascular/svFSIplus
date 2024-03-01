@@ -36,6 +36,7 @@
 #include <map>
 #include <set>
 #include <type_traits>
+#include <variant>
 
 // The enums here replicate the PARAMETERs defined
 // in CONSTS.f.
@@ -423,7 +424,9 @@ enum class PreconditionerType
   PREC_TRILINOS_IC = 706,
   PREC_TRILINOS_ICT = 707, 
   PREC_TRILINOS_ML = 708,
-  PREC_RCS = 709
+  PREC_RCS = 709,
+  PREC_PETSC_JACOBI = 710,
+  PREC_PETSC_RCS = 711
 };
 
 extern const std::set<PreconditionerType> fsils_preconditioners;
