@@ -460,6 +460,13 @@ std::ostream& operator<<(typename std::enable_if<std::is_enum<T>::value, std::os
     return stream << static_cast<typename std::underlying_type<T>::type>(e);
 }
 
+//// Mechanical configurations
+enum class MechanicalConfigurationType
+{
+  t_ref, // reference configuration
+  t_old, // old timestep (n) configuration
+  t_new // new timestep (n+1) configuration
+};
 };
 
 #endif

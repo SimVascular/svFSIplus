@@ -378,7 +378,9 @@ void fsi_ls_upd(ComMod& com_mod, const bcType& lBc, const faceType& lFa)
       Vector<double> n(nsd);
       auto Nx = lFa.Nx.slice(g);
 
-      nn::gnnb(com_mod, lFa, e, g, nsd, nsd-1, lFa.eNoN, Nx, n, 'n');
+      auto cfg = MechanicalConfigurationType::t_new;
+
+      nn::gnnb(com_mod, lFa, e, g, nsd, nsd-1, lFa.eNoN, Nx, n, cfg);
       // 
       for (int a = 0; a < lFa.eNoN; a++) {
         int Ac = lFa.IEN(a,e);

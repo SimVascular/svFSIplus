@@ -34,11 +34,14 @@
 #include "mat_fun.h"
 #include "nn.h"
 #include "utils.h"
+#include "consts.h"
 
 #include <bitset>
 #include <math.h>
 
 namespace all_fun {
+
+  using namespace consts;
 
 //--------------
 // aspect_ratio
@@ -323,10 +326,16 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, int dId, const Array<do
   if (nNo != tnNo) {
     if (ibFlag) {
       if (nNo != com_mod.ib.tnNo) {
-          throw std::runtime_error("Incompatible vector size in vInteg");
+          std::string msg = "Incompatible vector size in vInteg in domain: ";
+          msg += std::to_string(dId);
+          msg += "\nNumber of nodes in s must be equal to total number of nodes (immersed boundary).\n";
+          throw std::runtime_error(msg);
       }
     } else { 
-      throw std::runtime_error("Incompatible vector size in vInteg");
+      std::string msg = "Incompatible vector size in vInteg in domain: ";
+      msg += std::to_string(dId);
+      msg += "\nNumber of nodes in s must be equal to total number of nodes.\n";
+      throw std::runtime_error(msg);
     } 
   }
 
@@ -546,9 +555,9 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, int dId, const Array<do
 /// @param lFa face type, representing a face on the computational mesh
 /// @param s an array containing a scalar value for each node in the mesh
 /// @param pFlag flag for using Taylor-Hood function space for pressure
-/// @param cfg denotes which configuration ('r': reference/timestep 0, 'o': old/timestep n, or 'n': new/timestep n+1). Default 'r'.
+/// @param cfg denotes which mechanical configuration (reference/timestep 0, old/timestep n, or new/timestep n+1). Default reference.
 //
-double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, const Vector<double>& s, bool pFlag, char cfg)
+double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, const Vector<double>& s, bool pFlag, MechanicalConfigurationType cfg)
 {
   using namespace consts;
   #define n_debug_integ_s
@@ -583,10 +592,16 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, co
   if (nNo != com_mod.tnNo) {
     if (com_mod.ibFlag) {
       if (nNo != com_mod.ib.tnNo) {
-        throw std::runtime_error("Incompatible vector size in IntegS 1");
+        std::string msg = "Incompatible vector size in integS on face: ";
+        msg += lFa.name;
+        msg +=  "\nNumber of nodes in s must be equal to total number of nodes (immersed boundary).\n";
+        throw std::runtime_error(msg);
       }
     } else {
-      throw std::runtime_error("Incompatible vector size in IntegS 2");
+      std::string msg = "Incompatible vector size in integS on face: ";
+      msg += lFa.name;
+      msg +=  "\nNumber of nodes in s must be equal to total number of nodes.\n";
+      throw std::runtime_error(msg);
     }
   }
 
@@ -703,10 +718,10 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, co
 /// @param lFa face type, representing a face on the computational mesh
 /// @param s an array containing a vector value for each node in the mesh
 /// @param pFlag flag for using Taylor-Hood function space for pressure
-/// @param cfg denotes which configuration ('r': reference/timestep 0, 'o': old/timestep n, or 'n': new/timestep n+1). Default 'r'.
+/// @param cfg denotes which configuration (reference/timestep 0, old/timestep n, or new/timestep n+1). Default reference.
 //
 double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, 
-            const Array<double>& s, char cfg)
+            const Array<double>& s, MechanicalConfigurationType cfg)
 {
   using namespace consts;
 
@@ -729,7 +744,10 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa,
   #endif
 
   if (s.nrows() != nsd) {
-    throw std::runtime_error("Incompatible vector size in integV 1");
+    std::string msg = "Incompatible vector size in integV on face: "; 
+    msg += lFa.name;
+    msg += "\nNumber of rows in s must be equal to number of spatial dimensions.\n";
+    throw std::runtime_error(msg);
   }
 
   int nNo = s.ncols();
@@ -741,10 +759,16 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa,
   if (nNo != tnNo) {
     if (com_mod.ibFlag) {
       if (nNo != com_mod.ib.tnNo) {
-        throw std::runtime_error("Incompatible vector size in integV 2");
+        std::string msg = "Incompatible vector size in integV on face: ";
+        msg += lFa.name;
+        msg += "\nNumber of nodes in s must be equal to total number of nodes (immersed boundary).\n";
+        throw std::runtime_error(msg);
       }
     } else {
-      throw std::runtime_error("Incompatible vector size in integV 3");
+      std::string msg = "Incompatible vector size in integV on face: ";
+      msg += lFa.name; 
+      msg += "\nNumber of nodes in s must be equal to total number of nodes.\n";
+      throw std::runtime_error(msg);
     }
   }
 
@@ -827,11 +851,11 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa,
 /// @param l lower index of s
 /// @param uo optional: upper index of s. Default u = l.
 /// @param THlag flag for using Taylor-Hood function space for pressure.
-/// @param cfg denotes which configuration ('r': reference/timestep 0, 'o': old/timestep n, or 'n': new/timestep n+1). Default 'r'.
+/// @param cfg denotes which configuration (reference/timestep 0, old/timestep n, or new/timestep n+1). Default reference.
 ///
 //
 double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, 
-    const Array<double>& s, const int l, std::optional<int> uo, bool THflag, char cfg)
+    const Array<double>& s, const int l, std::optional<int> uo, bool THflag, MechanicalConfigurationType cfg)
 {
   using namespace consts;
 
@@ -863,10 +887,16 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa,
   if (nNo != tnNo) {
     if (com_mod.ibFlag) {
       if (nNo != com_mod.tnNo) { 
-        throw std::runtime_error("Incompatible vector size in integ");
+        std::string msg = "Incompatible vector size in integG on face: ";
+        msg += lFa.name; 
+        msg += "\nNumber of nodes in s must be equal to total number of nodes (immersed boundary).\n";
+        throw std::runtime_error(msg);
       }
     } else {
-      throw std::runtime_error("Incompatible vector size in integ");
+      std::string msg = "Incompatible vector size in integG on face: ";
+      msg += lFa.name;
+      msg += "\nNumber of nodes in s must be equal to total number of nodes.\n";
+      throw std::runtime_error(msg);
     }
   }
 

@@ -532,12 +532,12 @@ void gnn(const int eNoN, const int nsd, const int insd, Array<double>& Nxi, Arra
 /// Jac = SQRT(NORM(n)), the Jacobian of the mapping from parent surface element to
 /// reference/old/new configuration.
 ///
-/// cfg denotes which configuration ('r': reference/timestep 0, 'o': old/timestep n, or 'n': new/timestep n+1). Default 'r'
+/// cfg denotes which configuration (reference/timestep 0, old/timestep n, or new/timestep n+1). Default reference
 ///
 /// Reproduce Fortran 'GNNB'.
 //
 void gnnb(const ComMod& com_mod, const faceType& lFa, const int e, const int g, const int nsd, const int insd, 
-    const int eNoNb, const Array<double>& Nx, Vector<double>& n, char cfg)
+    const int eNoNb, const Array<double>& Nx, Vector<double>& n, MechanicalConfigurationType cfg)
 {
   auto& cm = com_mod.cm;
 
@@ -551,7 +551,6 @@ void gnnb(const ComMod& com_mod, const faceType& lFa, const int e, const int g, 
   dmsg << "insd: " << insd;
   dmsg << "eNoNb: " << eNoNb;
   dmsg << "cfg: " << cfg;
-  dmsg << "cfg == 'n': " << (cfg == 'n');
   #endif
 
   int iM = lFa.iM;
@@ -626,23 +625,26 @@ void gnnb(const ComMod& com_mod, const faceType& lFa, const int e, const int g, 
         lX(i,a) = lX(i,a) + com_mod.Do(i+nsd+1,Ac);
       }
     }
-    else if (cfg == 'r') {
-        // Do nothing
-    }
-    else if (cfg == 'o') {
-      for (int i = 0; i < lX.nrows(); i++) {
-        // Add displacement at timestep n
-        lX(i,a) = lX(i,a) + com_mod.Do(i,Ac);
-      }
-    }
-    else if (cfg == 'n') {
-      for (int i = 0; i < lX.nrows(); i++) {
-        // Add displacement at timestep n+1
-        lX(i,a) = lX(i,a) + com_mod.Dn(i,Ac);
-      }
-    }
     else {
-      throw std::runtime_error("gnnb: invalid cfg provided");
+      switch (cfg) {
+        case MechanicalConfigurationType::t_ref:
+          // Do nothing
+          break;
+        case MechanicalConfigurationType::t_old:
+          for (int i = 0; i < lX.nrows(); i++) {
+            // Add displacement at timestep n
+            lX(i,a) = lX(i,a) + com_mod.Do(i,Ac);
+          }
+          break;
+        case MechanicalConfigurationType::t_new:
+          for (int i = 0; i < lX.nrows(); i++) {
+            // Add displacement at timestep n+1
+            lX(i,a) = lX(i,a) + com_mod.Dn(i,Ac);
+          }
+          break;
+        default:
+          throw std::runtime_error("gnnb: invalid MechanicalConfigurationType provided");
+      }
     }
   }
 

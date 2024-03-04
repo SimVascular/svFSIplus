@@ -88,9 +88,9 @@ void calc_der_cpl_bc(ComMod& com_mod, const CmMod& cm_mod)
   auto& cDmn = com_mod.cDmn;
   auto cPhys = eq.dmn[cDmn].phys;
 
-  // Configuration in which to compute flowrate
-  char cfg_o = 'r';
-  char cfg_n = 'r';
+  // Mechanical configuration in which to compute flowrate
+  auto cfg_o = MechanicalConfigurationType::t_ref;
+  auto cfg_n = MechanicalConfigurationType::t_ref;
 
   bool RCRflag = false;
 
@@ -126,15 +126,14 @@ void calc_der_cpl_bc(ComMod& com_mod, const CmMod& cm_mod)
           if (!bc.flwP) { 
             throw std::runtime_error("[calc_der_cpl_bc]  Follower pressure load must be used for 0D coupling with struct/ustruct");
           }
-
-          cfg_o = 'o';
-          cfg_n = 'n';
+          cfg_o = MechanicalConfigurationType::t_old;
+          cfg_n = MechanicalConfigurationType::t_new;
         }
         // If fluid, FSI, or CMM, use reference configuration to compute flowrate integral
         // Note that for FSI, mvMsh will modify geometry in gnnb()
         else if ((cPhys == EquationType::phys_fluid) || (cPhys == EquationType::phys_FSI) || (cPhys == EquationType::phys_CMM)) {
-          cfg_o = 'r';
-          cfg_n = 'r';
+          cfg_o = MechanicalConfigurationType::t_ref;
+          cfg_n = MechanicalConfigurationType::t_ref;
         }
         else {
           throw std::runtime_error("[calc_der_cpl_bc]  Invalid physics type for 0D coupling");
@@ -688,8 +687,8 @@ void set_bc_cpl(ComMod& com_mod, CmMod& cm_mod)
   auto cPhys = eq.dmn[cDmn].phys;
 
   // Configuration in which to compute flowrate
-  char cfg_o = 'r';
-  char cfg_n = 'r';
+  auto cfg_o = MechanicalConfigurationType::t_ref;
+  auto cfg_n = MechanicalConfigurationType::t_ref;
 
   // If coupling scheme is implicit, calculate updated pressure and flowrate 
   // from 0D, as well as resistance from 0D using finite difference.
@@ -724,15 +723,14 @@ void set_bc_cpl(ComMod& com_mod, CmMod& cm_mod)
             if (!bc.flwP) { 
               throw std::runtime_error("[set_bc_cpl]  Follower pressure load must be used for 0D coupling with struct/ustruct");
             }
-
-            cfg_o = 'o';
-            cfg_n = 'n';
+            cfg_o = MechanicalConfigurationType::t_old;
+            cfg_n = MechanicalConfigurationType::t_new;
           }
           // If fluid, FSI, or CMM, use reference configuration to compute flowrate integral
           // Note that for FSI, mvMsh will modify geometry in gnnb()
           else if ((cPhys == EquationType::phys_fluid) || (cPhys == EquationType::phys_FSI) || (cPhys == EquationType::phys_CMM)) {
-            cfg_o = 'r';
-            cfg_n = 'r';
+            cfg_o = MechanicalConfigurationType::t_ref;
+            cfg_n = MechanicalConfigurationType::t_ref;
           }
           else {
             throw std::runtime_error("[set_bc_cpl]  Invalid physics type for 0D coupling");
