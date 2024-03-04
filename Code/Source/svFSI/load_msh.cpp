@@ -196,9 +196,9 @@ void read_sv(Simulation* simulation, mshType& mesh, const MeshParameters* mesh_p
         // Note: This may change element node ordering.
         //
         auto &com_mod = simulation->get_com_mod();
-        //if (com_mod.usePrecomp) {
-        //    vtk_xml::read_precomputed_solution_vtu(com_mod.precompFileName, com_mod.precompFieldName, mesh);
-        //}
+        if (com_mod.usePrecomp) {
+            vtk_xml::read_precomputed_solution_vtu(com_mod.precompFileName, com_mod.precompFieldName, mesh);
+        }
         if (com_mod.ichckIEN) {
             read_msh_ns::check_ien(simulation, mesh);
         }
