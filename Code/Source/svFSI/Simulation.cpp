@@ -100,6 +100,10 @@ void Simulation::set_module_parameters()
   com_mod.stFileIncr = general.increment_in_saving_restart_files.value();
   com_mod.rmsh.isReqd = general.simulation_requires_remeshing.value();
 
+  com_mod.usePrecomp = general.use_precomputed_solution.value();
+  com_mod.precompFileName = general.precomputed_solution_file_path.value();
+  com_mod.precompFieldName = general.precomputed_solution_field_name.value();
+
   // Set simulation parameters.
   nTs = general.number_of_time_steps.value();
   fTmp = general.simulation_initialization_file_path.value();

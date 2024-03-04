@@ -937,6 +937,10 @@ class mshType
     /// davep double Nxx(:,:,:)
     Array3<double> Nxx;
 
+    /// @brief Solution field (displacement, velocity, pressure, etc.) for a known, potentially
+    /// time-varying, quantity of interest across a mesh
+    Array3<double> Ys;
+
     /// @brief Mesh Name
     std::string name;
 
@@ -1372,7 +1376,8 @@ class ComMod {
     /// @brief Postprocess step - convert bin to vtk
     bool bin2VTK = false;
 
-
+    /// @brief Whether to use precomputed state-variable solutions
+    bool usePrecomp = false;
     //----- int members -----//
 
     /// @brief Current domain
@@ -1464,6 +1469,11 @@ class ComMod {
     /// @brief Stop_trigger file name
     std::string stopTrigName;
 
+    /// @brief Precomputed state-variable file name
+    std::string precompFileName;
+
+    /// @breif Precomputed state-variable field name
+    std::string precompFieldName;
     // ALLOCATABLE DATA
 
     /// @brief Column pointer (for sparse LHS matrix structure)

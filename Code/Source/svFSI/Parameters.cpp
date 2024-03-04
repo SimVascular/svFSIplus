@@ -1806,6 +1806,9 @@ GeneralSimulationParameters::GeneralSimulationParameters()
 
   set_parameter("Verbose", false, !required, verbose);
   set_parameter("Warning", false, !required, warning);
+  set_parameter("Use precomputed solution", false, !required, use_precomputed_solution);
+  set_parameter("Precomputed solution file path", "", !required, precomputed_solution_file_path);
+  set_parameter("Precomputed solution field name", "", !required, precomputed_solution_field_name);
 }
 
 void GeneralSimulationParameters::print_parameters()
