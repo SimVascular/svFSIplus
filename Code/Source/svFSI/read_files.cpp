@@ -1967,7 +1967,7 @@ void read_ls(Simulation* simulation, EquationParameters* eq_params, consts::Solv
   using namespace consts;
   using namespace fsi_linear_solver;
 
-  #define debug_read_ls
+  #define n_debug_read_ls
   #ifdef debug_read_ls
   DebugMsg dmsg(__func__, simulation->com_mod.cm.idcm());
   dmsg.banner();
@@ -2025,6 +2025,12 @@ void read_ls(Simulation* simulation, EquationParameters* eq_params, consts::Solv
   dmsg << "linear_algebra.type: " << linear_algebra.type();
   dmsg << "linear_algebra.preconditioner: " << linear_algebra.preconditioner();
   #endif
+
+  if (!linear_algebra.defined()) {
+    throw std::runtime_error("[svFSIplus] No <Linear_algebra> section has been defined for equation '" + 
+        eq_params->type() + ".");
+  }
+
   lEq.linear_algebra_type = LinearAlgebra::name_to_type.at(linear_algebra.type());
   auto prec_type = consts::preconditioner_name_to_type.at(linear_algebra.preconditioner());
   lEq.linear_algebra_preconditioner = consts::preconditioner_name_to_type.at(linear_algebra.preconditioner());

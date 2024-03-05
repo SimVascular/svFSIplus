@@ -233,6 +233,7 @@ const std::map<std::string,PreconditionerType> preconditioner_name_to_type =
   {"none", PreconditionerType::PREC_NONE},
 
   {"fsils", PreconditionerType::PREC_FSILS},
+  {"rcs", PreconditionerType::PREC_RCS},
   {"row-column-scaling", PreconditionerType::PREC_RCS},
 
   {"trilinos-diagonal", PreconditionerType::PREC_TRILINOS_DIAGONAL},

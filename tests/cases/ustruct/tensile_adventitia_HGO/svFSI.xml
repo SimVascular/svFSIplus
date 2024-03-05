@@ -89,7 +89,9 @@
    </Output>
 
    <LS type="GMRES">
-      <Preconditioner> FSILS </Preconditioner> 
+      <Linear_algebra type="fsils" >
+         <Preconditioner> fsils </Preconditioner>
+      </Linear_algebra>
       <Tolerance> 1e-4 </Tolerance>
       <Max_iterations> 100 </Max_iterations> 
       <Krylov_space_dimension> 50 </Krylov_space_dimension>  

@@ -87,7 +87,9 @@
    </Output>
 
    <LS type="CG" >
-      <Preconditioner> rcs </Preconditioner> 
+      <Linear_algebra type="fsils" >
+         <Preconditioner> rcs </Preconditioner> 
+      </Linear_algebra>
       <Tolerance> 1e-6 </Tolerance>
    </LS>
 

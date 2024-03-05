@@ -80,8 +80,9 @@
    </Domain>
 
    <LS type="GMRES" >
-      <Preconditioner> FSILS </Preconditioner>
-      <!--Preconditioner> Trilinos-ILUT </Preconditioner-->
+      <Linear_algebra type="fsils" >
+         <Preconditioner> fsils </Preconditioner>
+      </Linear_algebra>
       <Tolerance> 1e-6 </Tolerance>
       <Max_iterations> 100 </Max_iterations> 
       <Krylov_space_dimension> 50 </Krylov_space_dimension>
@@ -130,7 +131,9 @@
    <Poisson_ratio> 0.3 </Poisson_ratio> 
 
    <LS type="CG" >
-      <Preconditioner> FSILS </Preconditioner>
+      <Linear_algebra type="fsils" >
+         <Preconditioner> fsils </Preconditioner>
+      </Linear_algebra>
       <Tolerance> 1e-4 </Tolerance>
    </LS>
 

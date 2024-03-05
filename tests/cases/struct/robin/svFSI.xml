@@ -71,7 +71,9 @@
    </Output>
 
    <LS type="BICG" >
-      <Preconditioner> FSILS </Preconditioner> 
+      <Linear_algebra type="fsils" >
+         <Preconditioner> fsils </Preconditioner>
+      </Linear_algebra>
       <Tolerance> 1e-11 </Tolerance>
       <Max_iterations> 600 </Max_iterations> 
    </LS>
