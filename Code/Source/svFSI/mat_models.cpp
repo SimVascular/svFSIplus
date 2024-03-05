@@ -214,6 +214,8 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
   //
   Tensor4<double> CC(nsd,nsd,nsd,nsd);
 
+  std::cout << "test brreak point *1" << std::endl;
+
   switch (stM.isoType) {
     case ConstitutiveModelType::stIso_lin: {
       double g1 = stM.C10;    // mu
@@ -242,11 +244,15 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
 
     // NeoHookean model
     case ConstitutiveModelType::stIso_nHook: {
+      std::cout << "test brreak point *2" << std::endl;
+
       double g1 = 2.0 * stM.C10;
       auto Sb = g1*Idm;
 
       // Fiber reinforcement/active stress
       Sb += Tfa * mat_dyad_prod(fl.col(0), fl.col(0), nsd);
+
+      std::cout << "test brreak point *3" << std::endl;
 
       double r1 = g1 * Inv1 / nd;
       for (int j = 0; j < S.ncols(); j++) {
@@ -255,9 +261,30 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
         }
       }
 
+      std::cout << "test brreak point *4" << std::endl;
+      std::cout << "nd, nsd: " << nd << ", "<< nsd << std::endl;
+      S.print("S: ");
+      Ci.print("Ci: ");
+
+
+      Array<double> A(3, 3);
+      Array<double> B = mat_fun::mat_id(3);
+      A.print("this is A: ");
+      B.print("this is B: ");
+      Tensor4<double> ret = ten_dyad_prod(A, B, 3);
+      std::cout << "test brreak point *4" << std::endl;
+
+
+      ten_dyad_prod(B, A, 3);
+      std::cout << "test brreak point *4" << std::endl;
+
       CC = (-2.0/nd) * ( ten_dyad_prod(Ci, S, nsd) + ten_dyad_prod(S, Ci, nsd));
+      std::cout << "test brreak point *5" << std::endl;
       S += p*J*Ci;
+      std::cout << "test brreak point *6" << std::endl;
       CC += 2.0*(r1 - p*J) * ten_symm_prod(Ci, Ci, nsd)  +  (pl*J - 2.0*r1/nd) * ten_dyad_prod(Ci, Ci, nsd);
+
+      std::cout << "test brreak point *7" << std::endl;
 
     } break;
 
