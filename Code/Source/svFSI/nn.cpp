@@ -627,16 +627,16 @@ void gnnb(const ComMod& com_mod, const faceType& lFa, const int e, const int g, 
     }
     else {
       switch (cfg) {
-        case MechanicalConfigurationType::t_ref:
+        case MechanicalConfigurationType::reference:
           // Do nothing
           break;
-        case MechanicalConfigurationType::t_old:
+        case MechanicalConfigurationType::old_timestep:
           for (int i = 0; i < lX.nrows(); i++) {
             // Add displacement at timestep n
             lX(i,a) = lX(i,a) + com_mod.Do(i,Ac);
           }
           break;
-        case MechanicalConfigurationType::t_new:
+        case MechanicalConfigurationType::new_timestep:
           for (int i = 0; i < lX.nrows(); i++) {
             // Add displacement at timestep n+1
             lX(i,a) = lX(i,a) + com_mod.Dn(i,Ac);

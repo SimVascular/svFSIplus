@@ -378,7 +378,7 @@ void fsi_ls_upd(ComMod& com_mod, const bcType& lBc, const faceType& lFa)
       Vector<double> n(nsd);
       auto Nx = lFa.Nx.slice(g);
 
-      auto cfg = MechanicalConfigurationType::t_new;
+      auto cfg = MechanicalConfigurationType::new_timestep;
 
       nn::gnnb(com_mod, lFa, e, g, nsd, nsd-1, lFa.eNoN, Nx, n, cfg);
       // 
