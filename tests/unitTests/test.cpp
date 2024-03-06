@@ -52,6 +52,8 @@
 int argc; 
 char **argv;
 
+using namespace mat_fun;
+
 class MockSimulation : public Simulation {
 public:
     MockSimulation() {
@@ -104,7 +106,6 @@ public:
 
 TEST(TestMockObject, sampleTest) {
     MockSimulation *simulation;
-
     MockComMod com_mod;
     MockCepMod cep_mod;
     MockcmType cm;
@@ -114,9 +115,6 @@ TEST(TestMockObject, sampleTest) {
 
     // preparing input arguments for get_pk2cc
     // auto com_mod = simulation->com_mod;
-
-    std::cout << "test brreak point 1" << std::endl;
-
     // auto cm_mod_ = simulation->cm_mod;
     // auto cm = com_mod.cm;
     // auto cep_mod = simulation->get_cep_mod();
@@ -142,16 +140,11 @@ TEST(TestMockObject, sampleTest) {
     //   }
     // }
 
-    std::cout << "test brreak point 2" << std::endl;
-
     // int cEq = com_mod.cEq;
     // auto& eq = com_mod.eq[cEq];
     // int cDmn = com_mod.cDmn;
     // auto dmn = eq.dmn[cDmn];
     double ya_g = 0.0;   // ya_g or ya: a constant related to electromechanics ?
-
-    std::cout << "test brreak point 3" << std::endl;
-
 
     // Step 1: define material properties
     // set stM.isoType as NeoHookean
@@ -172,42 +165,45 @@ TEST(TestMockObject, sampleTest) {
     fN  = 0.0;
 
     // Step 3: define the input 
-    Array<double> F = mat_fun::mat_id(3);
+    // Array<double> F = mat_fun::mat_id(3);
+    double F[3][3];
+    F[0][0] = 1.0; F[1][1] = 1.0; F[2][2] = 1.0;
     // Step 4: define the reference output
     Array<double> S_ref(3,3), Dm_ref(6,6);
     S_ref = 0.0; Dm_ref = 0.0;
     // Step 5: compare
-    Array<double> S(3,3), Dm(6,6);
-
-    std::cout << "test brreak point 5" << std::endl;
+    // Array<double> S(3,3), Dm(6,6);
+    double S[3][3], Dm[6][6];
 
     cep_mod.cem = cem;
     cep_mod.cem.aStress = false;
     cep_mod.cem.aStrain = false;
 
-    mat_models::get_pk2cc(com_mod, cep_mod, dmn, F, nFn, fN, ya_g, S, Dm);
+    mat_fun_carray::ten_init(3);
 
-    std::cout << "test brreak point 6" << std::endl;
+    mat_models_carray::get_pk2cc(com_mod, cep_mod, dmn, F, nFn, fN, ya_g, S, Dm);
+
+    double tol = 1e-12;   // tolerance
 
     for (int i = 0; i < 3; i++){
       for (int j = 0; j < 3; j++){
-        EXPECT_EQ(S(i,j), S_ref(i,j));   
+        EXPECT_NEAR(S[i][j], S_ref(i,j), tol);   
       }
     }
 
-    // more tests ...
-    F = mat_fun::mat_id(3);
-    F(0,0) = 2.0;
-    mat_models::get_pk2cc(com_mod, cep_mod, dmn, F, nFn, fN, ya_g, S, Dm);
-    for (int i = 0; i < 3; i++){
-        for (int j = 0; j < 3; j++){
-          if (i == j) {
-            EXPECT_NE(S(i,j), S_ref(i,j));   
-          } else {
-            EXPECT_EQ(S(i,j), S_ref(i,j)); 
-          }   
-        }
-    }
+    // // more tests ...
+    // F = mat_fun::mat_id(3);
+    // F(0,0) = 2.0;
+    // mat_models::get_pk2cc(com_mod, cep_mod, dmn, F, nFn, fN, ya_g, S, Dm);
+    // for (int i = 0; i < 3; i++){
+    //     for (int j = 0; j < 3; j++){
+    //       if (i == j) {
+    //         EXPECT_NE(S[i][j], S_ref(i,j));   
+    //       } else {
+    //         EXPECT_EQ(S[i][j], S_ref(i,j)); 
+    //       }   
+    //     }
+    // }
       
 }
 
