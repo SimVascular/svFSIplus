@@ -28,66 +28,38 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SIMULATION_H 
-#define SIMULATION_H 
+#ifndef TRILINOS_LINEAR_ALGEBRA_H 
+#define TRILINOS_LINEAR_ALGEBRA_H 
 
-#include "ComMod.h"
-#include "Parameters.h"
-#include "SimulationLogger.h"
 #include "LinearAlgebra.h"
 
-#include <string>
-
-class Simulation {
+/// @brief The TrilinosLinearAlgebra class implements the LinearAlgebra 
+/// interface for the Trilinos numerical linear algebra package.
+///
+class TrilinosLinearAlgebra : public virtual LinearAlgebra {
 
   public:
-    Simulation();
-    ~Simulation();
+    TrilinosLinearAlgebra();
+    ~TrilinosLinearAlgebra();
 
-    const mshType& get_msh(const std::string& name);
+    virtual void alloc(ComMod& com_mod, eqType& lEq);
+    virtual void assemble(ComMod& com_mod, const int num_elem_nodes, const Vector<int>& eqN,
+        const Array3<double>& lK, const Array<double>& lR);
+    virtual void check_options(const consts::PreconditionerType prec_cond_type, const consts::LinearAlgebraType assembly_type);
+    virtual void initialize(ComMod& com_mod, eqType& lEq);
+    virtual void set_assembly(consts::LinearAlgebraType atype);
+    virtual void set_preconditioner(consts::PreconditionerType prec_type);
+    virtual void solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res);
 
-    CepMod& get_cep_mod() { return cep_mod; };
-    ChnlMod& get_chnl_mod() { return chnl_mod; };
-    ComMod& get_com_mod() { return com_mod; };
-
-    // Read a solver paramerer input XML file.
-    void read_parameters(const std::string& fileName);
-
-    // Set simulation and module member data from Parameters.
-    void set_module_parameters();
-
-    //----- Fortran subroutines -----//
-    //void read_msh();
-
-    //----- Fortran modules -----//
-    CepMod cep_mod;
-    ChnlMod chnl_mod;
-    CmMod cm_mod;
-    ComMod com_mod;
-
-    // Solver parameters read in from solver input XML file.
-    Parameters parameters;
-
-    // Log solution information.
-    SimulationLogger logger;
-
-    // Number of time steps
-    int nTs;
-
-    // Simulation initialization file path
-    std::string fTmp;
-
-    // Spectral radius of infinite time step; this is later used in equations.
-    double roInf;
-
-    // Simulation requires remeshing
-
-    bool isReqd;
-
-    // Name of the history file.
-    std::string history_file_name;
-
-    LinearAlgebra* linear_algebra = nullptr;
+  private:
+    static std::set<consts::LinearAlgebraType> valid_assemblers;
+    void initialize_fsils(ComMod& com_mod, eqType& lEq);
+    bool use_fsils_assembly = false;
+    /// @brief The FsilsLinearAlgebra object used to assemble local element matrices.
+    LinearAlgebra* fsils_solver = nullptr;
+    // Private class used to hide Trilinos implementation details.
+    class TrilinosImpl;
+    TrilinosImpl* impl = nullptr;
 };
 
 #endif

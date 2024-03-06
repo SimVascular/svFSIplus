@@ -550,15 +550,6 @@ void initialize(Simulation* simulation, Vector<double>& timeP)
   fsi_linear_solver::fsils_lhs_create(com_mod.lhs, communicator, com_mod.gtnNo, com_mod.tnNo, nnz, 
       com_mod.ltg, com_mod.rowPtr, com_mod.colPtr, nFacesLS);
 
-  // Initialize Trilinos data structure
-  //
-  if (flag) {
-    com_mod.tls.ltg.resize(com_mod.tnNo);
-    for (int a = 0; a < com_mod.tnNo; a++) {
-      com_mod.tls.ltg(com_mod.lhs.map(a)) = com_mod.ltg(a);
-    }
-  } 
-
   // Variable allocation and initialization
   int tnNo = com_mod.tnNo; 
   com_mod.Ao.resize(tDof,tnNo); 

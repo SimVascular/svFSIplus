@@ -43,13 +43,10 @@
 #include <iomanip>
 #include <math.h>
 
-#ifdef WITH_TRILINOS
-#include "trilinos_linear_solver.h"
-#endif
-
 namespace fsi {
 
-void construct_fsi(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Array<double>& Ag, const Array<double>& Yg, const Array<double>& Dg)
+void construct_fsi(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Array<double>& Ag, 
+    const Array<double>& Yg, const Array<double>& Dg)
 {
   #define n_debug_construct_fsi 
   #ifdef debug_construct_fsi
@@ -318,24 +315,8 @@ void construct_fsi(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Ar
       }
     } // g: loop
 
-    // Assembly
-#ifdef WITH_TRILINOS
-    if (eq.assmTLS) {
-      if (cPhys == Equation_ustruct) {
-        throw std::runtime_error("[construct_fsi] Cannot assemble USTRUCT using Trilinos");
-      }
-      trilinos_doassem_(const_cast<int&>(eNoN), ptr.data(), lK.data(), lR.data());
-    } else {
-#endif
-      if (cPhys == Equation_ustruct) {
-        //CALL USTRUCT_DOASSEM(eNoN, ptr, lKd, lK, lR)
-        throw std::runtime_error("[construct_fsi] USTRUCT_DOASSEM not implemented");
-      } else {
-        lhsa_ns::do_assem(com_mod, eNoN, ptr, lK, lR);
-      }
-#ifdef WITH_TRILINOS
-    }
-#endif
+    eq.linear_algebra->assemble(com_mod, eNoN, ptr, lK, lR);
+
   } // e: loop
 
   #ifdef debug_construct_fsi

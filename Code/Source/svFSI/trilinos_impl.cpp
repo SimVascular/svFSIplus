@@ -39,7 +39,8 @@
   \brief   wrap Trilinos solver functions
 */
 
-#include "trilinos_linear_solver.h"
+#include "trilinos_impl.h"
+#include "ComMod.h"
 #define NOOUTPUT
 
 // --- Define global Trilinos variables to be used in below functions ---------
@@ -155,12 +156,6 @@ void trilinos_lhs_create_(int &numGlobalNodes, int &numLocalNodes,
         int &numGhostAndLocalNodes, int &nnz, const int *ltgSorted,
         const int *ltgUnsorted, const int *rowPtr, const int *colInd, int &Dof,
         int& cpp_index, int& proc_id)
-
-/*
-void trilinos_lhs_create_(unsigned &numGlobalNodes, unsigned &numLocalNodes,
-        unsigned &numGhostAndLocalNodes, unsigned &nnz, const int *ltgSorted,
-        const int *ltgUnsorted, const int *rowPtr, const int *colInd, int &Dof)
-*/
 {
 
   #ifdef debug_trilinos_lhs_create
@@ -338,9 +333,14 @@ void trilinos_lhs_create_(unsigned &numGlobalNodes, unsigned &numLocalNodes,
  * \param lR                 element local force vector of size
  *                           (dof, numNodesPerElement)
  */
-void trilinos_doassem_(int &numNodesPerElement, const int *eqN,
-        const double *lK, double *lR)
+void trilinos_doassem_(int &numNodesPerElement, const int *eqN, const double *lK, double *lR)
 {
+  #ifdef debug_trilinos_doassem
+  std::cout << "[trilinos_doassem_] ========== trilinos_doassem_ ===========" << std::endl;
+  std::cout << "[trilinos_doassem_] dof: " << dof << std::endl;
+  std::cout << "[trilinos_doassem_] numNodesPerElement: " << numNodesPerElement << std::endl;
+  #endif
+
   //dof values per global ID in the force vector
   int numValuesPerID = dof;
 
@@ -409,7 +409,7 @@ void trilinos_doassem_(int &numNodesPerElement, const int *eqN,
     error = Trilinos::K->EndSubmitEntries();
     if (error != 0)
     {
-      std::cout << "ERROR: End submitting block entries!" << std::endl;
+      std::cout << "[trilinos_doassem_] ERROR: End submitting block entries!" << std::endl;
       exit(1);
     }
   }
@@ -443,10 +443,6 @@ void trilinos_global_solve_(const double *Val, const double *RHS, double *x,
         double &solverTime, double &dB, bool &converged, int &lsType,
         double &relTol, int &maxIters, int &kspace, int &precondType)
 {
-
-  //std::cout << "[trilinos_global_solve] ========== trilinos_global_solve ==========" << std::endl;
-  //std::cout << "[trilinos_global_solve] ghostAndLocalNodes: " << ghostAndLocalNodes << std::endl;
-
   int nnzCount = 0; //cumulate count of block nnz per rows
   int count = 0;
   int numValuesPerID = dof; //dof values per id pointer to dof
@@ -1079,4 +1075,253 @@ void printSolutionToFile()
   Xfile.close();
 }
 
+/////////////////////////////////////////////////////////////////
+//                  T r i l i n o s I m p l                    //
+/////////////////////////////////////////////////////////////////
+
+//--------------
+// TrilinosImpl 
+//--------------
+// The TrilinosImpl private class hides Trilinos data structures
+// and functions.
+//
+class TrilinosLinearAlgebra::TrilinosImpl {
+  public:
+    TrilinosImpl();
+    void alloc(ComMod& com_mod, eqType& lEq);
+    void assemble(ComMod& com_mod, const int num_elem_nodes, const Vector<int>& eqN,
+        const Array3<double>& lK, const Array<double>& lR);
+    void initialize(ComMod& com_mod);
+    void solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res);
+    void solve_assembled(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res);
+    void init_dir_and_coup_neu(ComMod& com_mod, const Vector<int>& incL, const Vector<double>& res);
+    void set_preconditioner(consts::PreconditionerType preconditioner);
+
+    consts::PreconditionerType preconditioner_;
+
+    /// @brief Local to global mapping
+    Vector<int> ltg_;
+
+    /// @brief Factor for Dirichlet BCs
+    Array<double> W_;
+
+    /// @brief Residual
+    Array<double> R_;
+};
+
+TrilinosLinearAlgebra::TrilinosImpl::TrilinosImpl()
+{
+}
+
+/// @brief Allocate Trilinos arrays.
+void TrilinosLinearAlgebra::TrilinosImpl::alloc(ComMod& com_mod, eqType& lEq) 
+{
+  int dof = com_mod.dof;
+  int tnNo = com_mod.tnNo;
+  int gtnNo = com_mod.gtnNo;
+  auto& lhs = com_mod.lhs;
+  #ifdef n_debug_alloc
+  std::cout << "[TrilinosImpl.alloc] dof: " << dof << std::endl;
+  std::cout << "[TrilinosImpl.alloc] tnNo: " << tnNo << std::endl;
+  std::cout << "[TrilinosImpl.alloc] gtnNo: " << gtnNo << std::endl;
+  std::cout << "[TrilinosImpl.alloc] ltg_.size(): " << ltg_.size() << std::endl;
+  #endif
+
+  if (W_.size() != 0) {
+    W_.clear();
+    R_.clear();
+    trilinos_lhs_free_();
+  }
+
+  W_.resize(dof,tnNo); 
+  R_.resize(dof,tnNo);
+
+  int cpp_index = 1;
+  int task_id = com_mod.cm.idcm();
+
+  trilinos_lhs_create_(gtnNo, lhs.mynNo, tnNo, lhs.nnz, ltg_.data(), com_mod.ltg.data(), com_mod.rowPtr.data(), 
+      com_mod.colPtr.data(), dof, cpp_index, task_id);
+
+}
+
+/// @brief Assemble local element arrays.
+void TrilinosLinearAlgebra::TrilinosImpl::assemble(ComMod& com_mod, const int num_elem_nodes, const Vector<int>& eqN,
+        const Array3<double>& lK, const Array<double>& lR)
+{
+  trilinos_doassem_(const_cast<int&>(num_elem_nodes), eqN.data(), lK.data(), lR.data());
+}
+
+/// @brief Set data for Dirichlet and coupled Neumann boundary conditions.
+void TrilinosLinearAlgebra::TrilinosImpl::init_dir_and_coup_neu(ComMod& com_mod, const Vector<int>& incL, const Vector<double>& res)
+{
+  using namespace consts;
+  using namespace fsi_linear_solver;
+
+  int dof = com_mod.dof;
+  int gtnNo = com_mod.gtnNo;
+  int tnNo = com_mod.tnNo;
+  auto& lhs = com_mod.lhs;
+
+  if (lhs.nFaces != 0) {
+    for (auto& face : lhs.face) {
+      face.incFlag = true;
+    }
+
+    for (int faIn = 0; faIn < lhs.nFaces; faIn++) {
+      if (incL(faIn) == 0)  {
+        lhs.face[faIn].incFlag = false;
+      }
+    }
+
+    for (int faIn = 0; faIn < lhs.nFaces; faIn++) {
+      auto& face = lhs.face[faIn];
+      face.coupledFlag = false;
+      if (!face.incFlag) {
+        continue;
+      }
+
+      bool flag = (face.bGrp == BcType::BC_TYPE_Neu);
+      if (flag && res(faIn) != 0.0) {
+        face.res = res(faIn);
+        face.coupledFlag = true;
+      }
+    }
+  }
+
+  W_ = 1.0;
+
+  for (int faIn = 0; faIn < lhs.nFaces; faIn++) {
+    auto& face = lhs.face[faIn];
+    if (!face.incFlag) {
+      continue;
+    }
+
+    int faDof = std::min(face.dof,dof);
+
+    if (face.bGrp == BcType::BC_TYPE_Dir) {
+      for (int a = 0; a < face.nNo; a++) {
+        int Ac = face.glob(a);
+        for (int i = 0; i < faDof; i++) {
+          W_(i,Ac) = W_(i,Ac) * face.val(i,a);
+        }
+      }
+    }
+  }
+
+  Array<double> v(dof,tnNo);
+  bool isCoupledBC = false;
+
+  for (int faIn = 0; faIn < lhs.nFaces; faIn++) {
+    auto& face = lhs.face[faIn];
+    if (face.coupledFlag) {
+      isCoupledBC = true;
+      int faDof = std::min(face.dof,dof);
+
+      for (int a = 0; a < face.nNo; a++) {
+        int Ac = face.glob(a);
+        for (int i = 0; i < faDof; i++) {
+          v(i,Ac) = v(i,Ac) + sqrt(fabs(res(faIn))) * face.val(i,a);
+        }
+      }
+    }
+  }
+
+  trilinos_bc_create_(v.data(), isCoupledBC);
+}
+
+/// @brief Initialze an array used for something.
+void TrilinosLinearAlgebra::TrilinosImpl::initialize(ComMod& com_mod)
+{
+  #ifdef n_debug_initialize
+  std::cout << "[TrilinosImpl] ---------- initialize ---------- " << std::endl;
+  std::cout << "[TrilinosImpl.initialize] com_mod.tnNo: " << com_mod.tnNo << std::endl;
+  #endif
+  ltg_.resize(com_mod.tnNo);
+
+  for (int a = 0; a < com_mod.tnNo; a++) {
+    ltg_(com_mod.lhs.map(a)) = com_mod.ltg(a);
+  }
+}
+
+/// @brief Set the preconditioner.
+void TrilinosLinearAlgebra::TrilinosImpl::set_preconditioner(consts::PreconditionerType prec_type)
+{
+  preconditioner_ = prec_type;
+}
+
+/// @brief Solve a system of linear equations assembled by fsils.
+void TrilinosLinearAlgebra::TrilinosImpl::solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, 
+    const Vector<double>& res)
+{
+  init_dir_and_coup_neu(com_mod, incL, res);
+
+  auto& Val = com_mod.Val;
+  auto& R = com_mod.R;
+  int solver_type = static_cast<int>(lEq.ls.LS_type);
+  int prec_type = static_cast<int>(preconditioner_);
+  #define n_debug_solve
+  #ifdef debug_solve
+  std::cout << "[TrilinosImpl::solve] ---------- solve ---------- " << std::endl;
+  auto prec_name = consts::preconditioner_type_to_name.at(preconditioner_); 
+  std::cout << "[TrilinosImpl::solve] solver_type: " << solver_type << std::endl;
+  std::cout << "[TrilinosImpl::solve] prec_type: " << prec_name << std::endl;
+  std::cout << "[TrilinosImpl::solve] Val.size(): " << Val.size() << std::endl;
+  std::cout << "[TrilinosImpl::solve] R_.size(): " << R_.size() << std::endl;
+  std::cout << "[TrilinosImpl::solve] W_.size(): " << W_.size() << std::endl;
+  std::cout << "[TrilinosImpl::solve] Call trilinos_global_solve_ " << std::endl;
+  #endif
+
+  if (consts::trilinos_preconditioners.count(preconditioner_) == 0) {
+    auto prec_name = consts::preconditioner_type_to_name.at(preconditioner_); 
+    throw std::runtime_error("[TrilinosLinearAlgebra::solve] ERROR: '" + prec_name + "' is not a valid Trilinos preconditioner.");
+  }
+
+  trilinos_global_solve_(Val.data(), R.data(), R_.data(), W_.data(), lEq.FSILS.RI.fNorm,
+      lEq.FSILS.RI.iNorm, lEq.FSILS.RI.itr, lEq.FSILS.RI.callD, lEq.FSILS.RI.dB, lEq.FSILS.RI.suc,
+      solver_type, lEq.FSILS.RI.relTol, lEq.FSILS.RI.mItr, lEq.FSILS.RI.sD, prec_type);
+
+  for (int a = 0; a < com_mod.tnNo; a++) {
+    for (int i = 0; i < com_mod.R.nrows(); i++) {
+      com_mod.R(i,a) = R_(i,com_mod.lhs.map(a));
+    }
+  } 
+}
+
+/// @brief Solve a system of linear equations assembled by Trilinos.
+void TrilinosLinearAlgebra::TrilinosImpl::solve_assembled(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vector<double>& res)
+{
+  lEq.FSILS.RI.suc = false; 
+  int solver_type = static_cast<int>(lEq.ls.LS_type);
+  int prec_type = static_cast<int>(preconditioner_);
+  bool assembled = true;
+  #define n_debug_solve_assembled
+  #ifdef debug_solve_assembled
+  auto prec_name = consts::preconditioner_type_to_name.at(preconditioner_); 
+  std::cout << "[TrilinosImpl::solve_assembled] ---------- solve_assembled ---------- " << std::endl;
+  std::cout << "[TrilinosImpl::solve_assembled] solver_type: " << solver_type << std::endl;
+  std::cout << "[TrilinosImpl::solve_assembled] prec_type: " << prec_name << std::endl;
+  std::cout << "[TrilinosImpl::solve_assembled] R_.size(): " << R_.size() << std::endl;
+  std::cout << "[TrilinosImpl::solve_assembled] W_.size(): " << W_.size() << std::endl;
+  std::cout << "[TrilinosImpl::solve_assembled] lEq.FSILS.RI.suc: " << lEq.FSILS.RI.suc << std::endl;
+  #endif
+
+  if (consts::trilinos_preconditioners.count(preconditioner_) == 0) {
+    auto prec_name = consts::preconditioner_type_to_name.at(preconditioner_);
+    throw std::runtime_error("[TrilinosLinearAlgebra::solve_assembled] ERROR: '" + prec_name + "' is not a valid Trilinos preconditioner.");
+  }
+
+  init_dir_and_coup_neu(com_mod, incL, res);
+
+  trilinos_solve_(R_.data(), W_.data(), lEq.FSILS.RI.fNorm, lEq.FSILS.RI.iNorm, 
+      lEq.FSILS.RI.itr, lEq.FSILS.RI.callD, lEq.FSILS.RI.dB, lEq.FSILS.RI.suc, 
+      solver_type, lEq.FSILS.RI.relTol, lEq.FSILS.RI.mItr, lEq.FSILS.RI.sD, 
+      prec_type, assembled);
+
+  for (int a = 0; a < com_mod.tnNo; a++) {
+    for (int i = 0; i < com_mod.R.nrows(); i++) {
+      com_mod.R(i,a) = R_(i,com_mod.lhs.map(a));
+    }
+  }
+
+}
 

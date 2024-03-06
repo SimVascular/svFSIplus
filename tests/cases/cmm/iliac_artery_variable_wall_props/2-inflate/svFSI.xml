@@ -48,14 +48,14 @@
    </Output>
 
    <LS type="CG" >
+      <Linear_algebra type="fsils" >
+         <Preconditioner> fsils </Preconditioner>
+      </Linear_algebra>
      <Max_iterations> 500 </Max_iterations>
      <Tolerance> 1e-12 </Tolerance>
      <Krylov_space_dimension> 50 </Krylov_space_dimension>
    </LS>
   
-
-
-
    <Add_BF mesh="wall" > 
       <Type> traction </Type> 
       <Time_dependence> spatial </Time_dependence>
