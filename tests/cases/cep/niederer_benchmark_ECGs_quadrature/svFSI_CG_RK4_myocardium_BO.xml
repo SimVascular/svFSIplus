@@ -107,7 +107,6 @@
       <Linear_algebra type="fsils" >
          <Preconditioner> fsils </Preconditioner>
       </Linear_algebra>
-      <Preconditioner> svfsi </Preconditioner> 
       <Tolerance> 1e-6 </Tolerance>
    </LS>
 

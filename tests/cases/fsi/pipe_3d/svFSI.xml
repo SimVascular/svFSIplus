@@ -132,15 +132,10 @@
    <Poisson_ratio> 0.3 </Poisson_ratio> 
 
    <LS type="CG" >
-<<<<<<< HEAD
       <Linear_algebra type="fsils" >
          <Preconditioner> fsils </Preconditioner>
       </Linear_algebra>
-      <Tolerance> 1e-4 </Tolerance>
-=======
-      <Preconditioner> FSILS </Preconditioner>
       <Tolerance> 1e-12 </Tolerance>
->>>>>>> main
    </LS>
 
    <Output type="Spatial" >
