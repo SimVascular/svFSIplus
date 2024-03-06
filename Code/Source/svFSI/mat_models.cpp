@@ -693,7 +693,7 @@ void get_pk2cc_dev(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& 
       Sb = Sb * r2;
 
       // Fiber reinforcement/active stress
-      Sb = Sb + Tfa*mat_dyad_prod(fl.col(0), fl.col(0), nsd);
+      Sb += Tfa*mat_dyad_prod(fl.col(0), fl.col(0), nsd);
 
       double r1 = J2d*mat_ddot(C, Sb, nsd) / nd;
       S = J2d*Sb - r1*Ci;
