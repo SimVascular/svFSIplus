@@ -86,6 +86,7 @@ TrilinosLinearAlgebra::~TrilinosLinearAlgebra()
 void TrilinosLinearAlgebra::alloc(ComMod& com_mod, eqType& lEq)
 {
   if (use_fsils_assembly) {
+    int dof = com_mod.dof;
     com_mod.Val.resize(dof*dof, com_mod.lhs.nnz);
     initialize_fsils(com_mod, lEq);
   }
