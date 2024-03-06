@@ -79,7 +79,7 @@ void FsilsLinearAlgebra::assemble(ComMod& com_mod, const int num_elem_nodes, con
 }
 
 /// @brief Check the validity of the preconditioner and assembly types options. 
-bool FsilsLinearAlgebra::check_options(const consts::PreconditionerType prec_cond_type, 
+void FsilsLinearAlgebra::check_options(const consts::PreconditionerType prec_cond_type, 
   const consts::LinearAlgebraType assembly_type)
 {
   using namespace consts;

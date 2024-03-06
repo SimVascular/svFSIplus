@@ -112,7 +112,7 @@ void TrilinosLinearAlgebra::assemble(ComMod& com_mod, const int num_elem_nodes, 
 /// 
 /// Trilinos can use fsils or trilinos for assembly.
 //
-bool TrilinosLinearAlgebra::check_options(const consts::PreconditionerType prec_cond_type, 
+void TrilinosLinearAlgebra::check_options(const consts::PreconditionerType prec_cond_type, 
     const consts::LinearAlgebraType assembly_type)
 {
   using namespace consts;

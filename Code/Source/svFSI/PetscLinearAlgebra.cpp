@@ -89,7 +89,7 @@ void PetscLinearAlgebra::assemble(ComMod& com_mod, const int num_elem_nodes, con
 }
 
 /// @brief Check the validity of the precondition and assembly types options. 
-bool PetscLinearAlgebra::check_options(const consts::PreconditionerType prec_cond_type, 
+void PetscLinearAlgebra::check_options(const consts::PreconditionerType prec_cond_type, 
     const consts::LinearAlgebraType assembly_type)
 {
   using namespace consts;
