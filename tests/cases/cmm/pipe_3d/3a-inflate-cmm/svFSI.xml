@@ -40,8 +40,8 @@
       <Face_file_path> ../../../fluid/pipe_RCR_3d/mesh/mesh-surfaces/lumen_wall.vtp </Face_file_path>
   </Add_face>  
 
-  <Initial_velocities_file_path> ../1-rigid-solution/result_800_cpp.vtu </Initial_velocities_file_path>
-  <Initial_pressures_file_path> ../1-rigid-solution/result_800_cpp.vtu </Initial_pressures_file_path>
+  <Initial_velocities_file_path> ../1-rigid-solution/result_800.vtu </Initial_velocities_file_path>
+  <Initial_pressures_file_path> ../1-rigid-solution/result_800.vtu </Initial_pressures_file_path>
 
 </Add_mesh>
 
@@ -49,8 +49,8 @@
 <Add_equation type="CMM" > 
    <Coupled> true </Coupled>   
    <Min_iterations> 3 </Min_iterations>  
-   <Max_iterations> 10 </Max_iterations>
-   <Tolerance> 1e-4 </Tolerance> 
+   <Max_iterations> 20 </Max_iterations>
+   <Tolerance> 1e-12 </Tolerance> 
 
    <Fluid_density> 1.06 </Fluid_density>
    <Viscosity model="Constant" >
@@ -65,6 +65,7 @@
       <Displacement> true </Displacement>
       <Velocity> true </Velocity>
       <Pressure> true</Pressure>
+      <Traction> true </Traction>
       <WSS> true </WSS>
    </Output>
 
@@ -72,10 +73,10 @@
       <Linear_algebra type="fsils" >
          <Preconditioner> fsils </Preconditioner>
       </Linear_algebra>
-     <Max_iterations> 100 </Max_iterations>
-     <Tolerance> 1e-4 </Tolerance>
+     <Max_iterations> 10 </Max_iterations>
+     <Tolerance> 1e-12 </Tolerance>
+     <Krylov_space_dimension> 50 </Krylov_space_dimension>
    </LS>
-  
 
    <Add_BC name="lumen_inlet" > 
       <Type> Dir </Type>

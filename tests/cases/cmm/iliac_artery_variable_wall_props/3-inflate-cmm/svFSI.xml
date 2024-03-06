@@ -53,8 +53,8 @@
 <Add_equation type="CMM" > 
    <Coupled> true </Coupled>   
    <Min_iterations> 3 </Min_iterations>  
-   <Max_iterations> 10 </Max_iterations>
-   <Tolerance> 1e-7 </Tolerance> 
+   <Max_iterations> 7 </Max_iterations>
+   <Tolerance> 1e-12 </Tolerance>
 
    <Fluid_density> 1.06 </Fluid_density>
    <Viscosity model="Constant" >
@@ -83,7 +83,7 @@
        <Preconditioner> fsils </Preconditioner>
      </Linear_algebra>
      <Max_iterations> 100 </Max_iterations>
-     <Tolerance> 1e-4 </Tolerance>
+     <Tolerance> 1e-12 </Tolerance>
    </LS>
 
    <Add_BC name="inlet_aorta" > 

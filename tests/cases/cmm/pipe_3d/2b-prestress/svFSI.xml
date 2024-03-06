@@ -33,8 +33,8 @@
 <Add_equation type="CMM" > 
    <Coupled> true </Coupled>   
    <Min_iterations> 3 </Min_iterations>  
-   <Max_iterations> 5 </Max_iterations>
-   <Tolerance> 1e-6 </Tolerance> 
+   <Max_iterations> 30 </Max_iterations>
+   <Tolerance> 1e-12 </Tolerance> 
    <Prestress> true </Prestress>
    <Initialize> prestress </Initialize>
    
@@ -52,7 +52,7 @@
          <Preconditioner> fsils </Preconditioner>
       </Linear_algebra>
      <Max_iterations> 500 </Max_iterations>
-     <Tolerance> 1e-6 </Tolerance>
+     <Tolerance> 1e-12 </Tolerance>
    </LS>
   
    <Add_BF mesh="wall" > 

@@ -128,9 +128,9 @@ if __name__ == '__main__':
         ntime = nstart + i*nfreq
         time  = float(ntime)*dt
         if (ntime < 100):
-            fname = "%s/result_%03d_cpp.vtu" %(srcdir, ntime)
+            fname = "%s/result_%03d.vtu" %(srcdir, ntime)
         else:
-            fname = "%s/result_%d_cpp.vtu" %(srcdir, ntime)
+            fname = "%s/result_%d.vtu" %(srcdir, ntime)
         print ("Reading file    <-----   {}".format(fname))
         vtuMesh = loadVTU(fname)
         mean_h = mean_h + getSurfaceData(vtuMesh, wall_ids, 'Traction')

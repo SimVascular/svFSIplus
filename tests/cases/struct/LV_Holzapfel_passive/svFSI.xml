@@ -52,8 +52,8 @@
 
    <Coupled> true </Coupled>
    <Min_iterations> 3 </Min_iterations>  
-   <Max_iterations> 10 </Max_iterations> 
-   <Tolerance> 1e-6 </Tolerance> 
+   <Max_iterations> 4 </Max_iterations> 
+   <Tolerance> 1e-10 </Tolerance> 
 
    <Density> 1.0 </Density> 
    <Elasticity_modulus> 1.0e6 </Elasticity_modulus>
@@ -82,6 +82,8 @@
      <Jacobian> true </Jacobian>
      <Stress> true </Stress>
      <Strain> true </Strain>
+     <Cauchy_stress> true </Cauchy_stress>
+     <Def_grad> true </Def_grad>
      <VonMises_stress> true </VonMises_stress>
    </Output>
 
@@ -90,6 +92,7 @@
          <Preconditioner> fsils </Preconditioner>
       </Linear_algebra>
       <Tolerance> 1e-6 </Tolerance>
+      <Tolerance> 1e-12 </Tolerance>
       <Max_iterations> 1000 </Max_iterations> 
       <Krylov_space_dimension> 50 </Krylov_space_dimension>
    </LS>

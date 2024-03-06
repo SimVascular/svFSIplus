@@ -61,8 +61,8 @@
 
    <Coupled> true </Coupled>
    <Min_iterations> 1</Min_iterations>  
-   <Max_iterations> 10 </Max_iterations> 
-   <Tolerance> 1e-10 </Tolerance> 
+   <Max_iterations> 3 </Max_iterations> 
+   <Tolerance> 1e-9 </Tolerance> 
 
    <Constitutive_model type="nHK"> </Constitutive_model>
    <Density> 1000.0 </Density> 
@@ -88,13 +88,14 @@
          <Preconditioner> fsils </Preconditioner>
       </Linear_algebra>
       <Tolerance> 1e-11 </Tolerance>
+      <Tolerance> 1e-12 </Tolerance>
       <Max_iterations> 600 </Max_iterations> 
    </LS>
 
    <Add_BC name="X0" > 
       <Type> Dir </Type> 
       <Value> 0.0 </Value> 
-      <Effective_direction> (1, 0, 0) </Effective_direction> 
+      <Effective_direction> (0, 0, 1) </Effective_direction> 
    </Add_BC> 
 
    <Add_BC name="Y0" > 
@@ -106,7 +107,7 @@
    <Add_BC name="Z0" > 
       <Type> Dir </Type> 
       <Value> 0.0 </Value> 
-      <Effective_direction> (0, 0, 1) </Effective_direction> 
+      <Effective_direction> (1, 0, 0) </Effective_direction> 
    </Add_BC> 
 
    <Add_BC name="Z1" > 

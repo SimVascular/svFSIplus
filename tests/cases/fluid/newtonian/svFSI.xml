@@ -45,8 +45,8 @@
 
    <Coupled> true </Coupled>
    <Min_iterations> 1 </Min_iterations>  
-   <Max_iterations> 10 </Max_iterations> 
-   <Tolerance> 1e-7 </Tolerance> 
+   <Max_iterations> 4 </Max_iterations> 
+   <Tolerance> 1e-11 </Tolerance> 
    <Backflow_stabilization_coefficient> 0.2 </Backflow_stabilization_coefficient> 
 
    <Density> 1.06 </Density> 
@@ -56,24 +56,20 @@
    </Viscosity>
       
    <Output type="Spatial" >
-     <Velocity> true </Velocity>
-     <Pressure> true </Pressure>
-     <Traction> true </Traction>
-     <WSS> true </WSS>
+      <Velocity> true </Velocity>
+      <Pressure> true </Pressure>
+      <Traction> true </Traction>
+      <Vorticity> true</Vorticity>
+      <Divergence> true</Divergence>
+      <WSS> true </WSS>
    </Output>
 
-   <LS type="NS" >
+   <LS type="GMRES" >
       <Linear_algebra type="fsils" >
          <Preconditioner> fsils </Preconditioner>
       </Linear_algebra>
-      <Max_iterations> 10 </Max_iterations> 
-      <NS_GM_max_iterations> 10 </NS_GM_max_iterations> 
-      <NS_CG_max_iterations> 50 </NS_CG_max_iterations> 
-      <Tolerance> 1e-5 </Tolerance>
-      <NS_GM_tolerance> 1e-5 </NS_GM_tolerance>
-      <NS_CG_tolerance> 1e-5 </NS_CG_tolerance> 
-      <Absolute_tolerance> 1e-14 </Absolute_tolerance> 
-      <Krylov_space_dimension> 50 </Krylov_space_dimension>
+     <Max_iterations> 100 </Max_iterations>
+     <Tolerance> 1e-12 </Tolerance>
    </LS>
 
    <Add_BC name="lumen_inlet" > 

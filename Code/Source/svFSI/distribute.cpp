@@ -1586,7 +1586,7 @@ void part_msh(Simulation* simulation, int iM, mshType& lM, Vector<int>& gmtl, in
 
   Vector<int> part(nEl);
 
-  std::string fTmp = chnl_mod.appPath + "partitioning_" + lM.name + "_cpp.bin";
+  std::string fTmp = chnl_mod.appPath + "partitioning_" + lM.name + ".bin";
   bool flag = false;
   FILE *fp = nullptr; 
   if (com_mod.rmsh.isReqd) { 

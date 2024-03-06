@@ -1274,7 +1274,7 @@ void write_vtus(Simulation* simulation, const Array<double>& lA, const Array<dou
     fName = ss.str();
   }
 
-  fName = com_mod.saveName + "_" + fName + "_cpp.vtu";
+  fName = com_mod.saveName + "_" + fName + ".vtu";
   auto vtk_writer = VtkData::create_writer(fName);
 
   // Writing the position data

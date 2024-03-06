@@ -48,8 +48,8 @@
 <Add_equation type="fluid" >
    <Coupled> true </Coupled>
    <Min_iterations> 3 </Min_iterations> <!-- 3 -->
-   <Max_iterations> 10 </Max_iterations> <!-- 100 -->
-   <Tolerance> 1e-12 </Tolerance> <!-- 1e-4 but should be same as residual criteria in svsolver --> 
+   <Max_iterations> 12 </Max_iterations> <!-- 100 -->
+   <Tolerance> 1e-11 </Tolerance> <!-- 1e-4 but should be same as residual criteria in svsolver --> 
    <Backflow_stabilization_coefficient> 0.2 </Backflow_stabilization_coefficient>
    <Density> 1.06 </Density>
 
@@ -58,10 +58,12 @@
    </Viscosity>
 
    <Output type="Spatial" >
-     <Velocity> true </Velocity>
-     <Pressure> true </Pressure>
-     <Traction> true </Traction>
-     <WSS> true </WSS>
+      <Velocity> true </Velocity>
+      <Pressure> true </Pressure>
+      <Traction> true </Traction>
+      <Vorticity> true</Vorticity>
+      <Divergence> true</Divergence>
+      <WSS> true </WSS>
    </Output>
 
    <LS type="NS" >

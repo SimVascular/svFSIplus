@@ -119,6 +119,7 @@ if(NOT "${SV_PETSC_DIR}" STREQUAL "")
   set(USE_PETSC 1)
 
 else()
+
   set(USE_PETSC 0)
 
 endif()
