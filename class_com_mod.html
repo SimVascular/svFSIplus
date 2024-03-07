@@ -153,7 +153,7 @@ std::array&lt; double, 3 &gt;&#160;</td><td class="memItemRight" valign="bottom"
 <tr class="memdesc:a2e33f05e98147d2b0e32c410fe24265f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Current equation degrees of freedom.  <a href="class_com_mod.html#a2e33f05e98147d2b0e32c410fe24265f">More...</a><br /></td></tr>
 <tr class="separator:a2e33f05e98147d2b0e32c410fe24265f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3514c61187dd00a7f44b3e0d1817292b"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_com_mod.html#a3514c61187dd00a7f44b3e0d1817292b">gtnNo</a> = 0</td></tr>
-<tr class="memdesc:a3514c61187dd00a7f44b3e0d1817292b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Global total number of nodes.  <a href="class_com_mod.html#a3514c61187dd00a7f44b3e0d1817292b">More...</a><br /></td></tr>
+<tr class="memdesc:a3514c61187dd00a7f44b3e0d1817292b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Global total number of nodes, across all meshes (total) and all procs (global)  <a href="class_com_mod.html#a3514c61187dd00a7f44b3e0d1817292b">More...</a><br /></td></tr>
 <tr class="separator:a3514c61187dd00a7f44b3e0d1817292b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aca8a67e96ea01e34b3c9c4aea2c6b730"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_com_mod.html#aca8a67e96ea01e34b3c9c4aea2c6b730">nEq</a> = 0</td></tr>
 <tr class="memdesc:aca8a67e96ea01e34b3c9c4aea2c6b730"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of equations.  <a href="class_com_mod.html#aca8a67e96ea01e34b3c9c4aea2c6b730">More...</a><br /></td></tr>
@@ -192,7 +192,7 @@ std::array&lt; double, 3 &gt;&#160;</td><td class="memItemRight" valign="bottom"
 <tr class="memdesc:a74b27b683845cc2a621040e48a945dca"><td class="mdescLeft">&#160;</td><td class="mdescRight">Total number of degrees of freedom per node.  <a href="class_com_mod.html#a74b27b683845cc2a621040e48a945dca">More...</a><br /></td></tr>
 <tr class="separator:a74b27b683845cc2a621040e48a945dca"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a39e53febfdde055cb194b83de669f4b5"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_com_mod.html#a39e53febfdde055cb194b83de669f4b5">tnNo</a> = 0</td></tr>
-<tr class="memdesc:a39e53febfdde055cb194b83de669f4b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Total number of nodes.  <a href="class_com_mod.html#a39e53febfdde055cb194b83de669f4b5">More...</a><br /></td></tr>
+<tr class="memdesc:a39e53febfdde055cb194b83de669f4b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Total number of nodes (number of nodes on current proc across all meshes)  <a href="class_com_mod.html#a39e53febfdde055cb194b83de669f4b5">More...</a><br /></td></tr>
 <tr class="separator:a39e53febfdde055cb194b83de669f4b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad84e7bad391ad123bb66f78001100636"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_com_mod.html#ad84e7bad391ad123bb66f78001100636">rsTS</a> = 0</td></tr>
 <tr class="memdesc:ad84e7bad391ad123bb66f78001100636"><td class="mdescLeft">&#160;</td><td class="mdescRight">Restart Time Step.  <a href="class_com_mod.html#ad84e7bad391ad123bb66f78001100636">More...</a><br /></td></tr>
@@ -258,7 +258,7 @@ std::array&lt; double, 3 &gt;&#160;</td><td class="memItemRight" valign="bottom"
 <tr class="memdesc:a671da6fe0a4c0aa3730446e1d2891db2"><td class="mdescLeft">&#160;</td><td class="mdescRight">LHS matrix.  <a href="class_com_mod.html#a671da6fe0a4c0aa3730446e1d2891db2">More...</a><br /></td></tr>
 <tr class="separator:a671da6fe0a4c0aa3730446e1d2891db2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1f6e06247d04da6550fb03731ef3a024"><td class="memItemLeft" align="right" valign="top">Array&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_com_mod.html#a1f6e06247d04da6550fb03731ef3a024">x</a></td></tr>
-<tr class="memdesc:a1f6e06247d04da6550fb03731ef3a024"><td class="mdescLeft">&#160;</td><td class="mdescRight">Position vector.  <a href="class_com_mod.html#a1f6e06247d04da6550fb03731ef3a024">More...</a><br /></td></tr>
+<tr class="memdesc:a1f6e06247d04da6550fb03731ef3a024"><td class="mdescLeft">&#160;</td><td class="mdescRight">Position vector of mesh nodes (in ref config)  <a href="class_com_mod.html#a1f6e06247d04da6550fb03731ef3a024">More...</a><br /></td></tr>
 <tr class="separator:a1f6e06247d04da6550fb03731ef3a024"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af1802dc394d8962067547116939dd1d0"><td class="memItemLeft" align="right" valign="top">Array&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_com_mod.html#af1802dc394d8962067547116939dd1d0">Yo</a></td></tr>
 <tr class="memdesc:af1802dc394d8962067547116939dd1d0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Old variables (velocity)  <a href="class_com_mod.html#af1802dc394d8962067547116939dd1d0">More...</a><br /></td></tr>
@@ -716,7 +716,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>debug_active</b> = fa
       </table>
 </div><div class="memdoc">
 
-<p>Global total number of nodes. </p>
+<p>Global total number of nodes, across all meshes (total) and all procs (global) </p>
 
 </div>
 </div>
@@ -1532,7 +1532,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>debug_active</b> = fa
       </table>
 </div><div class="memdoc">
 
-<p>Total number of nodes. </p>
+<p>Total number of nodes (number of nodes on current proc across all meshes) </p>
 
 </div>
 </div>
@@ -1580,7 +1580,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>debug_active</b> = fa
       </table>
 </div><div class="memdoc">
 
-<p>Position vector. </p>
+<p>Position vector of mesh nodes (in ref config) </p>
 
 </div>
 </div>
