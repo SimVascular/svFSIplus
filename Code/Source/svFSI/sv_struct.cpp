@@ -106,7 +106,17 @@ void b_struct_2d(const ComMod& com_mod, const int eNoN, const double w, const Ve
   }
 }
 
-
+/// @brief Add follower pressure load contributions to the local residual and stiffness matrix.
+/// @param com_mod 
+/// @param eNoN 
+/// @param w  Gauss point weight times reference configuration area
+/// @param N  Shape function values at the Gauss point
+/// @param Nx Shape function derivatives at the Gauss point
+/// @param dl Displacement vector
+/// @param hl Magnitude of pressure
+/// @param nV Normal vector (in reference configuration)
+/// @param lR Local residual
+/// @param lK Local stiffness matrix
 void b_struct_3d(const ComMod& com_mod, const int eNoN, const double w, const Vector<double>& N, 
     const Array<double>& Nx, const Array<double>& dl, const Vector<double>& hl, const Vector<double>& nV, 
     Array<double>& lR, Array3<double>& lK)
@@ -144,6 +154,7 @@ void b_struct_3d(const ComMod& com_mod, const int eNoN, const double w, const Ve
 
   double h = 0.0;
 
+  // Compute deformation gradient tensor F
   for (int a = 0; a  < eNoN; a++) {
     h  = h + N(a)*hl(a);
     F(0,0) = F(0,0) + Nx(0,a)*dl(i,a);
@@ -165,7 +176,7 @@ void b_struct_3d(const ComMod& com_mod, const int eNoN, const double w, const Ve
     NxFi(1,a) = Nx(0,a)*Fi(0,1) + Nx(1,a)*Fi(1,1) + Nx(2,a)*Fi(2,1);
     NxFi(2,a) = Nx(0,a)*Fi(0,2) + Nx(1,a)*Fi(1,2) + Nx(2,a)*Fi(2,2);
   }
-
+  // Compute N.F^-1, used for Nanson' formula da.n = J*dA*N.F^-1
   nFi(0) = nV(0)*Fi(0,0) + nV(1)*Fi(1,0) + nV(2)*Fi(2,0);
   nFi(1) = nV(0)*Fi(0,1) + nV(1)*Fi(1,1) + nV(2)*Fi(2,1);
   nFi(2) = nV(0)*Fi(0,2) + nV(1)*Fi(1,2) + nV(2)*Fi(2,2);
@@ -179,6 +190,7 @@ void b_struct_3d(const ComMod& com_mod, const int eNoN, const double w, const Ve
   debug << "wl: " << wl;
   #endif
 
+  // Compute follower pressure load contributions to the local residual and stiffness matrix
   for (int a = 0; a  < eNoN; a++) {
     lR(0,a) = lR(0,a) - wl*N(a)*nFi(0);
     lR(1,a) = lR(1,a) - wl*N(a)*nFi(1);

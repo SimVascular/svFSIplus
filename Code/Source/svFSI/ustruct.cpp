@@ -98,7 +98,18 @@ void b_ustruct_2d(const ComMod& com_mod, const int eNoN, const double w, const V
   }
 }
 
-
+/// @brief Add follower pressure load contributions to the local residual and stiffness matrix.
+/// @param com_mod 
+/// @param eNoN 
+/// @param w  Gauss point weight times reference configuration area
+/// @param N  Shape function values at the Gauss point
+/// @param Nx Shape function derivatives at the Gauss point
+/// @param dl Displacement vector
+/// @param hl Magnitude of pressure
+/// @param nV Normal vector (in reference configuration)
+/// @param lR Local residual
+/// @param lK Local stiffness matrix
+/// @param lKd Local stiffness matrix (displacement)
 void b_ustruct_3d(const ComMod& com_mod, const int eNoN, const double w, const Vector<double>& N, 
     const Array<double>& Nx, const Array<double>& dl, const Vector<double>& hl, const Vector<double>& nV, 
     Array<double>& lR, Array3<double>& lK, Array3<double>& lKd)

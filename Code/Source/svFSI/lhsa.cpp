@@ -80,10 +80,11 @@ void add_col(const int tnNo, const int row, const int col, int& mnnzeic, Array<i
   } 
 }
 
-/// @brief This subroutine assembels the element stiffness matrix into the 
-/// global stiffness matrix (Val sparse matrix formatted as a vector)
+/// @brief This subroutine assembles the element stiffness matrix into the 
+/// global stiffness matrix (Val sparse matrix formatted as a vector). Also
+/// assembles the element residual into the global residual (R).
 ///
-/// Paramters:
+/// Parameters:
 ///   d - Number of nodes? (eNoN)
 ///
 ///

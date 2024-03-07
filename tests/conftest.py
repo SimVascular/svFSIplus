@@ -2,6 +2,7 @@ import numpy as np
 
 import pytest
 import os
+import shutil
 import subprocess
 import meshio
 
@@ -49,6 +50,12 @@ def run_by_name(folder, name, t_max, n_proc=1):
     Returns:
     Simulation results
     """
+
+    # remove old results folders if they exist
+    dir_path = os.path.join(folder, str(n_proc) + "-procs")
+    if os.path.exists(dir_path):
+        shutil.rmtree(dir_path)
+
     # run simulation
     cmd = " ".join(
         [

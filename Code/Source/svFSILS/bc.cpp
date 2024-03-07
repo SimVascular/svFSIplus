@@ -33,7 +33,8 @@
 
 namespace fsi_linear_solver {
 
-/// @brief Modifies:
+/// @brief Sets up 0D contribution to tangent matrix for 0D-coupled boundary condition.
+/// Modifies
 ///  lhs.face[faIn].nNo 
 ///  lhs.face[faIn].dof
 ///  lhs.face[faIn].bGrp 
@@ -93,6 +94,7 @@ void fsils_bc_create(FSILS_lhsType& lhs, int faIn, int nNo, int dof, BcType BC_t
      lhs.face[faIn].val = 0.0;
   }
 
+  // Synchronize val on nodes on boundary between procs
   if (lhs.commu.nTasks > 1) {
     int a = 0;
 
@@ -136,6 +138,9 @@ void fsils_bc_create(FSILS_lhsType& lhs, int faIn, int nNo, int dof, BcType BC_t
 }
 
 
+/// @brief Frees FSILS boundary condition structure
+/// @param lhs 
+/// @param faIn 
 void fsils_bc_free(FSILS_lhsType& lhs, int faIn)
 {
   //IF (.NOT.lhs%face(faIn)%foC) THEN
@@ -153,5 +158,53 @@ void fsils_bc_free(FSILS_lhsType& lhs, int faIn)
 
 }
 
-};
+/// @brief Updates lhs.face[faIn].val with new values from 'Val' parameter. 
+/// Val should contain the integral of the normal vector in the current (n+1) configuration,
+/// used in the tangent contribution of the 0D-coupled boundary condition.
+/// Since fsils_bc_create() was already called at initialization, we don't
+/// need to reallocate data structures, just update values.
+/// @param lhs 
+/// @param faIn 
+/// @param nNo 
+/// @param dof 
+/// @param Val 
+void fsils_bc_update(FSILS_lhsType& lhs, int faIn, int nNo, int dof, const Array<double>& Val)
+{
+  using namespace consts;
 
+  // Set lhs.face[faIn].val with new values from 'Val' parameter
+  if (Val.size() != 0) {
+    for (int a = 0; a < nNo; a++) {
+      for (int i = 0; i < Val.nrows(); i++) {
+        lhs.face[faIn].val(i,a) = Val(i,a);
+      }
+    }
+  } else { 
+     lhs.face[faIn].val = 0.0;
+  }
+
+  // Communicate update among procs
+  if (lhs.face[faIn].sharedFlag){
+    Array<double> v(dof,lhs.nNo);
+    v = 0.0;
+
+    for (int a = 0; a < nNo; a++) {
+      int Ac = lhs.face[faIn].glob(a);
+      for (int i = 0; i < dof; i++) {
+        v(i,Ac) = lhs.face[faIn].val(i,a);
+      }
+    }
+
+    fsils_commuv(lhs, dof, v); 
+
+    for (int a = 0; a < nNo; a++) {
+      int Ac = lhs.face[faIn].glob(a);
+      for (int i = 0; i < dof; i++) {
+        lhs.face[faIn].val(i,a) = v(i,Ac);
+      }
+    }
+  }
+
+}
+
+};

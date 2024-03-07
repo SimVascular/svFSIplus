@@ -1041,6 +1041,7 @@ void write_vtus(Simulation* simulation, const Array<double>& lA, const Array<dou
             #endif
             for (int a = 0; a < msh.nNo; a++) {
               int Ac = msh.gN(a);
+              // Divide by mesh scale factor
               for (int i = 0; i < l; i++) {
                  d[iM].x(i+is,a) = lD(i+s,Ac) / msh.scF;
               }
