@@ -1423,6 +1423,13 @@ void part_face(Simulation* simulation, mshType& lM, faceType& lFa, faceType& gFa
 
 
 /// @brief Reproduces the Fortran 'PARTMSH' subroutine.
+/// Parameters for the part_msh function:
+/// @param[in] simulation A pointer to the simulation object.
+/// @param[in] iM The mesh index.
+/// @param[in] lM The local mesh data.
+/// @param[in] gmtl The global to local map.
+/// @param[in] nP The number of processors.
+/// @param[in] wgt The weights.
 //
 void part_msh(Simulation* simulation, int iM, mshType& lM, Vector<int>& gmtl, int nP, Vector<float>& wgt)
 {
@@ -2017,6 +2024,27 @@ void part_msh(Simulation* simulation, int iM, mshType& lM, Vector<int>& gmtl, in
     //  Now scattering the sorted lM%INN to all processors
      MPI_SCATTERV(tempIEN, sCount, disp, mpint, lM%INN,  nEl*insd, mpint, master, cm%com(), ierr)
     */
-  } 
+  }
+  // If necessary, distribute precomputed state-variable data.
+  //
+  flag = (lM.Ys.size() != 0);
+  cm.bcast(cm_mod, &flag);
+  if (flag){
+    #ifdef dbg_part_msh
+    dmsg << "Distributing precomputed state-variable data " << " ...";
+    #endif
+    Array3<double> tmpYs;
+    int nsYs = lM.Ys.nslices();
+    if (cm.mas(cm_mod)) {
+      tmpYs.resize(lM.Ys.nrows(), lM.Ys.ncols(), nsYs);
+      tmpYs = lM.Ys;
+      lM.Ys.clear();
+    } else {
+      tmpYs.clear();
+    }
+    lM.Ys.resize(com_mod.nsd, com_mod.tnNo, nsYs);
+    lM.Ys = all_fun::local(com_mod, cm_mod, cm, tmpYs);
+    tmpYs.clear();
+  }
 }
 

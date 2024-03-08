@@ -1018,6 +1018,67 @@ local(const ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, Array<double
 }
 
 
+Array3<double>
+local(const ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, Array3<double>& U){
+  if (com_mod.ltg.size() == 0) {
+    throw std::runtime_error("ltg is not set yet");
+  }
+
+  Array3<double> local_array;
+  int m;
+  int n;
+  int r;
+
+  if (cm.mas(cm_mod)) {
+    m = U.nrows();
+    r = U.ncols();
+    n = U.nslices();
+    if (U.ncols() != com_mod.gtnNo) {
+      throw std::runtime_error("local_rv is only specified for vector with size gtnNo");
+    }
+  }
+
+  if (cm.seq()) {
+    local_array.resize(m, com_mod.gtnNo, U.nslices());
+    local_array = U;
+    return local_array;
+  }
+
+  cm.bcast(cm_mod, &m);
+  cm.bcast(cm_mod, &n);
+  cm.bcast(cm_mod, &r);
+
+  local_array.resize(m, com_mod.tnNo, r);
+  Vector<double> tmpU(m * com_mod.gtnNo * r);
+
+  if (cm.mas(cm_mod)) {
+    for (int a = 0; a < com_mod.gtnNo; a++) {
+      int s = m * a;
+      for (int i = 0; i < U.nslices(); i++) {
+        int e = i * m * (com_mod.gtnNo + 1);
+        for (int j = 0; j < U.ncols(); j++) {
+          tmpU(j+s+e) = U(j, a, i);
+        }
+      }
+    }
+  }
+
+  cm.bcast(cm_mod, tmpU);
+
+  for (int a = 0; a < com_mod.tnNo; a++) {
+    int Ac = com_mod.ltg[a];
+    int s = m * Ac;
+    for (int i = 0; i < n; i++) {
+      int e = i * m * (r + 1);
+      for (int j = 0; j < m; j++) {
+        local_array(j, a, i) = tmpU(j+s+e);
+      }
+    }
+  }
+
+  return local_array;
+}
+
 Vector<double> 
 mkc(const ComMod& com_mod, Vector<double>& U)
 {

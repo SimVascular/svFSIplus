@@ -243,6 +243,26 @@ void iterate_solution(Simulation* simulation)
 
     set_bc::set_bc_dir(com_mod, An, Yn, Dn);
 
+    /*
+    if (com_mod.usePrecomp) {
+        #ifdef debug_iterate_solution
+        dmsg << "Use precomputed values ..." << std::endl;
+        #endif
+        double cT = cTS * dt;
+        double precompDt = com_mod.precompDt;
+        int n1 = static_cast<int>(cT / precompDt) + 1;
+        int n2 = n1 + 1;
+        double alpha = (cT - (n1 - 1) * precompDt) / precompDt;
+        for (int l = 0; l < com_mod.nMsh; l++) {
+            auto lM = com_mod.msh[l];
+            for (int i = 0; i < nsd; i++) {
+                for (int j = 0; j < tnNo; j++) {
+                    Yn(i, j) = (1.0 - alpha) * lM.Ys(i,j,n1) + alpha * lM.Ys(i, j, n2);
+                }
+            }
+        }
+    }
+    */
     // Inner loop for iteration
     //
     int inner_count = 1;
@@ -706,12 +726,13 @@ int main(int argc, char *argv[])
     #endif
     read_files(simulation, file_name);
 
+    std::cout << "Degrees of Freedom [end read_files]: " << simulation->com_mod.tDof << std::endl;
     // Distribute data to processors.
     #ifdef debug_main
     dmsg << "Distribute data to processors " << " ... ";
     #endif
     distribute(simulation);
-
+    std::cout << "Degrees of Freedom [end distribute]: " << simulation->com_mod.tDof << std::endl;
     // Initialize simulation data.
     //
     Vector<double> init_time(3);
@@ -720,7 +741,7 @@ int main(int argc, char *argv[])
     dmsg << "Initialize " << " ... ";
     #endif
     initialize(simulation, init_time);
-
+    std::cout << "Degrees of Freedom [end initialize]: " << simulation->com_mod.tDof << std::endl;
     #ifdef debug_main
     for (int iM = 0; iM < simulation->com_mod.nMsh; iM++) {
       dmsg << "---------- iM " << iM;
