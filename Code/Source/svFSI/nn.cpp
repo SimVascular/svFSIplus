@@ -828,7 +828,7 @@ void gn_nxx(const int l, const int eNoN, const int nsd, const int insd, Array<do
     }
 
     for (int i = 0; i < 3; i++) { 
-      K.set_row(i, { xXi(0,i)*xXi(0,i), xXi(1,i)*xXi(1,i), xXi(2,i)*xXi(1,i), 
+      K.set_row(i, { xXi(0,i)*xXi(0,i), xXi(1,i)*xXi(1,i), xXi(2,i)*xXi(2,i), 
                      t*xXi(0,i)*xXi(1,i), t*xXi(1,i)*xXi(2,i), t*xXi(0,i)*xXi(2,i) 
                    } );
     }
@@ -858,7 +858,7 @@ void gn_nxx(const int l, const int eNoN, const int nsd, const int insd, Array<do
                     xXi(2,i)*xXi(2,j),
                     xXi(0,i)*xXi(1,j) + xXi(0,j)*xXi(1,i),
                     xXi(1,i)*xXi(2,j) + xXi(1,j)*xXi(2,i),
-                    xXi(0,i)*xXi(3,j) + xXi(0,j)*xXi(2,i) 
+                    xXi(0,i)*xXi(2,j) + xXi(0,j)*xXi(2,i) 
                   } );
 
 

@@ -308,6 +308,7 @@ void iterate_solution(Simulation* simulation)
       #endif
 
       ls_ns::ls_alloc(com_mod, eq);
+      com_mod.Val.write("Val_alloc"+ istr);
 
       // Compute body forces. If phys is shells or CMM (init), apply
       // contribution from body forces (pressure) to residual
@@ -319,6 +320,7 @@ void iterate_solution(Simulation* simulation)
       #endif
 
       bf::set_bf(com_mod, Dg);
+      com_mod.Val.write("Val_bf"+ istr);
 
       // Assemble equations.
       //
@@ -331,9 +333,6 @@ void iterate_solution(Simulation* simulation)
       }
       com_mod.R.write("R_as"+ istr);
       com_mod.Val.write("Val_as"+ istr);
-
-      com_mod.Val.write("Val_as"+ istr);
-      com_mod.R.write("R_as"+ istr);
 
       // Treatment of boundary conditions on faces
       // Apply Neumman or Traction boundary conditions
