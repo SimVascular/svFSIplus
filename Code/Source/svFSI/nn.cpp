@@ -788,7 +788,7 @@ void gn_nxx(const int l, const int eNoN, const int nsd, const int insd, Array<do
     }
 
     K.set_row(0, {xXi(0,0)*xXi(0,0), xXi(1,0)*xXi(1,0), t*xXi(0,0)*xXi(1,0)});
-    K.set_row(1, {xXi(0,1)*xXi(0,0), xXi(1,1)*xXi(1,1), t*xXi(0,1)*xXi(1,1)});
+    K.set_row(1, {xXi(0,1)*xXi(0,1), xXi(1,1)*xXi(1,1), t*xXi(0,1)*xXi(1,1)});
     K.set_row(2, {xXi(0,0)*xXi(0,1), xXi(1,0)*xXi(1,1), xXi(0,0)*xXi(1,1) + xXi(0,1)*xXi(1,0)});
 
     for (int a = 0; a < eNoN; a++) {
