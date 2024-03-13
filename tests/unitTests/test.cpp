@@ -47,14 +47,12 @@ TEST(UnitTestIso_1, nHK) {
     UnitTestIso nHK(matType, E, nu, volType, pen, C01);
 
     // Step 3: define the input 
-    double F[3][3]; 
-    memset(F, 0, sizeof(F));   // initialize
+    double F[3][3] = {};
     F[0][0] = 1.0; F[1][1] = 1.0; F[2][2] = 1.0;   // set to Identity
 
     // Step 4: define the reference output 
-    double S_ref[3][3], Dm_ref[6][6];
-    memset(S_ref, 0, sizeof(S_ref));
-    memset(Dm_ref, 0, sizeof(Dm_ref));
+    double S_ref[3][3] = {};
+    double Dm_ref[6][6] = {};
 
     // Step 5: run unit test
     nHK.runUnitTest(F, S_ref, Dm_ref);
@@ -74,14 +72,12 @@ TEST(UnitTestIso_2, MR) {
     UnitTestIso MR(matType, E, nu, volType, pen, C01);
 
     // Step 3: define the input 
-    double F[3][3]; 
-    memset(F, 0, sizeof(F));   // initialize
+    double F[3][3] = {};
     F[0][0] = 1.0; F[1][1] = 1.0; F[2][2] = 1.0;   // set to Identity
 
     // Step 4: define the reference output 
-    double S_ref[3][3], Dm_ref[6][6];
-    memset(S_ref, 0, sizeof(S_ref));
-    memset(Dm_ref, 0, sizeof(Dm_ref));
+    double S_ref[3][3] = {};
+    double Dm_ref[6][6] = {};
 
     // Step 5: run unit test
     MR.runUnitTest(F, S_ref, Dm_ref);
