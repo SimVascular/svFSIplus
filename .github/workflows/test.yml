@@ -42,7 +42,7 @@ jobs:
       - name: Run unit tests
         run: |
           cd build/svFSI-build/Source/svFSI
-          ctest --output-on-failure
+          ctest --verbose
       - name: Generate code coverage
         if: startsWith(matrix.os, 'ubuntu-22.04')
         run: |
