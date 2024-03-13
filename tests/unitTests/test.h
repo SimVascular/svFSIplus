@@ -36,10 +36,6 @@
 #include "mat_models.h"
 #include "mat_models_carray.h"
 
-
-
-
-
 class MockCepMod : public CepMod {
 public:
     MockCepMod() {
@@ -81,14 +77,13 @@ public:
     // Mock methods if needed
 };
 
-
+// Class for unit test of isotropic material model (currently only introduced two 
+// parameters C10 and C01)
 class UnitTestIso {
 public:
     MockComMod com_mod;
     MockCepMod cep_mod;
     
-    // UnitTestIso(consts::ConstitutiveModelType matType, double E, double nu, 
-    //             consts::ConstitutiveModelType penType, double pen)
     UnitTestIso(consts::ConstitutiveModelType matType, double E, double nu, 
                 consts::ConstitutiveModelType penType, double pen, double C01 = 0.0) {
         int nsd = com_mod.nsd;
@@ -110,20 +105,15 @@ public:
         Array<double> fN(nsd, nFn);
         double ya_g = 0.0;   
         double S[3][3], Dm[6][6];
-        // memset(S, 0, sizeof(S));
-        // memset(Dm, 0, sizeof(Dm));
 
         mat_models_carray::get_pk2cc(com_mod, cep_mod, dmn, F, nFn, fN, ya_g, S, Dm);
         double tol = 1e-12;   // tolerance
 
+        // Compare with reference solution
         for (int i = 0; i < 3; i++){
             for (int j = 0; j < 3; j++){
                 EXPECT_NEAR(S[i][j], S_ref[i][j], tol);   
             }
         }
-
-
     }
-
-
 };

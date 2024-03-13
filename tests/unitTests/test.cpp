@@ -34,7 +34,7 @@ using namespace mat_fun;
 using namespace std;
 
 
-TEST(UnitTest, nHK) {
+TEST(UnitTestIso_1, nHK) {
     // Step 1: define parameters
     auto matType = consts::ConstitutiveModelType::stIso_nHook;   // Material_model: options refer to consts.h 
     auto volType = consts::ConstitutiveModelType::stVol_ST91;   // Dilational_penalty_model
@@ -61,7 +61,7 @@ TEST(UnitTest, nHK) {
       
 }
 
-TEST(UnitTest, MR) {
+TEST(UnitTestIso_2, MR) {
     // Step 1: define parameters
     auto matType = consts::ConstitutiveModelType::stIso_MR;   // Material_model: options refer to consts.h 
     auto volType = consts::ConstitutiveModelType::stVol_ST91;   // Dilational_penalty_model
@@ -88,7 +88,3 @@ TEST(UnitTest, MR) {
       
 }
 
-// int main(int argc, char **argv) {
-//    ::testing::InitGoogleTest(&argc, argv);
-//    return RUN_ALL_TESTS();
-// }

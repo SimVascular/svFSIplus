@@ -309,7 +309,7 @@ if(ENABLE_UNIT_TEST)
   )
 
   # gtest_discover_tests(runUnitTest)
-  add_test(NAME UnitTest COMMAND run_all_unit_tests)
+  add_test(NAME all_unit_tests COMMAND run_all_unit_tests)
 
 endif()
 
