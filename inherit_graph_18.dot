@@ -5,4 +5,6 @@ digraph "Graphical Class Hierarchy"
   node [fontname="Helvetica",fontsize="10",shape=record];
   rankdir="LR";
   Node0 [label="ComMod",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_com_mod.html",tooltip="The ComMod class duplicates the data structures in the Fortran COMMOD module defined in MOD...."];
+  Node0 -> Node1 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node1 [label="MockComMod",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_mock_com_mod.html",tooltip=" "];
 }

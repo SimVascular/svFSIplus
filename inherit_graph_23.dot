@@ -5,4 +5,6 @@ digraph "Graphical Class Hierarchy"
   node [fontname="Helvetica",fontsize="10",shape=record];
   rankdir="LR";
   Node0 [label="dmnType",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classdmn_type.html",tooltip="Domain type is to keep track with element belong to which domain and also different physical quantiti..."];
+  Node0 -> Node1 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node1 [label="MockdmnType",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_mockdmn_type.html",tooltip=" "];
 }

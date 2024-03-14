@@ -5,4 +5,6 @@ digraph "Graphical Class Hierarchy"
   node [fontname="Helvetica",fontsize="10",shape=record];
   rankdir="LR";
   Node0 [label="CepMod",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_cep_mod.html",tooltip=" "];
+  Node0 -> Node1 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node1 [label="MockCepMod",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_mock_cep_mod.html",tooltip=" "];
 }
