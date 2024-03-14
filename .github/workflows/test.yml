@@ -29,7 +29,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake -DENABLE_COVERAGE=ON -DENABLE_ARRAY_INDEX_CHECKING=ON ..
+          cmake -DENABLE_COVERAGE=ON -DENABLE_ARRAY_INDEX_CHECKING=ON -DENABLE_UNIT_TEST=ON ..
           make -j2
       - name: Install test dependencies
         run: |
@@ -40,6 +40,10 @@ jobs:
           git lfs pull
           cd tests
           conda run -n svfsiplus pytest -rPv --durations=0
+      - name: Run unit tests
+        run: |
+          cd build/svFSI-build/Source/svFSI
+          ctest --verbose
       - name: Generate code coverage
         if: startsWith(matrix.os, 'ubuntu-22.04')
         run: |
