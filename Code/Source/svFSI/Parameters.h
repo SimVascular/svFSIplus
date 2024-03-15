@@ -1211,6 +1211,7 @@ class GeneralSimulationParameters : public ParameterLists
 
     Parameter<double> spectral_radius_of_infinite_time_step;
     Parameter<double> time_step_size;
+    Parameter<double> precomputed_time_step_size;
 
     Parameter<int> increment_in_saving_restart_files;
     Parameter<int> increment_in_saving_vtk_files;

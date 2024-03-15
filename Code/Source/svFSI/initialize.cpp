@@ -434,16 +434,33 @@ void initialize(Simulation* simulation, Vector<double>& timeP)
       eq.dof = nsd;
     }
 
+    // This code checks to see if the heatF equation is accompanied
+    // by a fluid equation. If not, it adds the appropriate number of
+    // degrees of freedom based on the precomputed state-variable (velocity)
+    // data.
+    if (eq.phys == Equation_heatF) {
+      bool fflag = false;
+      for (int jEq = 0; jEq < com_mod.nEq; jEq++) {
+        if (std::set<EquationType>{Equation_fluid, Equation_FSI, Equation_CMM, Equation_stokes}.count(com_mod.eq[jEq].phys)) {
+          fflag = true;
+        }
+      }
+      if (!fflag && com_mod.usePrecomp) {
+        tDof = tDof + nsd;
+      } else {
+        throw std::runtime_error("HeatF equation must be accompanied by a fluid equation or precomputed velocity data.");
+      }
+    }
     eq.pNorm = std::numeric_limits<double>::max();
     eq.af = 1.0 / (1.0 + eq.roInf);
     eq.beta = 0.25 * pow((1.0 + eq.am - eq.af), 2.0);
     eq.gam = 0.5 + eq.am - eq.af;
 
     // These are indexes into arrays so need to be zero-based.
+
     eq.s = tDof;
     eq.e = tDof + eq.dof - 1;
     tDof = eq.e + 1;
-
     if (eq.useTLS) {
       flag = true;
     }
@@ -804,6 +821,21 @@ void zero_init(Simulation* simulation)
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
   #endif
+
+  // Initialize precomputed state variables
+  //
+
+  if (com_mod.usePrecomp) {
+    for (int l = 0; l < com_mod.nMsh; l++) {
+      auto& msh = com_mod.msh[l];
+      for (int a = 0; a < com_mod.tnNo; a++) {
+        // In the future this should depend on the equation type.
+        for (int i = 0; i < nsd; i++) {
+          com_mod.Yo(i,a) = msh.Ys(i,a,0);
+        }
+      }
+    }
+  }
 
   // Load any explicitly provided solution variables
   //

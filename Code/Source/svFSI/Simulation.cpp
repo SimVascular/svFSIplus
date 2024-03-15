@@ -103,7 +103,11 @@ void Simulation::set_module_parameters()
   com_mod.usePrecomp = general.use_precomputed_solution.value();
   com_mod.precompFileName = general.precomputed_solution_file_path.value();
   com_mod.precompFieldName = general.precomputed_solution_field_name.value();
-
+  com_mod.precompDt = general.precomputed_time_step_size.value();
+  if (com_mod.precompDt == 0.0) {
+    std::cout << "Precomputed time step size is zero. Setting to simulation time step size." << std::endl;
+    com_mod.precompDt = com_mod.dt;
+  }
   // Set simulation parameters.
   nTs = general.number_of_time_steps.value();
   fTmp = general.simulation_initialization_file_path.value();

@@ -57,6 +57,7 @@
 #include <stdlib.h>
 #include <iomanip>
 #include <iostream>
+#include <cmath>
 
 /// @brief Read in a solver XML file and all mesh and BC data.  
 //
@@ -243,26 +244,41 @@ void iterate_solution(Simulation* simulation)
 
     set_bc::set_bc_dir(com_mod, An, Yn, Dn);
 
-    /*
     if (com_mod.usePrecomp) {
         #ifdef debug_iterate_solution
         dmsg << "Use precomputed values ..." << std::endl;
         #endif
-        double cT = cTS * dt;
-        double precompDt = com_mod.precompDt;
-        int n1 = static_cast<int>(cT / precompDt) + 1;
-        int n2 = n1 + 1;
-        double alpha = (cT - (n1 - 1) * precompDt) / precompDt;
+        // This loop is used to interpolate between known time values of the precomputed
+        // state-variable solution
         for (int l = 0; l < com_mod.nMsh; l++) {
             auto lM = com_mod.msh[l];
-            for (int i = 0; i < nsd; i++) {
-                for (int j = 0; j < tnNo; j++) {
-                    Yn(i, j) = (1.0 - alpha) * lM.Ys(i,j,n1) + alpha * lM.Ys(i, j, n2);
+            if (lM.Ys.nslices() == 1) {
+                // If there is only one temporal slice, then the solution is assumed constant
+                // in time and no interpolation is performed
+                continue;
+            } else {
+                // If there are multiple temporal slices, then the solution is linearly interpolated
+                // between the known time values and the current time.
+                double precompDt = com_mod.precompDt;
+                double preTT = precompDt * (lM.Ys.nslices() - 1);
+                double cT = cTS * dt;
+                double rT = std::fmod(cT, preTT);
+                int n1 = static_cast<int>(rT / precompDt);
+                double alpha = std::fmod(rT, precompDt);
+                int n2 = n1 + 1;
+                for (int i = 0; i < nsd; i++) {
+                    for (int j = 0; j < tnNo; j++) {
+                        if (alpha == 0.0) {
+                            Yn(i, j) = lM.Ys(i, j, n2);
+                        } else {
+                            Yn(i, j) = (1 - alpha) * lM.Ys(i, j, n1) + alpha * lM.Ys(i, j, n2);
+                        }
+                    }
                 }
             }
         }
     }
-    */
+
     // Inner loop for iteration
     //
     int inner_count = 1;
@@ -302,7 +318,6 @@ void iterate_solution(Simulation* simulation)
       #ifdef debug_iterate_solution
       dmsg << "Initiator step ..." << std::endl;
       #endif
-
       pic::pici(simulation, Ag, Yg, Dg);
       Ag.write("Ag_pic"+ istr);
       Yg.write("Yg_pic"+ istr);
@@ -726,13 +741,13 @@ int main(int argc, char *argv[])
     #endif
     read_files(simulation, file_name);
 
-    std::cout << "Degrees of Freedom [end read_files]: " << simulation->com_mod.tDof << std::endl;
+
     // Distribute data to processors.
     #ifdef debug_main
     dmsg << "Distribute data to processors " << " ... ";
     #endif
     distribute(simulation);
-    std::cout << "Degrees of Freedom [end distribute]: " << simulation->com_mod.tDof << std::endl;
+
     // Initialize simulation data.
     //
     Vector<double> init_time(3);
@@ -741,7 +756,7 @@ int main(int argc, char *argv[])
     dmsg << "Initialize " << " ... ";
     #endif
     initialize(simulation, init_time);
-    std::cout << "Degrees of Freedom [end initialize]: " << simulation->com_mod.tDof << std::endl;
+
     #ifdef debug_main
     for (int iM = 0; iM < simulation->com_mod.nMsh; iM++) {
       dmsg << "---------- iM " << iM;

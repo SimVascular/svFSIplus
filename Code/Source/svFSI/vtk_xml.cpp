@@ -1075,11 +1075,29 @@ void write_vtus(Simulation* simulation, const Array<double>& lA, const Array<dou
           break;
 
           case OutputType::outGrp_Y:
-            for (int a = 0; a < msh.nNo; a++) {
-              int Ac = msh.gN(a);
-              for (int i = 0; i < l; i++) {
-                 d[iM].x(i+is,a) = lY(i+s,Ac);
-              }
+            if (eq.phys != EquationType::phys_heatF) {
+                for (int a = 0; a < msh.nNo; a++) {
+                    int Ac = msh.gN(a);
+                    for (int i = 0; i < l; i++) {
+                        d[iM].x(i + is, a) = lY(i + s, Ac);
+                    }
+                }
+            } else {
+                if (eq.output[iOut].name == "Velocity") {
+                    for (int a = 0; a < msh.nNo; a++) {
+                        int Ac = msh.gN(a);
+                        for (int i = 0; i < l; i++) {
+                            d[iM].x(i + is, a) = lY(i, Ac);
+                        }
+                    }
+                } else {
+                    for (int a = 0; a < msh.nNo; a++) {
+                        int Ac = msh.gN(a);
+                        for (int i = 0; i < l; i++) {
+                            d[iM].x(i + is, a) = lY(i + s, Ac);
+                        }
+                    }
+                }
             }
           break;
 

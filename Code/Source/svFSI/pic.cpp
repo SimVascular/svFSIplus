@@ -520,6 +520,10 @@ void pici(Simulation* simulation, Array<double>& Ag, Array<double>& Yg, Array<do
     dmsg << "coef: " << coef[0] << " " << coef[1] << " " << coef[2] << " " << coef[3];
     #endif
 
+    if ((eq.phys == Equation_heatF) && (com_mod.usePrecomp)){
+      s = 0;
+    }
+
     for (int a = 0; a < tnNo; a++) {
       for (int j = s; j <= e; j++) {
         Ag(j,a) = Ao(j,a)*coef(0) + An(j,a)*coef(1);

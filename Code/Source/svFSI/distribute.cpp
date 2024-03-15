@@ -309,6 +309,7 @@ void distribute(Simulation* simulation)
     cm.bcast(cm_mod, &com_mod.startTS);
     cm.bcast(cm_mod, &com_mod.nEq);
     cm.bcast(cm_mod, &com_mod.dt);
+    cm.bcast(cm_mod, &com_mod.precompDt);
 
     cm.bcast(cm_mod, &com_mod.zeroAve);
     cm.bcast(cm_mod, &com_mod.cmmInit);
@@ -320,6 +321,7 @@ void distribute(Simulation* simulation)
 
     cm.bcast(cm_mod, &simulation->cep_mod.cepEq);
 
+    cm.bcast(cm_mod, &com_mod.usePrecomp);
     if (com_mod.rmsh.isReqd) {
       auto& rmsh = com_mod.rmsh;
       cm.bcast_enum(cm_mod, &rmsh.method);

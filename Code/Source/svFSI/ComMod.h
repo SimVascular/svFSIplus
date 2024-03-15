@@ -1451,6 +1451,9 @@ class ComMod {
     /// @brief Time step size
     double dt = 0.0;
 
+    /// @breif Time step size of the precomputed state-variables
+    double precompDt = 0.0;
+
     /// @brief Time
     double time = 0.0;
 

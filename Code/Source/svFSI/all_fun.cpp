@@ -1048,15 +1048,15 @@ local(const ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, Array3<doubl
   cm.bcast(cm_mod, &n);
   cm.bcast(cm_mod, &r);
 
-  local_array.resize(m, com_mod.tnNo, r);
-  Vector<double> tmpU(m * com_mod.gtnNo * r);
+  local_array.resize(m, com_mod.tnNo, n);
+  Vector<double> tmpU(m * com_mod.gtnNo * n);
 
   if (cm.mas(cm_mod)) {
     for (int a = 0; a < com_mod.gtnNo; a++) {
       int s = m * a;
-      for (int i = 0; i < U.nslices(); i++) {
-        int e = i * m * (com_mod.gtnNo + 1);
-        for (int j = 0; j < U.ncols(); j++) {
+      for (int i = 0; i < n; i++) {
+        int e = i * m * (com_mod.gtnNo);
+        for (int j = 0; j < m; j++) {
           tmpU(j+s+e) = U(j, a, i);
         }
       }
@@ -1069,7 +1069,7 @@ local(const ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, Array3<doubl
     int Ac = com_mod.ltg[a];
     int s = m * Ac;
     for (int i = 0; i < n; i++) {
-      int e = i * m * (r + 1);
+      int e = i * m * (com_mod.gtnNo);
       for (int j = 0; j < m; j++) {
         local_array(j, a, i) = tmpU(j+s+e);
       }
