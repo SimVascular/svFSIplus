@@ -439,17 +439,23 @@ void initialize(Simulation* simulation, Vector<double>& timeP)
     // degrees of freedom based on the precomputed state-variable (velocity)
     // data.
     if (eq.phys == Equation_heatF) {
-      bool fflag = false;
-      for (int jEq = 0; jEq < com_mod.nEq; jEq++) {
-        if (std::set<EquationType>{Equation_fluid, Equation_FSI, Equation_CMM, Equation_stokes}.count(com_mod.eq[jEq].phys)) {
-          fflag = true;
+        bool fflag = false;
+        for (int jEq = 0; jEq < com_mod.nEq; jEq++) {
+            if (std::set < EquationType >
+                {Equation_fluid, Equation_FSI, Equation_CMM, Equation_stokes}.count(com_mod.eq[jEq].phys)) {
+                fflag = true;
+            }
         }
-      }
-      if (!fflag && com_mod.usePrecomp) {
-        tDof = tDof + nsd;
-      } else {
-        throw std::runtime_error("HeatF equation must be accompanied by a fluid equation or precomputed velocity data.");
-      }
+        if (com_mod.usePrecomp) {
+            if (!fflag) {
+                tDof = tDof + nsd;
+            }
+        } else {
+            if (!fflag) {
+                throw std::runtime_error(
+                        "HeatF equation must be accompanied by a fluid equation or precomputed velocity data.");
+            }
+        }
     }
     eq.pNorm = std::numeric_limits<double>::max();
     eq.af = 1.0 / (1.0 + eq.roInf);
