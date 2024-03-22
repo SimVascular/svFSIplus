@@ -1,4 +1,4 @@
-from conftest import run_with_reference
+from .conftest import run_with_reference
 
 # Common folder for all tests in this file
 base_folder = "fluid"
