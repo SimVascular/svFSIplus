@@ -58,6 +58,7 @@
 #include <iomanip>
 #include <iostream>
 #include <cmath>
+#include <fstream>
 
 /// @brief Read in a solver XML file and all mesh and BC data.  
 //
@@ -263,15 +264,27 @@ void iterate_solution(Simulation* simulation)
                 double preTT = precompDt * (lM.Ys.nslices() - 1);
                 double cT = cTS * dt;
                 double rT = std::fmod(cT, preTT);
-                int n1 = static_cast<int>(rT / precompDt);
-                double alpha = std::fmod(rT, precompDt);
-                int n2 = n1 + 1;
+                int n1, n2;
+                double alpha;
+                if (precompDt == dt) {
+                    alpha =  0.0;
+                    if (cTS < lM.Ys.nslices()) {
+                        n1 = cTS - 1;
+                    } else {
+                        n1 = cTS % lM.Ys.nslices() - 1;
+                    }
+                } else {
+                    n1 = static_cast<int>(rT / precompDt) - 1;
+                    alpha = std::fmod(rT, precompDt);
+                }
+                n2 = n1 + 1;
+                std::cout << "n1: " << n1 << " n2: " << n2 << " alpha: " << alpha << std::endl;
                 for (int i = 0; i < nsd; i++) {
                     for (int j = 0; j < tnNo; j++) {
                         if (alpha == 0.0) {
                             Yn(i, j) = lM.Ys(i, j, n2);
                         } else {
-                            Yn(i, j) = (1 - alpha) * lM.Ys(i, j, n1) + alpha * lM.Ys(i, j, n2);
+                            Yn(i, j) = (1.0 - alpha) * lM.Ys(i, j, n1) + alpha * lM.Ys(i, j, n2);
                         }
                     }
                 }

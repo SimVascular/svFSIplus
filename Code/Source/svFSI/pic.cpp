@@ -145,12 +145,21 @@ void picc(Simulation* simulation)
     }
 
   } else {
+    if (eq.phys == EquationType::phys_heatF) {
+        std::cout << "Residual(tDof,0) =";
+    }
     for (int a = 0; a < tnNo; a++) {
       for (int i = 0; i < e-s+1; i++) {
+        if ((eq.phys == EquationType::phys_heatF) && (a == 0)) {
+            std::cout << " " << R(i,a);
+        }
         An(i+s,a) = An(i+s,a) - R(i,a);
         Yn(i+s,a) = Yn(i+s,a) - R(i,a)*coef[0];
         Dn(i+s,a) = Dn(i+s,a) - R(i,a)*coef[1];
       }
+    }
+    if (eq.phys == EquationType::phys_heatF) {
+        std::cout << std::endl;
     }
   }
 
@@ -521,15 +530,31 @@ void pici(Simulation* simulation, Array<double>& Ag, Array<double>& Yg, Array<do
     #endif
 
     if ((eq.phys == Equation_heatF) && (com_mod.usePrecomp)){
-      s = 0;
-    }
-
-    for (int a = 0; a < tnNo; a++) {
-      for (int j = s; j <= e; j++) {
-        Ag(j,a) = Ao(j,a)*coef(0) + An(j,a)*coef(1);
-        Yg(j,a) = Yo(j,a)*coef(2) + Yn(j,a)*coef(3);
-        Dg(j,a) = Do(j,a)*coef(2) + Dn(j,a)*coef(3);
-      }
+        for (int a = 0; a < tnNo; a++) {
+            for (int j = 0; j < com_mod.nsd; j++) {
+                //Ag(j, a) = An(j, a);
+                //Yg(j, a) = Yn(j, a);
+                //Dg(j, a) = Dn(j, a);
+                Ag(j, a) = Ao(j, a) * coef(0) + An(j, a) * coef(1);
+                Yg(j, a) = Yo(j, a) * coef(2) + Yn(j, a) * coef(3);
+                Dg(j, a) = Do(j, a) * coef(2) + Dn(j, a) * coef(3);
+            }
+        }
+        for (int a = 0; a < tnNo; a++) {
+            for (int j = s; j <= e; j++) {
+                Ag(j, a) = Ao(j, a) * coef(0) + An(j, a) * coef(1);
+                Yg(j, a) = Yo(j, a) * coef(2) + Yn(j, a) * coef(3);
+                Dg(j, a) = Do(j, a) * coef(2) + Dn(j, a) * coef(3);
+            }
+        }
+    } else {
+        for (int a = 0; a < tnNo; a++) {
+            for (int j = s; j <= e; j++) {
+                Ag(j, a) = Ao(j, a) * coef(0) + An(j, a) * coef(1);
+                Yg(j, a) = Yo(j, a) * coef(2) + Yn(j, a) * coef(3);
+                Dg(j, a) = Do(j, a) * coef(2) + Dn(j, a) * coef(3);
+            }
+        }
     }
   }
 
