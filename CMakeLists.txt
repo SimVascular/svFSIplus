@@ -88,6 +88,7 @@ set(SV_PETSC_DIR "" CACHE STRING "Path to a local install of the PETSc linear al
 set(ENABLE_COVERAGE OFF CACHE BOOL "Enable code coverage")
 set(ENABLE_ARRAY_INDEX_CHECKING OFF CACHE BOOL "Enable Array index checking")
 set(SV_LOCAL_VTK_PATH "" CACHE STRING "Path to a local build of VTK.")
+set(ENABLE_UNIT_TEST OFF CACHE BOOL "Enable Unit Test by Google Test")
 
 #-----------------------------------------------------------------------------
 # RPATH handling
@@ -147,6 +148,7 @@ ExternalProject_Add(svFSI
     #-DSV_USE_PETSC:BOOL=${SV_USE_PETSC}
     -DSV_PETSC_DIR:STRING=${SV_PETSC_DIR}
     -DENABLE_COVERAGE:BOOL=${ENABLE_COVERAGE}
+    -DENABLE_UNIT_TEST:BOOL=${ENABLE_UNIT_TEST}
     -DENABLE_ARRAY_INDEX_CHECKING:BOOL=${ENABLE_ARRAY_INDEX_CHECKING}
     -DSV_LOCAL_VTK_PATH:STRING=${SV_LOCAL_VTK_PATH}
     ${SV_APPLE_CMAKE_ARGS}

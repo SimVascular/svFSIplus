@@ -244,7 +244,7 @@ void iterate_solution(Simulation* simulation)
     #endif
 
     set_bc::set_bc_dir(com_mod, An, Yn, Dn);
-
+    
     if (com_mod.usePrecomp) {
         #ifdef debug_iterate_solution
         dmsg << "Use precomputed values ..." << std::endl;
@@ -291,7 +291,7 @@ void iterate_solution(Simulation* simulation)
         }
     }
 
-    // Inner loop for iteration
+    // Inner loop for Newton iteration
     //
     int inner_count = 1;
     int reply;
@@ -501,6 +501,7 @@ void iterate_solution(Simulation* simulation)
       for (int iBc = 0; iBc < eq.nBc; iBc++) {
         int i = eq.bc[iBc].lsPtr;
         if (i != -1) {
+          // Resistance term for coupled Neumann BC tangent contribution
           res(i) = eq.gam * dt * eq.bc[iBc].r;
           incL(i) = 1;
         }
@@ -519,7 +520,7 @@ void iterate_solution(Simulation* simulation)
       com_mod.Val.write("Val_solve"+ istr);
       com_mod.R.write("R_solve"+ istr);
 
-      // Solution is obtained, now updating (Corrector)
+      // Solution is obtained, now updating (Corrector) and check for convergence
       //
       // Modifies: com_mod.An com_mod.Dn com_mod.Yn cep_mod.Xion com_mod.pS0 com_mod.pSa
       //            com_mod.pSn com_mod.cEq eq.FSILS.RI.iNorm eq.pNorm 

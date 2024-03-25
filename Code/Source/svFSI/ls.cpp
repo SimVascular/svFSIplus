@@ -192,6 +192,7 @@ void ls_solve(ComMod& com_mod, eqType& lEq, const Vector<int>& incL, const Vecto
 
 #ifdef WITH_TRILINOS
 
+  // Set up resistance/coupled-Neumann BC for Trilinos linear solver
   if (lEq.useTLS) {
     init_dir_and_coup_neu(com_mod, incL, res);
   }

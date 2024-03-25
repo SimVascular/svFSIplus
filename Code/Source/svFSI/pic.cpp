@@ -29,6 +29,11 @@
  */
 
 // The code here replicates the Fortran code in PIC.f.
+//
+// See the publication below, section 4.4 for theory and derivation:
+// Bazilevs, et al. "Isogeometric fluid-structure interaction:
+// theory, algorithms, and computations.", Computational Mechanics,
+// 43 (2008): 3-37. doi: 10.1007/s00466-008-0315-x
 
 #include "pic.h"
 
@@ -221,6 +226,7 @@ void picc(Simulation* simulation)
   // IB treatment
   //if (ibFlag) CALL IB_PICC()
 
+  // Computes norms and check for convergence of Newton iterations
   double eps = std::numeric_limits<double>::epsilon();
 
   if (utils::is_zero(eq.FSILS.RI.iNorm)) {

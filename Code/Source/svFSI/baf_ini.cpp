@@ -121,7 +121,8 @@ void baf_ini(Simulation* simulation)
   int iEq = 0;
   com_mod.cplBC.fa.resize(com_mod.cplBC.nFa); 
   com_mod.cplBC.xn.resize(com_mod.cplBC.nX);
-
+  
+  // Assign cplBC internal variables
   if (com_mod.cplBC.coupled) {
     auto& eq = com_mod.eq[iEq];
     for (int iBc = 0; iBc < eq.nBc; iBc++) {
@@ -139,6 +140,8 @@ void baf_ini(Simulation* simulation)
 
         } else if (utils::btest(bc.bType, iBC_Neu)) {
           com_mod.cplBC.fa[i].bGrp = CplBCType::cplBC_Neu;
+          // For implicit or semi-implicit (not explicit) Neumann 0D coupling scheme, 
+          // set bType to resistance
           if (com_mod.cplBC.schm != CplBCType::cplBC_E) {
             bc.bType= utils::ibset(bc.bType, iBC_res);
           }
@@ -483,6 +486,7 @@ void face_ini(Simulation* simulation, mshType& lM, faceType& lFa)
   dmsg << "Flag: " << flag;
   #endif
 
+  // Compute integral of normal vector over surface element
   if (!flag) {
     Vector<double> nV(nsd);
     for (int e = 0; e < lFa.nEl; e++) {
@@ -702,6 +706,7 @@ void fsi_ls_ini(ComMod& com_mod, const CmMod& cm_mod, bcType& lBc, const faceTyp
   Array<double> sV(nsd,tnNo); 
   Vector<int> gNodes(nNo);
 
+  // Copy mesh node id corresponding to face node id to gNodes
   for (int a= 0; a < nNo; a++) {
     gNodes(a) = lFa.gN(a);
   }
@@ -733,6 +738,7 @@ void fsi_ls_ini(ComMod& com_mod, const CmMod& cm_mod, bcType& lBc, const faceTyp
     }
 
   } else if (btest(lBc.bType, iBC_Neu)) {
+    // Compute integral of normal vector over the face (needed for resistance BC/0D-coupling)
     if (btest(lBc.bType, iBC_res)) {
       sV = 0.0;
       for (int e = 0; e < lFa.nEl; e++) {
@@ -762,6 +768,8 @@ void fsi_ls_ini(ComMod& com_mod, const CmMod& cm_mod, bcType& lBc, const faceTyp
 
       lsPtr = lsPtr + 1;
       lBc.lsPtr = lsPtr;
+      
+      // Fills lhs.face(i) variables, including val is sVl exists
       fsils_bc_create(com_mod.lhs, lsPtr, lFa.nNo, nsd, BcType::BC_TYPE_Neu, gNodes, sVl); 
     } else {
       lBc.lsPtr = -1;
