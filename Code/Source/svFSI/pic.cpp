@@ -145,21 +145,12 @@ void picc(Simulation* simulation)
     }
 
   } else {
-    if (eq.phys == EquationType::phys_heatF) {
-        std::cout << "Residual(tDof,0) =";
-    }
     for (int a = 0; a < tnNo; a++) {
       for (int i = 0; i < e-s+1; i++) {
-        if ((eq.phys == EquationType::phys_heatF) && (a == 0)) {
-            std::cout << " " << R(i,a);
-        }
         An(i+s,a) = An(i+s,a) - R(i,a);
         Yn(i+s,a) = Yn(i+s,a) - R(i,a)*coef[0];
         Dn(i+s,a) = Dn(i+s,a) - R(i,a)*coef[1];
       }
-    }
-    if (eq.phys == EquationType::phys_heatF) {
-        std::cout << std::endl;
     }
   }
 

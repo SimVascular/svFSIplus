@@ -1030,9 +1030,9 @@ local(const ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, Array3<doubl
   int r;
 
   if (cm.mas(cm_mod)) {
-    m = U.nrows();
-    r = U.ncols();
-    n = U.nslices();
+    m = U.nrows(); // nsd
+    r = U.ncols(); // tnNo
+    n = U.nslices(); // time
     if (U.ncols() != com_mod.gtnNo) {
       throw std::runtime_error("local_rv is only specified for vector with size gtnNo");
     }

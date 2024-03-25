@@ -278,13 +278,12 @@ void iterate_solution(Simulation* simulation)
                     alpha = std::fmod(rT, precompDt);
                 }
                 n2 = n1 + 1;
-                std::cout << "n1: " << n1 << " n2: " << n2 << " alpha: " << alpha << std::endl;
-                for (int i = 0; i < nsd; i++) {
-                    for (int j = 0; j < tnNo; j++) {
+                for (int i = 0; i < tnNo; i++) {
+                    for (int j = 0; j < nsd; j++) {
                         if (alpha == 0.0) {
-                            Yn(i, j) = lM.Ys(i, j, n2);
+                            Yn(j, i) = lM.Ys(j, i, n2);
                         } else {
-                            Yn(i, j) = (1.0 - alpha) * lM.Ys(i, j, n1) + alpha * lM.Ys(i, j, n2);
+                            Yn(j, i) = (1.0 - alpha) * lM.Ys(j, i, n1) + alpha * lM.Ys(j, i, n2);
                         }
                     }
                 }

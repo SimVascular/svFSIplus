@@ -812,7 +812,6 @@ void load_time_varying_field_vtu(const std::string file_name, const std::string 
     std::sort(array_names.begin(), array_names.end(), [](const std::pair<std::string, int>& a, const std::pair<std::string, int>& b) {
         return a.second < b.second;
     });
-
     int num_components = vtk_ugrid->GetPointData()->GetArray(array_names[0].first.c_str())->GetNumberOfComponents();
     mesh.Ys.resize(num_components, num_nodes, array_count);
 
@@ -820,6 +819,9 @@ void load_time_varying_field_vtu(const std::string file_name, const std::string 
         auto array = vtk_ugrid->GetPointData()->GetArray(array_names[i].first.c_str());
         if (array == nullptr) {
             throw std::runtime_error("No '" + array_names[i].first + "' data found in the VTK file '" + file_name + "'.");
+        }
+        if (array->GetNumberOfComponents() != num_components) {
+            throw std::runtime_error("The number of components in the field '" + array_names[i].first + "' is not equal to the number of components in the first field.");
         }
         for (int j = 0; j < num_nodes; j++) {
             for (int k = 0; k < num_components; k++) {
