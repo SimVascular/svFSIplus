@@ -9,17 +9,35 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@v3
-      - name: Install Ubuntu dependencies
-        if: startsWith(matrix.os, 'ubuntu')
+      - name: Install Ubuntu 20.04 dependencies
+        if: startsWith(matrix.os, 'ubuntu-20.04')
         run: |
           sudo apt update
           sudo apt install -y build-essential cmake qtbase5-dev libblas-dev liblapack-dev 
           sudo apt install -y libopenblas-dev mesa-common-dev libgl1-mesa-dev libglu1-mesa-dev
           sudo apt install -y libvtk7-dev openmpi-bin libopenmpi-dev
           sudo apt install -y lcov
+      - name: Install Ubuntu 22.04 dependencies
+        if: startsWith(matrix.os, 'ubuntu-22.04')
+        run: |
+          sudo apt update
+          sudo apt install -y build-essential cmake qtbase5-dev libblas-dev liblapack-dev 
+          sudo apt install -y libopenblas-dev mesa-common-dev libgl1-mesa-dev libglu1-mesa-dev
+          sudo apt install -y openmpi-bin libopenmpi-dev
+          sudo apt install -y lcov
+          sudo apt install -y libxt-dev
+          wget https://www.vtk.org/files/release/7.1/VTK-7.1.1.tar.gz
+          tar -xvf VTK-7.1.1.tar.gz
+          cd VTK-7.1.1
+          mkdir build
+          cd build
+          cmake ..
+          make -j2
+          sudo make install
+          cd ../..
       - name: Install MacOS dependencies
         if: startsWith(matrix.os, 'macos')
-        run: | 
+        run: |
           brew reinstall -v gcc
           brew install -v cmake vtk openblas lapack mesa open-mpi qt
           brew install lcov
