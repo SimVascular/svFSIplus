@@ -10,10 +10,6 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@v3
-      - name: Look at Docker image for Ubuntu 22.04
-        run: |
-          cat /etc/os-release
-          ls
       - name: Build svFSIplus
         run: |
           mkdir build
@@ -34,18 +30,15 @@ jobs:
           cd build/svFSI-build/Source/svFSI
           ctest --verbose
       - name: Generate code coverage
-        if: startsWith(matrix.os, 'ubuntu-22.04')
         run: |
           cd build/svFSI-build
           make coverage
       - name: Save coverage report
-        if: startsWith(matrix.os, 'ubuntu-22.04')
         uses: actions/upload-artifact@v3
         with:
           name: coverage_report
           path: build/svFSI-build/coverage
       - name: Upload coverage reports to Codecov
-        if: startsWith(matrix.os, 'ubuntu-22.04')
         uses: codecov/codecov-action@v3
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
