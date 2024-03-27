@@ -26,9 +26,9 @@ jobs:
           sudo apt install -y openmpi-bin libopenmpi-dev
           sudo apt install -y lcov
           sudo apt install -y libxt-dev
-          wget https://www.vtk.org/files/release/7.1/VTK-7.1.1.tar.gz
-          tar -xvf VTK-7.1.1.tar.gz
-          cd VTK-7.1.1
+          wget https://www.vtk.org/files/release/9.3/VTK-9.3.0.tar.gz
+          tar -xvf VTK-9.3.0.tar.gz
+          cd VTK-9.3.0
           mkdir build
           cd build
           cmake ..
