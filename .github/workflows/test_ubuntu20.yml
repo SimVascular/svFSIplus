@@ -2,8 +2,8 @@ name: Integration
 on: [push, pull_request]
 jobs:
   test:
-    runs-on: ubuntu-22.04
-    container: msalvad/ubuntu22_vtk9:v1
+    runs-on: ubuntu-20.04
+    container: msalvad/ubuntu20_vtk9:v1
     steps:
       - uses: actions/checkout@v3
       - name: Build svFSIplus
@@ -23,16 +23,3 @@ jobs:
         run: |
           cd build/svFSI-build/Source/svFSI
           ctest --verbose
-      - name: Generate code coverage
-        run: |
-          cd build/svFSI-build
-          make coverage
-      - name: Save coverage report
-        uses: actions/upload-artifact@v3
-        with:
-          name: coverage_report
-          path: build/svFSI-build/coverage
-      - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v3
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
