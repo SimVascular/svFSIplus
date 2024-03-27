@@ -1,4 +1,4 @@
-name: Integration
+name: Ubuntu 20.04
 on: [push, pull_request]
 jobs:
   test:

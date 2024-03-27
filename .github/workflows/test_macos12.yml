@@ -1,4 +1,4 @@
-name: Integration
+name: macOS 12
 on: [push, pull_request]
 jobs:
   test:
