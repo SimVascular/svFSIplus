@@ -260,4 +260,56 @@ if(ENABLE_COVERAGE)
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 endif()
 
+# unit tests and Google Test
+if(ENABLE_UNIT_TEST)
+
+  # link pthread on ubuntu20
+  find_package(Threads REQUIRED)
+
+  # install Google Test
+  include(FetchContent)
+  FetchContent_Declare(
+    googletest
+    URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
+  )
+  FetchContent_MakeAvailable(googletest)
+  enable_testing()
+  include(GoogleTest)
+
+  # add test.cpp for unit test
+
+  # remove the main.cpp and add test.cpp
+  list(APPEND CSRCS "../../../tests/unitTests/test.cpp")
+  list(REMOVE_ITEM CSRCS "main.cpp")
+  
+  # include source files (same as what svFSI does except for main.cpp)
+  add_executable(run_all_unit_tests ${CSRCS})
+  
+  # libraries
+  target_link_libraries(run_all_unit_tests
+    ${GLOBAL_LIBRARIES}
+    ${INTELRUNTIME_LIBRARIES}
+    ${ZLIB_LIBRARY}
+    ${BLAS_LIBRARIES}
+    ${LAPACK_LIBRARIES}
+    ${METIS_SVFSI_LIBRARY_NAME}
+    ${PARMETIS_SVFSI_LIBRARY_NAME}
+    ${TETGEN_LIBRARY_NAME}
+    ${TINYXML_LIBRARY_NAME}
+    ${SV_LIB_SVFSILS_NAME}${SV_MPI_NAME_EXT}
+    ${VTK_LIBRARIES}
+  )
+
+  # link Google Test
+  target_link_libraries(
+    run_all_unit_tests
+    gtest
+    GTest::gtest_main 
+    pthread   # link pthread on ubuntu20
+  )
+
+  # gtest_discover_tests(runUnitTest)
+  add_test(NAME all_unit_tests COMMAND run_all_unit_tests)
+
+endif()
 
