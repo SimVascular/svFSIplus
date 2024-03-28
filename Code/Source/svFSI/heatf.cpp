@@ -323,7 +323,9 @@ void heatf_3d(ComMod& com_mod, const int eNoN, const double w, const Vector<doub
       u(2) = u(2) - N(a)*yl(6,a);
     }
   }
-
+  //if (u(2) > 0.0) {
+  //    std::cout << "u: " << u(0) << " " << u(1) << " " << u(2) << std::endl;
+  //}
   double kU = u(0)*u(0)*ksix(0,0) + u(1)*u(0)*ksix(1,0) + u(2)*u(0)*ksix(2,0) + u(0)*u(1)*ksix(0,1) + 
               u(1)*u(1)*ksix(1,1) + u(2)*u(1)*ksix(2,1) + u(0)*u(2)*ksix(0,2) + u(1)*u(2)*ksix(1,2) + 
               u(2)*u(2)*ksix(2,2);

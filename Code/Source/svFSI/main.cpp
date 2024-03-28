@@ -57,6 +57,8 @@
 #include <stdlib.h>
 #include <iomanip>
 #include <iostream>
+#include <cmath>
+#include <fstream>
 
 /// @brief Read in a solver XML file and all mesh and BC data.  
 //
@@ -242,6 +244,52 @@ void iterate_solution(Simulation* simulation)
     #endif
 
     set_bc::set_bc_dir(com_mod, An, Yn, Dn);
+    
+    if (com_mod.usePrecomp) {
+        #ifdef debug_iterate_solution
+        dmsg << "Use precomputed values ..." << std::endl;
+        #endif
+        // This loop is used to interpolate between known time values of the precomputed
+        // state-variable solution
+        for (int l = 0; l < com_mod.nMsh; l++) {
+            auto lM = com_mod.msh[l];
+            if (lM.Ys.nslices() == 1) {
+                // If there is only one temporal slice, then the solution is assumed constant
+                // in time and no interpolation is performed
+                continue;
+            } else {
+                // If there are multiple temporal slices, then the solution is linearly interpolated
+                // between the known time values and the current time.
+                double precompDt = com_mod.precompDt;
+                double preTT = precompDt * (lM.Ys.nslices() - 1);
+                double cT = cTS * dt;
+                double rT = std::fmod(cT, preTT);
+                int n1, n2;
+                double alpha;
+                if (precompDt == dt) {
+                    alpha =  0.0;
+                    if (cTS < lM.Ys.nslices()) {
+                        n1 = cTS - 1;
+                    } else {
+                        n1 = cTS % lM.Ys.nslices() - 1;
+                    }
+                } else {
+                    n1 = static_cast<int>(rT / precompDt) - 1;
+                    alpha = std::fmod(rT, precompDt);
+                }
+                n2 = n1 + 1;
+                for (int i = 0; i < tnNo; i++) {
+                    for (int j = 0; j < nsd; j++) {
+                        if (alpha == 0.0) {
+                            Yn(j, i) = lM.Ys(j, i, n2);
+                        } else {
+                            Yn(j, i) = (1.0 - alpha) * lM.Ys(j, i, n1) + alpha * lM.Ys(j, i, n2);
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     // Inner loop for Newton iteration
     //
@@ -282,7 +330,6 @@ void iterate_solution(Simulation* simulation)
       #ifdef debug_iterate_solution
       dmsg << "Initiator step ..." << std::endl;
       #endif
-
       pic::pici(simulation, Ag, Yg, Dg);
       Ag.write("Ag_pic"+ istr);
       Yg.write("Yg_pic"+ istr);
@@ -706,6 +753,7 @@ int main(int argc, char *argv[])
     dmsg << "Read files " << " ... ";
     #endif
     read_files(simulation, file_name);
+
 
     // Distribute data to processors.
     #ifdef debug_main

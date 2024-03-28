@@ -1207,9 +1207,11 @@ class GeneralSimulationParameters : public ParameterLists
     Parameter<bool> start_averaging_from_zero;
     Parameter<bool> verbose;
     Parameter<bool> warning;
+    Parameter<bool> use_precomputed_solution;
 
     Parameter<double> spectral_radius_of_infinite_time_step;
     Parameter<double> time_step_size;
+    Parameter<double> precomputed_time_step_size;
 
     Parameter<int> increment_in_saving_restart_files;
     Parameter<int> increment_in_saving_vtk_files;
@@ -1223,7 +1225,9 @@ class GeneralSimulationParameters : public ParameterLists
     Parameter<std::string> restart_file_name; 
     Parameter<std::string> searched_file_name_to_trigger_stop; 
     Parameter<std::string> save_results_in_folder; 
-    Parameter<std::string> simulation_initialization_file_path; 
+    Parameter<std::string> simulation_initialization_file_path;
+    Parameter<std::string> precomputed_solution_file_path;
+    Parameter<std::string> precomputed_solution_field_name;
 };
 
 /// @brief The FaceParameters class is used to store parameters for the

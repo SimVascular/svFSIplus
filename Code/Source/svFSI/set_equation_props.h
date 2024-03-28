@@ -264,8 +264,10 @@ SetEquationPropertiesMapType set_equation_props = {
 
   read_domain(simulation, eq_params, lEq, propL);
 
-  nDOP = {2,1,1,0};
-  outPuts = {OutputType::out_temperature, OutputType::out_heatFlux};
+  nDOP = {3,1,1,0};
+  outPuts = {OutputType::out_temperature,
+             OutputType::out_heatFlux,
+             OutputType::out_velocity};
 
   // Set solver parameters.
   read_ls(simulation, eq_params, SolverType::lSolver_GMRES, lEq);
