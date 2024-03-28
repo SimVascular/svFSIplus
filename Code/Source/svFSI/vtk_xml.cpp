@@ -445,7 +445,16 @@ void read_vtp(const std::string& file_name, faceType& face)
     throw std::runtime_error("The VTK face file '" + file_name + "' can't be read.");
   }
 
-  vtk_xml_parser::load_vtp(file_name, face);
+  // Check if the face mesh needs to be read from a VTP or VTU file.
+  //
+  auto file_ext = file_name.substr(file_name.find_last_of(".") + 1);
+
+  if (file_ext == "vtp") {
+    vtk_xml_parser::load_vtp(file_name, face);
+
+  } else if (file_ext == "vtu") {
+    vtk_xml_parser::load_vtu(file_name, face);
+  }
 
   if (face.gN.size() == 0) {
     std::cout << "[WARNING] No node IDs found in the '" << file_name << "' face file.";

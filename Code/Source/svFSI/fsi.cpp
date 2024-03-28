@@ -207,11 +207,8 @@ void construct_fsi(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Ar
            throw std::runtime_error("[construct_fsi] Jacobian for element " + std::to_string(e) + " is < 0.");
         }
 
-        if (!vmsStab) {
-          auto Nx = fs_1[0].Nx.rslice(g);
-          auto Nxx = fs_1[0].Nxx.rslice(g);
-          nn::gn_nxx(l, fs_1[0].eNoN, nsd, nsd, Nx, Nxx, xwl, Nwx, Nwxx);
-        }
+        auto Nxx = fs_1[0].Nxx.rslice(g);
+        nn::gn_nxx(l, fs_1[0].eNoN, nsd, nsd, Nx, Nxx, xwl, Nwx, Nwxx);
       }
 
       double w = fs_1[0].w(g) * Jac;

@@ -1256,10 +1256,9 @@ SetElementShapeMapType set_element_shape_data = {
   {ElementType::TET10, [](int g, mshType& mesh) -> void {
     auto& xi = mesh.xi;
     auto& N = mesh.N;
-
     double s = 1.0 - xi(0,g) - xi(1,g) - xi(2,g);
     N(0,g)  = xi(0,g)*(2.0*xi(0,g) - 1.0);
-    N(1,g)  = xi(1,g)*(1.0*xi(1,g) - 1.0);
+    N(1,g)  = xi(1,g)*(2.0*xi(1,g) - 1.0);
     N(2,g)  = xi(2,g)*(2.0*xi(2,g) - 1.0);
     N(3,g)  = s    *(2.0*s     - 1.0);
     N(4,g)  = 4.0*xi(0,g)*xi(1,g);

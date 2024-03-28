@@ -55,6 +55,9 @@ void load_vtp(const std::string& file_name, mshType& mesh);
 
 void load_vtu(const std::string& file_name, mshType& mesh);
 
+void load_vtu(const std::string& file_name, faceType& face);
+
+
 };
 
 #endif
