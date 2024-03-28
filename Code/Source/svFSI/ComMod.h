@@ -1453,7 +1453,7 @@ class ComMod {
     /// @brief Time step size
     double dt = 0.0;
 
-    /// @breif Time step size of the precomputed state-variables
+    /// @brief Time step size of the precomputed state-variables
     double precompDt = 0.0;
 
     /// @brief Time
@@ -1477,7 +1477,7 @@ class ComMod {
     /// @brief Precomputed state-variable file name
     std::string precompFileName;
 
-    /// @breif Precomputed state-variable field name
+    /// @brief Precomputed state-variable field name
     std::string precompFieldName;
     // ALLOCATABLE DATA
 
