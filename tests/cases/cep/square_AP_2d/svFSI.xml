@@ -49,8 +49,8 @@
 <Add_equation type="CEP" > 
    <Coupled> true </Coupled>
    <Min_iterations> 1 </Min_iterations>  
-   <Max_iterations> 4 </Max_iterations> 
-   <Tolerance> 1e-4 </Tolerance> 
+   <Max_iterations> 2 </Max_iterations> 
+   <Tolerance> 1e-12 </Tolerance> 
 
   <Domain id="1" >
      <Electrophysiology_model> AP </Electrophysiology_model>
@@ -75,7 +75,7 @@
 
    <LS type="CG" >
       <Preconditioner> fsils </Preconditioner> 
-      <Tolerance> 1e-6 </Tolerance>
+      <Tolerance> 1e-12 </Tolerance>
    </LS>
 
 </Add_equation>
