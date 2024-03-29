@@ -89,6 +89,91 @@ void read_files(Simulation* simulation, const std::string& file_name)
 ///
 /// Reproduces the outer and inner loops in Fortan MAIN.f. 
 //
+
+/// @brief Iterate the precomputed state-variables in time using linear interpolation to the current time step size
+///
+void iterate_precomputed_time(Simulation* simulation) {
+    using namespace consts;
+
+    auto& com_mod = simulation->com_mod;
+    auto& cm_mod = simulation->cm_mod;
+    auto& cm = com_mod.cm;
+    auto& cep_mod = simulation->get_cep_mod();
+
+    int nTS = com_mod.nTS;
+    int stopTS = nTS;
+    int tDof = com_mod.tDof;
+    int tnNo = com_mod.tnNo;
+    int nFacesLS = com_mod.nFacesLS;
+    int nsd = com_mod.nsd;
+
+    auto& Ad = com_mod.Ad;      // Time derivative of displacement
+    auto& Rd = com_mod.Rd;      // Residual of the displacement equation
+    auto& Kd = com_mod.Kd;      // LHS matrix for displacement equation
+
+    auto& Ao = com_mod.Ao;      // Old time derivative of variables (acceleration)
+    auto& Yo = com_mod.Yo;      // Old variables (velocity)
+    auto& Do = com_mod.Do;      // Old integrated variables (dissplacement)
+
+    auto& An = com_mod.An;      // New time derivative of variables
+    auto& Yn = com_mod.Yn;      // New variables (velocity)
+    auto& Dn = com_mod.Dn;      // New integrated variables
+
+    int& cTS = com_mod.cTS;
+    int& nITs = com_mod.nITs;
+    double& dt = com_mod.dt;
+
+    if (com_mod.usePrecomp) {
+#ifdef debug_iterate_solution
+        dmsg << "Use precomputed values ..." << std::endl;
+#endif
+        // This loop is used to interpolate between known time values of the precomputed
+        // state-variable solution
+        for (int l = 0; l < com_mod.nMsh; l++) {
+            auto lM = com_mod.msh[l];
+            if (lM.Ys.nslices() > 1) {
+                // If there is only one temporal slice, then the solution is assumed constant
+                // in time and no interpolation is performed
+                // If there are multiple temporal slices, then the solution is linearly interpolated
+                // between the known time values and the current time.
+                double precompDt = com_mod.precompDt;
+                double preTT = precompDt * (lM.Ys.nslices() - 1);
+                double cT = cTS * dt;
+                double rT = std::fmod(cT, preTT);
+                int n1, n2;
+                double alpha;
+                if (precompDt == dt) {
+                    alpha =  0.0;
+                    if (cTS < lM.Ys.nslices()) {
+                        n1 = cTS - 1;
+                    } else {
+                        n1 = cTS % lM.Ys.nslices() - 1;
+                    }
+                } else {
+                    n1 = static_cast<int>(rT / precompDt) - 1;
+                    alpha = std::fmod(rT, precompDt);
+                }
+                n2 = n1 + 1;
+                for (int i = 0; i < tnNo; i++) {
+                    for (int j = 0; j < nsd; j++) {
+                        if (alpha == 0.0) {
+                            Yn(j, i) = lM.Ys(j, i, n2);
+                        } else {
+                            Yn(j, i) = (1.0 - alpha) * lM.Ys(j, i, n1) + alpha * lM.Ys(j, i, n2);
+                        }
+                    }
+                }
+            } else {
+                for (int i = 0; i < tnNo; i++) {
+                    for (int j = 0; j < nsd; j++) {
+                        Yn(j, i) = lM.Ys(j, i, 0);
+                    }
+                }
+            }
+        }
+    }
+}
+
 void iterate_solution(Simulation* simulation)
 {
   using namespace consts;
@@ -244,52 +329,8 @@ void iterate_solution(Simulation* simulation)
     #endif
 
     set_bc::set_bc_dir(com_mod, An, Yn, Dn);
-    
-    if (com_mod.usePrecomp) {
-        #ifdef debug_iterate_solution
-        dmsg << "Use precomputed values ..." << std::endl;
-        #endif
-        // This loop is used to interpolate between known time values of the precomputed
-        // state-variable solution
-        for (int l = 0; l < com_mod.nMsh; l++) {
-            auto lM = com_mod.msh[l];
-            if (lM.Ys.nslices() == 1) {
-                // If there is only one temporal slice, then the solution is assumed constant
-                // in time and no interpolation is performed
-                continue;
-            } else {
-                // If there are multiple temporal slices, then the solution is linearly interpolated
-                // between the known time values and the current time.
-                double precompDt = com_mod.precompDt;
-                double preTT = precompDt * (lM.Ys.nslices() - 1);
-                double cT = cTS * dt;
-                double rT = std::fmod(cT, preTT);
-                int n1, n2;
-                double alpha;
-                if (precompDt == dt) {
-                    alpha =  0.0;
-                    if (cTS < lM.Ys.nslices()) {
-                        n1 = cTS - 1;
-                    } else {
-                        n1 = cTS % lM.Ys.nslices() - 1;
-                    }
-                } else {
-                    n1 = static_cast<int>(rT / precompDt) - 1;
-                    alpha = std::fmod(rT, precompDt);
-                }
-                n2 = n1 + 1;
-                for (int i = 0; i < tnNo; i++) {
-                    for (int j = 0; j < nsd; j++) {
-                        if (alpha == 0.0) {
-                            Yn(j, i) = lM.Ys(j, i, n2);
-                        } else {
-                            Yn(j, i) = (1.0 - alpha) * lM.Ys(j, i, n1) + alpha * lM.Ys(j, i, n2);
-                        }
-                    }
-                }
-            }
-        }
-    }
+
+    iterate_precomputed_time(simulation);
 
     // Inner loop for Newton iteration
     //

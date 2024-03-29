@@ -755,20 +755,14 @@ void load_vtu(const std::string& file_name, mshType& mesh)
 }
 
 
-/// $brief Read a time series field from a VTK .vtu file.
+/// @brief Read a time series field from a VTK .vtu file.
 ///
 /// Mesh variables set
-///   mesh.gnNo - number of nodes
-///   mesh.x - node coordinates
-///   mesh.gN - node IDs
-///   mesh.gnEl - number of elements
-///   mesh.eNoN - number of noders per element
-///   mesh.gIEN - element connectivity (num_nodes_per_elem, num_elems)
 ///   mesh.Ys - time series field data (num_components, num_nodes, num_time_steps)
 ///
 //
-void load_time_varying_field_vtu(const std::string file_name, const std::string field_name, mshType& mesh) {
-
+void load_time_varying_field_vtu(const std::string file_name, const std::string field_name, mshType& mesh)
+{
   #define n_debug_load_vtu
   #ifdef debug_load_vtu
   std::cout << "[load_vtu] " << std::endl;
@@ -785,49 +779,50 @@ void load_time_varying_field_vtu(const std::string file_name, const std::string 
     std::vector<std::pair<std::string, int>> array_names;
 
     if (num_nodes == 0) {
-        throw std::runtime_error("Failed reading the VTK file '" + file_name + "'.");
+      throw std::runtime_error("Failed reading the VTK file '" + file_name + "'.");
     }
     // Store all array names
     for (int i = 0; i < vtk_ugrid->GetPointData()->GetNumberOfArrays(); i++) {
-        std::string array_name = vtk_ugrid->GetPointData()->GetArrayName(i);
-        size_t pos = array_name.find(field_name.c_str());
-        if (pos != std::string::npos) {
-            auto not_digit = [](char c) { return !std::isdigit(c); };
-            auto it = std::find_if(array_name.rbegin(), array_name.rend(), not_digit);
-            std::string time_step = std::string(it.base(), array_name.end());
-            array_count++;
-            if (!time_step.empty()) {
-                array_names.push_back({array_name, std::stoi(time_step)});
-            } else {
-                array_names.push_back({array_name, 0});
-            }
+      std::string array_name = vtk_ugrid->GetPointData()->GetArrayName(i);
+      size_t pos = array_name.find(field_name.c_str());
+      if (pos != std::string::npos) {
+        auto not_digit = [](char c) { return !std::isdigit(c); };
+        auto it = std::find_if(array_name.rbegin(), array_name.rend(), not_digit);
+        std::string time_step = std::string(it.base(), array_name.end());
+        array_count++;
+        if (!time_step.empty()) {
+          array_names.push_back({array_name, std::stoi(time_step)});
+        } else {
+          array_names.push_back({array_name, 0});
         }
+      }
     }
-
+    // Check if there are any fields present in the VTK file
     if (array_count == 0) {
-        throw std::runtime_error("No '" + field_name + "' data found in the VTK file '" + file_name + "'.");
+      throw std::runtime_error("No '" + field_name + "' data found in the VTK file '" + file_name + "'.");
     }
 
-    // Order all array names
+    // Order all array names by time step
     std::sort(array_names.begin(), array_names.end(), [](const std::pair<std::string, int>& a, const std::pair<std::string, int>& b) {
-        return a.second < b.second;
+      return a.second < b.second;
     });
+    // Get the expected number of state-variable components
     int num_components = vtk_ugrid->GetPointData()->GetArray(array_names[0].first.c_str())->GetNumberOfComponents();
     mesh.Ys.resize(num_components, num_nodes, array_count);
 
     for (int i = 0; i < array_count; i++) {
-        auto array = vtk_ugrid->GetPointData()->GetArray(array_names[i].first.c_str());
-        if (array == nullptr) {
-            throw std::runtime_error("No '" + array_names[i].first + "' data found in the VTK file '" + file_name + "'.");
+      auto array = vtk_ugrid->GetPointData()->GetArray(array_names[i].first.c_str());
+      if (array == nullptr) {
+        throw std::runtime_error("No '" + array_names[i].first + "' data found in the VTK file '" + file_name + "'.");
+      }
+      if (array->GetNumberOfComponents() != num_components) {
+        throw std::runtime_error("The number of components in the field '" + array_names[i].first + "' is not equal to the number of components in the first field.");
+      }
+      for (int j = 0; j < num_nodes; j++) {
+        for (int k = 0; k < num_components; k++) {
+          mesh.Ys(k, j, i) = array->GetComponent(j, k);
         }
-        if (array->GetNumberOfComponents() != num_components) {
-            throw std::runtime_error("The number of components in the field '" + array_names[i].first + "' is not equal to the number of components in the first field.");
-        }
-        for (int j = 0; j < num_nodes; j++) {
-            for (int k = 0; k < num_components; k++) {
-                mesh.Ys(k, j, i) = array->GetComponent(j, k);
-            }
-        }
+      }
     }
 }
 } // namespace vtk_utils

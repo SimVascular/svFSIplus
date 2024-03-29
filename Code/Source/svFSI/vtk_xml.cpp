@@ -597,17 +597,12 @@ void read_vtu(const std::string& file_name, mshType& mesh)
 //----------
 // read_precomputed_solution_vtu
 //----------
-// Read a mesh from a SimVascular .vtu or .vtp file.
-//
-// Mesh variables set
-//   mesh.gnNo - number of nodes
-//   mesh.gnEl - number of elements
-//   mesh.eNoN - number of noders per element
-//   mesh.x - node coordinates
-//   mesh.gIEN - element connectivity
-//
-//
-//
+
+/// @brief Read a mesh file with state-variable solution fields from a .vtu or .vtp file.
+///
+///  Mesh variables set
+///   mesh.Ys = precomputed state-variable solutions (e.g. velocity, pressure, etc.)
+
 void read_precomputed_solution_vtu(const std::string& file_name, const std::string& field_name, mshType& mesh)
 {
   using namespace vtk_xml_parser;
