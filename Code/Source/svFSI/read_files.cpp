@@ -1730,11 +1730,12 @@ void read_files(Simulation* simulation, const std::string& file_name)
     }     
 
     if (eq.phys == EquationType::phys_heatF) {   
-      auto& eq1_params = simulation->parameters.equation_parameters[0]; 
+      auto& eq1_params = simulation->parameters.equation_parameters[0];
+      auto& general_params = simulation->parameters.general_simulation_parameters;
       auto eq1_type = eq1_params->type.value();
-      if ((eq1_type != "fluid") && (eq1_type != "FSI")) {    
+      if ((eq1_type != "fluid") && (eq1_type != "FSI") && (!general_params.use_precomputed_solution.value())) {
         throw std::runtime_error("heatF equation has to be specified after fluid/FSI equation");
-      }     
+      }
     }     
 
     if (eq.phys == EquationType::phys_mesh) {   
