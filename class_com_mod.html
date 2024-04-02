@@ -140,6 +140,9 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:a71096696d480232eb3b82b2e15a050f4"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_com_mod.html#a71096696d480232eb3b82b2e15a050f4">bin2VTK</a> = false</td></tr>
 <tr class="memdesc:a71096696d480232eb3b82b2e15a050f4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Postprocess step - convert bin to vtk.  <a href="class_com_mod.html#a71096696d480232eb3b82b2e15a050f4">More...</a><br /></td></tr>
 <tr class="separator:a71096696d480232eb3b82b2e15a050f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a949caadf37a65de770358a86798b0060"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_com_mod.html#a949caadf37a65de770358a86798b0060">usePrecomp</a> = false</td></tr>
+<tr class="memdesc:a949caadf37a65de770358a86798b0060"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether to use precomputed state-variable solutions.  <a href="class_com_mod.html#a949caadf37a65de770358a86798b0060">More...</a><br /></td></tr>
+<tr class="separator:a949caadf37a65de770358a86798b0060"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac21829e679241101a965db3ff21a65f4"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_com_mod.html#ac21829e679241101a965db3ff21a65f4">cDmn</a> = 0</td></tr>
 <tr class="memdesc:ac21829e679241101a965db3ff21a65f4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Current domain.  <a href="class_com_mod.html#ac21829e679241101a965db3ff21a65f4">More...</a><br /></td></tr>
 <tr class="separator:ac21829e679241101a965db3ff21a65f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -209,6 +212,9 @@ std::array&lt; double, 3 &gt;&#160;</td><td class="memItemRight" valign="bottom"
 <tr class="memitem:a8a94399601d9bfca1102b5e5be27a055"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_com_mod.html#a8a94399601d9bfca1102b5e5be27a055">dt</a> = 0.0</td></tr>
 <tr class="memdesc:a8a94399601d9bfca1102b5e5be27a055"><td class="mdescLeft">&#160;</td><td class="mdescRight">Time step size.  <a href="class_com_mod.html#a8a94399601d9bfca1102b5e5be27a055">More...</a><br /></td></tr>
 <tr class="separator:a8a94399601d9bfca1102b5e5be27a055"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abe181c74acd266e321951a90182a9758"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_com_mod.html#abe181c74acd266e321951a90182a9758">precompDt</a> = 0.0</td></tr>
+<tr class="memdesc:abe181c74acd266e321951a90182a9758"><td class="mdescLeft">&#160;</td><td class="mdescRight">Time step size of the precomputed state-variables.  <a href="class_com_mod.html#abe181c74acd266e321951a90182a9758">More...</a><br /></td></tr>
+<tr class="separator:abe181c74acd266e321951a90182a9758"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8611e1387341bc17c0ddf6f54ded1f09"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_com_mod.html#a8611e1387341bc17c0ddf6f54ded1f09">time</a> = 0.0</td></tr>
 <tr class="memdesc:a8611e1387341bc17c0ddf6f54ded1f09"><td class="mdescLeft">&#160;</td><td class="mdescRight">Time.  <a href="class_com_mod.html#a8611e1387341bc17c0ddf6f54ded1f09">More...</a><br /></td></tr>
 <tr class="separator:a8611e1387341bc17c0ddf6f54ded1f09"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -224,6 +230,12 @@ std::array&lt; double, 3 &gt;&#160;</td><td class="memItemRight" valign="bottom"
 <tr class="memitem:a0290e34e97980f78795c8c72a1541ff7"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_com_mod.html#a0290e34e97980f78795c8c72a1541ff7">stopTrigName</a></td></tr>
 <tr class="memdesc:a0290e34e97980f78795c8c72a1541ff7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Stop_trigger file name.  <a href="class_com_mod.html#a0290e34e97980f78795c8c72a1541ff7">More...</a><br /></td></tr>
 <tr class="separator:a0290e34e97980f78795c8c72a1541ff7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5703dd4af9a8701876de31e2e4ae0a61"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_com_mod.html#a5703dd4af9a8701876de31e2e4ae0a61">precompFileName</a></td></tr>
+<tr class="memdesc:a5703dd4af9a8701876de31e2e4ae0a61"><td class="mdescLeft">&#160;</td><td class="mdescRight">Precomputed state-variable file name.  <a href="class_com_mod.html#a5703dd4af9a8701876de31e2e4ae0a61">More...</a><br /></td></tr>
+<tr class="separator:a5703dd4af9a8701876de31e2e4ae0a61"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7e1a59c4ebba44640b4d4bc7b55cd82b"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_com_mod.html#a7e1a59c4ebba44640b4d4bc7b55cd82b">precompFieldName</a></td></tr>
+<tr class="memdesc:a7e1a59c4ebba44640b4d4bc7b55cd82b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Precomputed state-variable field name.  <a href="class_com_mod.html#a7e1a59c4ebba44640b4d4bc7b55cd82b">More...</a><br /></td></tr>
+<tr class="separator:a7e1a59c4ebba44640b4d4bc7b55cd82b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a108dd894945a58b903901fdf04f59460"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_vector.html">Vector</a>&lt; int &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_com_mod.html#a108dd894945a58b903901fdf04f59460">colPtr</a></td></tr>
 <tr class="memdesc:a108dd894945a58b903901fdf04f59460"><td class="mdescLeft">&#160;</td><td class="mdescRight">Column pointer (for sparse LHS matrix structure) Modified in: lhsa()  <a href="class_com_mod.html#a108dd894945a58b903901fdf04f59460">More...</a><br /></td></tr>
 <tr class="separator:a108dd894945a58b903901fdf04f59460"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -1062,6 +1074,54 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>debug_active</b> = fa
 
 </div>
 </div>
+<a id="abe181c74acd266e321951a90182a9758"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abe181c74acd266e321951a90182a9758">&#9670;&nbsp;</a></span>precompDt</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">double ComMod::precompDt = 0.0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Time step size of the precomputed state-variables. </p>
+
+</div>
+</div>
+<a id="a7e1a59c4ebba44640b4d4bc7b55cd82b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7e1a59c4ebba44640b4d4bc7b55cd82b">&#9670;&nbsp;</a></span>precompFieldName</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string ComMod::precompFieldName</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Precomputed state-variable field name. </p>
+
+</div>
+</div>
+<a id="a5703dd4af9a8701876de31e2e4ae0a61"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5703dd4af9a8701876de31e2e4ae0a61">&#9670;&nbsp;</a></span>precompFileName</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string ComMod::precompFileName</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Precomputed state-variable file name. </p>
+
+</div>
+</div>
 <a id="af6037b9453a02db9505b7af5bc403cae"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af6037b9453a02db9505b7af5bc403cae">&#9670;&nbsp;</a></span>pS0</h2>
 
@@ -1539,6 +1599,22 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>debug_active</b> = fa
 </div><div class="memdoc">
 
 <p>Total number of nodes (number of nodes on current proc across all meshes) </p>
+
+</div>
+</div>
+<a id="a949caadf37a65de770358a86798b0060"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a949caadf37a65de770358a86798b0060">&#9670;&nbsp;</a></span>usePrecomp</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool ComMod::usePrecomp = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Whether to use precomputed state-variable solutions. </p>
 
 </div>
 </div>

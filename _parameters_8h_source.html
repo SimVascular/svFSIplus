@@ -1279,138 +1279,142 @@ $(function() {
 <div class="line"><a name="l01207"></a><span class="lineno"> 1207</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;bool&gt;</a> start_averaging_from_zero;</div>
 <div class="line"><a name="l01208"></a><span class="lineno"> 1208</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;bool&gt;</a> verbose;</div>
 <div class="line"><a name="l01209"></a><span class="lineno"> 1209</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;bool&gt;</a> warning;</div>
-<div class="line"><a name="l01210"></a><span class="lineno"> 1210</span>&#160; </div>
-<div class="line"><a name="l01211"></a><span class="lineno"> 1211</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;double&gt;</a> spectral_radius_of_infinite_time_step;</div>
-<div class="line"><a name="l01212"></a><span class="lineno"> 1212</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;double&gt;</a> time_step_size;</div>
-<div class="line"><a name="l01213"></a><span class="lineno"> 1213</span>&#160; </div>
-<div class="line"><a name="l01214"></a><span class="lineno"> 1214</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;int&gt;</a> increment_in_saving_restart_files;</div>
-<div class="line"><a name="l01215"></a><span class="lineno"> 1215</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;int&gt;</a> increment_in_saving_vtk_files;</div>
-<div class="line"><a name="l01216"></a><span class="lineno"> 1216</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;int&gt;</a> number_of_spatial_dimensions;</div>
-<div class="line"><a name="l01217"></a><span class="lineno"> 1217</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;int&gt;</a> number_of_initialization_time_steps;</div>
-<div class="line"><a name="l01218"></a><span class="lineno"> 1218</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;int&gt;</a> start_saving_after_time_step;</div>
-<div class="line"><a name="l01219"></a><span class="lineno"> 1219</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;int&gt;</a> starting_time_step;</div>
-<div class="line"><a name="l01220"></a><span class="lineno"> 1220</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;int&gt;</a> number_of_time_steps;</div>
-<div class="line"><a name="l01221"></a><span class="lineno"> 1221</span>&#160; </div>
-<div class="line"><a name="l01222"></a><span class="lineno"> 1222</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;std::string&gt;</a> name_prefix_of_saved_vtk_files;</div>
-<div class="line"><a name="l01223"></a><span class="lineno"> 1223</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;std::string&gt;</a> restart_file_name; </div>
-<div class="line"><a name="l01224"></a><span class="lineno"> 1224</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;std::string&gt;</a> searched_file_name_to_trigger_stop; </div>
-<div class="line"><a name="l01225"></a><span class="lineno"> 1225</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;std::string&gt;</a> save_results_in_folder; </div>
-<div class="line"><a name="l01226"></a><span class="lineno"> 1226</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;std::string&gt;</a> simulation_initialization_file_path; </div>
-<div class="line"><a name="l01227"></a><span class="lineno"> 1227</span>&#160;};</div>
-<div class="line"><a name="l01228"></a><span class="lineno"> 1228</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l01229"></a><span class="lineno"> 1229</span>&#160;<span class="comment">/// @brief The FaceParameters class is used to store parameters for the</span></div>
-<div class="line"><a name="l01230"></a><span class="lineno"> 1230</span>&#160;<span class="comment">/// &#39;Add_face&#39; XML element.</span></div>
-<div class="line"><a name="l01231"></a><span class="lineno"><a class="line" href="class_face_parameters.html"> 1231</a></span>&#160;<span class="comment"></span><span class="keyword">class </span><a class="code" href="class_face_parameters.html">FaceParameters</a> : <span class="keyword">public</span> <a class="code" href="class_parameter_lists.html">ParameterLists</a></div>
-<div class="line"><a name="l01232"></a><span class="lineno"> 1232</span>&#160;{</div>
-<div class="line"><a name="l01233"></a><span class="lineno"> 1233</span>&#160;  <span class="keyword">public</span>:</div>
-<div class="line"><a name="l01234"></a><span class="lineno"> 1234</span>&#160;    <a class="code" href="class_face_parameters.html">FaceParameters</a>();</div>
-<div class="line"><a name="l01235"></a><span class="lineno"> 1235</span>&#160; </div>
-<div class="line"><a name="l01236"></a><span class="lineno"> 1236</span>&#160;    <span class="keywordtype">void</span> print_parameters();</div>
-<div class="line"><a name="l01237"></a><span class="lineno"> 1237</span>&#160;    <span class="keywordtype">void</span> set_values(tinyxml2::XMLElement* xml_elem);</div>
-<div class="line"><a name="l01238"></a><span class="lineno"> 1238</span>&#160; </div>
-<div class="line"><a name="l01239"></a><span class="lineno"><a class="line" href="class_face_parameters.html#a154d2fbee15ca4db7addae9815bd9023"> 1239</a></span>&#160;    <span class="keyword">static</span> <span class="keyword">const</span> std::string <a class="code" href="class_face_parameters.html#a154d2fbee15ca4db7addae9815bd9023">xml_element_name_</a>;</div>
-<div class="line"><a name="l01240"></a><span class="lineno"> 1240</span>&#160; </div>
-<div class="line"><a name="l01241"></a><span class="lineno"> 1241</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;std::string&gt;</a> end_nodes_face_file_path;</div>
-<div class="line"><a name="l01242"></a><span class="lineno"> 1242</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;std::string&gt;</a> face_file_path;</div>
-<div class="line"><a name="l01243"></a><span class="lineno"> 1243</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;std::string&gt;</a> name;</div>
+<div class="line"><a name="l01210"></a><span class="lineno"> 1210</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;bool&gt;</a> use_precomputed_solution;</div>
+<div class="line"><a name="l01211"></a><span class="lineno"> 1211</span>&#160; </div>
+<div class="line"><a name="l01212"></a><span class="lineno"> 1212</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;double&gt;</a> spectral_radius_of_infinite_time_step;</div>
+<div class="line"><a name="l01213"></a><span class="lineno"> 1213</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;double&gt;</a> time_step_size;</div>
+<div class="line"><a name="l01214"></a><span class="lineno"> 1214</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;double&gt;</a> precomputed_time_step_size;</div>
+<div class="line"><a name="l01215"></a><span class="lineno"> 1215</span>&#160; </div>
+<div class="line"><a name="l01216"></a><span class="lineno"> 1216</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;int&gt;</a> increment_in_saving_restart_files;</div>
+<div class="line"><a name="l01217"></a><span class="lineno"> 1217</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;int&gt;</a> increment_in_saving_vtk_files;</div>
+<div class="line"><a name="l01218"></a><span class="lineno"> 1218</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;int&gt;</a> number_of_spatial_dimensions;</div>
+<div class="line"><a name="l01219"></a><span class="lineno"> 1219</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;int&gt;</a> number_of_initialization_time_steps;</div>
+<div class="line"><a name="l01220"></a><span class="lineno"> 1220</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;int&gt;</a> start_saving_after_time_step;</div>
+<div class="line"><a name="l01221"></a><span class="lineno"> 1221</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;int&gt;</a> starting_time_step;</div>
+<div class="line"><a name="l01222"></a><span class="lineno"> 1222</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;int&gt;</a> number_of_time_steps;</div>
+<div class="line"><a name="l01223"></a><span class="lineno"> 1223</span>&#160; </div>
+<div class="line"><a name="l01224"></a><span class="lineno"> 1224</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;std::string&gt;</a> name_prefix_of_saved_vtk_files;</div>
+<div class="line"><a name="l01225"></a><span class="lineno"> 1225</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;std::string&gt;</a> restart_file_name; </div>
+<div class="line"><a name="l01226"></a><span class="lineno"> 1226</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;std::string&gt;</a> searched_file_name_to_trigger_stop; </div>
+<div class="line"><a name="l01227"></a><span class="lineno"> 1227</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;std::string&gt;</a> save_results_in_folder; </div>
+<div class="line"><a name="l01228"></a><span class="lineno"> 1228</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;std::string&gt;</a> simulation_initialization_file_path;</div>
+<div class="line"><a name="l01229"></a><span class="lineno"> 1229</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;std::string&gt;</a> precomputed_solution_file_path;</div>
+<div class="line"><a name="l01230"></a><span class="lineno"> 1230</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;std::string&gt;</a> precomputed_solution_field_name;</div>
+<div class="line"><a name="l01231"></a><span class="lineno"> 1231</span>&#160;};</div>
+<div class="line"><a name="l01232"></a><span class="lineno"> 1232</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l01233"></a><span class="lineno"> 1233</span>&#160;<span class="comment">/// @brief The FaceParameters class is used to store parameters for the</span></div>
+<div class="line"><a name="l01234"></a><span class="lineno"> 1234</span>&#160;<span class="comment">/// &#39;Add_face&#39; XML element.</span></div>
+<div class="line"><a name="l01235"></a><span class="lineno"><a class="line" href="class_face_parameters.html"> 1235</a></span>&#160;<span class="comment"></span><span class="keyword">class </span><a class="code" href="class_face_parameters.html">FaceParameters</a> : <span class="keyword">public</span> <a class="code" href="class_parameter_lists.html">ParameterLists</a></div>
+<div class="line"><a name="l01236"></a><span class="lineno"> 1236</span>&#160;{</div>
+<div class="line"><a name="l01237"></a><span class="lineno"> 1237</span>&#160;  <span class="keyword">public</span>:</div>
+<div class="line"><a name="l01238"></a><span class="lineno"> 1238</span>&#160;    <a class="code" href="class_face_parameters.html">FaceParameters</a>();</div>
+<div class="line"><a name="l01239"></a><span class="lineno"> 1239</span>&#160; </div>
+<div class="line"><a name="l01240"></a><span class="lineno"> 1240</span>&#160;    <span class="keywordtype">void</span> print_parameters();</div>
+<div class="line"><a name="l01241"></a><span class="lineno"> 1241</span>&#160;    <span class="keywordtype">void</span> set_values(tinyxml2::XMLElement* xml_elem);</div>
+<div class="line"><a name="l01242"></a><span class="lineno"> 1242</span>&#160; </div>
+<div class="line"><a name="l01243"></a><span class="lineno"><a class="line" href="class_face_parameters.html#a154d2fbee15ca4db7addae9815bd9023"> 1243</a></span>&#160;    <span class="keyword">static</span> <span class="keyword">const</span> std::string <a class="code" href="class_face_parameters.html#a154d2fbee15ca4db7addae9815bd9023">xml_element_name_</a>;</div>
 <div class="line"><a name="l01244"></a><span class="lineno"> 1244</span>&#160; </div>
-<div class="line"><a name="l01245"></a><span class="lineno"> 1245</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;double&gt;</a> quadrature_modifier_TRI3;</div>
-<div class="line"><a name="l01246"></a><span class="lineno"> 1246</span>&#160;};</div>
-<div class="line"><a name="l01247"></a><span class="lineno"> 1247</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l01248"></a><span class="lineno"> 1248</span>&#160;<span class="comment">/// @brief The MeshParameters class is used to store paramaters for the</span></div>
-<div class="line"><a name="l01249"></a><span class="lineno"> 1249</span>&#160;<span class="comment">/// &#39;Add_mesh&#39; XML element.</span></div>
-<div class="line"><a name="l01250"></a><span class="lineno"> 1250</span>&#160;<span class="comment">///</span></div>
-<div class="line"><a name="l01251"></a><span class="lineno"> 1251</span>&#160;<span class="comment">/// \code {.xml}</span></div>
-<div class="line"><a name="l01252"></a><span class="lineno"> 1252</span>&#160;<span class="comment">/// &lt;Add_mesh name=&quot;lumen&quot; &gt;</span></div>
-<div class="line"><a name="l01253"></a><span class="lineno"> 1253</span>&#160;<span class="comment">///   &lt;Mesh_file_path&gt; mesh/lumen/mesh-complete.mesh.vtu  &lt;/Mesh_file_path&gt;</span></div>
+<div class="line"><a name="l01245"></a><span class="lineno"> 1245</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;std::string&gt;</a> end_nodes_face_file_path;</div>
+<div class="line"><a name="l01246"></a><span class="lineno"> 1246</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;std::string&gt;</a> face_file_path;</div>
+<div class="line"><a name="l01247"></a><span class="lineno"> 1247</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;std::string&gt;</a> name;</div>
+<div class="line"><a name="l01248"></a><span class="lineno"> 1248</span>&#160; </div>
+<div class="line"><a name="l01249"></a><span class="lineno"> 1249</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;double&gt;</a> quadrature_modifier_TRI3;</div>
+<div class="line"><a name="l01250"></a><span class="lineno"> 1250</span>&#160;};</div>
+<div class="line"><a name="l01251"></a><span class="lineno"> 1251</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l01252"></a><span class="lineno"> 1252</span>&#160;<span class="comment">/// @brief The MeshParameters class is used to store paramaters for the</span></div>
+<div class="line"><a name="l01253"></a><span class="lineno"> 1253</span>&#160;<span class="comment">/// &#39;Add_mesh&#39; XML element.</span></div>
 <div class="line"><a name="l01254"></a><span class="lineno"> 1254</span>&#160;<span class="comment">///</span></div>
-<div class="line"><a name="l01255"></a><span class="lineno"> 1255</span>&#160;<span class="comment">///   &lt;Add_face name=&quot;lumen_inlet&quot;&gt;</span></div>
-<div class="line"><a name="l01256"></a><span class="lineno"> 1256</span>&#160;<span class="comment">///       &lt;Face_file_path&gt; mesh/lumen/mesh-surfaces/lumen_inlet.vtp &lt;/Face_file_path&gt;</span></div>
-<div class="line"><a name="l01257"></a><span class="lineno"> 1257</span>&#160;<span class="comment">///   &lt;/Add_face&gt;</span></div>
+<div class="line"><a name="l01255"></a><span class="lineno"> 1255</span>&#160;<span class="comment">/// \code {.xml}</span></div>
+<div class="line"><a name="l01256"></a><span class="lineno"> 1256</span>&#160;<span class="comment">/// &lt;Add_mesh name=&quot;lumen&quot; &gt;</span></div>
+<div class="line"><a name="l01257"></a><span class="lineno"> 1257</span>&#160;<span class="comment">///   &lt;Mesh_file_path&gt; mesh/lumen/mesh-complete.mesh.vtu  &lt;/Mesh_file_path&gt;</span></div>
 <div class="line"><a name="l01258"></a><span class="lineno"> 1258</span>&#160;<span class="comment">///</span></div>
-<div class="line"><a name="l01259"></a><span class="lineno"> 1259</span>&#160;<span class="comment">///   &lt;Add_face name=&quot;lumen_outlet&quot;&gt;</span></div>
-<div class="line"><a name="l01260"></a><span class="lineno"> 1260</span>&#160;<span class="comment">///       &lt;Face_file_path&gt; mesh/lumen/mesh-surfaces/lumen_outlet.vtp &lt;/Face_file_path&gt;</span></div>
+<div class="line"><a name="l01259"></a><span class="lineno"> 1259</span>&#160;<span class="comment">///   &lt;Add_face name=&quot;lumen_inlet&quot;&gt;</span></div>
+<div class="line"><a name="l01260"></a><span class="lineno"> 1260</span>&#160;<span class="comment">///       &lt;Face_file_path&gt; mesh/lumen/mesh-surfaces/lumen_inlet.vtp &lt;/Face_file_path&gt;</span></div>
 <div class="line"><a name="l01261"></a><span class="lineno"> 1261</span>&#160;<span class="comment">///   &lt;/Add_face&gt;</span></div>
 <div class="line"><a name="l01262"></a><span class="lineno"> 1262</span>&#160;<span class="comment">///</span></div>
-<div class="line"><a name="l01263"></a><span class="lineno"> 1263</span>&#160;<span class="comment">///   &lt;Add_face name=&quot;lumen_wall&quot;&gt;</span></div>
-<div class="line"><a name="l01264"></a><span class="lineno"> 1264</span>&#160;<span class="comment">///       &lt;Face_file_path&gt; mesh/lumen/mesh-surfaces/lumen_wall.vtp &lt;/Face_file_path&gt;</span></div>
+<div class="line"><a name="l01263"></a><span class="lineno"> 1263</span>&#160;<span class="comment">///   &lt;Add_face name=&quot;lumen_outlet&quot;&gt;</span></div>
+<div class="line"><a name="l01264"></a><span class="lineno"> 1264</span>&#160;<span class="comment">///       &lt;Face_file_path&gt; mesh/lumen/mesh-surfaces/lumen_outlet.vtp &lt;/Face_file_path&gt;</span></div>
 <div class="line"><a name="l01265"></a><span class="lineno"> 1265</span>&#160;<span class="comment">///   &lt;/Add_face&gt;</span></div>
 <div class="line"><a name="l01266"></a><span class="lineno"> 1266</span>&#160;<span class="comment">///</span></div>
-<div class="line"><a name="l01267"></a><span class="lineno"> 1267</span>&#160;<span class="comment">///   &lt;Domain&gt; 0 &lt;/Domain&gt;</span></div>
-<div class="line"><a name="l01268"></a><span class="lineno"> 1268</span>&#160;<span class="comment">/// </span></div>
-<div class="line"><a name="l01269"></a><span class="lineno"> 1269</span>&#160;<span class="comment">/// &lt;/Add_mesh&gt;</span></div>
-<div class="line"><a name="l01270"></a><span class="lineno"> 1270</span>&#160;<span class="comment">/// \endcode</span></div>
-<div class="line"><a name="l01271"></a><span class="lineno"><a class="line" href="class_mesh_parameters.html"> 1271</a></span>&#160;<span class="comment"></span><span class="keyword">class </span><a class="code" href="class_mesh_parameters.html">MeshParameters</a> : <span class="keyword">public</span> <a class="code" href="class_parameter_lists.html">ParameterLists</a></div>
-<div class="line"><a name="l01272"></a><span class="lineno"> 1272</span>&#160;{</div>
-<div class="line"><a name="l01273"></a><span class="lineno"> 1273</span>&#160;  <span class="keyword">public</span>:</div>
-<div class="line"><a name="l01274"></a><span class="lineno"> 1274</span>&#160;    <a class="code" href="class_mesh_parameters.html">MeshParameters</a>();</div>
-<div class="line"><a name="l01275"></a><span class="lineno"> 1275</span>&#160; </div>
-<div class="line"><a name="l01276"></a><span class="lineno"><a class="line" href="class_mesh_parameters.html#a442461e2c1aaee3679e39b2bf5abc302"> 1276</a></span>&#160;    <span class="keyword">static</span> <span class="keyword">const</span> std::string <a class="code" href="class_mesh_parameters.html#a442461e2c1aaee3679e39b2bf5abc302">xml_element_name_</a>;</div>
-<div class="line"><a name="l01277"></a><span class="lineno"> 1277</span>&#160; </div>
-<div class="line"><a name="l01278"></a><span class="lineno"> 1278</span>&#160;    <span class="keywordtype">void</span> print_parameters();</div>
-<div class="line"><a name="l01279"></a><span class="lineno"> 1279</span>&#160;    <span class="keywordtype">void</span> set_values(tinyxml2::XMLElement* mesh_elem);</div>
-<div class="line"><a name="l01280"></a><span class="lineno"> 1280</span>&#160;    std::string get_name()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> name.value(); };</div>
-<div class="line"><a name="l01281"></a><span class="lineno"> 1281</span>&#160;    std::string get_path()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> mesh_file_path.value(); };</div>
-<div class="line"><a name="l01282"></a><span class="lineno"> 1282</span>&#160; </div>
-<div class="line"><a name="l01283"></a><span class="lineno"> 1283</span>&#160;    std::vector&lt;FaceParameters*&gt; face_parameters;</div>
-<div class="line"><a name="l01284"></a><span class="lineno"> 1284</span>&#160; </div>
-<div class="line"><a name="l01285"></a><span class="lineno"> 1285</span>&#160;    <span class="comment">// Add_mesh name= </span></div>
-<div class="line"><a name="l01286"></a><span class="lineno"> 1286</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;std::string&gt;</a> name;</div>
-<div class="line"><a name="l01287"></a><span class="lineno"> 1287</span>&#160; </div>
-<div class="line"><a name="l01288"></a><span class="lineno"> 1288</span>&#160;    <span class="comment">// Parameters under Add_mesh </span></div>
-<div class="line"><a name="l01289"></a><span class="lineno"> 1289</span>&#160;    <span class="comment">//</span></div>
-<div class="line"><a name="l01290"></a><span class="lineno"> 1290</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;int&gt;</a> domain_id;</div>
-<div class="line"><a name="l01291"></a><span class="lineno"> 1291</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;std::string&gt;</a> domain_file_path;</div>
-<div class="line"><a name="l01292"></a><span class="lineno"> 1292</span>&#160; </div>
-<div class="line"><a name="l01293"></a><span class="lineno"> 1293</span>&#160;    <a class="code" href="class_vector_parameter.html">VectorParameter&lt;std::string&gt;</a> fiber_direction_file_paths;</div>
-<div class="line"><a name="l01294"></a><span class="lineno"> 1294</span>&#160;    <span class="comment">//Parameter&lt;std::string&gt; fiber_direction_file_path;</span></div>
-<div class="line"><a name="l01295"></a><span class="lineno"> 1295</span>&#160;    std::vector&lt;VectorParameter&lt;double&gt;&gt; fiber_directions;</div>
-<div class="line"><a name="l01296"></a><span class="lineno"> 1296</span>&#160;    <span class="comment">//VectorParameter&lt;double&gt; fiber_direction;</span></div>
-<div class="line"><a name="l01297"></a><span class="lineno"> 1297</span>&#160; </div>
-<div class="line"><a name="l01298"></a><span class="lineno"> 1298</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;std::string&gt;</a> initial_displacements_file_path;</div>
-<div class="line"><a name="l01299"></a><span class="lineno"> 1299</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;std::string&gt;</a> initial_pressures_file_path;</div>
-<div class="line"><a name="l01300"></a><span class="lineno"> 1300</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;bool&gt;</a> initialize_rcr_from_flow;</div>
-<div class="line"><a name="l01301"></a><span class="lineno"> 1301</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;std::string&gt;</a> initial_velocities_file_path;</div>
-<div class="line"><a name="l01302"></a><span class="lineno"> 1302</span>&#160; </div>
-<div class="line"><a name="l01303"></a><span class="lineno"> 1303</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;std::string&gt;</a> mesh_file_path;</div>
-<div class="line"><a name="l01304"></a><span class="lineno"> 1304</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;double&gt;</a> mesh_scale_factor;</div>
-<div class="line"><a name="l01305"></a><span class="lineno"> 1305</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;std::string&gt;</a> prestress_file_path;</div>
+<div class="line"><a name="l01267"></a><span class="lineno"> 1267</span>&#160;<span class="comment">///   &lt;Add_face name=&quot;lumen_wall&quot;&gt;</span></div>
+<div class="line"><a name="l01268"></a><span class="lineno"> 1268</span>&#160;<span class="comment">///       &lt;Face_file_path&gt; mesh/lumen/mesh-surfaces/lumen_wall.vtp &lt;/Face_file_path&gt;</span></div>
+<div class="line"><a name="l01269"></a><span class="lineno"> 1269</span>&#160;<span class="comment">///   &lt;/Add_face&gt;</span></div>
+<div class="line"><a name="l01270"></a><span class="lineno"> 1270</span>&#160;<span class="comment">///</span></div>
+<div class="line"><a name="l01271"></a><span class="lineno"> 1271</span>&#160;<span class="comment">///   &lt;Domain&gt; 0 &lt;/Domain&gt;</span></div>
+<div class="line"><a name="l01272"></a><span class="lineno"> 1272</span>&#160;<span class="comment">/// </span></div>
+<div class="line"><a name="l01273"></a><span class="lineno"> 1273</span>&#160;<span class="comment">/// &lt;/Add_mesh&gt;</span></div>
+<div class="line"><a name="l01274"></a><span class="lineno"> 1274</span>&#160;<span class="comment">/// \endcode</span></div>
+<div class="line"><a name="l01275"></a><span class="lineno"><a class="line" href="class_mesh_parameters.html"> 1275</a></span>&#160;<span class="comment"></span><span class="keyword">class </span><a class="code" href="class_mesh_parameters.html">MeshParameters</a> : <span class="keyword">public</span> <a class="code" href="class_parameter_lists.html">ParameterLists</a></div>
+<div class="line"><a name="l01276"></a><span class="lineno"> 1276</span>&#160;{</div>
+<div class="line"><a name="l01277"></a><span class="lineno"> 1277</span>&#160;  <span class="keyword">public</span>:</div>
+<div class="line"><a name="l01278"></a><span class="lineno"> 1278</span>&#160;    <a class="code" href="class_mesh_parameters.html">MeshParameters</a>();</div>
+<div class="line"><a name="l01279"></a><span class="lineno"> 1279</span>&#160; </div>
+<div class="line"><a name="l01280"></a><span class="lineno"><a class="line" href="class_mesh_parameters.html#a442461e2c1aaee3679e39b2bf5abc302"> 1280</a></span>&#160;    <span class="keyword">static</span> <span class="keyword">const</span> std::string <a class="code" href="class_mesh_parameters.html#a442461e2c1aaee3679e39b2bf5abc302">xml_element_name_</a>;</div>
+<div class="line"><a name="l01281"></a><span class="lineno"> 1281</span>&#160; </div>
+<div class="line"><a name="l01282"></a><span class="lineno"> 1282</span>&#160;    <span class="keywordtype">void</span> print_parameters();</div>
+<div class="line"><a name="l01283"></a><span class="lineno"> 1283</span>&#160;    <span class="keywordtype">void</span> set_values(tinyxml2::XMLElement* mesh_elem);</div>
+<div class="line"><a name="l01284"></a><span class="lineno"> 1284</span>&#160;    std::string get_name()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> name.value(); };</div>
+<div class="line"><a name="l01285"></a><span class="lineno"> 1285</span>&#160;    std::string get_path()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> mesh_file_path.value(); };</div>
+<div class="line"><a name="l01286"></a><span class="lineno"> 1286</span>&#160; </div>
+<div class="line"><a name="l01287"></a><span class="lineno"> 1287</span>&#160;    std::vector&lt;FaceParameters*&gt; face_parameters;</div>
+<div class="line"><a name="l01288"></a><span class="lineno"> 1288</span>&#160; </div>
+<div class="line"><a name="l01289"></a><span class="lineno"> 1289</span>&#160;    <span class="comment">// Add_mesh name= </span></div>
+<div class="line"><a name="l01290"></a><span class="lineno"> 1290</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;std::string&gt;</a> name;</div>
+<div class="line"><a name="l01291"></a><span class="lineno"> 1291</span>&#160; </div>
+<div class="line"><a name="l01292"></a><span class="lineno"> 1292</span>&#160;    <span class="comment">// Parameters under Add_mesh </span></div>
+<div class="line"><a name="l01293"></a><span class="lineno"> 1293</span>&#160;    <span class="comment">//</span></div>
+<div class="line"><a name="l01294"></a><span class="lineno"> 1294</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;int&gt;</a> domain_id;</div>
+<div class="line"><a name="l01295"></a><span class="lineno"> 1295</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;std::string&gt;</a> domain_file_path;</div>
+<div class="line"><a name="l01296"></a><span class="lineno"> 1296</span>&#160; </div>
+<div class="line"><a name="l01297"></a><span class="lineno"> 1297</span>&#160;    <a class="code" href="class_vector_parameter.html">VectorParameter&lt;std::string&gt;</a> fiber_direction_file_paths;</div>
+<div class="line"><a name="l01298"></a><span class="lineno"> 1298</span>&#160;    <span class="comment">//Parameter&lt;std::string&gt; fiber_direction_file_path;</span></div>
+<div class="line"><a name="l01299"></a><span class="lineno"> 1299</span>&#160;    std::vector&lt;VectorParameter&lt;double&gt;&gt; fiber_directions;</div>
+<div class="line"><a name="l01300"></a><span class="lineno"> 1300</span>&#160;    <span class="comment">//VectorParameter&lt;double&gt; fiber_direction;</span></div>
+<div class="line"><a name="l01301"></a><span class="lineno"> 1301</span>&#160; </div>
+<div class="line"><a name="l01302"></a><span class="lineno"> 1302</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;std::string&gt;</a> initial_displacements_file_path;</div>
+<div class="line"><a name="l01303"></a><span class="lineno"> 1303</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;std::string&gt;</a> initial_pressures_file_path;</div>
+<div class="line"><a name="l01304"></a><span class="lineno"> 1304</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;bool&gt;</a> initialize_rcr_from_flow;</div>
+<div class="line"><a name="l01305"></a><span class="lineno"> 1305</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;std::string&gt;</a> initial_velocities_file_path;</div>
 <div class="line"><a name="l01306"></a><span class="lineno"> 1306</span>&#160; </div>
-<div class="line"><a name="l01307"></a><span class="lineno"> 1307</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;bool&gt;</a> set_mesh_as_fibers;</div>
-<div class="line"><a name="l01308"></a><span class="lineno"> 1308</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;bool&gt;</a> set_mesh_as_shell;</div>
-<div class="line"><a name="l01309"></a><span class="lineno"> 1309</span>&#160; </div>
-<div class="line"><a name="l01310"></a><span class="lineno"> 1310</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;double&gt;</a> quadrature_modifier_TET4;</div>
-<div class="line"><a name="l01311"></a><span class="lineno"> 1311</span>&#160;};</div>
-<div class="line"><a name="l01312"></a><span class="lineno"> 1312</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l01313"></a><span class="lineno"> 1313</span>&#160;<span class="comment">/// @brief The Parameters class stores parameter values read in from a solver input file.</span></div>
-<div class="line"><a name="l01314"></a><span class="lineno"><a class="line" href="class_parameters.html"> 1314</a></span>&#160;<span class="comment"></span><span class="keyword">class </span><a class="code" href="class_parameters.html">Parameters</a> {</div>
-<div class="line"><a name="l01315"></a><span class="lineno"> 1315</span>&#160; </div>
-<div class="line"><a name="l01316"></a><span class="lineno"> 1316</span>&#160;  <span class="keyword">public</span>:</div>
-<div class="line"><a name="l01317"></a><span class="lineno"> 1317</span>&#160;    <a class="code" href="class_parameters.html">Parameters</a>();</div>
-<div class="line"><a name="l01318"></a><span class="lineno"> 1318</span>&#160; </div>
-<div class="line"><a name="l01319"></a><span class="lineno"> 1319</span>&#160;    <span class="keyword">static</span> <span class="keyword">const</span> std::set&lt;std::string&gt; constitutive_model_names;</div>
-<div class="line"><a name="l01320"></a><span class="lineno"> 1320</span>&#160;    <span class="keyword">static</span> <span class="keyword">const</span> std::set&lt;std::string&gt; equation_names;</div>
-<div class="line"><a name="l01321"></a><span class="lineno"> 1321</span>&#160;    <span class="keyword">static</span> <span class="keyword">const</span> std::string FSI_FILE;</div>
+<div class="line"><a name="l01307"></a><span class="lineno"> 1307</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;std::string&gt;</a> mesh_file_path;</div>
+<div class="line"><a name="l01308"></a><span class="lineno"> 1308</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;double&gt;</a> mesh_scale_factor;</div>
+<div class="line"><a name="l01309"></a><span class="lineno"> 1309</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;std::string&gt;</a> prestress_file_path;</div>
+<div class="line"><a name="l01310"></a><span class="lineno"> 1310</span>&#160; </div>
+<div class="line"><a name="l01311"></a><span class="lineno"> 1311</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;bool&gt;</a> set_mesh_as_fibers;</div>
+<div class="line"><a name="l01312"></a><span class="lineno"> 1312</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;bool&gt;</a> set_mesh_as_shell;</div>
+<div class="line"><a name="l01313"></a><span class="lineno"> 1313</span>&#160; </div>
+<div class="line"><a name="l01314"></a><span class="lineno"> 1314</span>&#160;    <a class="code" href="class_parameter.html">Parameter&lt;double&gt;</a> quadrature_modifier_TET4;</div>
+<div class="line"><a name="l01315"></a><span class="lineno"> 1315</span>&#160;};</div>
+<div class="line"><a name="l01316"></a><span class="lineno"> 1316</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l01317"></a><span class="lineno"> 1317</span>&#160;<span class="comment">/// @brief The Parameters class stores parameter values read in from a solver input file.</span></div>
+<div class="line"><a name="l01318"></a><span class="lineno"><a class="line" href="class_parameters.html"> 1318</a></span>&#160;<span class="comment"></span><span class="keyword">class </span><a class="code" href="class_parameters.html">Parameters</a> {</div>
+<div class="line"><a name="l01319"></a><span class="lineno"> 1319</span>&#160; </div>
+<div class="line"><a name="l01320"></a><span class="lineno"> 1320</span>&#160;  <span class="keyword">public</span>:</div>
+<div class="line"><a name="l01321"></a><span class="lineno"> 1321</span>&#160;    <a class="code" href="class_parameters.html">Parameters</a>();</div>
 <div class="line"><a name="l01322"></a><span class="lineno"> 1322</span>&#160; </div>
-<div class="line"><a name="l01323"></a><span class="lineno"> 1323</span>&#160;    <span class="keywordtype">void</span> get_logging_levels(<span class="keywordtype">int</span>&amp; verbose, <span class="keywordtype">int</span>&amp; warning, <span class="keywordtype">int</span>&amp; debug);</div>
-<div class="line"><a name="l01324"></a><span class="lineno"> 1324</span>&#160;    <span class="keywordtype">void</span> print_parameters();</div>
-<div class="line"><a name="l01325"></a><span class="lineno"> 1325</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_parameters.html#a9bf5624296006a1f843cf0e7cdf4a9d6">read_xml</a>(std::string file_name);</div>
+<div class="line"><a name="l01323"></a><span class="lineno"> 1323</span>&#160;    <span class="keyword">static</span> <span class="keyword">const</span> std::set&lt;std::string&gt; constitutive_model_names;</div>
+<div class="line"><a name="l01324"></a><span class="lineno"> 1324</span>&#160;    <span class="keyword">static</span> <span class="keyword">const</span> std::set&lt;std::string&gt; equation_names;</div>
+<div class="line"><a name="l01325"></a><span class="lineno"> 1325</span>&#160;    <span class="keyword">static</span> <span class="keyword">const</span> std::string FSI_FILE;</div>
 <div class="line"><a name="l01326"></a><span class="lineno"> 1326</span>&#160; </div>
-<div class="line"><a name="l01327"></a><span class="lineno"> 1327</span>&#160;    <span class="keywordtype">void</span> set_contact_values(tinyxml2::XMLElement* root_element);</div>
-<div class="line"><a name="l01328"></a><span class="lineno"> 1328</span>&#160;    <span class="keywordtype">void</span> set_equation_values(tinyxml2::XMLElement* root_element);</div>
-<div class="line"><a name="l01329"></a><span class="lineno"> 1329</span>&#160;    <span class="keywordtype">void</span> set_mesh_values(tinyxml2::XMLElement* root_element);</div>
-<div class="line"><a name="l01330"></a><span class="lineno"> 1330</span>&#160;    <span class="keywordtype">void</span> set_projection_values(tinyxml2::XMLElement* root_element);</div>
-<div class="line"><a name="l01331"></a><span class="lineno"> 1331</span>&#160; </div>
-<div class="line"><a name="l01332"></a><span class="lineno"> 1332</span>&#160;    <span class="comment">// Objects representing each parameter section of XML file.</span></div>
-<div class="line"><a name="l01333"></a><span class="lineno"> 1333</span>&#160;    <a class="code" href="class_contact_parameters.html">ContactParameters</a> contact_parameters;</div>
-<div class="line"><a name="l01334"></a><span class="lineno"> 1334</span>&#160;    <a class="code" href="class_general_simulation_parameters.html">GeneralSimulationParameters</a> general_simulation_parameters;</div>
-<div class="line"><a name="l01335"></a><span class="lineno"> 1335</span>&#160;    std::vector&lt;MeshParameters*&gt; mesh_parameters;</div>
-<div class="line"><a name="l01336"></a><span class="lineno"> 1336</span>&#160;    std::vector&lt;EquationParameters*&gt; equation_parameters;</div>
-<div class="line"><a name="l01337"></a><span class="lineno"> 1337</span>&#160;    std::vector&lt;ProjectionParameters*&gt; projection_parameters;</div>
-<div class="line"><a name="l01338"></a><span class="lineno"> 1338</span>&#160;};</div>
-<div class="line"><a name="l01339"></a><span class="lineno"> 1339</span>&#160; </div>
-<div class="line"><a name="l01340"></a><span class="lineno"> 1340</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l01341"></a><span class="lineno"> 1341</span>&#160; </div>
+<div class="line"><a name="l01327"></a><span class="lineno"> 1327</span>&#160;    <span class="keywordtype">void</span> get_logging_levels(<span class="keywordtype">int</span>&amp; verbose, <span class="keywordtype">int</span>&amp; warning, <span class="keywordtype">int</span>&amp; debug);</div>
+<div class="line"><a name="l01328"></a><span class="lineno"> 1328</span>&#160;    <span class="keywordtype">void</span> print_parameters();</div>
+<div class="line"><a name="l01329"></a><span class="lineno"> 1329</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_parameters.html#a9bf5624296006a1f843cf0e7cdf4a9d6">read_xml</a>(std::string file_name);</div>
+<div class="line"><a name="l01330"></a><span class="lineno"> 1330</span>&#160; </div>
+<div class="line"><a name="l01331"></a><span class="lineno"> 1331</span>&#160;    <span class="keywordtype">void</span> set_contact_values(tinyxml2::XMLElement* root_element);</div>
+<div class="line"><a name="l01332"></a><span class="lineno"> 1332</span>&#160;    <span class="keywordtype">void</span> set_equation_values(tinyxml2::XMLElement* root_element);</div>
+<div class="line"><a name="l01333"></a><span class="lineno"> 1333</span>&#160;    <span class="keywordtype">void</span> set_mesh_values(tinyxml2::XMLElement* root_element);</div>
+<div class="line"><a name="l01334"></a><span class="lineno"> 1334</span>&#160;    <span class="keywordtype">void</span> set_projection_values(tinyxml2::XMLElement* root_element);</div>
+<div class="line"><a name="l01335"></a><span class="lineno"> 1335</span>&#160; </div>
+<div class="line"><a name="l01336"></a><span class="lineno"> 1336</span>&#160;    <span class="comment">// Objects representing each parameter section of XML file.</span></div>
+<div class="line"><a name="l01337"></a><span class="lineno"> 1337</span>&#160;    <a class="code" href="class_contact_parameters.html">ContactParameters</a> contact_parameters;</div>
+<div class="line"><a name="l01338"></a><span class="lineno"> 1338</span>&#160;    <a class="code" href="class_general_simulation_parameters.html">GeneralSimulationParameters</a> general_simulation_parameters;</div>
+<div class="line"><a name="l01339"></a><span class="lineno"> 1339</span>&#160;    std::vector&lt;MeshParameters*&gt; mesh_parameters;</div>
+<div class="line"><a name="l01340"></a><span class="lineno"> 1340</span>&#160;    std::vector&lt;EquationParameters*&gt; equation_parameters;</div>
+<div class="line"><a name="l01341"></a><span class="lineno"> 1341</span>&#160;    std::vector&lt;ProjectionParameters*&gt; projection_parameters;</div>
+<div class="line"><a name="l01342"></a><span class="lineno"> 1342</span>&#160;};</div>
+<div class="line"><a name="l01343"></a><span class="lineno"> 1343</span>&#160; </div>
+<div class="line"><a name="l01344"></a><span class="lineno"> 1344</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l01345"></a><span class="lineno"> 1345</span>&#160; </div>
 <div class="ttc" id="aclass_body_force_parameters_html"><div class="ttname"><a href="class_body_force_parameters.html">BodyForceParameters</a></div><div class="ttdoc">Body force over a mesh using the &quot;Add_BF&quot; command.</div><div class="ttdef"><b>Definition:</b> Parameters.h:596</div></div>
 <div class="ttc" id="aclass_body_force_parameters_html_ae9cf91e1272da076a3e7fe280f86ac8f"><div class="ttname"><a href="class_body_force_parameters.html#ae9cf91e1272da076a3e7fe280f86ac8f">BodyForceParameters::xml_element_name_</a></div><div class="ttdeci">static const std::string xml_element_name_</div><div class="ttdoc">Define the XML element name for boundary condition parameters.</div><div class="ttdef"><b>Definition:</b> Parameters.h:601</div></div>
 <div class="ttc" id="aclass_boundary_condition_parameters_html"><div class="ttname"><a href="class_boundary_condition_parameters.html">BoundaryConditionParameters</a></div><div class="ttdoc">The BoundaryConditionParameters stores paramaters for various type of boundary conditions under the A...</div><div class="ttdef"><b>Definition:</b> Parameters.h:652</div></div>
@@ -1432,21 +1436,21 @@ $(function() {
 <div class="ttc" id="aclass_e_c_g_leads_parameters_html_adff819c4b07e8f5b7015ea47f35ed466"><div class="ttname"><a href="class_e_c_g_leads_parameters.html#adff819c4b07e8f5b7015ea47f35ed466">ECGLeadsParameters::xml_element_name_</a></div><div class="ttdeci">static const std::string xml_element_name_</div><div class="ttdoc">Define the XML element name for ECG leads parameters.</div><div class="ttdef"><b>Definition:</b> Parameters.h:904</div></div>
 <div class="ttc" id="aclass_equation_parameters_html"><div class="ttname"><a href="class_equation_parameters.html">EquationParameters</a></div><div class="ttdoc">The EquationParameters class stores parameters for the 'Add_equation' XML element used to specify an ...</div><div class="ttdef"><b>Definition:</b> Parameters.h:1103</div></div>
 <div class="ttc" id="aclass_equation_parameters_html_a93c97433990586f6249adc7fa5c11655"><div class="ttname"><a href="class_equation_parameters.html#a93c97433990586f6249adc7fa5c11655">EquationParameters::xml_element_name_</a></div><div class="ttdeci">static const std::string xml_element_name_</div><div class="ttdoc">Define the XML element name for equation parameters.</div><div class="ttdef"><b>Definition:</b> Parameters.h:1107</div></div>
-<div class="ttc" id="aclass_face_parameters_html"><div class="ttname"><a href="class_face_parameters.html">FaceParameters</a></div><div class="ttdoc">The FaceParameters class is used to store parameters for the 'Add_face' XML element.</div><div class="ttdef"><b>Definition:</b> Parameters.h:1232</div></div>
-<div class="ttc" id="aclass_face_parameters_html_a154d2fbee15ca4db7addae9815bd9023"><div class="ttname"><a href="class_face_parameters.html#a154d2fbee15ca4db7addae9815bd9023">FaceParameters::xml_element_name_</a></div><div class="ttdeci">static const std::string xml_element_name_</div><div class="ttdoc">Process parameters for the 'Add_face' XML element.</div><div class="ttdef"><b>Definition:</b> Parameters.h:1239</div></div>
+<div class="ttc" id="aclass_face_parameters_html"><div class="ttname"><a href="class_face_parameters.html">FaceParameters</a></div><div class="ttdoc">The FaceParameters class is used to store parameters for the 'Add_face' XML element.</div><div class="ttdef"><b>Definition:</b> Parameters.h:1236</div></div>
+<div class="ttc" id="aclass_face_parameters_html_a154d2fbee15ca4db7addae9815bd9023"><div class="ttname"><a href="class_face_parameters.html#a154d2fbee15ca4db7addae9815bd9023">FaceParameters::xml_element_name_</a></div><div class="ttdeci">static const std::string xml_element_name_</div><div class="ttdoc">Process parameters for the 'Add_face' XML element.</div><div class="ttdef"><b>Definition:</b> Parameters.h:1243</div></div>
 <div class="ttc" id="aclass_fiber_reinforcement_stress_parameters_html"><div class="ttname"><a href="class_fiber_reinforcement_stress_parameters.html">FiberReinforcementStressParameters</a></div><div class="ttdoc">The FiberReinforcementStressParameters class stores fiber reinforcement stress parameters for the 'Fi...</div><div class="ttdef"><b>Definition:</b> Parameters.h:928</div></div>
 <div class="ttc" id="aclass_fiber_reinforcement_stress_parameters_html_a70b810eac9290fcbe2892185c6b6decc"><div class="ttname"><a href="class_fiber_reinforcement_stress_parameters.html#a70b810eac9290fcbe2892185c6b6decc">FiberReinforcementStressParameters::xml_element_name_</a></div><div class="ttdeci">static const std::string xml_element_name_</div><div class="ttdoc">Define the XML element name for fiber reinforcement stress parameters.</div><div class="ttdef"><b>Definition:</b> Parameters.h:932</div></div>
 <div class="ttc" id="aclass_general_simulation_parameters_html"><div class="ttname"><a href="class_general_simulation_parameters.html">GeneralSimulationParameters</a></div><div class="ttdoc">The GeneralSimulationParameters class stores paramaters for the 'GeneralSimulationParameters' XML ele...</div><div class="ttdef"><b>Definition:</b> Parameters.h:1190</div></div>
 <div class="ttc" id="aclass_general_simulation_parameters_html_aa7178082cc0e1713920afdcb42727b78"><div class="ttname"><a href="class_general_simulation_parameters.html#aa7178082cc0e1713920afdcb42727b78">GeneralSimulationParameters::GeneralSimulationParameters</a></div><div class="ttdeci">GeneralSimulationParameters()</div><div class="ttdoc">Process paramaters for the 'GeneralSimulationParameters' XML element.</div><div class="ttdef"><b>Definition:</b> Parameters.cpp:1765</div></div>
-<div class="ttc" id="aclass_general_simulation_parameters_html_ab5ca4a2da0e1277afff486c12a95fa20"><div class="ttname"><a href="class_general_simulation_parameters.html#ab5ca4a2da0e1277afff486c12a95fa20">GeneralSimulationParameters::set_values</a></div><div class="ttdeci">void set_values(tinyxml2::XMLElement *xml_element)</div><div class="ttdoc">Set general parameters values from XML.</div><div class="ttdef"><b>Definition:</b> Parameters.cpp:1825</div></div>
+<div class="ttc" id="aclass_general_simulation_parameters_html_ab5ca4a2da0e1277afff486c12a95fa20"><div class="ttname"><a href="class_general_simulation_parameters.html#ab5ca4a2da0e1277afff486c12a95fa20">GeneralSimulationParameters::set_values</a></div><div class="ttdeci">void set_values(tinyxml2::XMLElement *xml_element)</div><div class="ttdoc">Set general parameters values from XML.</div><div class="ttdef"><b>Definition:</b> Parameters.cpp:1828</div></div>
 <div class="ttc" id="aclass_guccione_parameters_html"><div class="ttname"><a href="class_guccione_parameters.html">GuccioneParameters</a></div><div class="ttdef"><b>Definition:</b> Parameters.h:424</div></div>
 <div class="ttc" id="aclass_holzapfel_gasser_ogden_parameters_html"><div class="ttname"><a href="class_holzapfel_gasser_ogden_parameters.html">HolzapfelGasserOgdenParameters</a></div><div class="ttdef"><b>Definition:</b> Parameters.h:462</div></div>
 <div class="ttc" id="aclass_holzapfel_parameters_html"><div class="ttname"><a href="class_holzapfel_parameters.html">HolzapfelParameters</a></div><div class="ttdef"><b>Definition:</b> Parameters.h:441</div></div>
 <div class="ttc" id="aclass_lee_sacks_parameters_html"><div class="ttname"><a href="class_lee_sacks_parameters.html">LeeSacksParameters</a></div><div class="ttdef"><b>Definition:</b> Parameters.h:409</div></div>
 <div class="ttc" id="aclass_linear_solver_parameters_html"><div class="ttname"><a href="class_linear_solver_parameters.html">LinearSolverParameters</a></div><div class="ttdoc">The LinearSolverParameters class stores parameters for the 'LS' XML element.</div><div class="ttdef"><b>Definition:</b> Parameters.h:839</div></div>
 <div class="ttc" id="aclass_linear_solver_parameters_html_a4b30b70fdd33be6333703a10d283013f"><div class="ttname"><a href="class_linear_solver_parameters.html#a4b30b70fdd33be6333703a10d283013f">LinearSolverParameters::xml_element_name_</a></div><div class="ttdeci">static const std::string xml_element_name_</div><div class="ttdoc">Define the XML element name for equation output parameters.</div><div class="ttdef"><b>Definition:</b> Parameters.h:846</div></div>
-<div class="ttc" id="aclass_mesh_parameters_html"><div class="ttname"><a href="class_mesh_parameters.html">MeshParameters</a></div><div class="ttdoc">The MeshParameters class is used to store paramaters for the 'Add_mesh' XML element.</div><div class="ttdef"><b>Definition:</b> Parameters.h:1272</div></div>
-<div class="ttc" id="aclass_mesh_parameters_html_a442461e2c1aaee3679e39b2bf5abc302"><div class="ttname"><a href="class_mesh_parameters.html#a442461e2c1aaee3679e39b2bf5abc302">MeshParameters::xml_element_name_</a></div><div class="ttdeci">static const std::string xml_element_name_</div><div class="ttdoc">Define the XML element name for mesh parameters.</div><div class="ttdef"><b>Definition:</b> Parameters.h:1276</div></div>
+<div class="ttc" id="aclass_mesh_parameters_html"><div class="ttname"><a href="class_mesh_parameters.html">MeshParameters</a></div><div class="ttdoc">The MeshParameters class is used to store paramaters for the 'Add_mesh' XML element.</div><div class="ttdef"><b>Definition:</b> Parameters.h:1276</div></div>
+<div class="ttc" id="aclass_mesh_parameters_html_a442461e2c1aaee3679e39b2bf5abc302"><div class="ttname"><a href="class_mesh_parameters.html#a442461e2c1aaee3679e39b2bf5abc302">MeshParameters::xml_element_name_</a></div><div class="ttdeci">static const std::string xml_element_name_</div><div class="ttdoc">Define the XML element name for mesh parameters.</div><div class="ttdef"><b>Definition:</b> Parameters.h:1280</div></div>
 <div class="ttc" id="aclass_mooney_rivlin_parameters_html"><div class="ttname"><a href="class_mooney_rivlin_parameters.html">MooneyRivlinParameters</a></div><div class="ttdef"><b>Definition:</b> Parameters.h:477</div></div>
 <div class="ttc" id="aclass_neo_hookean_parameters_html"><div class="ttname"><a href="class_neo_hookean_parameters.html">NeoHookeanParameters</a></div><div class="ttdef"><b>Definition:</b> Parameters.h:489</div></div>
 <div class="ttc" id="aclass_neo_hookean_parameters_html_a831df83a337ae7178df10f4bdae54a3b"><div class="ttname"><a href="class_neo_hookean_parameters.html#a831df83a337ae7178df10f4bdae54a3b">NeoHookeanParameters::NeoHookeanParameters</a></div><div class="ttdeci">NeoHookeanParameters()</div><div class="ttdoc">There are no parameters associated with a Neohookean model.</div><div class="ttdef"><b>Definition:</b> Parameters.cpp:697</div></div>
@@ -1465,7 +1469,7 @@ $(function() {
 <div class="ttc" id="aclass_parameter_lists_html_a6131758a550b2e63f34e7554933e27f8"><div class="ttname"><a href="class_parameter_lists.html#a6131758a550b2e63f34e7554933e27f8">ParameterLists::params_map</a></div><div class="ttdeci">std::map&lt; std::string, std::variant&lt; Parameter&lt; bool &gt; *, Parameter&lt; double &gt; *, Parameter&lt; int &gt; *, Parameter&lt; std::string &gt; *, VectorParameter&lt; double &gt; *, VectorParameter&lt; int &gt; *, VectorParameter&lt; std::string &gt; * &gt; &gt; params_map</div><div class="ttdoc">Map used for storing parameters by name / Parameter template union.</div><div class="ttdef"><b>Definition:</b> Parameters.h:396</div></div>
 <div class="ttc" id="aclass_parameter_lists_html_a64117cbf49c61fd89082a8fa0f3ecfa6"><div class="ttname"><a href="class_parameter_lists.html#a64117cbf49c61fd89082a8fa0f3ecfa6">ParameterLists::get_parameter_list</a></div><div class="ttdeci">std::map&lt; std::string, std::string &gt; get_parameter_list()</div><div class="ttdoc">Get the defined parameters as a map of strings.</div><div class="ttdef"><b>Definition:</b> Parameters.h:368</div></div>
 <div class="ttc" id="aclass_parameter_lists_html_ab2f5c08258f5805a7f2f9c50c8939fe4"><div class="ttname"><a href="class_parameter_lists.html#ab2f5c08258f5805a7f2f9c50c8939fe4">ParameterLists::print_parameter_list</a></div><div class="ttdeci">void print_parameter_list()</div><div class="ttdoc">Print the parameters.</div><div class="ttdef"><b>Definition:</b> Parameters.h:382</div></div>
-<div class="ttc" id="aclass_parameters_html"><div class="ttname"><a href="class_parameters.html">Parameters</a></div><div class="ttdoc">The Parameters class stores parameter values read in from a solver input file.</div><div class="ttdef"><b>Definition:</b> Parameters.h:1314</div></div>
+<div class="ttc" id="aclass_parameters_html"><div class="ttname"><a href="class_parameters.html">Parameters</a></div><div class="ttdoc">The Parameters class stores parameter values read in from a solver input file.</div><div class="ttdef"><b>Definition:</b> Parameters.h:1318</div></div>
 <div class="ttc" id="aclass_parameters_html_a9bf5624296006a1f843cf0e7cdf4a9d6"><div class="ttname"><a href="class_parameters.html#a9bf5624296006a1f843cf0e7cdf4a9d6">Parameters::read_xml</a></div><div class="ttdeci">void read_xml(std::string file_name)</div><div class="ttdoc">Set the simulation parameter values given in an XML format file.</div><div class="ttdef"><b>Definition:</b> Parameters.cpp:140</div></div>
 <div class="ttc" id="aclass_projection_parameters_html"><div class="ttname"><a href="class_projection_parameters.html">ProjectionParameters</a></div><div class="ttdoc">The ProjectionParameters class stores parameters for the 'Add_projection' XML element used for fluid-...</div><div class="ttdef"><b>Definition:</b> Parameters.h:743</div></div>
 <div class="ttc" id="aclass_projection_parameters_html_a23cfd836f5f1bc3587bae8fd9d7f8ea9"><div class="ttname"><a href="class_projection_parameters.html#a23cfd836f5f1bc3587bae8fd9d7f8ea9">ProjectionParameters::xml_element_name_</a></div><div class="ttdeci">static const std::string xml_element_name_</div><div class="ttdoc">Define the XML element name for mesh parameters.</div><div class="ttdef"><b>Definition:</b> Parameters.h:749</div></div>

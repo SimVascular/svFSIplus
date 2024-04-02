@@ -67,25 +67,25 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 <div class="toc"><h3>Table of Contents</h3>
-<ul><ul><li class="level2"><a href="#autotoc_md99">Prerequisites</a><ul><li class="level3"><a href="#autotoc_md100">Build svFSI</a></li>
-<li class="level3"><a href="#autotoc_md101">Install Git LFS</a></li>
+<ul><ul><li class="level2"><a href="#autotoc_md101">Prerequisites</a><ul><li class="level3"><a href="#autotoc_md102">Build svFSI</a></li>
+<li class="level3"><a href="#autotoc_md103">Install Git LFS</a></li>
 </ul>
 </li>
-<li class="level2"><a href="#autotoc_md102">Running tests with pytest</a></li>
-<li class="level2"><a href="#autotoc_md103">Code coverage</a></li>
-<li class="level2"><a href="#autotoc_md104">Create a new test</a></li>
+<li class="level2"><a href="#autotoc_md104">Running tests with pytest</a></li>
+<li class="level2"><a href="#autotoc_md105">Code coverage</a></li>
+<li class="level2"><a href="#autotoc_md106">Create a new test</a></li>
 </ul>
 </ul>
 </div>
 <div class="textblock"><p><a href="https://en.wikipedia.org/wiki/Integration_testing">Integration testing</a> is an essential part of software development. It is performed when integrating code changes into the main development branch to verify that the code works as expected. Below is a quick guide on how to run and add integration tests for <code>svFSI</code>.</p>
-<h2><a class="anchor" id="autotoc_md99"></a>
+<h2><a class="anchor" id="autotoc_md101"></a>
 Prerequisites</h2>
 <p>There are two things you need to do before you can run a test case: Build <code>svFSI</code> and install <code>Git LFS</code> to download the test cases.</p>
-<h3><a class="anchor" id="autotoc_md100"></a>
+<h3><a class="anchor" id="autotoc_md102"></a>
 Build svFSI</h3>
 <p>Follow the build instructions outlined <a href="https://simvascular.github.io/svFSIplus/index.html#autotoc_md52">here</a>. Importantly, to automatically run test cases with <code>pytest</code> (see below), you need to build <code>svFSI</code> in the folder </p><div class="fragment"><div class="line">./build</div>
 </div><!-- fragment --><p> in the repository root.</p>
-<h3><a class="anchor" id="autotoc_md101"></a>
+<h3><a class="anchor" id="autotoc_md103"></a>
 Install Git LFS</h3>
 <p>You need to install <code>Git LFS</code> (<a href="https://git-lfs.com/"><em>Large File Storage</em></a>) to run any test, which we use to track large files. Tracking large files with <code>Git</code> can significantly add to the repository size. These large files include meshes and boundary conditions for all test cases. They are stored on <code>GitHub</code>, but the files themselves just contain a hash or Object ID that is tracked with <code>Git</code>. All file extensions currently tracked with <code>Git LFS</code> are listed under <a href="../.gitattributes">in this file</a>.</p>
 <p>When using <code>Git LFS</code> for the first time, you need to follow these simple steps:</p><ol type="1">
@@ -93,7 +93,7 @@ Install Git LFS</h3>
 <li>Initialize in your <code>svFSIplus</code> repository with ``` git lfs install ```</li>
 <li>Download all large files with ``` git lfs pull ``<code> After performing these steps once, you never need to worry about Git LFS again. All large files are handled automatically during all Git operations, like</code>push<code>,</code>pull<code>, or</code>commit`.</li>
 </ol>
-<h2><a class="anchor" id="autotoc_md102"></a>
+<h2><a class="anchor" id="autotoc_md104"></a>
 Running tests with pytest</h2>
 <p>You can run an individual test by navigating to the <code>./tests/cases/&lt;physics&gt;/&lt;test&gt;</code> folder you want to run and execute <code>svFSIplus</code> with the <code>svFSI.xml</code> input file as an argument. A more elegant way, e.g., to run a whole group of tests, is using <a href="https://docs.pytest.org/"><code>pytest</code></a>. By default, it will run all tests defined in the <code>test_*.py</code> files in the <a href="https://github.com/SimVascular/svFSIplus/tree/main/tests">./tests</a> folder. Tests and input files in <a href="https://github.com/SimVascular/svFSIplus/tree/main/tests/cases">./tests/cases</a> are grouped by physics type, e.g., <a href="https://github.com/SimVascular/svFSIplus/tree/main/tests/cases/struct">struct</a>, <a href="https://github.com/SimVascular/svFSIplus/tree/main/tests/cases/fluid">fluid</a>, or <a href="https://github.com/SimVascular/svFSIplus/tree/main/tests/cases/fsi">fsi</a> (using the naming convention from <code>EquationType</code>). Here are a couple of useful <code>Pytest</code> commands:</p>
 <ul>
@@ -102,10 +102,10 @@ Running tests with pytest</h2>
 <li>Print the simulation output of all tests: ``` pytest -rP ```</li>
 </ul>
 <p>For more options, simply call <code>pytest -h</code>.</p>
-<h2><a class="anchor" id="autotoc_md103"></a>
+<h2><a class="anchor" id="autotoc_md105"></a>
 Code coverage</h2>
 <p>We expect that new code is fully covered with at least one integration test. We also strive to increase our coverage of existing code. You can have a look at our current code coverage <a href="https://codecov.io/github/SimVascular/svFSIplus">with Codecov</a>. It analyzes every pull request and checks the change of coverage (ideally increasing) and if any non-covered lines have been modified. We avoid modifying untested lines of codeas there is no guarante that the code will still do the same thing as before.</p>
-<h2><a class="anchor" id="autotoc_md104"></a>
+<h2><a class="anchor" id="autotoc_md106"></a>
 Create a new test</h2>
 <p>Here are some steps you can follow to create a new test for the code you implemented. This will satisfy the coverage requirement (see above) and help other people who want to run your code. A test case is a great way to show what your code can do! Ideally, you do this early in your development. Then you can keep running your test case as you are refractoring and optimizing your code.</p>
 <ol type="1">

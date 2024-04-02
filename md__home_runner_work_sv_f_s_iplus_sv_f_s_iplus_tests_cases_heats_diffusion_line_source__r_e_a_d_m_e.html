@@ -70,7 +70,7 @@ $(function() {
 <p align="center"></p>
 <p><img src="./plot-temp-flux.png" alt="" width="1000" class="inline"/> </p>
 <p>The input file <code>svFSI.inp</code> follows the master input file <a href="./svFSI_master.inp"><code>svFSI_master.inp</code></a> as a template. Some specific input options are discussed below:</p>
-<h1><a class="anchor" id="autotoc_md92"></a>
+<h1><a class="anchor" id="autotoc_md94"></a>
 Steady Dirichlet BC</h1>
 <p>If a line source with constant temperature is specified on the left boundary, the following directives are used</p>
 <div class="fragment"><div class="line">Add BC: left {</div>
@@ -80,7 +80,7 @@ Steady Dirichlet BC</h1>
 <div class="line">   Zero out perimeter: f</div>
 <div class="line">}</div>
 </div><!-- fragment --><p>Here, <code>Zero out perimeter</code> is only effective when used alongside Dirichlet BC. When set to <code>true</code>, this setting will enforce the temperature on top-left and bottom-left corners to be zero.</p>
-<h1><a class="anchor" id="autotoc_md93"></a>
+<h1><a class="anchor" id="autotoc_md95"></a>
 Unsteady Dirichlet BC</h1>
 <p>In some scenarios, apply a large Dirichlet BC value at first time step with cause stability or convergence issues in the software. It is sometimes recommended to gradually ramp up the BC value to the desired quantity over a short period of time. To achieve this, the following directives are used in the input file:</p>
 <div class="fragment"><div class="line">Add BC: left {</div>
