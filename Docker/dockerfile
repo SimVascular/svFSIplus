@@ -507,21 +507,29 @@ RUN apt-get update && \
 # The following line creates a symbolic link python->python3 
 RUN ln -s /usr/bin/python3 /usr/bin/python
 
-RUN ls /blas/lib/
-
 # ================================================================================
 # Download and install
 RUN git clone -b release https://gitlab.com/petsc/petsc.git 
 WORKDIR /petsc
 
+# Set permission for luser
+RUN chown -R luser:luser /petsc
+RUN mkdir ${PETSC_INSTALL_DIR} && \
+    chown -R ${PETSC_INSTALL_DIR}
+# Switch user (petsc should be installed by non-root)
+USER luser
+
 # Install petsc library in $PETSC_INSTALL_DIR 
 # mpi compilers must be in the $PATH
 # Libraries path must be set explicitly
-RUN ./configure --prefix=$PETSC_INSTALL_DIR --with-blas-lib=/blas/lib/libblas.a && \
+RUN ./configure --prefix=$PETSC_INSTALL_DIR \
+--with-lapack-lib=/lapack/liblapack.a \
+--with-blas-lib=/blas/lib/libblas.a && \
     make PETSC_DIR=/petsc PETSC_ARCH=arch-linux-c-debug all && \
     make check && \
     make install
 
 # Cleanup
+USER root
 WORKDIR /
 RUN rm -rf /petsc
