@@ -515,7 +515,8 @@ WORKDIR /petsc
 # Set permission for luser
 RUN chown -R luser:luser /petsc
 RUN mkdir ${PETSC_INSTALL_DIR} && \
-    chown -R ${PETSC_INSTALL_DIR}
+    chown -R luser:luser ${PETSC_INSTALL_DIR}
+
 # Switch user (petsc should be installed by non-root)
 USER luser
 
