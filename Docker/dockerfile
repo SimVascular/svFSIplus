@@ -273,7 +273,7 @@ ENV PATH="/cmake/bin:/openmpi:${PATH}"
 # Any debian-based command will not prompt user-input
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Setting hdf5, szip, zlib installation directories
+# Setting hdf5 installation directories
 ARG HDF5_INSTALL_DIR=/hdf5
 
 # Create new user
@@ -303,21 +303,6 @@ RUN mkdir ${HDF5_INSTALL_DIR} && \
 
 USER luser
 RUN git clone https://github.com/HDFGroup/hdf5.git 
-
-# Downloading and installing zlib and szip
-#WORKDIR /hdf5build/extlib
-#RUN wget https://github.com/madler/zlib/releases/download/v1.3.1/zlib-1.3.1.tar.gz 
-#    tar -xzvf zlib-1.3.1.tar.gz && \
-#    rm zlib-1.3.1.tar.gz 
-# Building zlib
-# WORKDIR /hdf5build/extlib/zlib-1.3.1
-# RUN ./configure && \
-#    make test && \
-#    make install prefix=${ZLIB_INSTALL_DIR}
-#-DZLIB_TGZ_NAME:STRING="zlib-1.3.1.tar.gz" \
-#-DHDF5_ALLOW_EXTERNAL_SUPPORT:STRING="TGZ" \
-#-DTGZPATH:STRING="/hdf5build/extlib" \
-#-DZLIB_USE_LOCALCONTENT:BOOL=ON \
 
 # Build HDF5
 WORKDIR /hdf5build/build
@@ -482,7 +467,7 @@ COPY --from=buildblas /blas /blas
 COPY --from=buildlapack /tmp/lapack /lapack
 COPY --from=buildhypre /hypre-install /hypre/
 
-ENV PATH="/cmake/bin:/openmpi/bin:${PATH}"
+ENV PATH="/cmake/bin:${PATH}"
 
 # Any debian-based command will not prompt user-input
 ENV DEBIAN_FRONTEND=noninteractive
@@ -510,29 +495,45 @@ RUN ln -s /usr/bin/python3 /usr/bin/python
 # ================================================================================
 # Download and install
 RUN git clone -b release https://gitlab.com/petsc/petsc.git 
-WORKDIR /petsc
 
 # Set permission for luser
-RUN chown -R luser:luser /petsc && \
-    chown -R luser:luser /usr/
-    
+RUN chown -R luser:luser /petsc
+
 RUN mkdir ${PETSC_INSTALL_DIR} && \
     chown -R luser:luser ${PETSC_INSTALL_DIR}
 
 # Switch user (petsc should be installed by non-root)
 USER luser
 
+WORKDIR /petsc
+
 # Install petsc library in $PETSC_INSTALL_DIR 
 # mpi compilers must be in the $PATH
 # Libraries path must be set explicitly
 RUN ./configure --prefix=$PETSC_INSTALL_DIR \
+--with-debugging=0 \
+--download-suitesparse \
+--download-mumps \
+--download-superlu \
+--download-superlu_dist \
+--download-ml \
+--download-eigen \
+--download-hypre \
+--download-scalapack \
+--download-metis \
+--download-parmetis \
+--download-openmpi \
+COPTFLAGS='-g -O' \
+FOPTFLAGS='-g -O' \
+CXXOPTFLAGS='-g -O' \
 --with-lapack-lib=/lapack/liblapack.a \
 --with-blas-lib=/blas/lib/libblas.a && \
-    make PETSC_DIR=/petsc PETSC_ARCH=arch-linux-c-debug all && \
-    make check && \
-    make install
+make PETSC_DIR=/petsc PETSC_ARCH=arch-linux-c-opt all && \
+make PETSC_DIR=/petsc PETSC_ARCH=arch-linux-c-opt install && \
+make PETSC_DIR=$PETSC_INSTALL_DIR PETSC_ARCH="" check
 
 # Cleanup
 USER root
 WORKDIR /
 RUN rm -rf /petsc
+
