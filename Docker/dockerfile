@@ -2,7 +2,7 @@
 # CMAKE
 # ================================================================================
 # Use a base image for building tools and dependencise
-FROM ubuntu:latest AS buildcmake
+FROM ubuntu:22.04 AS buildcmake
 
 # Any debian-based command will not prompt user-input
 ENV DEBIAN_FRONTEND=noninteractive
@@ -41,7 +41,7 @@ RUN rm -rf /cmake-${CMAKE_VERSION}
 # OPENMPI
 # ================================================================================
 # Use a base image for building tools and dependencise
-FROM ubuntu:latest AS buildompi
+FROM ubuntu:22.04 AS buildompi
 
 # Copy cmake binary from buildcmake 
 COPY --from=buildcmake /cmake /cmake
@@ -85,7 +85,7 @@ RUN rm -rf /openmpi-${OMPI_VERSION}
 # VTK
 # ================================================================================
 # Use a base image for building tools and dependencise
-FROM ubuntu:latest AS buildvtk
+FROM ubuntu:22.04 AS buildvtk
 
 # Copy cmake binary from buildcmake and set ENV
 COPY --from=buildcmake /cmake /cmake 
@@ -132,7 +132,7 @@ RUN rm -rf /VTK-${VTK_VERSION} build-vtk
 # BOOST
 # ================================================================================
 # Use a base image for building tools and dependencise
-FROM ubuntu:latest AS buildboost
+FROM ubuntu:22.04 AS buildboost
 
 # Copy cmake binary from buildcmake and set ENV
 COPY --from=buildcmake /cmake /cmake 
@@ -176,7 +176,7 @@ RUN rm -rf /boost_${BOOST_VERSION}
 # LAPACK
 # ================================================================================
 # Use a base image for building tools and dependencise
-FROM ubuntu:latest AS buildlapack
+FROM ubuntu:22.04 AS buildlapack
 
 # Copy cmake binary from buildcmake and set ENV
 COPY --from=buildcmake /cmake /cmake 
@@ -216,7 +216,7 @@ RUN rm -rf /build /lapack
 # BLAS
 # ================================================================================
 # Use a base image for building tools and dependencise
-FROM ubuntu:latest AS buildblas
+FROM ubuntu:22.04 AS buildblas
 
 # Copy cmake binary from buildcmake and set ENV
 COPY --from=buildcmake /cmake /cmake 
@@ -262,7 +262,7 @@ RUN rm -rf /BLAS-${BLAS_VERSION} /build
 # HDF5
 # ================================================================================
 # Use a base image for building tools and dependencise
-FROM ubuntu:latest AS buildhdf5
+FROM ubuntu:22.04 AS buildhdf5
 
 # Copy cmake binary from buildcmake and set ENV
 COPY --from=buildcmake /cmake /cmake
@@ -326,7 +326,7 @@ RUN rm -rf /hdf5build
 # ================================================================================
 
 # Use a base image for building tools and dependencise
-FROM ubuntu:latest AS buildhypre
+FROM ubuntu:22.04 AS buildhypre
 
 # Copy cmake binary from buildcmake and set ENV
 COPY --from=buildcmake /cmake /cmake
@@ -372,7 +372,7 @@ RUN rm -rf /hypre
 # ================================================================================
 
 # Use a base image for building tools and dependencise
-FROM ubuntu:latest AS buildtrilinos
+FROM ubuntu:22.04 AS buildtrilinos
 
 # Copy cmake binary from buildcmake and set ENV
 COPY --from=buildcmake /cmake /cmake
@@ -456,7 +456,7 @@ RUN rm -rf Trilinos
 # ================================================================================
 
 # Use a base image for building tools and dependencise
-FROM ubuntu:latest AS buildpetsc
+FROM ubuntu:22.04 AS buildpetsc
 
 # Copy cmake binary from buildcmake and set ENV
 COPY --from=buildcmake /cmake /cmake
@@ -536,4 +536,24 @@ make PETSC_DIR=$PETSC_INSTALL_DIR PETSC_ARCH="" check
 USER root
 WORKDIR /
 RUN rm -rf /petsc
+
+
+# ================================================================================
+# FINAL IMAGE
+# ================================================================================
+
+# Use a base image for building tools and dependencise
+FROM ubuntu:22.04 AS final
+
+# Copy cmake binary from buildcmake and set ENV
+COPY --from=buildcmake /cmake /cmake
+COPY --from=buildompi /openmpi /openmpi
+COPY --from=buildvtk /vtk /vtk
+COPY --from=buildboost /boost /boost
+COPY --from=buildhdf5 /hdf5 /hdf5
+COPY --from=buildblas /blas /blas
+COPY --from=buildlapack /tmp/lapack /lapack
+COPY --from=buildhypre /hypre-install /hypre/
+COPY --from=buildtrilinos /trilinos /trilinos
+COPY --from=buildpetsc /petsc-install /petsc
 
