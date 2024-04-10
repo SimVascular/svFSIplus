@@ -522,6 +522,7 @@ RUN ./configure --prefix=$PETSC_INSTALL_DIR \
 --download-ml \
 --download-eigen \
 --download-hypre \
+--with-lapack-lib=/lapack/liblapack.a \
 --with-blas-lib=/blas/lib/libblas.so \
 --download-scalapack \
 --download-metis \
