@@ -560,7 +560,7 @@ RUN apt-get update && \
     build-essential wget git \
     python3 gfortran default-jdk default-jre \
     libglu1-mesa-dev freeglut3-dev mesa-common-dev \ 
-    openssl libssl-dev zlib1g-dev libicu-dev && \
+    openssl libssl-dev zlib1g-dev libicu-dev libglvnd-dev && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
