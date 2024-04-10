@@ -208,7 +208,7 @@ RUN apt-get update && \
 # Download, extract, install
 RUN git clone https://github.com/Reference-LAPACK/lapack.git
 WORKDIR /build
-RUN cmake -DCMAKE_INSTALL_LIBDIR=${LAPACK_INSTALL_DIR} ../lapack && \
+RUN cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_LIBDIR=${LAPACK_INSTALL_DIR} ../lapack && \
     cmake --build . -j6 --target install
 
 # Cleanup
@@ -522,7 +522,7 @@ RUN ./configure --prefix=$PETSC_INSTALL_DIR \
 --download-ml \
 --download-eigen \
 --download-hypre \
---with-lapack-lib=/lapack/liblapack.a \
+--with-lapack-lib=/lapack/liblapack.so \
 --with-blas-lib=/blas/lib/libblas.so \
 --download-scalapack \
 --download-metis \
