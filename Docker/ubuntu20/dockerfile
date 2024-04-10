@@ -253,7 +253,7 @@ RUN wget http://www.netlib.org/blas/blas-${BLAS_VERSION}.tgz && \
     rm blas-${BLAS_VERSION}.tgz
 
 WORKDIR /build
-RUN cmake -DCMAKE_INSTALL_PREFIX=${BLAS_INSTALL_DIR} ../BLAS-${BLAS_VERSION} && \
+RUN cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=${BLAS_INSTALL_DIR} ../BLAS-${BLAS_VERSION} && \
     make && \
     make install 
 
@@ -522,18 +522,20 @@ RUN ./configure --prefix=$PETSC_INSTALL_DIR \
 --download-ml \
 --download-eigen \
 --download-hypre \
+--with-blas-lib=/blas/lib/libblas.so && \
 --download-scalapack \
 --download-metis \
 --download-parmetis \
 --download-openmpi \
 COPTFLAGS='-g -O' \
 FOPTFLAGS='-g -O' \
-CXXOPTFLAGS='-g -O' \
---with-lapack-lib=/lapack/liblapack.a \
---with-blas-lib=/blas/lib/libblas.a && \
+CXXOPTFLAGS='-g -O' && \
 make PETSC_DIR=/petsc PETSC_ARCH=arch-linux-c-opt all && \
 make PETSC_DIR=/petsc PETSC_ARCH=arch-linux-c-opt install && \
 make PETSC_DIR=$PETSC_INSTALL_DIR PETSC_ARCH="" check
+
+#--with-lapack-lib=/lapack/liblapack.a \
+#--with-blas-lib=/blas/lib/libblas.a && \
 
 # Cleanup
 USER root
