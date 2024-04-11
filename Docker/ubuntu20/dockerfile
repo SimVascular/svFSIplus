@@ -423,7 +423,7 @@ RUN cmake \
 -DBoost_LIBRARY_DIRS=/boost/lib \
 -DBoost_INCLUDE_DIRS=/boost/include \
 -DTPL_ENABLE_BLAS=ON \
--DBLAS_LIBRARY_DIRS=/blas/lib \
+-DBLAS_LIBRARY_DIRS=/lapack \
 -DTPL_ENABLE_HDF5=ON \
 -DHDF5_LIBRARY_DIRS=/hdf5/lib \
 -DHDF5_INCLUDE_DIRS=/hdf5/include \ 
@@ -522,8 +522,8 @@ RUN ./configure --prefix=$PETSC_INSTALL_DIR \
 --download-ml \
 --download-eigen \
 --download-hypre \
+--with-blas-lib=/lapack/libblas.so \
 --with-lapack-lib=/lapack/liblapack.so \
---with-blas-lib=/blas/lib/libblas.so \
 --download-scalapack \
 --download-metis \
 --download-parmetis \
