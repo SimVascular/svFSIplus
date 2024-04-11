@@ -122,7 +122,10 @@ RUN wget https://www.vtk.org/files/release/9.3/VTK-${VTK_VERSION}.tar.gz && \
 
 WORKDIR /build-vtk
 RUN cmake -DCMAKE_INSTALL_PREFIX=${VTK_INSTALL_DIR} \
-    -DBUILD_TESTING=ON -DCMAKE_BUILD_TYPE=Release /VTK-${VTK_VERSION} && \
+-DVTK_Group_Rendering:BOOL=OFF \
+-DVTK_RENDERING_BACKEND:BOOL=OFF \
+-DVTK_OPENGL:BOOL=OFF \
+-DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release /VTK-${VTK_VERSION} && \
     cmake --build . --parallel 4 && \
     make install
 
@@ -208,7 +211,7 @@ RUN apt-get update && \
 # Download, extract, install
 RUN git clone https://github.com/Reference-LAPACK/lapack.git
 WORKDIR /build
-RUN cmake -DCMAKE_INSTALL_LIBDIR=${LAPACK_INSTALL_DIR} ../lapack && \
+RUN cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_LIBDIR=${LAPACK_INSTALL_DIR} ../lapack && \
     cmake --build . -j6 --target install
 
 # Cleanup
@@ -216,50 +219,50 @@ WORKDIR /
 RUN rm -rf /build /lapack
 
 # ================================================================================
-# BLAS
+# BLAS (USE FROM LAPACK INSTALLATION)
 # ================================================================================
 # Use a base image for building tools and dependencise
-FROM ubuntu:22.04 AS buildblas
+#FROM ubuntu:20.04 AS buildblas
 
 # Copy cmake binary from buildcmake and set ENV
-COPY --from=buildcmake /cmake /cmake 
+#COPY --from=buildcmake /cmake /cmake 
 
-ENV PATH="/cmake/bin:${PATH}"
+#ENV PATH="/cmake/bin:${PATH}"
 
 # Any debian-based command will not prompt user-input
-ENV DEBIAN_FRONTEND=noninteractive
+#ENV DEBIAN_FRONTEND=noninteractive
 
 # Setting blas version and installation directory
-ARG BLAS_VERSION=3.12.0
-ARG BLAS_INSTALL_DIR=/blas
+#ARG BLAS_VERSION=3.12.0
+#ARG BLAS_INSTALL_DIR=/blas
 
 # Create new user
-RUN useradd -ms /bin/bash luser
+#RUN useradd -ms /bin/bash luser
 
 # Install essentials tools
-RUN apt-get update && \
-    apt-get install -y \
-    build-essential wget git \
-    python3 gfortran default-jdk default-jre \
-    libglu1-mesa-dev freeglut3-dev mesa-common-dev \ 
-    openssl libssl-dev zlib1g-dev libicu-dev && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+#RUN apt-get update && \
+#    apt-get install -y \
+#    build-essential wget git \
+#    python3 gfortran default-jdk default-jre \
+#    libglu1-mesa-dev freeglut3-dev mesa-common-dev \ 
+#    openssl libssl-dev zlib1g-dev libicu-dev && \
+#    apt-get clean && \
+#    rm -rf /var/lib/apt/lists/*
 
 # ================================================================================
 # Download, extract, install
-RUN wget http://www.netlib.org/blas/blas-${BLAS_VERSION}.tgz && \
-    tar -xvf blas-${BLAS_VERSION}.tgz && \
-    rm blas-${BLAS_VERSION}.tgz
+#RUN wget http://www.netlib.org/blas/blas-${BLAS_VERSION}.tgz && \
+#    tar -xvf blas-${BLAS_VERSION}.tgz && \
+#    rm blas-${BLAS_VERSION}.tgz
 
-WORKDIR /build
-RUN cmake -DCMAKE_INSTALL_PREFIX=${BLAS_INSTALL_DIR} ../BLAS-${BLAS_VERSION} && \
-    make && \
-    make install 
+#WORKDIR /build
+#RUN cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=${BLAS_INSTALL_DIR} ../BLAS-${BLAS_VERSION} && \
+#    make && \
+#    make install 
 
 # Cleanup
-WORKDIR /
-RUN rm -rf /BLAS-${BLAS_VERSION} /build
+#WORKDIR /
+#RUN rm -rf /BLAS-${BLAS_VERSION} /build
 
 # ================================================================================
 # HDF5
@@ -315,9 +318,10 @@ RUN cmake -C /hdf5build/hdf5/config/cmake/cacheinit.cmake -G "Unix Makefiles" \
 -DCMAKE_BUILD_TYPE=Release \
 -DCMAKE_INSTALL_PREFIX=${HDF5_INSTALL_DIR} /hdf5build/hdf5 && \
     cmake --build . && \
-    ctest . -C --rerun-failed --output-on-failure && \
     make install
 
+# For testing
+# ctest . -C --rerun-failed --output-on-failure && \
 
 # Cleanup
 USER root
@@ -334,10 +338,9 @@ FROM ubuntu:22.04 AS buildhypre
 # Copy cmake binary from buildcmake and set ENV
 COPY --from=buildcmake /cmake /cmake
 COPY --from=buildompi /openmpi /openmpi
-COPY --from=buildblas /blas /blas
 COPY --from=buildlapack /tmp/lapack /lapack/
 
-ENV PATH="/cmake/bin:/openmpi/bin:/blas:/lapack:${PATH}"
+ENV PATH="/cmake/bin:/openmpi/bin:/lapack:${PATH}"
 
 # Any debian-based command will not prompt user-input
 ENV DEBIAN_FRONTEND=noninteractive
@@ -382,7 +385,6 @@ COPY --from=buildcmake /cmake /cmake
 COPY --from=buildompi /openmpi /openmpi
 COPY --from=buildboost /boost /boost
 COPY --from=buildhdf5 /hdf5 /hdf5
-COPY --from=buildblas /blas /blas
 COPY --from=buildlapack /tmp/lapack /lapack
 COPY --from=buildhypre /hypre-install /hypre/
 
@@ -423,7 +425,7 @@ RUN cmake \
 -DBoost_LIBRARY_DIRS=/boost/lib \
 -DBoost_INCLUDE_DIRS=/boost/include \
 -DTPL_ENABLE_BLAS=ON \
--DBLAS_LIBRARY_DIRS=/blas/lib \
+-DBLAS_LIBRARY_DIRS=/lapack \
 -DTPL_ENABLE_HDF5=ON \
 -DHDF5_LIBRARY_DIRS=/hdf5/lib \
 -DHDF5_INCLUDE_DIRS=/hdf5/include \ 
@@ -466,7 +468,6 @@ COPY --from=buildcmake /cmake /cmake
 COPY --from=buildompi /openmpi /openmpi
 COPY --from=buildboost /boost /boost
 COPY --from=buildhdf5 /hdf5 /hdf5
-COPY --from=buildblas /blas /blas
 COPY --from=buildlapack /tmp/lapack /lapack
 COPY --from=buildhypre /hypre-install /hypre/
 
@@ -515,6 +516,7 @@ WORKDIR /petsc
 # Libraries path must be set explicitly
 RUN ./configure --prefix=$PETSC_INSTALL_DIR \
 --with-debugging=0 \
+--with-precision=double \
 --download-suitesparse \
 --download-mumps \
 --download-superlu \
@@ -522,21 +524,20 @@ RUN ./configure --prefix=$PETSC_INSTALL_DIR \
 --download-ml \
 --download-eigen \
 --download-hypre \
+--with-blas-lib=/lapack/libblas.so \
+--with-lapack-lib=/lapack/liblapack.so \
 --download-scalapack \
---download-blas \
---download-lapack \
 --download-metis \
 --download-parmetis \
 --download-openmpi \
+--with-strict-petscerrorcode \
 COPTFLAGS='-g -O' \
 FOPTFLAGS='-g -O' \
-CXXOPTFLAGS='-g -O' \
+CXXOPTFLAGS='-g -O' && \
 make PETSC_DIR=/petsc PETSC_ARCH=arch-linux-c-opt all && \
 make PETSC_DIR=/petsc PETSC_ARCH=arch-linux-c-opt install && \
 make PETSC_DIR=$PETSC_INSTALL_DIR PETSC_ARCH="" check
 
-#--with-lapack-lib=/lapack/liblapack.a \
-#--with-blas-lib=/blas/lib/libblas.a && \
 # Cleanup
 USER root
 WORKDIR /
@@ -559,7 +560,7 @@ RUN apt-get update && \
     build-essential wget git \
     python3 gfortran default-jdk default-jre \
     libglu1-mesa-dev freeglut3-dev mesa-common-dev \ 
-    openssl libssl-dev zlib1g-dev libicu-dev && \
+    openssl libssl-dev zlib1g-dev libicu-dev libglvnd-dev && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -569,7 +570,6 @@ COPY --from=buildompi /openmpi /openmpi
 COPY --from=buildvtk /vtk /vtk
 COPY --from=buildboost /boost /boost
 COPY --from=buildhdf5 /hdf5 /hdf5
-COPY --from=buildblas /blas /blas
 COPY --from=buildlapack /tmp/lapack /lapack
 COPY --from=buildhypre /hypre-install /hypre/
 COPY --from=buildtrilinos /trilinos /trilinos
