@@ -544,7 +544,7 @@ RUN ./configure --prefix=$PETSC_INSTALL_DIR \
 --download-ml \
 --download-eigen \
 --download-hypre \
---with-openmpi=/openmpi \
+--with-mpi-dir=/openmpi \
 --with-blas-lib=/lapack/libblas.so \
 --with-lapack-lib=/lapack/liblapack.so \
 --download-scalapack \
