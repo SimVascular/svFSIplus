@@ -51,7 +51,7 @@ COPY --from=buildcmake /cmake /cmake
 # Any debian-based command will not prompt user-input
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Setting CMake version CMake installation directory
+# Setting OMPI version OMPI installation directory
 ARG OMPI_VERSION=5.0.2
 ARG OMPI_INSTALL_DIR=/openmpi
 
@@ -97,7 +97,7 @@ ENV PATH="/cmake/bin:${PATH}"
 # Any debian-based command will not prompt user-input
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Setting CMake version CMake installation directory
+# Setting VTK  version VTK installation directory
 ARG VTK_VERSION=9.3.0
 ARG VTK_INSTALL_DIR=/vtk
 
@@ -121,11 +121,32 @@ RUN wget https://www.vtk.org/files/release/9.3/VTK-${VTK_VERSION}.tar.gz && \
     rm VTK-${VTK_VERSION}.tar.gz
 
 WORKDIR /build-vtk
-RUN cmake -DCMAKE_INSTALL_PREFIX=${VTK_INSTALL_DIR} \
--DVTK_Group_Rendering:BOOL=OFF \
--DVTK_RENDERING_BACKEND:BOOL=OFF \
--DVTK_OPENGL:BOOL=OFF \
--DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release /VTK-${VTK_VERSION} && \
+RUN cmake -DBUILD_SHARED_LIBS:BOOL=OFF \
+-DCMAKE_BUILD_TYPE:STRING=RELEASE \
+-DBUILD_EXAMPLES=OFF \
+-DBUILD_TESTING=OFF \
+-DVTK_USE_SYSTEM_EXPAT:BOOL=ON \
+-DVTK_USE_SYSTEM_ZLIB:BOOL=ON \
+-DVTK_LEGACY_REMOVE=ON \
+-DVTK_Group_Rendering=OFF \
+-DVTK_Group_StandAlone=OFF \
+-DVTK_RENDERING_BACKEND=None \
+-DVTK_WRAP_PYTHON=OFF \
+-DModule_vtkChartsCore=ON \
+-DModule_vtkCommonCore=ON \
+-DModule_vtkCommonDataModel=ON \
+-DModule_vtkCommonExecutionModel=ON \
+-DModule_vtkFiltersCore=ON \
+-DModule_vtkFiltersFlowPaths=ON \
+-DModule_vtkFiltersModeling=ON \
+-DModule_vtkIOLegacy=ON \
+-DModule_vtkIOXML=ON \
+-DVTK_GROUP_ENABLE_Views=NO \
+-DVTK_GROUP_ENABLE_Web=NO \
+-DVTK_GROUP_ENABLE_Imaging=NO \
+-DVTK_GROUP_ENABLE_Qt=DONT_WANT \
+-DVTK_GROUP_ENABLE_Rendering=DONT_WANT \
+-DCMAKE_INSTALL_PREFIX=${VTK_INSTALL_DIR} /VTK-${VTK_VERSION} && \
     cmake --build . --parallel 4 && \
     make install
 
@@ -147,7 +168,7 @@ ENV PATH="/cmake/bin:${PATH}"
 # Any debian-based command will not prompt user-input
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Setting CMake version CMake installation directory
+# Setting Boost version Boost installation directory
 ARG BOOST_VERSION=1_84_0
 ARG BOOST_INSTALL_DIR=/boost
 
@@ -380,7 +401,7 @@ RUN rm -rf /hypre
 # Use a base image for building tools and dependencise
 FROM ubuntu:20.04 AS buildtrilinos
 
-# Copy cmake binary from buildcmake and set ENV
+# Copy all dependencies and set ENV
 COPY --from=buildcmake /cmake /cmake
 COPY --from=buildompi /openmpi /openmpi
 COPY --from=buildboost /boost /boost
@@ -463,7 +484,7 @@ RUN rm -rf Trilinos
 # Use a base image for building tools and dependencise
 FROM ubuntu:20.04 AS buildpetsc
 
-# Copy cmake binary from buildcmake and set ENV
+# Copy all dependencies and set ENV
 COPY --from=buildcmake /cmake /cmake
 COPY --from=buildompi /openmpi /openmpi
 COPY --from=buildboost /boost /boost
@@ -512,7 +533,6 @@ USER luser
 WORKDIR /petsc
 
 # Install petsc library in $PETSC_INSTALL_DIR 
-# mpi compilers must be in the $PATH
 # Libraries path must be set explicitly
 RUN ./configure --prefix=$PETSC_INSTALL_DIR \
 --with-debugging=0 \
@@ -524,13 +544,14 @@ RUN ./configure --prefix=$PETSC_INSTALL_DIR \
 --download-ml \
 --download-eigen \
 --download-hypre \
+--with-openmpi=/openmpi \
 --with-blas-lib=/lapack/libblas.so \
 --with-lapack-lib=/lapack/liblapack.so \
 --download-scalapack \
 --download-metis \
 --download-parmetis \
---download-openmpi \
 --with-strict-petscerrorcode \
+--with-mpi-compilers=1 \
 COPTFLAGS='-g -O' \
 FOPTFLAGS='-g -O' \
 CXXOPTFLAGS='-g -O' && \
@@ -564,7 +585,7 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Copy cmake binary from buildcmake and set ENV
+# Copy all libraries and set ENV
 COPY --from=buildcmake /cmake /cmake
 COPY --from=buildompi /openmpi /openmpi
 COPY --from=buildvtk /vtk /vtk
@@ -575,3 +596,5 @@ COPY --from=buildhypre /hypre-install /hypre/
 COPY --from=buildtrilinos /trilinos /trilinos
 COPY --from=buildpetsc /petsc-install /petsc
 
+ENV PATH="/vtk:/openmpi/bin:/lapack:/cmake/bin:/trilinos/lib/cmake/Trilinos:${PATH}"
+ENV LD_LIBRARY_PATH="/petsc/lib"

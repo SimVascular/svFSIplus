@@ -51,7 +51,7 @@ COPY --from=buildcmake /cmake /cmake
 # Any debian-based command will not prompt user-input
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Setting CMake version CMake installation directory
+# Setting OMPI version OMPI installation directory
 ARG OMPI_VERSION=5.0.2
 ARG OMPI_INSTALL_DIR=/openmpi
 
@@ -97,7 +97,7 @@ ENV PATH="/cmake/bin:${PATH}"
 # Any debian-based command will not prompt user-input
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Setting CMake version CMake installation directory
+# Setting VTK  version VTK installation directory
 ARG VTK_VERSION=9.3.0
 ARG VTK_INSTALL_DIR=/vtk
 
@@ -168,7 +168,7 @@ ENV PATH="/cmake/bin:${PATH}"
 # Any debian-based command will not prompt user-input
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Setting CMake version CMake installation directory
+# Setting Boost version Boost installation directory
 ARG BOOST_VERSION=1_84_0
 ARG BOOST_INSTALL_DIR=/boost
 
@@ -401,7 +401,7 @@ RUN rm -rf /hypre
 # Use a base image for building tools and dependencise
 FROM ubuntu:22.04 AS buildtrilinos
 
-# Copy cmake binary from buildcmake and set ENV
+# Copy all dependencies and set ENV
 COPY --from=buildcmake /cmake /cmake
 COPY --from=buildompi /openmpi /openmpi
 COPY --from=buildboost /boost /boost
@@ -484,7 +484,7 @@ RUN rm -rf Trilinos
 # Use a base image for building tools and dependencise
 FROM ubuntu:22.04 AS buildpetsc
 
-# Copy cmake binary from buildcmake and set ENV
+# Copy all dependencies and set ENV
 COPY --from=buildcmake /cmake /cmake
 COPY --from=buildompi /openmpi /openmpi
 COPY --from=buildboost /boost /boost
@@ -533,7 +533,6 @@ USER luser
 WORKDIR /petsc
 
 # Install petsc library in $PETSC_INSTALL_DIR 
-# mpi compilers must be in the $PATH
 # Libraries path must be set explicitly
 RUN ./configure --prefix=$PETSC_INSTALL_DIR \
 --with-debugging=0 \
@@ -585,7 +584,7 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Copy cmake binary from buildcmake and set ENV
+# Copy all libraries and set ENV
 COPY --from=buildcmake /cmake /cmake
 COPY --from=buildompi /openmpi /openmpi
 COPY --from=buildvtk /vtk /vtk
@@ -596,3 +595,5 @@ COPY --from=buildhypre /hypre-install /hypre/
 COPY --from=buildtrilinos /trilinos /trilinos
 COPY --from=buildpetsc /petsc-install /petsc
 
+ENV PATH="/vtk:/openmpi/bin:/lapack:/cmake/bin:/trilinos/lib/cmake/Trilinos:${PATH}"
+ENV LD_LIBRARY_PATH="/petsc/lib"
