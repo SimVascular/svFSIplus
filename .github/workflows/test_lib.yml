@@ -36,6 +36,7 @@ jobs:
             git lfs pull
             cd tests
             conda init
+            source ~/.bashrc
             conda create -n svfsiplus
             conda activate svfsiplus
             conda run -n svfsiplus pytest -rPv --durations=0
