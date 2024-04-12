@@ -35,6 +35,7 @@ jobs:
             git config --global --add safe.directory /__w/svFSIplus/svFSIplus
             git lfs pull
             cd tests
+            conda init
             conda create -n svfsiplus
             conda activate svfsiplus
             conda run -n svfsiplus pytest -rPv --durations=0
