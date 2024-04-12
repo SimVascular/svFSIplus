@@ -603,11 +603,14 @@ RUN mkdir -p /miniconda3 && \
     bash /miniconda3/miniconda.sh -b -u -p /miniconda3 && \
     rm -rf /miniconda3/miniconda.sh
 
-# Set conda environment 
+# Set and activate conda environment, install pytest
 ENV PATH="/miniconda3/bin:${PATH}"
 
-# Install pytest
-RUN conda install -y pytest
+RUN conda init && \
+    source ~/.bashrc && \
+    conda create -n svfsiplus && \
+    conda activate svfsiplus && \
+    conda install -y pytest
 
 # Set libraries environment
 ENV PATH="/vtk:/openmpi/bin:/lapack:/cmake/bin:/trilinos/lib/cmake/Trilinos:${PATH}"
