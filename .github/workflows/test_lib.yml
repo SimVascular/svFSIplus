@@ -27,7 +27,7 @@ jobs:
           run: |
             mkdir build
             cd build
-            cmake -DENABLE_ARRAY_INDEX_CHECKING=ON -DENABLE_UNIT_TEST=ON ${{ matrix.libs }} ..
+            cmake -DENABLE_COVERAGE=ON -DENABLE_ARRAY_INDEX_CHECKING=ON -DENABLE_UNIT_TEST=ON ${{ matrix.libs }} ..
             make -j2
             cd ..
         - name: Run integration tests
