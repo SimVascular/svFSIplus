@@ -1,0 +1,41 @@
+name: libraries
+on: [push, pull_request]
+jobs:
+    test:
+      strategy:
+        matrix:
+          os:
+            - version: ubuntu-22.04 
+              image: ubuntu22
+            - version: ubuntu-20.04
+              image: ubuntu20
+          libs:
+            - "-DSV_USE_TRILINOS:BOOL=ON"
+            - "-DSV_PETSC_DIR:STRING=/petsc"
+      runs-on: ${{ matrix.os.version }}
+      container: dcodoni/libraries:${{ matrix.os.image }}
+      steps:
+        - uses: actions/checkout@v3
+        - uses: actions/setup-node@v3
+          with:
+            node-version: '20'
+        - name: Build svFSIplus
+          run: |
+            mkdir build
+            cd build
+            cmake -DENABLE_COVERAGE=ON -DENABLE_ARRAY_INDEX_CHECKING=ON -DENABLE_UNIT_TEST=ON ${{ matrix.libs }} ..
+            make -j2
+            cd ..
+        - name: Run integration tests
+          run: |
+            git config --global --add safe.directory /__w/svFSIplus/svFSIplus
+            git lfs pull
+            cd tests
+            conda run -n svfsiplus pytest -rPv --durations=0
+        - name: Run unit tests
+          run: |
+            cd build/svFSI-build/Source/svFSI
+            ctest --verbose
+
+  
+  
