@@ -606,8 +606,8 @@ RUN mkdir -p /miniconda3 && \
 # Set and activate conda environment, install pytest
 ENV PATH="/miniconda3/bin:${PATH}"
 
-RUN conda init && \
-    source ~/.bashrc && \
+RUN conda init bash && \
+    . /root/.bashrc && \
     conda create -n svfsiplus && \
     conda activate svfsiplus && \
     conda install -y pytest
