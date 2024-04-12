@@ -578,7 +578,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Install essentials tools
 RUN apt-get update && \
     apt-get install -y \
-    build-essential wget git \
+    build-essential wget git git-lfs lcov \
     python3 gfortran default-jdk default-jre \
     libglu1-mesa-dev freeglut3-dev mesa-common-dev \ 
     openssl libssl-dev zlib1g-dev libicu-dev libglvnd-dev && \
@@ -595,6 +595,13 @@ COPY --from=buildlapack /tmp/lapack /lapack
 COPY --from=buildhypre /hypre-install /hypre/
 COPY --from=buildtrilinos /trilinos /trilinos
 COPY --from=buildpetsc /petsc-install /petsc
+
+# ================================================================================
+# CONDA 
+WORKDIR /miniconda3
+RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /miniconda3/miniconda.sh && \
+    bash ~/miniconda3/miniconda.sh -b -u -p /miniconda3 && \
+    rm -rf ~/miniconda3/miniconda.sh
 
 ENV PATH="/vtk:/openmpi/bin:/lapack:/cmake/bin:/trilinos/lib/cmake/Trilinos:${PATH}"
 ENV LD_LIBRARY_PATH="/petsc/lib"
