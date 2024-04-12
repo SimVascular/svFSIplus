@@ -13,7 +13,12 @@ jobs:
             - "-DSV_USE_TRILINOS:BOOL=ON"
             - "-DSV_PETSC_DIR:STRING=/petsc"
       runs-on: ${{ matrix.os.version }}
-      container: dcodoni/libraries:${{ matrix.os.image }}
+      container: 
+        image: dcodoni/libraries:${{ matrix.os.image }}
+        credentials:
+            username: ${{ secrets.DOCKERHUB_USERNAME }}
+            password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
       steps:
         - uses: actions/checkout@v3
         - uses: actions/setup-node@v3
