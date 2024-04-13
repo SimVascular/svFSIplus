@@ -13,11 +13,7 @@ jobs:
             - "-DSV_USE_TRILINOS:BOOL=ON"
             - "-DSV_PETSC_DIR:STRING=/petsc"
       runs-on: ${{ matrix.os.version }}
-      container: 
-        image: dcodoni/libraries:${{ matrix.os.image }}
-        credentials:
-            username: ${{ secrets.DOCKERHUB_USERNAME }}
-            password: ${{ secrets.DOCKERHUB_PASSWORD }}
+      container: dcodoni/lib:${{ matrix.os.image }}
       steps:
         - uses: actions/checkout@v3
         - uses: actions/setup-node@v3
@@ -35,11 +31,6 @@ jobs:
             git config --global --add safe.directory /__w/svFSIplus/svFSIplus
             git lfs pull
             cd tests
-            conda init bash
-            . ~/.bashrc
-            conda create -y -n svfsiplus
-            conda activate svfsiplus
-            conda install -y pytest
             conda run -n svfsiplus pytest -rPv --durations=0
         - name: Run unit tests
           run: |
