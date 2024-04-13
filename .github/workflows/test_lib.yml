@@ -39,6 +39,7 @@ jobs:
             . ~/.bashrc
             conda create -y -n svfsiplus
             conda activate svfsiplus
+            conda install -y pytest
             conda run -n svfsiplus pytest -rPv --durations=0
         - name: Run unit tests
           run: |
