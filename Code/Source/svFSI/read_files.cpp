@@ -1366,11 +1366,14 @@ void read_eq(Simulation* simulation, EquationParameters* eq_params, eqType& lEq)
     if (eq_params->couple_to_genBC.defined()) {
       cplBC.useGenBC = true;
       cplbc_type_str = eq_params->couple_to_genBC.type.value();
+    } else if (eq_params->couple_to_svZeroD.defined()) {
+      cplBC.useSvZeroD = true;
+      cplbc_type_str = eq_params->couple_to_svZeroD.type.value();
     } else if (eq_params->couple_to_cplBC.defined()) {
       cplbc_type_str = eq_params->couple_to_cplBC.type.value();
     }
 
-    if (eq_params->couple_to_genBC.defined() || eq_params->couple_to_cplBC.defined()) {
+    if (eq_params->couple_to_genBC.defined() || eq_params->couple_to_cplBC.defined() || eq_params->couple_to_svZeroD.defined()) {
       try {
         cplBC.schm = consts::cplbc_name_to_type.at(cplbc_type_str);
       } catch (const std::out_of_range& exception) {
@@ -1383,6 +1386,9 @@ void read_eq(Simulation* simulation, EquationParameters* eq_params, eqType& lEq)
       if (cplBC.useGenBC) {
         cplBC.binPath = eq_params->couple_to_genBC.zerod_code_file_path.value();
         cplBC.commuName = "GenBC.int";
+        cplBC.nX = 0;
+      } else if (cplBC.useSvZeroD) {
+        cplBC.commuName = "svZeroD_interface.dat";
         cplBC.nX = 0;
       } else {
         auto& cplBC_params = eq_params->couple_to_cplBC;

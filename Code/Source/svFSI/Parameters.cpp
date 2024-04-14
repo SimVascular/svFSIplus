@@ -885,6 +885,48 @@ void CoupleGenBCParameters::set_values(tinyxml2::XMLElement* xml_elem)
   value_set = true;
 }
 
+
+//////////////////////////////////////////////////////////
+//                  CoupleSvZeroDParameters               //
+//////////////////////////////////////////////////////////
+
+// Coupling to svZeroD.
+
+// Define the XML element name for equation Couple_to_svZeroD parameters.
+const std::string CoupleSvZeroDParameters::xml_element_name_ = "Couple_to_svZeroD";
+
+CoupleSvZeroDParameters::CoupleSvZeroDParameters()
+{
+  // A parameter that must be defined.
+  bool required = true;
+
+  type = Parameter<std::string>("type", "", required);
+};
+
+void CoupleSvZeroDParameters::set_values(tinyxml2::XMLElement* xml_elem)
+{
+  std::string error_msg = "Unknown Couple_to_svZeroD type=TYPE XML element '";
+  
+  // Get the 'type' from the <Couple_to_genBC type=TYPE> element.
+  const char* stype;
+  auto result = xml_elem->QueryStringAttribute("type", &stype);
+  if (stype == nullptr) {
+    throw std::runtime_error("No TYPE given in the XML <Couple_to_svZeroD type=TYPE> element.");
+  }
+  type.set(std::string(stype));
+  auto item = xml_elem->FirstChildElement();
+  
+  using std::placeholders::_1;
+  using std::placeholders::_2;
+  std::function<void(const std::string&, const std::string&)> ftpr = 
+      std::bind( &CoupleSvZeroDParameters::set_parameter_value, *this, _1, _2);
+  
+  xml_util_set_parameters(ftpr, xml_elem, error_msg);
+  
+  value_set = true;
+}
+
+
 //////////////////////////////////////////////////////////
 //                  OutputParameters                    //
 //////////////////////////////////////////////////////////
@@ -1693,6 +1735,9 @@ void EquationParameters::set_values(tinyxml2::XMLElement* eq_elem)
 
     } else if (name == CoupleGenBCParameters::xml_element_name_) {
       couple_to_genBC.set_values(item);
+
+    } else if (name == CoupleSvZeroDParameters::xml_element_name_) {
+      couple_to_svZeroD.set_values(item);
 
     } else if (name == DomainParameters::xml_element_name_) {
       auto domain_params = new DomainParameters();
