@@ -526,8 +526,15 @@ void distribute(Simulation* simulation)
   cm.bcast(cm_mod, &cplBC.nFa);
   cm.bcast_enum(cm_mod, &cplBC.schm);
   cm.bcast(cm_mod, &cplBC.useGenBC);
+  cm.bcast(cm_mod, &cplBC.useSvZeroD);
 
   if (cplBC.useGenBC) {   
+    if (cm.slv(cm_mod)) {   
+      cplBC.nX = 0;
+      cplBC.xo.resize(cplBC.nX);
+    }
+
+  } else if (cplBC.useSvZeroD) {   
     if (cm.slv(cm_mod)) {   
       cplBC.nX = 0;
       cplBC.xo.resize(cplBC.nX);
