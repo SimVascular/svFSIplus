@@ -9,7 +9,6 @@ jobs:
               image: ubuntu20
           libs:
             - "-DSV_USE_TRILINOS:BOOL=ON"
-            - "-DSV_PETSC_DIR:STRING=/petsc"
       runs-on: ${{ matrix.os.version }}
       container: dcodoni/lib:${{ matrix.os.image }}
       steps:
