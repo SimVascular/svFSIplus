@@ -7,6 +7,8 @@ jobs:
           os:
             - version: ubuntu-20.04
               image: ubuntu20
+            - version: ubuntu-22.04
+              image: ubuntu22
           libs:
             - "-DSV_USE_TRILINOS:BOOL=ON"
       runs-on: ${{ matrix.os.version }}
