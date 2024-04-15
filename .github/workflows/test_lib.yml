@@ -18,7 +18,7 @@ jobs:
         - uses: actions/checkout@v3
         - uses: actions/setup-node@v3
           with:
-            node-version: '20'
+            node-version: '16'
         - name: Build svFSIplus
           run: |
             mkdir build
@@ -28,6 +28,7 @@ jobs:
             cd ..
         - name: Run integration tests
           run: |
+            git config --global --add safe.directory /__w/svFSIplus/svFSIplus
             git lfs pull
             cd tests
             conda run -n svfsiplus pytest -rPv --durations=0
