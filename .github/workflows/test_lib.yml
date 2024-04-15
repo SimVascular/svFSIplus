@@ -13,9 +13,6 @@ jobs:
       container: dcodoni/lib:${{ matrix.os.image }}
       steps:
         - uses: actions/checkout@v3
-        - uses: actions/setup-node@v3
-          with:
-            node-version: '20'
         - name: Build svFSIplus
           run: |
             mkdir build
