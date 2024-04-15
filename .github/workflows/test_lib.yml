@@ -28,7 +28,6 @@ jobs:
             cd ..
         - name: Run integration tests
           run: |
-            git config --global init.defaultBranch petsc-interface
             git lfs pull
             cd tests
             conda run -n svfsiplus pytest -rPv --durations=0
