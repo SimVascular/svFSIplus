@@ -610,8 +610,8 @@ RUN conda create -y -n svfsiplus && \
     conda run -n svfsiplus pip install pytest pytest-cov pytest-mock numpy meshio pandas
 
 # Set libraries environment
-ENV PATH="/vtk:/openmpi/bin:/lapack:/cmake/bin:/trilinos/lib/cmake/Trilinos:${PATH}"
-ENV LD_LIBRARY_PATH="/petsc/lib"
+ENV PATH="/vtk:/openmpi/bin:/cmake/bin:/trilinos/lib/cmake/Trilinos:${PATH}"
+ENV LD_LIBRARY_PATH="/petsc/lib:/lapack:$LD_LIBRARY_PATH"
 
 ENV OMPI_ALLOW_RUN_AS_ROOT=1
 ENV OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
