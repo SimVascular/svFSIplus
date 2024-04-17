@@ -13,6 +13,7 @@ cpp_exec = os.path.join(this_file_dir, "..", "build", "svFSI-build", "bin", "svF
 RTOL = {
     "Action_potential": 1.0e-10,
     "Cauchy_stress": 1.0e-4,
+    "Concentration": 1.0e-10,
     "Def_grad": 1.0e-10,
     "Divergence": 1.0e-9,
     "Displacement": 1.0e-10,

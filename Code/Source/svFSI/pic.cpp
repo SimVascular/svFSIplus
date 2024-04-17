@@ -526,12 +526,32 @@ void pici(Simulation* simulation, Array<double>& Ag, Array<double>& Yg, Array<do
     dmsg << "coef: " << coef[0] << " " << coef[1] << " " << coef[2] << " " << coef[3];
     #endif
 
-    for (int a = 0; a < tnNo; a++) {
-      for (int j = s; j <= e; j++) {
-        Ag(j,a) = Ao(j,a)*coef(0) + An(j,a)*coef(1);
-        Yg(j,a) = Yo(j,a)*coef(2) + Yn(j,a)*coef(3);
-        Dg(j,a) = Do(j,a)*coef(2) + Dn(j,a)*coef(3);
-      }
+    if ((eq.phys == Equation_heatF) && (com_mod.usePrecomp)){
+        for (int a = 0; a < tnNo; a++) {
+            for (int j = 0; j < com_mod.nsd; j++) {
+                //Ag(j, a) = An(j, a);
+                //Yg(j, a) = Yn(j, a);
+                //Dg(j, a) = Dn(j, a);
+                Ag(j, a) = Ao(j, a) * coef(0) + An(j, a) * coef(1);
+                Yg(j, a) = Yo(j, a) * coef(2) + Yn(j, a) * coef(3);
+                Dg(j, a) = Do(j, a) * coef(2) + Dn(j, a) * coef(3);
+            }
+        }
+        for (int a = 0; a < tnNo; a++) {
+            for (int j = s; j <= e; j++) {
+                Ag(j, a) = Ao(j, a) * coef(0) + An(j, a) * coef(1);
+                Yg(j, a) = Yo(j, a) * coef(2) + Yn(j, a) * coef(3);
+                Dg(j, a) = Do(j, a) * coef(2) + Dn(j, a) * coef(3);
+            }
+        }
+    } else {
+        for (int a = 0; a < tnNo; a++) {
+            for (int j = s; j <= e; j++) {
+                Ag(j, a) = Ao(j, a) * coef(0) + An(j, a) * coef(1);
+                Yg(j, a) = Yo(j, a) * coef(2) + Yn(j, a) * coef(3);
+                Dg(j, a) = Do(j, a) * coef(2) + Dn(j, a) * coef(3);
+            }
+        }
     }
   }
 

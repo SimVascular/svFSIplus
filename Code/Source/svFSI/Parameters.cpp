@@ -1803,9 +1803,12 @@ GeneralSimulationParameters::GeneralSimulationParameters()
   set_parameter("Starting time step", 0, !required, starting_time_step);
 
   set_parameter("Time_step_size", 0.0, required, time_step_size);
-
+  set_parameter("Precomputed_time_step_size", 0.0, !required, precomputed_time_step_size);
   set_parameter("Verbose", false, !required, verbose);
   set_parameter("Warning", false, !required, warning);
+  set_parameter("Use_precomputed_solution", false, !required, use_precomputed_solution);
+  set_parameter("Precomputed_solution_file_path", "", !required, precomputed_solution_file_path);
+  set_parameter("Precomputed_solution_field_name", "", !required, precomputed_solution_field_name);
 }
 
 void GeneralSimulationParameters::print_parameters()
