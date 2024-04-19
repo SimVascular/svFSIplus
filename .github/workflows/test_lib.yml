@@ -5,12 +5,16 @@ jobs:
       strategy:
         matrix:
           os:
+            - name: Ubuntu-20.04
             - version: ubuntu-20.04
               image: ubuntu20
+            - name: Ubuntu-22.04
             - version: ubuntu-22.04
               image: ubuntu22
           libs:
+            - name: Build with Trilinos 
             - "-DSV_USE_TRILINOS:BOOL=ON"
+            - name: Build with PETSc
             - "-DSV_PETSC_DIR:STRING=/petsc"
       runs-on: ${{ matrix.os.version }}
       container: dcodoni/lib:${{ matrix.os.image }}
@@ -30,7 +34,7 @@ jobs:
             cd tests
             conda run -n svfsiplus pytest -rPv --durations=0
         - name: Run unit tests
-          run: |
+          run: |  
             cd build/svFSI-build/Source/svFSI
             ctest --verbose
 
