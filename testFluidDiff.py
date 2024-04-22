@@ -57,8 +57,8 @@ def main():
     ref_path = "/solver/svFSIplus/tests/cases/fluid/pipe_RCR_3d/"
     ref_folder = "/solver/svFSIplus/tests/cases/fluid/pipe_RCR_3d/4-procs"
     file_name = ["result_050.vtu","result_100.vtu"]
-    bin_petsc_folder = "/solver/build-petsc-u20/svFSI-build/bin/svFSI"
-    bin_trilinos_folder = "/solver/build-trilinos-u20/svFSI-build/bin/svFSI"
+    bin_petsc_folder = "/solver/build-ubuntu22-petsc/svFSI-build/bin/svFSI"
+    bin_trilinos_folder = "/solver/build-ubuntu22-trilinos/svFSI-build/bin/svFSI"
 
     # Run reference simualtion with FSILS
     os.chdir(ref_path)
