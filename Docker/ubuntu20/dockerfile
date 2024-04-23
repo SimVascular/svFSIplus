@@ -335,6 +335,7 @@ RUN git clone https://github.com/HDFGroup/hdf5.git
 # Build HDF5
 WORKDIR /hdf5build/build
 RUN cmake -C /hdf5build/hdf5/config/cmake/cacheinit.cmake -G "Unix Makefiles" \
+-DCMAKE_OSX_ARCHITECTURES=x86_64 \
 -DHDF5_ENABLE_PARALLEL:BOOL=ON \
 -DALLOW_UNSUPPORTED:BOOL=ON \
 -DCMAKE_BUILD_TYPE=Release \
