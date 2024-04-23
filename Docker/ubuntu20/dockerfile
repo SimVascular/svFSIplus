@@ -323,7 +323,8 @@ WORKDIR /hdf5build
 # setting luser permission to directories and changing user to luser
 # this allows the HDF5 tests to run smoothly 
 RUN chown -R luser:luser /hdf5build && \
-    chown -R luser:luser /usr/lib/x86_64-linux-gnu/
+    chown -R luser:luser /usr/lib/aarch64-linux-gnu 
+    # chown -R luser:luser /usr/lib/x86_64-linux-gnu/
 
 RUN mkdir ${HDF5_INSTALL_DIR} && \
     chown -R luser:luser ${HDF5_INSTALL_DIR}
