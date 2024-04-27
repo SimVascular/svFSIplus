@@ -46,7 +46,7 @@
 
 
 <!-- Using cgs units-->
-<Add_equation type="struct" > 
+<Add_equation type="ustruct" > 
 
    <Coupled> true </Coupled>
    <Min_iterations> 3 </Min_iterations>  
@@ -65,6 +65,7 @@
 
 
     <Output type="Spatial" >
+     <Pressure> true </Pressure>
      <Displacement> true </Displacement>
      <Velocity> true </Velocity>
      <Jacobian> true </Jacobian>
