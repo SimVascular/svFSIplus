@@ -44,7 +44,7 @@ def test_pipe_RCR_genBC(n_proc):
     subprocess.run(["make"], check=True)
 
     # Change back to original directory
-    os.chdir("../../../../..")
+    os.chdir("../../../..")
 
     run_with_reference(base_folder, test_folder, fields, n_proc, t_max)
 
