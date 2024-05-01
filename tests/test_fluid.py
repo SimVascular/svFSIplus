@@ -46,12 +46,12 @@ def test_pipe_RCR_genBC(n_proc):
     # Change back to original directory
     os.chdir("../../../..")
 
-    run_with_reference(base_folder, test_folder, fields, n_proc, t_max)
+    run_with_reference(base_folder, test_folder, ["Velocity", "Pressure", "Traction", "WSS"], n_proc, t_max)
 
 def test_pipe_RCR_sv0D(n_proc):
     test_folder = "pipe_RCR_sv0D"
     t_max = 2
-    run_with_reference(base_folder, test_folder, fields, n_proc, t_max)
+    run_with_reference(base_folder, test_folder, ["Velocity", "Pressure", "Traction", "WSS"], n_proc, t_max)
 
 
 def test_driven_cavity_2d(n_proc):
