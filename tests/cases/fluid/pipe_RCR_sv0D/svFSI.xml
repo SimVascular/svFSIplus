@@ -12,7 +12,7 @@
 
   <Save_results_to_VTK_format> 1 </Save_results_to_VTK_format> 
   <Name_prefix_of_saved_VTK_files> result </Name_prefix_of_saved_VTK_files> 
-  <Increment_in_saving_VTK_files> 10 </Increment_in_saving_VTK_files> 
+  <Increment_in_saving_VTK_files> 1 </Increment_in_saving_VTK_files> 
   <Start_saving_after_time_step> 1 </Start_saving_after_time_step> 
 
   <Increment_in_saving_restart_files> 200 </Increment_in_saving_restart_files> 
