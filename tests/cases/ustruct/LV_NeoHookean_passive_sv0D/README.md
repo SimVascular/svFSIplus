@@ -2,6 +2,24 @@ This test case simulates an idealized left ventricle (LV) with a NeoHookean mate
 coupled to a lumped-parameter network (LPN), implemented in sv0DSolver. The LPN consists of a large pressure source and large resistor, which together produce an approximately constant flowrate into
 the LV. This inflates the LV at an approximately constant rate of change of volume.
 
+
+### Build svZeroDSolver
+Importantly, to automatically run test cases with `pytest` (see below), you need to build `svZeroDSolver` in the folder
+```
+./svZeroDSolver/build
+``` 
+in the repository root.
+
+To do so, you can run the following in the svFSIplus repository root:
+```
+git clone https://github.com/SimVascular/svZeroDSolver.git
+cd svZeroDSolver
+mkdir build
+cd build
+cmake ..
+make -j2
+``` 
+
 ## Configuration of sv0DSolver
 
 The following files require user's attention: [svFSI.xml](./svFSI.xml), [svzerod_3Dcoupling.json](./svzerod_3Dcoupling.json) and [svZeroD_interface.dat](./svZeroD_interface.dat).

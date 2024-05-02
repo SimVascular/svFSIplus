@@ -59,6 +59,8 @@
       <Pressure> true </Pressure>
       <Traction> true </Traction>
      <WSS> true </WSS>
+      <Vorticity> true </Vorticity>
+      <Divergence> true </Divergence>
    </Output>
 
    <LS type="NS" >

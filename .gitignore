@@ -28,3 +28,8 @@ genBC.exe
 AllData
 GenBC.int
 InitialData
+
+# svZeroD files
+svZeroD_data
+Q_svZeroD
+P_svZeroD

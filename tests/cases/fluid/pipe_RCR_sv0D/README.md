@@ -10,6 +10,23 @@ Both sv0DSolver and genBC (see [pipe_RCR_genBC](../pipe_RCR_genBC)) provide a fr
 **Essentially, sv0D and genBC are two different implementations of the same functionality, and sv0D is the preferred choice.**  genBC is a legacy code developed for [svSolver](https://github.com/SimVascular/svSolver) and requires direct input of a system of equations. sv0DSolver has pre-defined blocks with associated equations and is more user-friendly. Still, `svFSIplus` provides backward compatibility for genBC so that svSolver users can migrate to the new solver easily. 
 
 
+### Build svZeroDSolver
+Importantly, to automatically run test cases with `pytest` (see below), you need to build `svZeroDSolver` in the folder
+```
+./svZeroDSolver/build
+``` 
+in the repository root.
+
+To do so, you can run the following in the svFSIplus repository root:
+```
+git clone https://github.com/SimVascular/svZeroDSolver.git
+cd svZeroDSolver
+mkdir build
+cd build
+cmake ..
+make -j2
+``` 
+
 ## Configuration of sv0DSolver
 
 The following files require user's attention: [svFSI.xml](./svFSI.xml), [svzerod_3Dcoupling.json](./svzerod_3Dcoupling.json) and [svZeroD_interface.dat](./svZeroD_interface.dat).
