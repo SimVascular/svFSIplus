@@ -33,3 +33,5 @@ InitialData
 svZeroD_data
 Q_svZeroD
 P_svZeroD
+# local svZeroD build
+svZeroDSolver
