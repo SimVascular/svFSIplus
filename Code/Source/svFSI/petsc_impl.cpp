@@ -364,7 +364,8 @@ void petsc_solve(PetscReal *resNorm,  PetscReal *initNorm,  PetscReal *dB,
 void petsc_destroy_all(const PetscInt nEq)
 {   
     if (!psol==NULL){
-        PetscInt cEq, ierr;
+        PetscInt cEq; 
+        PetscErrorCode ierr;
 
         if (!plhs.created) {
             PetscPrintf(MPI_COMM_WORLD, "ERROR <PETSC_DESTROY_ALL>: "
@@ -422,7 +423,8 @@ PetscErrorCode petsc_create_lhs(const PetscInt nNo, const PetscInt mynNo, const 
                                 const PetscInt *svFSI_ltg, const PetscInt *svFSI_map, \
                                 const PetscInt *svFSI_rowPtr, const PetscInt *svFSI_colPtr)
 {   
-    PetscInt  i, j, ierr;
+    PetscInt  i, j ;
+    PetscErrorCode ierr;
     PetscInt *local2global, *local2local; /* local copy of svFSI ltg and map */
     PetscInt *local_ltg;                  /* local to global mapping of all vertices on current proc.*/
     PetscInt *owned_ltg;                  /* local to global mapping of owned vertices */
@@ -524,7 +526,7 @@ PetscErrorCode petsc_create_lhs(const PetscInt nNo, const PetscInt mynNo, const 
     PetscCall(PetscFree(ghost_ltg));
     PetscCall(PetscFree(pordering));
 
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -578,7 +580,7 @@ PetscErrorCode petsc_create_bc(const PetscInt dof, const PetscInt cEq, \
     PetscCall(PetscFree(row1));
     PetscCall(PetscFree(row2));
 
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -660,7 +662,7 @@ PetscErrorCode petsc_create_vecmat(const PetscInt dof, const PetscInt cEq, const
     PetscCall(PetscFree(value));
     PetscCall(MatDestroy(&preallocator));
 
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -691,7 +693,7 @@ PetscErrorCode petsc_set_vec(const PetscInt dof, const PetscInt cEq, const Petsc
     PetscCall(VecGhostUpdateBegin(psol[cEq].b, INSERT_VALUES, SCATTER_FORWARD));
     PetscCall(VecGhostUpdateEnd(psol[cEq].b, INSERT_VALUES, SCATTER_FORWARD));
     
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -720,7 +722,7 @@ PetscErrorCode petsc_set_mat(const PetscInt dof, const PetscInt cEq, const Petsc
     PetscCall(MatAssemblyBegin(psol[cEq].A, MAT_FLUSH_ASSEMBLY));
     PetscCall(MatAssemblyEnd(psol[cEq].A, MAT_FLUSH_ASSEMBLY));
 
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -757,7 +759,7 @@ PetscErrorCode petsc_set_bc(const PetscInt cEq, const PetscReal *DirBC, const Pe
     PetscCall(MatZeroRowsColumns(psol[cEq].A, psol[cEq].DirPts, psol[cEq].DirBC, 1.0, x , psol[cEq].b));
 
     PetscCall(VecDestroy(&x)); 
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -797,7 +799,7 @@ PetscErrorCode petsc_set_pcfieldsplit(const PetscInt dof, const PetscInt cEq)
     PetscCall(ISDestroy(&isu));
     PetscCall(ISDestroy(&isp));
     PetscCall(PetscFree2(uindx, pindx));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -874,7 +876,7 @@ PetscErrorCode petsc_pc_rcs(const PetscInt dof, const PetscInt cEq)
     PetscCall(VecDestroy(&Dr));
     PetscCall(VecDestroy(&Dc));
 
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 
@@ -898,7 +900,7 @@ PetscErrorCode petsc_debug_save_vec(const char *filename, Vec vec)
     PetscViewerPopFormat(viewer);
     PetscViewerDestroy(&viewer);
 
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -915,7 +917,7 @@ PetscErrorCode petsc_debug_save_mat(const char *filename, Mat mat)
     PetscViewerPopFormat(viewer);
     PetscViewerDestroy(&viewer);
 
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /////////////////////////////////////////////////////////////////

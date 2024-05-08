@@ -101,9 +101,12 @@ def main():
         if folder.startswith("fsils_"): 
             continue
 
-        reference_folder = os.path.join(ref_path_12,"4-procs") if folder.endswith("12") else None
-        reference_folder = os.path.join(ref_path_13,"4-procs") if folder.endswith("13") else None
-        reference_folder = os.path.join(ref_path_14,"4-procs") if folder.endswith("14") else None
+        if folder.endswith("12"):
+            reference_folder = os.path.join(ref_path_12,"4-procs") 
+        elif folder.endswith("13"):
+            reference_folder = os.path.join(ref_path_13,"4-procs")
+        else: 
+            reference_folder = os.path.join(ref_path_14,"4-procs")
 
         current_folder = os.path.join(test_cases_path,folder,"4-procs")
         output_folder = current_folder
