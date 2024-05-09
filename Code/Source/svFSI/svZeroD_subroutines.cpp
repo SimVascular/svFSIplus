@@ -68,9 +68,22 @@ std::vector<int> sol_IDs(2 * numCoupledSrfs);
 
 void create_svZeroD_model(std::string lpn_library_name, std::string lpn_json_file)
 {
-  // Load library
+    // Load library
   auto interface = new LPNSolverInterface();
-  interface->load_library(lpn_library_name);
+  
+  // Get correct library name based on operating system
+  std::string interface_lib_path = lpn_library_name.substr(0, lpn_library_name.find("libsvzero_interface"));
+  std::string interface_lib_so = interface_lib_path + "libsvzero_interface.so";
+  std::string interface_lib_dylib = interface_lib_path + "libsvzero_interface.dylib";
+  std::ifstream lib_so_exists(interface_lib_so);
+  std::ifstream lib_dylib_exists(interface_lib_dylib);
+  if (lib_so_exists) {
+    interface->load_library(interface_lib_so);
+  } else if (lib_dylib_exists) {
+    interface->load_library(interface_lib_dylib);
+  } else {
+    throw std::runtime_error("Could not find shared libraries " + interface_lib_so + " or " + interface_lib_dylib);
+  }
 
   // Initialize model
   interface->initialize(std::string(lpn_json_file));
