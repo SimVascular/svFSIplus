@@ -132,7 +132,7 @@
    <Poisson_ratio> 0.3 </Poisson_ratio> 
 
    <LS type="CG" >
-      <Linear_algebra type="petsc" >
+      <Linear_algebra type="fsils" >
          <Preconditioner> fsils </Preconditioner>
       </Linear_algebra>
       <Tolerance> 1e-12 </Tolerance>
