@@ -19,7 +19,7 @@ jobs:
           run: |
             mkdir build
             cd build
-            cmake -DENABLE_COVERAGE=ON -DENABLE_ARRAY_INDEX_CHECKING=ON -DENABLE_UNIT_TEST=ON -DSV_USE_TRILINOS:BOOL=ON ..
+            cmake -DSV_USE_TRILINOS:BOOL=ON ..
             make -j2
             cd ..
         - name: Build svFSIplus (PETSc)
@@ -29,7 +29,7 @@ jobs:
             fi
             mkdir build-petsc
             cd build-petsc
-            cmake -DENABLE_COVERAGE=ON -DENABLE_ARRAY_INDEX_CHECKING=ON -DENABLE_UNIT_TEST=ON -DSV_PETSC_DIR:STRING=/petsc ..
+            cmake -DSV_PETSC_DIR:STRING=/petsc ..
             make -j2
             cd ..
         - name: Run integration tests
