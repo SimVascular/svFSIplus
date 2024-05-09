@@ -24,6 +24,9 @@ jobs:
             cd ..
         - name: Build svFSIplus (PETSc)
           run: |
+            if [ -d "build-petsc" ]; then
+            rm -rf "build-petsc"
+            fi
             mkdir build-petsc
             cd build-petsc
             cmake -DENABLE_COVERAGE=ON -DENABLE_ARRAY_INDEX_CHECKING=ON -DENABLE_UNIT_TEST=ON -DSV_PETSC_DIR:STRING=/petsc ..
