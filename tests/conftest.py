@@ -7,6 +7,7 @@ import meshio
 
 this_file_dir = os.path.abspath(os.path.dirname(__file__))
 cpp_exec = os.path.join(this_file_dir, "..", "build", "svFSI-build", "bin", "svFSI")
+cpp_exec_p = os.path.join(this_file_dir, "..", "build-petsc", "svFSI-build", "bin", "svFSI")
 
 # Relative tolerances for each tested field
 RTOL = {
@@ -50,7 +51,19 @@ def run_by_name(folder, name, t_max, n_proc=1):
     Simulation results
     """
     # run simulation
-    cmd = " ".join(
+    if folder.endswith("petsc"):
+        cmd = " ".join(
+        [
+            "mpirun",
+            "--oversubscribe" if n_proc > 1 else "",
+            "-np",
+            str(n_proc),
+            cpp_exec_p,
+            name,
+        ]
+        )
+    else:
+        cmd = " ".join(
         [
             "mpirun",
             "--oversubscribe" if n_proc > 1 else "",
@@ -59,7 +72,8 @@ def run_by_name(folder, name, t_max, n_proc=1):
             cpp_exec,
             name,
         ]
-    )
+        )
+
     subprocess.call(cmd, cwd=folder, shell=True)
 
     # read results
