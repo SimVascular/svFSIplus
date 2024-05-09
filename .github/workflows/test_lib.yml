@@ -6,10 +6,10 @@ jobs:
         matrix:
           os:
             - name: Ubuntu-20.04
-            - version: ubuntu-20.04
+              version: ubuntu-20.04
               image: ubuntu20
             - name: Ubuntu-22.04
-            - version: ubuntu-22.04
+              version: ubuntu-22.04
               image: ubuntu22
       runs-on: ${{ matrix.os.version }}
       container: dcodoni/lib:${{ matrix.os.image }}
