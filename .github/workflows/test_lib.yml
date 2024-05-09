@@ -11,11 +11,6 @@ jobs:
             - name: Ubuntu-22.04
             - version: ubuntu-22.04
               image: ubuntu22
-          libs:
-            - name: Build with Trilinos 
-            - "-DSV_USE_TRILINOS:BOOL=ON"
-            - name: Build with PETSc
-            - "-DSV_PETSC_DIR:STRING=/petsc"
       runs-on: ${{ matrix.os.version }}
       container: dcodoni/lib:${{ matrix.os.image }}
       steps:
@@ -24,7 +19,14 @@ jobs:
           run: |
             mkdir build
             cd build
-            cmake -DENABLE_COVERAGE=ON -DENABLE_ARRAY_INDEX_CHECKING=ON -DENABLE_UNIT_TEST=ON ${{ matrix.libs }} ..
+            cmake -DENABLE_COVERAGE=ON -DENABLE_ARRAY_INDEX_CHECKING=ON -DENABLE_UNIT_TEST=ON -DSV_USE_TRILINOS:BOOL=ON ..
+            make -j2
+            cd ..
+        - name: Build svFSIplus (PETSc)
+          run: |
+            mkdir build-petsc
+            cd build-petsc
+            cmake -DENABLE_COVERAGE=ON -DENABLE_ARRAY_INDEX_CHECKING=ON -DENABLE_UNIT_TEST=ON -DSV_PETSC_DIR:STRING=/petsc ..
             make -j2
             cd ..
         - name: Run integration tests
