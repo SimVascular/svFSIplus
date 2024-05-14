@@ -31,8 +31,8 @@
 <Add_equation type="CEP" > 
    <Coupled> true </Coupled>
    <Min_iterations> 1 </Min_iterations>  
-   <Max_iterations> 2 </Max_iterations> 
-   <Tolerance> 1e-12 </Tolerance> 
+   <Max_iterations> 5 </Max_iterations> 
+   <Tolerance> 1e-6 </Tolerance> 
 
    <Domain id="1" >
      <Electrophysiology_model> TTP </Electrophysiology_model> 
@@ -57,8 +57,11 @@
    </Output>
 
    <LS type="GMRES" >
+      <Linear_algebra type="fsils" >
+         <Preconditioner> fsils </Preconditioner>
+      </Linear_algebra>
       <Max_iterations> 100 </Max_iterations> 
-      <Tolerance> 1e-12 </Tolerance>
+      <Tolerance> 1e-6 </Tolerance>
       <Krylov_space_dimension> 50 </Krylov_space_dimension>
    </LS>
 

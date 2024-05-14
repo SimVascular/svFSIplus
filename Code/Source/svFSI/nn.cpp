@@ -527,17 +527,14 @@ void gnn(const int eNoN, const int nsd, const int insd, Array<double>& Nxi, Arra
   }
 }
 
-/// @brief This routine returns a surface normal vector at element "e" and Gauss point
-/// 'g' of face 'lFa' that is the normal weighted by Jac, i.e.
-/// Jac = SQRT(NORM(n)), the Jacobian of the mapping from parent surface element to
-/// reference/old/new configuration.
-///
-/// cfg denotes which configuration (reference/timestep 0, old/timestep n, or new/timestep n+1). Default reference
+/// @brief This routine returns a vector at element "e" and Gauss point
+/// 'g' of face 'lFa' that is the normal weigthed by Jac, i.e.
+/// Jac = SQRT(NORM(n)).
 ///
 /// Reproduce Fortran 'GNNB'.
 //
 void gnnb(const ComMod& com_mod, const faceType& lFa, const int e, const int g, const int nsd, const int insd, 
-    const int eNoNb, const Array<double>& Nx, Vector<double>& n, MechanicalConfigurationType cfg)
+    const int eNoNb, const Array<double>& Nx, Vector<double>& n)
 {
   auto& cm = com_mod.cm;
 
@@ -550,7 +547,6 @@ void gnnb(const ComMod& com_mod, const faceType& lFa, const int e, const int g, 
   dmsg << "nsd: " << nsd;
   dmsg << "insd: " << insd;
   dmsg << "eNoNb: " << eNoNb;
-  dmsg << "cfg: " << cfg;
   #endif
 
   int iM = lFa.iM;
@@ -610,40 +606,17 @@ void gnnb(const ComMod& com_mod, const faceType& lFa, const int e, const int g, 
     }
   }
 
-  // Correcting the geometry if mesh is moving or if we want the 
-  // area-weighted normal in a different configuration
+  // Correcting the position vector if mesh is moving
   //
   for (int a = 0; a < eNoN; a++) {
     int Ac = msh.IEN(a,Ec);
     for (int i = 0; i < lX.nrows(); i++) {
-      // Get position vector
       lX(i,a) = com_mod.x(i,Ac);
     }
+
     if (com_mod.mvMsh) {
       for (int i = 0; i < lX.nrows(); i++) {
-        // Add mesh displacement
         lX(i,a) = lX(i,a) + com_mod.Do(i+nsd+1,Ac);
-      }
-    }
-    else {
-      switch (cfg) {
-        case MechanicalConfigurationType::reference:
-          // Do nothing
-          break;
-        case MechanicalConfigurationType::old_timestep:
-          for (int i = 0; i < lX.nrows(); i++) {
-            // Add displacement at timestep n
-            lX(i,a) = lX(i,a) + com_mod.Do(i,Ac);
-          }
-          break;
-        case MechanicalConfigurationType::new_timestep:
-          for (int i = 0; i < lX.nrows(); i++) {
-            // Add displacement at timestep n+1
-            lX(i,a) = lX(i,a) + com_mod.Dn(i,Ac);
-          }
-          break;
-        default:
-          throw std::runtime_error("gnnb: invalid MechanicalConfigurationType provided");
       }
     }
   }
@@ -726,7 +699,7 @@ void gnnb(const ComMod& com_mod, const faceType& lFa, const int e, const int g, 
   }
 
   // Changing the sign if neccessary. 'a' locates on the face and 'b'
-  // in the interior of the element. v points outward along ba
+  // outside of the face, in the parent element
   //
   a = ptr(0);
   int b = ptr(lFa.eNoN);

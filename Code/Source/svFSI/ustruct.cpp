@@ -98,18 +98,7 @@ void b_ustruct_2d(const ComMod& com_mod, const int eNoN, const double w, const V
   }
 }
 
-/// @brief Add follower pressure load contributions to the local residual and stiffness matrix.
-/// @param com_mod 
-/// @param eNoN 
-/// @param w  Gauss point weight times reference configuration area
-/// @param N  Shape function values at the Gauss point
-/// @param Nx Shape function derivatives at the Gauss point
-/// @param dl Displacement vector
-/// @param hl Magnitude of pressure
-/// @param nV Normal vector (in reference configuration)
-/// @param lR Local residual
-/// @param lK Local stiffness matrix
-/// @param lKd Local stiffness matrix (displacement)
+
 void b_ustruct_3d(const ComMod& com_mod, const int eNoN, const double w, const Vector<double>& N, 
     const Array<double>& Nx, const Array<double>& dl, const Vector<double>& hl, const Vector<double>& nV, 
     Array<double>& lR, Array3<double>& lK, Array3<double>& lKd)
@@ -153,7 +142,7 @@ void b_ustruct_3d(const ComMod& com_mod, const int eNoN, const double w, const V
   for (int a = 0; a  < eNoN; a++) {
     NxFi(0,a) = Nx(0,a)*Fi(0,0) + Nx(1,a)*Fi(1,0) + Nx(2,a)*Fi(2,0);
     NxFi(1,a) = Nx(0,a)*Fi(0,1) + Nx(1,a)*Fi(1,1) + Nx(2,a)*Fi(2,1);
-    NxFi(2,a) = Nx(0,a)*Fi(0,2) + Nx(1,a)*Fi(1,2) + Nx(2,a)*Fi(2,2);
+    NxFi(2,a) = Nx(1,a)*Fi(1,2) + Nx(1,a)*Fi(1,2) + Nx(2,a)*Fi(2,2);
   }
 
   nFi(0) = nV(0)*Fi(0,0) + nV(1)*Fi(1,0) + nV(2)*Fi(2,0);
@@ -376,24 +365,6 @@ void construct_usolid(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const
       }
 
     } // for g = 0 to fs[1].nG
-
-#if 0
-    if (e+1 == 100) { 
-      Array3<double>::write_enabled = true;
-      Array<double>::write_enabled = true;
-      lR.write("lR");
-      lK.write("lK");
-      lKd.write("lKd");
-      exit(0);
-    }
-#endif
-
-    // Assembly
-#ifdef WITH_TRILINOS
-    if (eq.assmTLS) {
-      throw std::runtime_error("[construct_usolid] Cannot assemble USTRUCT using Trilinos");
-    }
-#endif
 
     ustruct_do_assem(com_mod, eNoN, ptr, lKd, lK, lR);
 

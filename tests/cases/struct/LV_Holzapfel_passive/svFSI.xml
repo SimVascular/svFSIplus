@@ -44,10 +44,10 @@
   <Fiber_direction_file_path> mesh/fibersLongCells.vtu </Fiber_direction_file_path>
   <Fiber_direction_file_path> mesh/fibersSheetCells.vtu </Fiber_direction_file_path>
 
-  <Mesh_scale_factor> 100.0 </Mesh_scale_factor> <!-- Convert from m to cm -->
+  <Mesh_scale_factor> 100.0 </Mesh_scale_factor>
 </Add_mesh>
 
-<!-- Using cgs units-->
+
 <Add_equation type="struct" > 
 
    <Coupled> true </Coupled>
@@ -55,16 +55,16 @@
    <Max_iterations> 4 </Max_iterations> 
    <Tolerance> 1e-10 </Tolerance> 
 
-   <Density> 1.0 </Density>                           <!-- g/cm^3 -->
-   <Elasticity_modulus> 1.0e6 </Elasticity_modulus>   <!-- dyne/cm^2 -->
+   <Density> 1.0 </Density> 
+   <Elasticity_modulus> 1.0e6 </Elasticity_modulus>
    <Poisson_ratio> 0.483333 </Poisson_ratio>
    <Viscosity model="Constant" >
          <Value> 0.0 </Value>
       </Viscosity>
     
     <Constitutive_model type="Holzapfel"> 
-     <a> 590.0 </a>                                   <!-- dyne/cm^2 -->
-     <b> 8.023 </b>                                   <!-- no units -->
+     <a> 590.0 </a>
+     <b> 8.023 </b>
      <a4f> 184720.0 </a4f>
      <b4f> 16.026 </b4f>
      <a4s> 24810.0 </a4s>
@@ -88,7 +88,9 @@
    </Output>
 
    <LS type="GMRES" >
-      <Preconditioner> FSILS </Preconditioner> 
+      <Linear_algebra type="fsils" >
+         <Preconditioner> fsils </Preconditioner>
+      </Linear_algebra>
       <Tolerance> 1e-12 </Tolerance>
       <Max_iterations> 1000 </Max_iterations> 
       <Krylov_space_dimension> 50 </Krylov_space_dimension>
@@ -96,8 +98,8 @@
 
    <Add_BC name="epi" >
       <Type> Robin </Type> 
-      <Stiffness> 1.0e7 </Stiffness>               <!-- dyne/cm^2/cm -->
-      <Damping> 5.0e2 </Damping>                   <!-- dyne-s/cm^2/cm -->
+      <Stiffness> 1.0e7 </Stiffness>
+      <Damping> 5.0e2 </Damping>
       <Apply_along_normal_direction> 1 </Apply_along_normal_direction>
    </Add_BC> 
 

@@ -690,10 +690,10 @@ void get_pk2cc_dev(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& 
            2.0*g3*(Es(0,1)*RmRm.slice(3) + Es(0,2)*RmRm.slice(5));
 
       auto CCb = 2.0*ten_dyad_prod(Sb, Sb, nsd);
-      Sb = Sb * r2;
+      Sb += Sb * r2;
 
       // Fiber reinforcement/active stress
-      Sb += Tfa*mat_dyad_prod(fl.col(0), fl.col(0), nsd);
+      Sb += Sb + Tfa*mat_dyad_prod(fl.col(0), fl.col(0), nsd);
 
       double r1 = J2d*mat_ddot(C, Sb, nsd) / nd;
       S = J2d*Sb - r1*Ci;

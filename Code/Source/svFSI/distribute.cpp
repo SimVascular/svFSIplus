@@ -224,6 +224,7 @@ void distribute(Simulation* simulation)
   if (cm.seq()) {
     for (int iEq = 0; iEq < com_mod.nEq; iEq++) {
       auto& eq = com_mod.eq[iEq];
+
       for (int iBf = 0; iBf < eq.nBf; iBf++) {
         auto& bf = eq.bf[iBf];
 
@@ -309,7 +310,6 @@ void distribute(Simulation* simulation)
     cm.bcast(cm_mod, &com_mod.startTS);
     cm.bcast(cm_mod, &com_mod.nEq);
     cm.bcast(cm_mod, &com_mod.dt);
-    cm.bcast(cm_mod, &com_mod.precompDt);
 
     cm.bcast(cm_mod, &com_mod.zeroAve);
     cm.bcast(cm_mod, &com_mod.cmmInit);
@@ -321,7 +321,6 @@ void distribute(Simulation* simulation)
 
     cm.bcast(cm_mod, &simulation->cep_mod.cepEq);
 
-    cm.bcast(cm_mod, &com_mod.usePrecomp);
     if (com_mod.rmsh.isReqd) {
       auto& rmsh = com_mod.rmsh;
       cm.bcast_enum(cm_mod, &rmsh.method);
@@ -485,7 +484,8 @@ void distribute(Simulation* simulation)
 
   auto& cep_mod = simulation->cep_mod;
   for (int iEq = 0; iEq < com_mod.nEq; iEq++) {
-    dist_eq(com_mod, cm_mod, cm, tMs, gmtl, cep_mod, com_mod.eq[iEq]);
+    auto& eq = com_mod.eq[iEq];
+    dist_eq(com_mod, cm_mod, cm, tMs, gmtl, cep_mod, eq);
   }
 
   // For CMM initialization
@@ -928,8 +928,6 @@ void dist_bf(ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, bfType& lBf
   }
 }
 
-
-
 void dist_eq(ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, const std::vector<mshType>& tMs,
              const Vector<int>& gmtl, CepMod& cep_mod, eqType& lEq)
 {
@@ -985,7 +983,10 @@ void dist_eq(ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, const std::
   cm.bcast(cm_mod, &lEq.FSILS.CG.sD);
 
   cm.bcast_enum(cm_mod, &lEq.ls.LS_type);
-  cm.bcast_enum(cm_mod, &lEq.ls.PREC_Type);
+
+  cm.bcast_enum(cm_mod, &lEq.linear_algebra_type);
+  cm.bcast_enum(cm_mod, &lEq.linear_algebra_preconditioner);
+  cm.bcast_enum(cm_mod, &lEq.linear_algebra_assembly_type);
 
   cm.bcast(cm_mod, &lEq.ls.relTol);
   cm.bcast(cm_mod, &lEq.ls.absTol);
@@ -1146,6 +1147,7 @@ void dist_eq(ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, const std::
   for (int iBf = 0; iBf < lEq.nBf; iBf++) {
     dist_bf(com_mod, cm_mod, cm, lEq.bf[iBf]);
   }
+
 } 
 
 
@@ -1425,13 +1427,6 @@ void part_face(Simulation* simulation, mshType& lM, faceType& lFa, faceType& gFa
 
 
 /// @brief Reproduces the Fortran 'PARTMSH' subroutine.
-/// Parameters for the part_msh function:
-/// @param[in] simulation A pointer to the simulation object.
-/// @param[in] iM The mesh index.
-/// @param[in] lM The local mesh data.
-/// @param[in] gmtl The global to local map.
-/// @param[in] nP The number of processors.
-/// @param[in] wgt The weights.
 //
 void part_msh(Simulation* simulation, int iM, mshType& lM, Vector<int>& gmtl, int nP, Vector<float>& wgt)
 {
@@ -2026,27 +2021,6 @@ void part_msh(Simulation* simulation, int iM, mshType& lM, Vector<int>& gmtl, in
     //  Now scattering the sorted lM%INN to all processors
      MPI_SCATTERV(tempIEN, sCount, disp, mpint, lM%INN,  nEl*insd, mpint, master, cm%com(), ierr)
     */
-  }
-  // If necessary, distribute precomputed state-variable data.
-  //
-  flag = (lM.Ys.size() != 0);
-  cm.bcast(cm_mod, &flag);
-  if (flag){
-    #ifdef dbg_part_msh
-    dmsg << "Distributing precomputed state-variable data " << " ...";
-    #endif
-    Array3<double> tmpYs;
-    int nsYs = lM.Ys.nslices();
-    if (cm.mas(cm_mod)) {
-      tmpYs.resize(lM.Ys.nrows(), lM.Ys.ncols(), nsYs);
-      tmpYs = lM.Ys;
-      lM.Ys.clear();
-    } else {
-      tmpYs.clear();
-    }
-    lM.Ys.resize(com_mod.nsd, com_mod.tnNo, nsYs);
-    lM.Ys = all_fun::local(com_mod, cm_mod, cm, tmpYs);
-    tmpYs.clear();
-  }
+  } 
 }
 

@@ -593,53 +593,6 @@ void read_vtu(const std::string& file_name, mshType& mesh)
   #endif
 }
 
-
-//----------
-// read_precomputed_solution_vtu
-//----------
-
-/// @brief Read a mesh file with state-variable solution fields from a .vtu or .vtp file.
-///
-///  Mesh variables set
-///   mesh.Ys = precomputed state-variable solutions (e.g. velocity, pressure, etc.)
-
-void read_precomputed_solution_vtu(const std::string& file_name, const std::string& field_name, mshType& mesh)
-{
-  using namespace vtk_xml_parser;
-
-  if (FILE *file = fopen(file_name.c_str(), "r")) {
-    fclose(file);
-  } else {
-    throw std::runtime_error("The VTU mesh file '" + file_name + "' can't be read.");
-  }
-
-  // Read data from a VTK file.
-  //
-  #define n_read_vtu_use_VtkData
-  #ifdef read_vtu_use_VtkData
-  auto vtk_data = VtkData::create_reader(file_name);
-  int num_elems = vtk_data->num_elems();
-  int np_elem = vtk_data->np_elem();
-
-  // Set mesh data.
-  mesh.nEl = num_elems;
-  mesh.eNoN = np_elem;
-  mesh.IEN = vtk_data->get_connectivity();
-  mesh.x = vtk_data->get_points();
-
-  delete vtk_data;
-
-  #else
-
-  auto file_ext = file_name.substr(file_name.find_last_of(".") + 1);
-  if (file_ext == "vtp") {
-    vtk_xml_parser::load_time_varying_field_vtu(file_name, field_name, mesh);
-  } else if (file_ext == "vtu") {
-    vtk_xml_parser::load_time_varying_field_vtu(file_name, field_name, mesh);
-  }
-  #endif
-}
-
 //----------------
 // read_vtu_pdata
 //----------------
@@ -1070,29 +1023,11 @@ void write_vtus(Simulation* simulation, const Array<double>& lA, const Array<dou
           break;
 
           case OutputType::outGrp_Y:
-            if (eq.phys != EquationType::phys_heatF) {
-                for (int a = 0; a < msh.nNo; a++) {
-                    int Ac = msh.gN(a);
-                    for (int i = 0; i < l; i++) {
-                        d[iM].x(i + is, a) = lY(i + s, Ac);
-                    }
-                }
-            } else {
-                if (eq.output[iOut].name == "Velocity") {
-                    for (int a = 0; a < msh.nNo; a++) {
-                        int Ac = msh.gN(a);
-                        for (int i = 0; i < l; i++) {
-                            d[iM].x(i + is, a) = lY(i, Ac);
-                        }
-                    }
-                } else {
-                    for (int a = 0; a < msh.nNo; a++) {
-                        int Ac = msh.gN(a);
-                        for (int i = 0; i < l; i++) {
-                            d[iM].x(i + is, a) = lY(i + s, Ac);
-                        }
-                    }
-                }
+            for (int a = 0; a < msh.nNo; a++) {
+              int Ac = msh.gN(a);
+              for (int i = 0; i < l; i++) {
+                 d[iM].x(i+is,a) = lY(i+s,Ac);
+              }
             }
           break;
 
@@ -1106,7 +1041,6 @@ void write_vtus(Simulation* simulation, const Array<double>& lA, const Array<dou
             #endif
             for (int a = 0; a < msh.nNo; a++) {
               int Ac = msh.gN(a);
-              // Divide by mesh scale factor
               for (int i = 0; i < l; i++) {
                  d[iM].x(i+is,a) = lD(i+s,Ac) / msh.scF;
               }

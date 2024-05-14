@@ -49,8 +49,8 @@
 <Add_equation type="CEP" > 
    <Coupled> true </Coupled>
    <Min_iterations> 1 </Min_iterations>  
-   <Max_iterations> 2 </Max_iterations> 
-   <Tolerance> 1e-12 </Tolerance> 
+   <Max_iterations> 5 </Max_iterations> 
+   <Tolerance> 1e-4 </Tolerance> 
 
   <Domain id="1" >
      <Electrophysiology_model> BO </Electrophysiology_model>
@@ -87,8 +87,10 @@
    </Output>
 
    <LS type="CG" >
-      <Preconditioner> rcs </Preconditioner> 
-      <Tolerance> 1e-12 </Tolerance>
+      <Linear_algebra type="fsils" >
+         <Preconditioner> rcs </Preconditioner> 
+      </Linear_algebra>
+      <Tolerance> 1e-6 </Tolerance>
    </LS>
 
 </Add_equation>

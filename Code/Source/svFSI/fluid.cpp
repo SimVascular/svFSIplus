@@ -41,10 +41,6 @@
 #include <iomanip>
 #include <math.h>
 
-#ifdef WITH_TRILINOS
-#include "trilinos_linear_solver.h"
-#endif
-
 namespace fluid {
 
 void b_fluid(ComMod& com_mod, const int eNoN, const double w, const Vector<double>& N, const Vector<double>& y, 
@@ -93,7 +89,7 @@ void b_fluid(ComMod& com_mod, const int eNoN, const double w, const Vector<doubl
       udn  = udn + u(i)*nV(i);
     }
   }
-  // Compute u dot n for backflow stabilization
+
   udn = 0.50 * dmn.prop.at(PhysicalProperyType::backflow_stab) * dmn.prop.at(PhysicalProperyType::fluid_density) * (udn - fabs(udn));
   auto hc  = h*nV + udn*u;
   #ifdef debug_b_fluid
@@ -103,11 +99,7 @@ void b_fluid(ComMod& com_mod, const int eNoN, const double w, const Vector<doubl
   #endif
 
   // Here the loop is started for constructing left and right hand side
-  // Note, if the boundary is a coupled or resistance boundary, the boundary
-  // pressure is included in the residual here, but the corresponding tangent
-  // contribution is not explicit included in the tangent here. Instead, the 
-  // tangent contribution is accounted for by the ADDBCMUL() function within the
-  // linear solver
+  //
   if (nsd == 2) {
     for (int a = 0; a < eNoN; a++) {
       lR(0,a) = lR(0,a) - w*N(a)*hc(0);
@@ -675,19 +667,7 @@ void construct_fluid(ComMod& com_mod, const mshType& lM, const Array<double>& Ag
 
     } // g: loop
 
-    // Assembly
-    //dmsg << "Assembly  ... ";
-
-#ifdef WITH_TRILINOS
-    if (eq.assmTLS) {
-      trilinos_doassem_(const_cast<int&>(eNoN), const_cast<int*>(ptr.data()), lK.data(), lR.data());
-    } else {
-#endif
-      lhsa_ns::do_assem(com_mod, eNoN, ptr, lK, lR);
-#ifdef WITH_TRILINOS
-    }
-
-#endif 
+    eq.linear_algebra->assemble(com_mod, eNoN, ptr, lK, lR);
 
   } // e: loop
 

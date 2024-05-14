@@ -1,3 +1,27 @@
+# Copyright (c) 2014-2015 The Regents of the University of California.
+# All Rights Reserved.
+#
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal in the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject
+# to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included
+# in all copies or substantial portions of the Software.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+# IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+# TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+# PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+# OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+# EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+# PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+# LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+# NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
@@ -84,11 +108,12 @@ if(NOT "${SV_PETSC_DIR}" STREQUAL "")
   message("  PETSC_LIBRARY_DIRS = ${PETSC_LIBRARY_DIRS}")
   message("  PETSC_INCLUDE_DIRS = ${PETSC_INCLUDE_DIRS}")
 
-  # Set PETSc include directory.
+  # Set PETSc include and library directories.
   include_directories(${PETSC_INCLUDE_DIRS})
+  #link_directories(${PETSC_LIBRARY_DIRS})
 
-  # Set C++ directive to use PETSc in svFSIplus code.
-  ADD_DEFINITIONS(-DWITH_PETSC)
+  # Set C++ directive to use PETSc.
+  ADD_DEFINITIONS(-DUSE_PETSC)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pedantic -std=c99")
 
   set(USE_PETSC 1)
@@ -123,6 +148,10 @@ set(lib ${SV_LIB_SVFSI_NAME})
 set(CSRCS 
   Array3.h Array3.cpp 
   Array.h Array.cpp
+  LinearAlgebra.h LinearAlgebra.cpp
+  FsilsLinearAlgebra.h FsilsLinearAlgebra.cpp
+  PetscLinearAlgebra.h PetscLinearAlgebra.cpp
+  TrilinosLinearAlgebra.h TrilinosLinearAlgebra.cpp
   Tensor4.h Tensor4.cpp
   Vector.h Vector.cpp 
 
@@ -192,12 +221,12 @@ set(CSRCS
 )
 
   # Set PETSc interace code.
-  if(USE_PETSC)
-     #set(CSRCS ${CSRCS} petsc_linear_solver.c)
-  endif()
+  #if(USE_PETSC)
+  #   set(CSRCS ${CSRCS} petsc_linear_solver.h petsc_linear_solver.c)
+  #endif()
 
 if(USE_TRILINOS)
-  set(CSRCS ${CSRCS} trilinos_linear_solver.cpp)
+  #set(CSRCS ${CSRCS} trilinos_linear_solver.cpp)
 
   # trilinos directories and libraries
   include_directories(${Trilinos_TPL_INCLUDE_DIRS})
@@ -260,56 +289,4 @@ if(ENABLE_COVERAGE)
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 endif()
 
-# unit tests and Google Test
-if(ENABLE_UNIT_TEST)
-
-  # link pthread on ubuntu20
-  find_package(Threads REQUIRED)
-
-  # install Google Test
-  include(FetchContent)
-  FetchContent_Declare(
-    googletest
-    URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
-  )
-  FetchContent_MakeAvailable(googletest)
-  enable_testing()
-  include(GoogleTest)
-
-  # add test.cpp for unit test
-
-  # remove the main.cpp and add test.cpp
-  list(APPEND CSRCS "../../../tests/unitTests/test.cpp")
-  list(REMOVE_ITEM CSRCS "main.cpp")
-  
-  # include source files (same as what svFSI does except for main.cpp)
-  add_executable(run_all_unit_tests ${CSRCS})
-  
-  # libraries
-  target_link_libraries(run_all_unit_tests
-    ${GLOBAL_LIBRARIES}
-    ${INTELRUNTIME_LIBRARIES}
-    ${ZLIB_LIBRARY}
-    ${BLAS_LIBRARIES}
-    ${LAPACK_LIBRARIES}
-    ${METIS_SVFSI_LIBRARY_NAME}
-    ${PARMETIS_SVFSI_LIBRARY_NAME}
-    ${TETGEN_LIBRARY_NAME}
-    ${TINYXML_LIBRARY_NAME}
-    ${SV_LIB_SVFSILS_NAME}${SV_MPI_NAME_EXT}
-    ${VTK_LIBRARIES}
-  )
-
-  # link Google Test
-  target_link_libraries(
-    run_all_unit_tests
-    gtest
-    GTest::gtest_main 
-    pthread   # link pthread on ubuntu20
-  )
-
-  # gtest_discover_tests(runUnitTest)
-  add_test(NAME all_unit_tests COMMAND run_all_unit_tests)
-
-endif()
 
