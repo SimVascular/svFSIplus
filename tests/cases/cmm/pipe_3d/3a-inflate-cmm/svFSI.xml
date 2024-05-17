@@ -70,13 +70,12 @@
    </Output>
 
    <LS type="GMRES" >
-      <Linear_algebra type="fsils" >
-         <Preconditioner> fsils </Preconditioner>
-      </Linear_algebra>
+     <Preconditioner> FSILS </Preconditioner>
      <Max_iterations> 10 </Max_iterations>
      <Tolerance> 1e-12 </Tolerance>
      <Krylov_space_dimension> 50 </Krylov_space_dimension>
    </LS>
+  
 
    <Add_BC name="lumen_inlet" > 
       <Type> Dir </Type>

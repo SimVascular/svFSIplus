@@ -79,12 +79,11 @@
    </Output>
 
    <LS type="GMRES" >
-     <Linear_algebra type="fsils" >
-       <Preconditioner> fsils </Preconditioner>
-     </Linear_algebra>
+     <Preconditioner> FSILS </Preconditioner>
      <Max_iterations> 100 </Max_iterations>
      <Tolerance> 1e-12 </Tolerance>
    </LS>
+  
 
    <Add_BC name="inlet_aorta" > 
       <Type> Dir </Type>

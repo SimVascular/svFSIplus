@@ -54,9 +54,8 @@
    <Momentum_stabilization_coefficient> 0.0 </Momentum_stabilization_coefficient> 
 
    <LS type="BICG" >
-      <Linear_algebra type="trilinos" >
-         <Preconditioner> trilinos-diagnonal </Preconditioner>
-      </Linear_algebra>
+      <!--Preconditioner> Trilinos-ILUT </Preconditioner--> 
+      <Preconditioner> Trilinos-Diagonal </Preconditioner> 
       <Tolerance> 1e-9 </Tolerance>
       <Max_iterations> 1000 </Max_iterations> 
    </LS>
