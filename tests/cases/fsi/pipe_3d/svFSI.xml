@@ -12,7 +12,7 @@
   <Name_prefix_of_saved_VTK_files> result </Name_prefix_of_saved_VTK_files> 
   <Increment_in_saving_VTK_files> 5 </Increment_in_saving_VTK_files> 
   <Start_saving_after_time_step> 1 </Start_saving_after_time_step> 
-  <Increment_in_saving_restart_files> 100 </Increment_in_saving_restart_files> 
+  <Increment_in_saving_restart_files> 1 </Increment_in_saving_restart_files> 
   <Convert_BIN_to_VTK_format> 0 </Convert_BIN_to_VTK_format> 
   <Verbose> 1 </Verbose> 
   <Warning> 0 </Warning> 
@@ -83,7 +83,6 @@
       <Linear_algebra type="fsils" >
          <Preconditioner> fsils </Preconditioner>
       </Linear_algebra>
-      <Tolerance> 1e-6 </Tolerance>
       <Tolerance> 1e-12 </Tolerance>
       <Max_iterations> 100 </Max_iterations> 
       <Krylov_space_dimension> 50 </Krylov_space_dimension>
