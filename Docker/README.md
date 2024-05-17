@@ -5,11 +5,7 @@ It is suggested to change the resources that Docker engine is using, since conta
 
 ## Docker containers
 A container is an isolated environment based on a specific operating system (OS) (typically Linux based), in which a solver can be built. The environment created in a container includes all the dependencies of the solver that needs to be built. Once the container is created, it can be run on any machine and the solver can be built directly in this virtual environment. 
-<<<<<<< HEAD
-In this work the containers are created using [Docker](https://www.docker.com). A Docker container is built from a dockerfile. After it is created, it is saved as an image that can be copied anywhere is needed or uploaded on the cloud [DockerHub](https://hub.docker.com).
-=======
 In this work the containers are created using software [Docker](https://www.docker.com). A Docker container is built from a dockerfile. After it is created, it is saved as an image that can be copied anywhere is needed or uploaded on the cloud [DockerHub](https://hub.docker.com).
->>>>>>> b887fd6aa14382cd941909a1ce9fedcf985c2ed3
 
 ## Dockerfile
 In the folder Docker/ there are two subfolders ubuntu20/ and ubuntu22/ containing a dockerfile each. A dockerfile usually begins with an image import of the environment OS, which in this case is Ubuntu-20.04 and Ubuntu-22.04. 
