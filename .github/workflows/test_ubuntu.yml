@@ -17,6 +17,9 @@ jobs:
         - uses: actions/checkout@v3
         - name: Build svFSIplus
           run: |
+            if [ -d "build" ]; then
+            rm -rf "build"
+            fi
             mkdir build
             cd build
             cmake -DENABLE_COVERAGE=ON -DENABLE_ARRAY_INDEX_CHECKING=ON -DENABLE_UNIT_TEST=ON -DSV_USE_TRILINOS:BOOL=ON ..
