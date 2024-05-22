@@ -2,6 +2,7 @@ import numpy as np
 
 import pytest
 import os
+import shutils
 import platform
 import subprocess
 import meshio
