@@ -1,4 +1,0 @@
-/Users/dcodoni/research/svFSIplus-package/svFSIplus/build-petsc/CMakeFiles/Externals.dir
-/Users/dcodoni/research/svFSIplus-package/svFSIplus/build-petsc/CMakeFiles/svFSI.dir
-/Users/dcodoni/research/svFSIplus-package/svFSIplus/build-petsc/CMakeFiles/edit_cache.dir
-/Users/dcodoni/research/svFSIplus-package/svFSIplus/build-petsc/CMakeFiles/rebuild_cache.dir

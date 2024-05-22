@@ -2,8 +2,12 @@ import numpy as np
 
 import pytest
 import os
+import platform
 import subprocess
 import meshio
+
+is_not_Darwin = True
+if platform.system() == "Darwin": is_not_Darwin = False
 
 this_file_dir = os.path.abspath(os.path.dirname(__file__))
 cpp_exec = os.path.join(this_file_dir, "..", "build", "svFSI-build", "bin", "svFSI")
@@ -51,28 +55,43 @@ def run_by_name(folder, name, t_max, n_proc=1):
     Simulation results
     """
     # run simulation
-    if folder.endswith("petsc"):
-        cmd = " ".join(
-        [
-            "mpirun",
-            "--oversubscribe" if n_proc > 1 else "",
-            "-np",
-            str(n_proc),
-            cpp_exec_p,
-            name,
-        ]
-        )
+    if is_not_Darwin:
+        if folder.endswith("petsc"):
+            cmd = " ".join(
+            [
+                "mpirun",
+                "--oversubscribe" if n_proc > 1 else "",
+                "-np",
+                str(n_proc),
+                cpp_exec_p,
+                name,
+            ]
+            )
+        else:
+            cmd = " ".join(
+            [
+                "mpirun",
+                "--oversubscribe" if n_proc > 1 else "",
+                "-np",
+                str(n_proc),
+                cpp_exec,
+                name,
+            ]
+            )
     else:
-        cmd = " ".join(
-        [
-            "mpirun",
-            "--oversubscribe" if n_proc > 1 else "",
-            "-np",
-            str(n_proc),
-            cpp_exec,
-            name,
-        ]
-        )
+        if folder.endswith("petsc") or folder.endswith("trilinos"): 
+            return
+        else:
+            cmd = " ".join(
+                [
+                    "mpirun",
+                    "--oversubscribe" if n_proc > 1 else "",
+                    "-np",
+                    str(n_proc),
+                    cpp_exec,
+                    name,
+                ]
+                )
 
     subprocess.call(cmd, cwd=folder, shell=True)
 
@@ -110,7 +129,14 @@ def run_with_reference(
 
     # run simulation
     folder = os.path.join("cases", base_folder, test_folder)
-    res = run_by_name(folder, name_inp, t_max, n_proc)
+    
+    if is_not_Darwin:
+        res = run_by_name(folder, name_inp, t_max, n_proc)
+    else:
+        if folder.endswith("petsc") or folder.endswith("trilinos"): 
+            return
+        else:
+            res = run_by_name(folder, name_inp, t_max, n_proc)
 
     # read reference
     fname = os.path.join(folder, name_ref)

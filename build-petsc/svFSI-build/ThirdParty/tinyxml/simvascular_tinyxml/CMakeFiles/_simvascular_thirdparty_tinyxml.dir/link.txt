@@ -1,2 +1,0 @@
-/Library/Developer/CommandLineTools/usr/bin/ar qc ../../../lib/lib_simvascular_thirdparty_tinyxml.a CMakeFiles/_simvascular_thirdparty_tinyxml.dir/tinyxml2.cpp.o
-/Library/Developer/CommandLineTools/usr/bin/ranlib ../../../lib/lib_simvascular_thirdparty_tinyxml.a
