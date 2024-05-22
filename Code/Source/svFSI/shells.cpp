@@ -41,10 +41,6 @@
 #include "nn.h"
 #include "utils.h"
 
-#ifdef WITH_TRILINOS
-#include "trilinos_linear_solver.h"
-#endif
-
 namespace shells {
 
 /// @brief This routines is for solving nonlinear shell mechanics problem
@@ -186,20 +182,7 @@ void construct_shell(ComMod& com_mod, const mshType& lM, const Array<double>& Ag
       }
     }
 
-    //if (e+1 == 19) {
-      //exit(0);
-    //}
-
-    // Assembly
-#ifdef WITH_TRILINOS
-    if (eq.assmTLS) {
-      trilinos_doassem_(const_cast<int&>(eNoN), const_cast<int*>(ptr.data()), lK.data(), lR.data());
-    } else {
-#endif
-     lhsa_ns::do_assem(com_mod, eNoN, ptr, lK, lR);
-#ifdef WITH_TRILINOS
-    }
-#endif
+    eq.linear_algebra->assemble(com_mod, eNoN, ptr, lK, lR);
 
   } // e: loop
 
@@ -1671,22 +1654,7 @@ void shell_cst(ComMod& com_mod, const mshType& lM, const int e, const int eNoN, 
     }
   }
 
-  // Global assembly
-
-  //std::cout << "[shell_cst] " << std::endl;
-  //std::cout << "[shell_cst] lR: " << lR << std::endl;
-  //std::cout << "[shell_cst] lK: " << lK << std::endl;
-  //exit(0);
-
-#ifdef WITH_TRILINOS
-  if (eq.assmTLS) { 
-    trilinos_doassem_(const_cast<int&>(eNoN), const_cast<int*>(ptr.data()), lK.data(), lR.data());
-  } else { 
-#endif
-    lhsa_ns::do_assem(com_mod, eNoN, ptr, lK, lR);
-#ifdef WITH_TRILINOS
-  }
-#endif
+  eq.linear_algebra->assemble(com_mod, eNoN, ptr, lK, lR);
 }
 
 //----------

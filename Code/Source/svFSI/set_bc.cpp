@@ -44,10 +44,6 @@
 #include "utils.h"
 #include <math.h>
 
-#ifdef WITH_TRILINOS
-#include "trilinos_linear_solver.h"
-#endif
-
 namespace set_bc {
 
 /// @brief This function calculates updated cplBC pressures or flowrates from 0D,
@@ -1301,14 +1297,7 @@ void set_bc_dir_wl(ComMod& com_mod, const bcType& lBc, const mshType& lM, const 
       }
     }
 
-    // Now doing the assembly part
-    if (eq.assmTLS) {
-#ifdef WITH_TRILINOS
-      trilinos_doassem_(const_cast<int&>(eNoN), ptr.data(), lK.data(), lR.data());
-#endif
-    } else {
-      lhsa_ns::do_assem(com_mod, eNoN, ptr, lK, lR);
-    }
+    eq.linear_algebra->assemble(com_mod, eNoN, ptr, lK, lR);
   }
 }
 
@@ -1663,16 +1652,10 @@ void set_bc_rbnl(ComMod& com_mod, const faceType& lFa, const double ks, const do
       }
     }
 
-    if (eq.assmTLS) {
-      #ifdef WITH_TRILINOS
-      trilinos_doassem_(const_cast<int&>(eNoN), ptr.data(), lK.data(), lR.data());
-      #endif
+    if (cPhys == EquationType::phys_ustruct) {
+      ustruct::ustruct_do_assem(com_mod, eNoN, ptr, lKd, lK, lR);
     } else {
-      if (cPhys == EquationType::phys_ustruct) {
-        ustruct::ustruct_do_assem(com_mod, eNoN, ptr, lKd, lK, lR);
-      } else {
-        lhsa_ns::do_assem(com_mod, eNoN, ptr, lK, lR);
-      }
+      eq.linear_algebra->assemble(com_mod, eNoN, ptr, lK, lR);
     }
 
   } // for int e = 0; e < lFa.nEl; e++
@@ -1784,13 +1767,7 @@ void set_bc_trac_l(ComMod& com_mod, const CmMod& cm_mod, const bcType& lBc, cons
       }
     }
 
-    if (eq.assmTLS) {
-      #ifdef WITH_TRILINOS
-      trilinos_doassem_(const_cast<int&>(eNoN), ptr.data(), lK.data(), lR.data());
-      #endif
-    } else {
-      lhsa_ns::do_assem(com_mod, eNoN, ptr, lK, lR); 
-    }
+    eq.linear_algebra->assemble(com_mod, eNoN, ptr, lK, lR);
   }
 }
 
