@@ -2,7 +2,7 @@ import numpy as np
 
 import pytest
 import os
-import shutils
+import shutil
 import platform
 import subprocess
 import meshio
