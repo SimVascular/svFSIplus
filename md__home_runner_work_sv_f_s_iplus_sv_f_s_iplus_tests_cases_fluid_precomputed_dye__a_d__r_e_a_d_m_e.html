@@ -68,7 +68,7 @@ $(function() {
 <div class="contents">
 <div class="textblock"><p>Solve dye transportation with fluid flow in a cylindrical tube with zero neumann boundary condition at the outlet and steady flow at the inlet. The dye is passively transported by the flow through advection and diffusion.</p>
 <p>The input file <code>svFSI.inp</code> follows the master input file <a href="./svFSI_master.inp"><code>svFSI_master.inp</code></a> as a template. Some specific input options are discussed below:</p>
-<h1><a class="anchor" id="autotoc_md90"></a>
+<h1><a class="anchor" id="autotoc_md115"></a>
 Scalar transport equation</h1>
 <p>Unlike the test case in <code>04-fluid/02-dye_AD</code>, the advection-diffusion equation that governs the dye transportation is added to the input file without a proceeding fluid equation. Here we assume that we already have a velocity field that has been precomputed by some prior physics simulation (denoted <code>precomputed_velocity.vtu</code>). The specified velocity field solution is then taken to advect a scalar field. This equation is built on top of the heat transfer equation, so some of the terminology in the input file follows those in the heat equation, e.g. "Conductivity", "Temperature".</p>
 <p>Some noticeable setting in the input file are:</p>

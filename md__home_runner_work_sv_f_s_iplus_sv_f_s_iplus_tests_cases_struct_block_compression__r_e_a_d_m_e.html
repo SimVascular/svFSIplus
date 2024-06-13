@@ -73,7 +73,7 @@ $(function() {
 <p align="center"></p>
 <p><img src="./displacement.png" alt="" width="600" class="inline"/> </p>
 <p>The input file <code>svFSI.inp</code> follows the master input file <a href="./svFSI_master.inp"><code>svFSI_master.inp</code></a> as a template. Some specific input options are discussed below:</p>
-<h1><a class="anchor" id="autotoc_md99"></a>
+<h1><a class="anchor" id="autotoc_md134"></a>
 Directional Dirichlet BC</h1>
 <p>The problem configuration requires enforcing Dirichlet BC along a specific direction. For example, mesh points on the patch should have zero displacement along x and y directions.</p>
 <div class="fragment"><div class="line">Add BC: patch {</div>
@@ -82,7 +82,7 @@ Directional Dirichlet BC</h1>
 <div class="line">   Effective direction: (1, 1, 0)</div>
 <div class="line">}</div>
 </div><!-- fragment --><p>This is achieved through <code>Effective direction</code> command. Currently, the software only supports specify Dirichlet BC along Cartesian directions. For example, <code>(1,0,0)</code> or <code>(1,0)</code> sets Dirichlet BC along x-axis in 3D or 2D.</p>
-<h1><a class="anchor" id="autotoc_md100"></a>
+<h1><a class="anchor" id="autotoc_md135"></a>
 Reference</h1>
 <ol type="1">
 <li>Liu, Ju, and Alison L. Marsden. A Unified Continuum and Variational Multiscale Formulation for Fluids, Solids, and Fluid Structure Interaction. <em>Computer Methods in Applied Mechanics and Engineering</em> 337 (August 2018): 549 97. <a href="https://doi.org/10.1016/j.cma.2018.03.045">https://doi.org/10.1016/j.cma.2018.03.045</a>. </li>

@@ -167,6 +167,18 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:a36c82a16faab45c12dccd030dc6fb22a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classls_type.html">lsType</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classeq_type.html#a36c82a16faab45c12dccd030dc6fb22a">ls</a></td></tr>
 <tr class="memdesc:a36c82a16faab45c12dccd030dc6fb22a"><td class="mdescLeft">&#160;</td><td class="mdescRight">type of linear solver  <a href="classeq_type.html#a36c82a16faab45c12dccd030dc6fb22a">More...</a><br /></td></tr>
 <tr class="separator:a36c82a16faab45c12dccd030dc6fb22a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8ac6eece7acb88bc1c71cf83fa578ac3"><td class="memItemLeft" align="right" valign="top">consts::LinearAlgebraType&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classeq_type.html#a8ac6eece7acb88bc1c71cf83fa578ac3">linear_algebra_type</a></td></tr>
+<tr class="memdesc:a8ac6eece7acb88bc1c71cf83fa578ac3"><td class="mdescLeft">&#160;</td><td class="mdescRight">The type of interface to a numerical linear algebra library.  <a href="classeq_type.html#a8ac6eece7acb88bc1c71cf83fa578ac3">More...</a><br /></td></tr>
+<tr class="separator:a8ac6eece7acb88bc1c71cf83fa578ac3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a86bd75a44bb793c9d8eacb1b8630f43a"><td class="memItemLeft" align="right" valign="top">consts::LinearAlgebraType&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classeq_type.html#a86bd75a44bb793c9d8eacb1b8630f43a">linear_algebra_assembly_type</a></td></tr>
+<tr class="memdesc:a86bd75a44bb793c9d8eacb1b8630f43a"><td class="mdescLeft">&#160;</td><td class="mdescRight">The type of assembly interface to a numerical linear algebra library.  <a href="classeq_type.html#a86bd75a44bb793c9d8eacb1b8630f43a">More...</a><br /></td></tr>
+<tr class="separator:a86bd75a44bb793c9d8eacb1b8630f43a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8470a46f5c609142d8cd55242be7dd6e"><td class="memItemLeft" align="right" valign="top">consts::PreconditionerType&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classeq_type.html#a8470a46f5c609142d8cd55242be7dd6e">linear_algebra_preconditioner</a> = consts::PreconditionerType::PREC_FSILS</td></tr>
+<tr class="memdesc:a8470a46f5c609142d8cd55242be7dd6e"><td class="mdescLeft">&#160;</td><td class="mdescRight">The type of preconditioner used by the interface to a numerical linear algebra library.  <a href="classeq_type.html#a8470a46f5c609142d8cd55242be7dd6e">More...</a><br /></td></tr>
+<tr class="separator:a8470a46f5c609142d8cd55242be7dd6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0904fcf8bbf2989983b8ae5ecde2e64c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_linear_algebra.html">LinearAlgebra</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classeq_type.html#a0904fcf8bbf2989983b8ae5ecde2e64c">linear_algebra</a> = nullptr</td></tr>
+<tr class="memdesc:a0904fcf8bbf2989983b8ae5ecde2e64c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Interface to a numerical linear algebra library.  <a href="classeq_type.html#a0904fcf8bbf2989983b8ae5ecde2e64c">More...</a><br /></td></tr>
+<tr class="separator:a0904fcf8bbf2989983b8ae5ecde2e64c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad3040eeb5a17e16bebf2e67eef664815"><td class="memItemLeft" align="right" valign="top">fsi_linear_solver::FSILS_lsType&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classeq_type.html#ad3040eeb5a17e16bebf2e67eef664815">FSILS</a></td></tr>
 <tr class="memdesc:ad3040eeb5a17e16bebf2e67eef664815"><td class="mdescLeft">&#160;</td><td class="mdescRight">FSILS type of linear solver.  <a href="classeq_type.html#ad3040eeb5a17e16bebf2e67eef664815">More...</a><br /></td></tr>
 <tr class="separator:ad3040eeb5a17e16bebf2e67eef664815"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -449,6 +461,70 @@ Public Attributes</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Number of performed iterations. </p>
+
+</div>
+</div>
+<a id="a0904fcf8bbf2989983b8ae5ecde2e64c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0904fcf8bbf2989983b8ae5ecde2e64c">&#9670;&nbsp;</a></span>linear_algebra</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="class_linear_algebra.html">LinearAlgebra</a>* eqType::linear_algebra = nullptr</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Interface to a numerical linear algebra library. </p>
+
+</div>
+</div>
+<a id="a86bd75a44bb793c9d8eacb1b8630f43a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a86bd75a44bb793c9d8eacb1b8630f43a">&#9670;&nbsp;</a></span>linear_algebra_assembly_type</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">consts::LinearAlgebraType eqType::linear_algebra_assembly_type</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The type of assembly interface to a numerical linear algebra library. </p>
+
+</div>
+</div>
+<a id="a8470a46f5c609142d8cd55242be7dd6e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8470a46f5c609142d8cd55242be7dd6e">&#9670;&nbsp;</a></span>linear_algebra_preconditioner</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">consts::PreconditionerType eqType::linear_algebra_preconditioner = consts::PreconditionerType::PREC_FSILS</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The type of preconditioner used by the interface to a numerical linear algebra library. </p>
+
+</div>
+</div>
+<a id="a8ac6eece7acb88bc1c71cf83fa578ac3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8ac6eece7acb88bc1c71cf83fa578ac3">&#9670;&nbsp;</a></span>linear_algebra_type</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">consts::LinearAlgebraType eqType::linear_algebra_type</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The type of interface to a numerical linear algebra library. </p>
 
 </div>
 </div>
