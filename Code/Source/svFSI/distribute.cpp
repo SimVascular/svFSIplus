@@ -224,6 +224,7 @@ void distribute(Simulation* simulation)
   if (cm.seq()) {
     for (int iEq = 0; iEq < com_mod.nEq; iEq++) {
       auto& eq = com_mod.eq[iEq];
+
       for (int iBf = 0; iBf < eq.nBf; iBf++) {
         auto& bf = eq.bf[iBf];
 
@@ -485,7 +486,8 @@ void distribute(Simulation* simulation)
 
   auto& cep_mod = simulation->cep_mod;
   for (int iEq = 0; iEq < com_mod.nEq; iEq++) {
-    dist_eq(com_mod, cm_mod, cm, tMs, gmtl, cep_mod, com_mod.eq[iEq]);
+    auto& eq = com_mod.eq[iEq];
+    dist_eq(com_mod, cm_mod, cm, tMs, gmtl, cep_mod, eq);
   }
 
   // For CMM initialization
@@ -928,8 +930,6 @@ void dist_bf(ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, bfType& lBf
   }
 }
 
-
-
 void dist_eq(ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, const std::vector<mshType>& tMs,
              const Vector<int>& gmtl, CepMod& cep_mod, eqType& lEq)
 {
@@ -985,7 +985,10 @@ void dist_eq(ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, const std::
   cm.bcast(cm_mod, &lEq.FSILS.CG.sD);
 
   cm.bcast_enum(cm_mod, &lEq.ls.LS_type);
-  cm.bcast_enum(cm_mod, &lEq.ls.PREC_Type);
+
+  cm.bcast_enum(cm_mod, &lEq.linear_algebra_type);
+  cm.bcast_enum(cm_mod, &lEq.linear_algebra_preconditioner);
+  cm.bcast_enum(cm_mod, &lEq.linear_algebra_assembly_type);
 
   cm.bcast(cm_mod, &lEq.ls.relTol);
   cm.bcast(cm_mod, &lEq.ls.absTol);
@@ -1146,6 +1149,7 @@ void dist_eq(ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, const std::
   for (int iBf = 0; iBf < lEq.nBf; iBf++) {
     dist_bf(com_mod, cm_mod, cm, lEq.bf[iBf]);
   }
+
 } 
 
 
