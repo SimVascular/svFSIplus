@@ -19,7 +19,7 @@ jobs:
         - name: Build svZeroDSolver
           run: |
             conda init
-            source ./root/.bashrc
+            ./root/.bashrc
             git clone https://github.com/SimVascular/svZeroDSolver.git
             cd svZeroDSolver
             mkdir build
