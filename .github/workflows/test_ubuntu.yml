@@ -17,7 +17,11 @@ jobs:
       steps:
         - uses: actions/checkout@v3
         - name: Build svZeroDSolver
+          shell: bash
           run: |
+            conda init
+            source /conda/etc/profile.d/conda.sh
+            conda activate svfsiplus
             git clone https://github.com/SimVascular/svZeroDSolver.git
             cd svZeroDSolver
             mkdir build
