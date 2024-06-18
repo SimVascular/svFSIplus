@@ -19,13 +19,14 @@ jobs:
         - name: Build svZeroDSolver
           run: |
             conda init
-            . /root/.bashrc
+            source /root/.bashrc
             git clone https://github.com/SimVascular/svZeroDSolver.git
             cd svZeroDSolver
             mkdir build
             cd build
             cmake ..
             make -j2
+          shell: bash
         - name: Build svFSIplus
           run: |
             if [ -d "build" ]; then
