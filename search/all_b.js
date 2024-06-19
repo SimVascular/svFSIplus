@@ -14,12 +14,13 @@ var searchData=
   ['linearalgebraparameters_283',['LinearAlgebraParameters',['../class_linear_algebra_parameters.html',1,'']]],
   ['linearsolverparameters_284',['LinearSolverParameters',['../class_linear_solver_parameters.html',1,'']]],
   ['ln_285',['lN',['../classmsh_type.html#a4d18ffccb3e4e381fb65f4de0a7b755a',1,'mshType']]],
-  ['ls_286',['ls',['../classeq_type.html#a36c82a16faab45c12dccd030dc6fb22a',1,'eqType']]],
-  ['ls_5ftype_287',['LS_type',['../classls_type.html#a9c92c64f63ef347ecc83562a9658841f',1,'lsType']]],
-  ['lsctx_288',['LSCtx',['../struct_l_s_ctx.html',1,'']]],
-  ['lshl_289',['lShl',['../classmsh_type.html#ab5c360a0f6b904224c2b0da1ae11c3e1',1,'mshType']]],
-  ['lshpf_290',['lShpF',['../classmsh_type.html#a498a012d76c38cb45be3eb436b7b34ac',1,'mshType']]],
-  ['lstype_291',['lsType',['../classls_type.html',1,'']]],
-  ['ltg_292',['ltg',['../class_com_mod.html#ae4275feec215caee592255a7764235e1',1,'ComMod']]],
-  ['ltg_5f_293',['ltg_',['../class_trilinos_linear_algebra_1_1_trilinos_impl.html#acbdea154b9747a7620069cf3ed235f15',1,'TrilinosLinearAlgebra::TrilinosImpl']]]
+  ['lpnsolverinterface_286',['LPNSolverInterface',['../class_l_p_n_solver_interface.html',1,'']]],
+  ['ls_287',['ls',['../classeq_type.html#a36c82a16faab45c12dccd030dc6fb22a',1,'eqType']]],
+  ['ls_5ftype_288',['LS_type',['../classls_type.html#a9c92c64f63ef347ecc83562a9658841f',1,'lsType']]],
+  ['lsctx_289',['LSCtx',['../struct_l_s_ctx.html',1,'']]],
+  ['lshl_290',['lShl',['../classmsh_type.html#ab5c360a0f6b904224c2b0da1ae11c3e1',1,'mshType']]],
+  ['lshpf_291',['lShpF',['../classmsh_type.html#a498a012d76c38cb45be3eb436b7b34ac',1,'mshType']]],
+  ['lstype_292',['lsType',['../classls_type.html',1,'']]],
+  ['ltg_293',['ltg',['../class_com_mod.html#ae4275feec215caee592255a7764235e1',1,'ComMod']]],
+  ['ltg_5f_294',['ltg_',['../class_trilinos_linear_algebra_1_1_trilinos_impl.html#acbdea154b9747a7620069cf3ed235f15',1,'TrilinosLinearAlgebra::TrilinosImpl']]]
 ];
