@@ -741,7 +741,10 @@ class cplBCType
     /// @brief Whether to use genBC
     bool useGenBC = false;
 
-    /// @brief Whether to initialize RCR from flow data
+    //  Whether to use svZeroD
+    bool useSvZeroD = false;
+
+    //  Whether to initialize RCR from flow data
     bool initRCR = false;
 
     /// @brief Number of coupled faces

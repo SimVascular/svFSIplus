@@ -43,6 +43,7 @@
 #include "ustruct.h"
 #include "utils.h"
 #include <math.h>
+#include "svZeroD_subroutines.h"
 
 namespace set_bc {
 
@@ -63,7 +64,9 @@ void calc_der_cpl_bc(ComMod& com_mod, const CmMod& cm_mod)
   #endif
 
   const int iEq = 0;
-  const double absTol = 1.0e-8;
+  // NOTE: For coupling with svZeroDPlus, absTol needs to be > 1e-8 to be compatible with the default convergence tolerance of svZeroDPlus (1e-8)
+  // If this is not true, the finite difference computation of bc.r below results in zero because the perturbation is below the svZeroDPlus tolerance 
+  const double absTol = 1.0e-7;
   const double relTol = 1.0e-5;
 
   int nsd = com_mod.nsd;
@@ -168,6 +171,8 @@ void calc_der_cpl_bc(ComMod& com_mod, const CmMod& cm_mod)
   // Call genBC or cplBC to get updated pressures or flowrates.
   if (cplBC.useGenBC) {
      set_bc::genBC_Integ_X(com_mod, cm_mod, "D");
+   } else if (cplBC.useSvZeroD) {
+     svZeroD::calc_svZeroD(com_mod, cm_mod, 'D');
    } else {
      set_bc::cplBC_Integ_X(com_mod, cm_mod, RCRflag);
   }
@@ -213,9 +218,11 @@ void calc_der_cpl_bc(ComMod& com_mod, const CmMod& cm_mod)
 
         // Call genBC or cplBC again with perturbed flowrate
         if (cplBC.useGenBC) {
-           set_bc::genBC_Integ_X(com_mod, cm_mod, "D");
-         } else {
-           set_bc::cplBC_Integ_X(com_mod, cm_mod, RCRflag);
+          set_bc::genBC_Integ_X(com_mod, cm_mod, "D");
+        } else if (cplBC.useSvZeroD) {
+          svZeroD::calc_svZeroD(com_mod, cm_mod, 'D');
+        } else {
+          set_bc::cplBC_Integ_X(com_mod, cm_mod, RCRflag);
         }
 
         // Finite difference calculation of the resistance dP/dQ
@@ -752,6 +759,8 @@ void set_bc_cpl(ComMod& com_mod, CmMod& cm_mod)
     // Updates pressure or flowrates stored in cplBC.fa[i].y
     if (cplBC.useGenBC) {
        set_bc::genBC_Integ_X(com_mod, cm_mod, "D");
+    } else if (cplBC.useSvZeroD){
+      svZeroD::calc_svZeroD(com_mod, cm_mod, 'D');
     } else {
        set_bc::cplBC_Integ_X(com_mod, cm_mod, RCRflag);
     }
