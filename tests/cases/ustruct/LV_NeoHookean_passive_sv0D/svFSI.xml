@@ -50,8 +50,8 @@
 
    <Coupled> true </Coupled>
    <Min_iterations> 3 </Min_iterations>  
-   <Max_iterations> 10 </Max_iterations> 
-   <Tolerance> 1e-9 </Tolerance> 
+   <Max_iterations> 20 </Max_iterations> 
+   <Tolerance> 1e-12 </Tolerance> 
 
    <Density> 1.0 </Density>                           <!-- g/cm^3 -->
    <Elasticity_modulus> 1.0e5 </Elasticity_modulus>   <!-- dyne/cm^2 -->
@@ -80,7 +80,7 @@
       <Linear_algebra type="fsils" >
          <Preconditioner> fsils </Preconditioner>
       </Linear_algebra> 
-      <Tolerance> 1e-9 </Tolerance>
+      <Tolerance> 1e-12 </Tolerance>
       <Max_iterations> 1000 </Max_iterations> 
       <Krylov_space_dimension> 50 </Krylov_space_dimension>
    </LS>
