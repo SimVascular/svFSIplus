@@ -56,15 +56,14 @@ void create_random_F(double F[N][N]) {
 
 // Function to compute the strain energy density Psi for the Mooney-Rivlin material model
 // given the material parameters and deformation gradient F
-// Templated for the number of spatial dimensions N
 template<int N>
-double Psi_MR_ref(double C01, double C10, double F[N][N]) {          
+double Psi_MR(double C01, double C10, double F[N][N]) {          
 
     // ----------------------------------------------------------------
     // ------------------------ Setup ---------------------------------
     // ----------------------------------------------------------------
 
-    // Cast N to a double
+    // Cast number of spatial dimensions N to a double
     double N_d = static_cast<double>(N);
 
     // Jacobian of F
@@ -169,7 +168,15 @@ TEST(UnitTestIso_2, MR) {
       
 }
 
-TEST(TestMR_S, 3D) {
+// Calculate S(F) using finite differences and compare with the S(F) from svFSI
+// Psuedocode:
+// - Generate random deformation gradient F
+// - Compute P_ij(F) = dPsi / dF_ij using finite differences
+//      - Perturb the iJ-th component of F by small delta
+//      - dPsi = Psi(F + dF) - Psi(F)
+//      - P_ij = dPsi / dF_ij
+// - Compute S(F) = F^-1 * P(F)
+TEST(TestMR, S_3D_direct) {
     // -------------------------
     // Step 1: define parameters
     // -------------------------
@@ -203,7 +210,7 @@ TEST(TestMR_S, 3D) {
     // -------------------------
 
     // Compute strain energy density given F
-    double Psi = Psi_MR_ref<3>(C01, C10, F);
+    double Psi = Psi_MR<3>(C01, C10, F);
 
     // Compute 1st PK stress P_ref_iJ = dPsi / dF[i][J] using finite difference, component by component
     double P_ref[3][3] = {};
@@ -211,7 +218,7 @@ TEST(TestMR_S, 3D) {
     double F_tilde[3][3]; // perturbed deformation gradient
     for (int i = 0; i < 3; i++) {
         for (int J = 0; J < 3; J++) {
-            // Perturb the iJ-th component of F by delta * rand()
+            // Perturb the iJ-th component of F by delta
             for (int k = 0; k < 3; k++) {
                 for (int l = 0; l < 3; l++) {
                     F_tilde[k][l] = F[k][l];
@@ -219,8 +226,8 @@ TEST(TestMR_S, 3D) {
             }
             F_tilde[i][J] += delta;
 
-            // Compute Psi_MR_ref for perturbed deformation gradient
-            double Psi_tilde = Psi_MR_ref<3>(C01, C10, F_tilde);
+            // Compute Psi_MR for perturbed deformation gradient
+            double Psi_tilde = Psi_MR<3>(C01, C10, F_tilde);
 
             // Compute differences in Psi and E
             double dPsi = Psi_tilde - Psi;
@@ -246,8 +253,16 @@ TEST(TestMR_S, 3D) {
     MR.compare_S_Dm(F, S_ref, Dm_ref, rel_tol);
 }
 
-
-TEST(TestMR_S_Dm, 3D) {
+// Test the consistency of the PK2 stress tensor S(F) from get_pk2cc() with the strain 
+// energy density Psi(F) provided by the user
+// Psuedocode:
+// - Generate random deformation gradient F
+// - Compute Psi(F)
+// - Compute S(F) from get_pk2cc()
+// - For many random dF
+//      - Compute dPsi = Psi(F + dF) - Psi(F)
+//      - Check that S:dE = dPsi
+TEST(TestMR, S_3D) {
     // -------------------------
     // Step 1: define parameters
     // -------------------------
@@ -272,16 +287,24 @@ TEST(TestMR_S_Dm, 3D) {
     double F[3][3];
     create_random_F(F);
 
-    // -------------------------
-    // Step 4: compute Psi and S_ij for F
-    // -------------------------
-    double Psi = Psi_MR_ref<3>(C01, C10, F);
+    // Compute E from F
+    double J, C[3][3], E[3][3];
+    calc_JCE(F, J, C, E);
 
+    // -------------------------
+    // Step 4: compute Psi(F)
+    // -------------------------
+    double Psi = Psi_MR<3>(C01, C10, F);
+
+    // -------------------------
+    // Step 5: compute S(F)
+    // -------------------------
     double S[3][3], Dm[6][6];
     MR.get_pk2cc(F, S, Dm); // S from svFSI
 
     // -------------------------
-    // Step 4: generate random dF and check that dPsi and dS are consistent
+    // Step 6: generate many random dF and check that S:dE = dPsi
+    // S was obtained from get_pk2cc(), and dPsi = Psi(F + dF) - Psi(F)
     // -------------------------
     int n_iter = 10;
     double rel_tol = 1e-3; // relative tolerance for comparing dPsi and dS with values from svFSI
@@ -289,6 +312,7 @@ TEST(TestMR_S_Dm, 3D) {
     double dF[3][3]; // perturbation to deformation gradient
     double F_tilde[3][3]; // perturbed deformation gradient
     
+    // Loop over many random perturbations to the deformation gradient
     for (int i = 0; i < n_iter; i++) {
         // Perturb the deformation gradient
         double dF[3][3] = {};
@@ -298,15 +322,128 @@ TEST(TestMR_S_Dm, 3D) {
                 F_tilde[i][J] = F[i][J] + dF[i][J]; // perturbed deformation gradient
             }
         }
+        // Compute perturbed E and dE
+        double J_tilde, C_tilde[3][3], E_tilde[3][3], dE[3][3];
+        calc_JCE(F_tilde, J, C, E_tilde);
+        for (int i = 0; i < 3; i++) {
+            for (int J = 0; J < 3; J++) {
+                dE[i][J] = E_tilde[i][J] - E[i][J];
+            }
+        }
 
-        // Compute Psi and S for perturbed deformation gradient
-        double Psi_tilde = Psi_MR_ref<3>(C01, C10, F_tilde);
+        // Compute perturbed Psi with perturbed deformation gradient
+        double Psi_tilde = Psi_MR<3>(C01, C10, F_tilde);
+
+        // Compute dPsi
+        double dPsi = Psi_tilde - Psi;
+
+        // Check that S_ij dE_ij = dPsi
+        double SdE = mat_fun_carray::mat_ddot<3>(S, dE);
+        EXPECT_NEAR(SdE, dPsi, rel_tol * fabs(dPsi));
+        //std::cout << "SdE = " << SdE << ", dPsi = " << dPsi << std::endl;
+
+    }
+}
+
+// Test the consistency of the material elasticity tensor CC(F) from get_pk2cc() with the
+// PK2 stress tensor S(F) from get_pk2cc()
+// Psuedocode:
+// - Generate random deformation gradient F
+// - Compute S(F) and CC(F) from get_pk2cc()
+// - For many random dF
+//      - Compute S(F + dF) from get_pk2cc()
+//      - Compute dS = S(F + dF) - S(F)
+//      - Compute dE = dF
+//      - Check that CC:dE = dS
+TEST(TestMR, CC_3D) {
+    // -------------------------
+    // Step 1: define parameters
+    // -------------------------
+    auto matType = consts::ConstitutiveModelType::stIso_MR;   // Material_model: options refer to consts.h 
+    auto volType = consts::ConstitutiveModelType::stVol_ST91;   // Dilational_penalty_model
+    double E_mod = 1e6;   // Elasticity_modulus
+    double nu = 0.495;   // Poisson_ratio
+    double pen = 0.0;   // Penalty_parameter
+    double C01 = 0.1;   // additional parameter to C10 (optional)
+    // Compute derived material parameters
+    double mu  = 0.5 * E_mod / (1.0 + nu);                    // Shear_modulus
+    double C10 = 0.5 * mu - C01;    
+
+    // -------------------------
+    // Step 2: construct test object
+    // -------------------------
+    UnitTestIso MR(matType, E_mod, nu, volType, pen, C01);
+
+    // -------------------------
+    // Step 3: create random deformation gradient
+    // -------------------------
+    double F[3][3];
+    create_random_F(F);
+
+    // Compute E from F
+    double J, C[3][3], E[3][3];
+    calc_JCE(F, J, C, E);
+
+    // -------------------------
+    // Step 4: compute S_ij(F)
+    // Step 5: compute CC_ijkl(F). 
+    // CC is provided in Voigt notation as Dm, and we will convert it to CC
+    // -------------------------
+    double S[3][3], Dm[6][6];
+    MR.get_pk2cc(F, S, Dm); // S from svFSI
+
+    // Calculate CC from Dm
+    double CC[3][3][3][3];
+    mat_models_carray::voigt_to_cc_carray<3>(Dm, CC);
+
+    // ------- Ancillary test ---------
+    // Calculate Dm_check from CC
+    double Dm_check[6][6];
+    mat_models_carray::cc_to_voigt_carray<3>(CC, Dm_check);
+
+    // Check that Dm_check = Dm, for sanity
+    for (int i = 0; i < 6; i++) {
+        for (int j = 0; j < 6; j++) {
+            EXPECT_NEAR(Dm_check[i][j], Dm[i][j], 1e-12 * fabs(Dm[i][j]));
+        }
+    }
+    // -------------------------------
+
+    // -------------------------
+    // Step 6: generate many random dF and check that CC:dE = dS
+    // CC was obtained from get_pk2cc(), and dS = S(F + dF) - S(F), 
+    // where S is also obtained from get_pk2cc()
+    // -------------------------
+    int n_iter = 10;
+    double rel_tol = 1e-3; // relative tolerance for comparing dPsi and dS with values from svFSI
+    double delta = 1e-6; // perturbation scaling factor
+    double dF[3][3]; // perturbation to deformation gradient
+    double F_tilde[3][3]; // perturbed deformation gradient
+    
+    // Loop over many random perturbations to the deformation gradient
+    for (int i = 0; i < n_iter; i++) {
+        // Perturb the deformation gradient
+        double dF[3][3] = {};
+        for (int i = 0; i < 3; i++) {
+            for (int J = 0; J < 3; J++) {
+                dF[i][J] = delta * (2.0 * rand() / RAND_MAX - 1.0); // (random number between -1 and 1) * delta
+                F_tilde[i][J] = F[i][J] + dF[i][J]; // perturbed deformation gradient
+            }
+        }
+        // Compute perturbed E and dE
+        double J_tilde, C_tilde[3][3], E_tilde[3][3], dE[3][3];
+        calc_JCE(F_tilde, J, C, E_tilde);
+        for (int i = 0; i < 3; i++) {
+            for (int J = 0; J < 3; J++) {
+                dE[i][J] = E_tilde[i][J] - E[i][J];
+            }
+        }
+
+        // Compute perturbed S with perturbed deformation gradient
         double S_tilde[3][3], Dm_tilde[6][6];
         MR.get_pk2cc(F_tilde, S_tilde, Dm_tilde);
 
-        // Compute dPsi and dS
-        double dPsi = Psi_tilde - Psi;
-
+        // Compute dS
         double dS[3][3];
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
@@ -314,8 +451,15 @@ TEST(TestMR_S_Dm, 3D) {
             }
         }
 
-        // Check that S and Dm are consistent with the computed dPsi and dS
-        MR.check_consistent_S_Dm(F, dF, dPsi, dS, rel_tol);
+        // Check that CC_ijkl dE_kl = dS_ij
+        double CCdE[3][3];
+        mat_fun_carray::ten_mat_ddot<3>(CC, dE, CCdE);
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                EXPECT_NEAR(CCdE[i][j], dS[i][j], rel_tol * fabs(dS[i][j]));
+                //std::cout << "CCdE[" << i << "][" << j << "] = " << CCdE[i][j] << ", dS[" << i << "][" << j << "] = " << dS[i][j] << std::endl;
+            }
+        }
     }
 }
 
