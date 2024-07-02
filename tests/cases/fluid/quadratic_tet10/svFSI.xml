@@ -63,6 +63,9 @@
    </Output>
 
    <LS type="NS" >
+      <Linear_algebra type="fsils" >
+         <Preconditioner> fsils </Preconditioner>
+      </Linear_algebra> 
       <Max_iterations> 15 </Max_iterations>
       <NS_GM_max_iterations> 10 </NS_GM_max_iterations>
       <NS_CG_max_iterations> 300 </NS_CG_max_iterations>
