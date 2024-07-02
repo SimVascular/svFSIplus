@@ -56,6 +56,8 @@
 #include <string>
 #include <vector>
 
+class LinearAlgebra;
+
 /// @brief Fourier coefficients that are used to specify unsteady BCs
 //
 class fcType
@@ -613,7 +615,6 @@ class outputType
     std::string name;
 };
 
-
 /// @brief Linear system of equations solver type
 //
 class lsType
@@ -622,9 +623,6 @@ class lsType
 
     /// @brief LS solver                     (IN)
     consts::SolverType LS_type = consts::SolverType::lSolver_NA;
-
-    /// @brief Preconditioner                (IN)
-    consts::PreconditionerType PREC_Type = consts::PreconditionerType::PREC_NONE;
 
     /// @brief Successful solving            (OUT)
     bool suc = false;
@@ -667,6 +665,9 @@ class lsType
 
     /// @brief Calling duration              (OUT)
     double callD = 0.0;
+
+    //@brief Configuration file for linear solvers (Trilinos, PETSc)
+    std::string config;
 };
 
 
@@ -740,7 +741,10 @@ class cplBCType
     /// @brief Whether to use genBC
     bool useGenBC = false;
 
-    /// @brief Whether to initialize RCR from flow data
+    //  Whether to use svZeroD
+    bool useSvZeroD = false;
+
+    //  Whether to initialize RCR from flow data
     bool initRCR = false;
 
     /// @brief Number of coupled faces
@@ -937,6 +941,10 @@ class mshType
     /// davep double Nxx(:,:,:)
     Array3<double> Nxx;
 
+    /// @brief Solution field (displacement, velocity, pressure, etc.) for a known, potentially
+    /// time-varying, quantity of interest across a mesh
+    Array3<double> Ys;
+
     /// @brief Mesh Name
     std::string name;
 
@@ -1066,6 +1074,18 @@ class eqType
 
     /// @brief type of linear solver
     lsType ls;
+
+    /// @brief The type of interface to a numerical linear algebra library.
+    consts::LinearAlgebraType linear_algebra_type;
+
+    /// @brief The type of assembly interface to a numerical linear algebra library.
+    consts::LinearAlgebraType linear_algebra_assembly_type;
+
+    /// @brief The type of preconditioner used by the interface to a numerical linear algebra library.
+    consts::PreconditionerType linear_algebra_preconditioner = consts::PreconditionerType::PREC_FSILS;
+
+    /// @brief Interface to a numerical linear algebra library.
+    LinearAlgebra* linear_algebra = nullptr;
 
     /// @brief FSILS type of linear solver
     fsi_linear_solver::FSILS_lsType FSILS;
@@ -1285,23 +1305,6 @@ class ibType
     ibCommType cm;
 };
 
-/// @brief Data type for Trilinos Linear Solver related arrays
-//
-class tlsType
-{
-  public:
-
-    /// @brief Local to global mapping
-    Vector<int> ltg;
-
-    /// @brief Factor for Dirichlet BCs
-    Array<double> W;
-
-    /// @brief Residual
-    Array<double> R;
-};
-
-
 /// @brief The ComMod class duplicates the data structures in the Fortran COMMOD module
 /// defined in MOD.f. 
 ///
@@ -1372,7 +1375,8 @@ class ComMod {
     /// @brief Postprocess step - convert bin to vtk
     bool bin2VTK = false;
 
-
+    /// @brief Whether to use precomputed state-variable solutions
+    bool usePrecomp = false;
     //----- int members -----//
 
     /// @brief Current domain
@@ -1448,6 +1452,9 @@ class ComMod {
     /// @brief Time step size
     double dt = 0.0;
 
+    /// @brief Time step size of the precomputed state-variables
+    double precompDt = 0.0;
+
     /// @brief Time
     double time = 0.0;
 
@@ -1466,6 +1473,11 @@ class ComMod {
     /// @brief Stop_trigger file name
     std::string stopTrigName;
 
+    /// @brief Precomputed state-variable file name
+    std::string precompFileName;
+
+    /// @brief Precomputed state-variable field name
+    std::string precompFieldName;
     // ALLOCATABLE DATA
 
     /// @brief Column pointer (for sparse LHS matrix structure)
@@ -1583,9 +1595,6 @@ class ComMod {
 
     /// @brief IB: Immersed boundary data structure
     ibType ib;
-
-    /// @brief Trilinos Linear Solver data type
-    tlsType  tls;
 
     bool debug_active = false;
 

@@ -583,6 +583,26 @@ class CoupleGenBCParameters : public ParameterLists
     bool value_set = false;
 };
 
+//-----------------------
+// CoupleSvZeroDParameters
+//-----------------------
+// Coupling to svZeroD.
+//
+class CoupleSvZeroDParameters : public ParameterLists
+{
+  public:
+    CoupleSvZeroDParameters();
+
+    static const std::string xml_element_name_;
+
+    bool defined() const { return value_set; };
+    void set_values(tinyxml2::XMLElement* xml_elem);
+
+    // attributes.
+    Parameter<std::string> type;
+
+    bool value_set = false;
+};
 /// @brief Body force over a mesh using the "Add_BF" command.
 ///
 /// \code {.xml}
@@ -833,6 +853,26 @@ class ViscosityParameters : public ParameterLists
     ViscosityCassonsParameters cassons_model;
 };
 
+/// @brief The LinearAlgebraParameters class stores parameters for
+/// the 'Linear_algebra' XML element.
+class LinearAlgebraParameters : public ParameterLists
+{
+  public:
+    static const std::string xml_element_name_;
+    LinearAlgebraParameters();
+    void check_input_parameters();
+    void print_parameters();
+    void set_values(tinyxml2::XMLElement* fsi_file);
+    bool defined() const { return values_set_; };
+
+    bool values_set_ = false;
+    Parameter<std::string> type;
+
+    Parameter<std::string> assembly;
+    Parameter<std::string> configuration_file;
+    Parameter<std::string> preconditioner;
+};
+
 /// @brief The LinearSolverParameters class stores parameters for
 /// the 'LS' XML element.
 class LinearSolverParameters : public ParameterLists
@@ -856,11 +896,11 @@ class LinearSolverParameters : public ParameterLists
     Parameter<int> ns_gm_max_iterations; 
     Parameter<double> ns_gm_tolerance;
 
-    Parameter<std::string> preconditioner;
+    //Parameter<std::string> preconditioner;
 
     Parameter<double> tolerance;
 
-    Parameter<bool> use_trilinos_for_assembly;
+    LinearAlgebraParameters linear_algebra;
 };
 
 /// @brief The StimulusParameters class stores parameters for 
@@ -1145,6 +1185,7 @@ class EquationParameters : public ParameterLists
 
     CoupleCplBCParameters couple_to_cplBC;
     CoupleGenBCParameters couple_to_genBC;
+    CoupleSvZeroDParameters couple_to_svZeroD;
 
     DomainParameters* default_domain = nullptr;
 
@@ -1207,9 +1248,11 @@ class GeneralSimulationParameters : public ParameterLists
     Parameter<bool> start_averaging_from_zero;
     Parameter<bool> verbose;
     Parameter<bool> warning;
+    Parameter<bool> use_precomputed_solution;
 
     Parameter<double> spectral_radius_of_infinite_time_step;
     Parameter<double> time_step_size;
+    Parameter<double> precomputed_time_step_size;
 
     Parameter<int> increment_in_saving_restart_files;
     Parameter<int> increment_in_saving_vtk_files;
@@ -1223,7 +1266,9 @@ class GeneralSimulationParameters : public ParameterLists
     Parameter<std::string> restart_file_name; 
     Parameter<std::string> searched_file_name_to_trigger_stop; 
     Parameter<std::string> save_results_in_folder; 
-    Parameter<std::string> simulation_initialization_file_path; 
+    Parameter<std::string> simulation_initialization_file_path;
+    Parameter<std::string> precomputed_solution_file_path;
+    Parameter<std::string> precomputed_solution_field_name;
 };
 
 /// @brief The FaceParameters class is used to store parameters for the
