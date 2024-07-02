@@ -3,16 +3,22 @@ import numpy as np
 import pytest
 import os
 import shutil
+import platform
 import subprocess
 import meshio
 
+is_not_Darwin = True
+if platform.system() == "Darwin": is_not_Darwin = False
+
 this_file_dir = os.path.abspath(os.path.dirname(__file__))
 cpp_exec = os.path.join(this_file_dir, "..", "build", "svFSI-build", "bin", "svFSI")
+cpp_exec_p = os.path.join(this_file_dir, "..", "build-petsc", "svFSI-build", "bin", "svFSI")
 
 # Relative tolerances for each tested field
 RTOL = {
     "Action_potential": 1.0e-10,
     "Cauchy_stress": 1.0e-4,
+    "Concentration": 1.0e-10,
     "Def_grad": 1.0e-10,
     "Divergence": 1.0e-9,
     "Displacement": 1.0e-10,
@@ -57,16 +63,44 @@ def run_by_name(folder, name, t_max, n_proc=1):
         shutil.rmtree(dir_path)
 
     # run simulation
-    cmd = " ".join(
-        [
-            "mpirun",
-            "--oversubscribe" if n_proc > 1 else "",
-            "-np",
-            str(n_proc),
-            cpp_exec,
-            name,
-        ]
-    )
+    if is_not_Darwin:
+        if folder.endswith("petsc"):
+            cmd = " ".join(
+            [
+                "mpirun",
+                "--oversubscribe" if n_proc > 1 else "",
+                "-np",
+                str(n_proc),
+                cpp_exec_p,
+                name,
+            ]
+            )
+        else:
+            cmd = " ".join(
+            [
+                "mpirun",
+                "--oversubscribe" if n_proc > 1 else "",
+                "-np",
+                str(n_proc),
+                cpp_exec,
+                name,
+            ]
+            )
+    else:
+        if folder.endswith("petsc") or folder.endswith("trilinos"): 
+            return
+        else:
+            cmd = " ".join(
+                [
+                    "mpirun",
+                    "--oversubscribe" if n_proc > 1 else "",
+                    "-np",
+                    str(n_proc),
+                    cpp_exec,
+                    name,
+                ]
+                )
+
     subprocess.call(cmd, cwd=folder, shell=True)
 
     # read results
@@ -103,7 +137,14 @@ def run_with_reference(
 
     # run simulation
     folder = os.path.join("cases", base_folder, test_folder)
-    res = run_by_name(folder, name_inp, t_max, n_proc)
+    
+    if is_not_Darwin:
+        res = run_by_name(folder, name_inp, t_max, n_proc)
+    else:
+        if folder.endswith("petsc") or folder.endswith("trilinos"): 
+            return
+        else:
+            res = run_by_name(folder, name_inp, t_max, n_proc)
 
     # read reference
     fname = os.path.join(folder, name_ref)

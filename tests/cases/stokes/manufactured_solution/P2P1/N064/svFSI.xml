@@ -54,7 +54,9 @@
    <Momentum_stabilization_coefficient> 0.0 </Momentum_stabilization_coefficient> 
 
    <LS type="GMRES" >
-      <Preconditioner> RCS </Preconditioner> 
+      <Linear_algebra type="fsils" >
+        <Preconditioner> rcs </Preconditioner>
+      </Linear_algebra>
       <Tolerance> 1e-9 </Tolerance>
       <Max_iterations> 100 </Max_iterations>
       <Krylov_space_dimension> 50 </Krylov_space_dimension>

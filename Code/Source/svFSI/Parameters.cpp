@@ -61,6 +61,8 @@
 // See LinearSolverParameters::set_values() for an example. 
 //
 #include "Parameters.h"
+#include "consts.h"
+#include "LinearAlgebra.h"
 
 #include <iostream>
 #include <regex>
@@ -70,23 +72,28 @@
 #include <math.h>
 
 /// @brief Set paramaters using a function pointing to the 'ParameterLists::set_parameter_value' method.
+//
+// Subsection names given in 'sub_sections' are ignored and processed elsewhere.
+//
 void xml_util_set_parameters( std::function<void(const std::string&, const std::string&)> fn, tinyxml2::XMLElement* xml_elem,
-    const std::string& error_msg)
+    const std::string& error_msg, std::set<std::string> sub_sections = std::set<std::string>())
 {
   auto item = xml_elem->FirstChildElement();
 
   while (item != nullptr) {
     auto name = std::string(item->Value());
-  
-    if (item->GetText() != nullptr) {
-      auto value = item->GetText();
-      try {
-        fn(name, value);
-      } catch (const std::bad_function_call& exception) {
+
+    if (sub_sections.count(name) == 0) {
+      if (item->GetText() != nullptr) {
+        auto value = item->GetText();
+        try {
+          fn(name, value);
+        } catch (const std::bad_function_call& exception) {
+          throw std::runtime_error(error_msg + name + "'.");
+        }
+      } else {
         throw std::runtime_error(error_msg + name + "'.");
       }
-    } else {
-      throw std::runtime_error(error_msg + name + "'.");
     }
 
     item = item->NextSiblingElement();
@@ -884,6 +891,48 @@ void CoupleGenBCParameters::set_values(tinyxml2::XMLElement* xml_elem)
   
   value_set = true;
 }
+
+
+//////////////////////////////////////////////////////////
+//                  CoupleSvZeroDParameters               //
+//////////////////////////////////////////////////////////
+
+// Coupling to svZeroD.
+
+// Define the XML element name for equation Couple_to_svZeroD parameters.
+const std::string CoupleSvZeroDParameters::xml_element_name_ = "Couple_to_svZeroD";
+
+CoupleSvZeroDParameters::CoupleSvZeroDParameters()
+{
+  // A parameter that must be defined.
+  bool required = true;
+
+  type = Parameter<std::string>("type", "", required);
+};
+
+void CoupleSvZeroDParameters::set_values(tinyxml2::XMLElement* xml_elem)
+{
+  std::string error_msg = "Unknown Couple_to_svZeroD type=TYPE XML element '";
+  
+  // Get the 'type' from the <Couple_to_genBC type=TYPE> element.
+  const char* stype;
+  auto result = xml_elem->QueryStringAttribute("type", &stype);
+  if (stype == nullptr) {
+    throw std::runtime_error("No TYPE given in the XML <Couple_to_svZeroD type=TYPE> element.");
+  }
+  type.set(std::string(stype));
+  auto item = xml_elem->FirstChildElement();
+  
+  using std::placeholders::_1;
+  using std::placeholders::_2;
+  std::function<void(const std::string&, const std::string&)> ftpr = 
+      std::bind( &CoupleSvZeroDParameters::set_parameter_value, *this, _1, _2);
+  
+  xml_util_set_parameters(ftpr, xml_elem, error_msg);
+  
+  value_set = true;
+}
+
 
 //////////////////////////////////////////////////////////
 //                  OutputParameters                    //
@@ -1694,6 +1743,9 @@ void EquationParameters::set_values(tinyxml2::XMLElement* eq_elem)
     } else if (name == CoupleGenBCParameters::xml_element_name_) {
       couple_to_genBC.set_values(item);
 
+    } else if (name == CoupleSvZeroDParameters::xml_element_name_) {
+      couple_to_svZeroD.set_values(item);
+
     } else if (name == DomainParameters::xml_element_name_) {
       auto domain_params = new DomainParameters();
       domain_params->set_values(item);
@@ -1803,9 +1855,12 @@ GeneralSimulationParameters::GeneralSimulationParameters()
   set_parameter("Starting time step", 0, !required, starting_time_step);
 
   set_parameter("Time_step_size", 0.0, required, time_step_size);
-
+  set_parameter("Precomputed_time_step_size", 0.0, !required, precomputed_time_step_size);
   set_parameter("Verbose", false, !required, verbose);
   set_parameter("Warning", false, !required, warning);
+  set_parameter("Use_precomputed_solution", false, !required, use_precomputed_solution);
+  set_parameter("Precomputed_solution_file_path", "", !required, precomputed_solution_file_path);
+  set_parameter("Precomputed_solution_field_name", "", !required, precomputed_solution_field_name);
 }
 
 void GeneralSimulationParameters::print_parameters()
@@ -2141,6 +2196,107 @@ void ProjectionParameters::set_values(tinyxml2::XMLElement* xml_elem)
 }
 
 //////////////////////////////////////////////////////////
+//                 LinearAlgebraParameters              //
+//////////////////////////////////////////////////////////
+
+// The LinearAlgebraParameters class stores parameters for
+// the 'Linear_algebra' XML element.
+
+/// @brief Define the XML element name for equation output parameters.
+const std::string LinearAlgebraParameters::xml_element_name_ = "Linear_algebra";
+
+LinearAlgebraParameters::LinearAlgebraParameters()
+{
+  // A parameter that must be defined.
+  bool required = true;
+
+  auto alg_type = LinearAlgebra::type_to_name.at(consts::LinearAlgebraType::fsils);
+  type = Parameter<std::string>("type", alg_type, required);
+
+  set_parameter("Configuration_file", "", !required, configuration_file);
+
+  auto prec_type = consts::preconditioner_type_to_name.at(consts::PreconditionerType::PREC_NONE);
+  set_parameter("Preconditioner", prec_type, !required, preconditioner);
+
+  auto assemble_type = LinearAlgebra::type_to_name.at(consts::LinearAlgebraType::none);
+  set_parameter("Assembly", assemble_type, !required, assembly);
+}
+
+void LinearAlgebraParameters::print_parameters()
+{ 
+  std::cout << std::endl;
+  std::cout << "-------------------------" << std::endl;
+  std::cout << "Linear Algebra Parameters" << std::endl;
+  std::cout << "-------------------------" << std::endl;
+	  
+  std::cout << type.name() << ": " << type.value() << std::endl;
+  
+  auto params_name_value = get_parameter_list(); 
+  for (auto& [ key, value ] : params_name_value) {
+    std::cout << key << ": " << value << std::endl;
+  }
+}
+
+void LinearAlgebraParameters::set_values(tinyxml2::XMLElement* xml_elem)
+{
+  std::string error_msg = "Unknown " + xml_element_name + " XML element '";
+
+  // Get the 'type' from the <Linear_algebra type=TYPE> element.
+  const char* stype;
+  auto result = xml_elem->QueryStringAttribute("type", &stype);
+  if (stype == nullptr) {
+    throw std::runtime_error("No TYPE given in the XML <Linear_algebra type=TYPE> element.");
+  }
+  type.set(std::string(stype));
+
+  // Check Linear_algebra type=TYPE> element.
+  //
+  // TYPE in (fsils petsc trilinos)
+  //
+  if (LinearAlgebra::name_to_type.count(type.value()) == 0) {
+    std::string valid_types = "";
+    std::for_each(LinearAlgebra::name_to_type.begin(), LinearAlgebra::name_to_type.end(), 
+        [&valid_types](std::pair<const std::string, const consts::LinearAlgebraType> p) {valid_types += p.first+" ";}); 
+    throw std::runtime_error("Unknown TYPE '" + type.value() + 
+        "' given in the XML <Linear_algebra type=TYPE> element.\nValid types are: " + valid_types);
+  }
+
+  // Create a function pointer 'fptr' to 'LinearAlgebraParameters::set_parameter_value'.
+  //
+  using std::placeholders::_1;
+  using std::placeholders::_2;
+  std::function<void(const std::string&, const std::string&)> ftpr =
+      std::bind( &LinearAlgebraParameters::set_parameter_value, *this, _1, _2);
+      
+  // Parse XML and set parameter values.
+  xml_util_set_parameters(ftpr, xml_elem, error_msg);
+
+  // Check preconditioner type.
+  if (consts::preconditioner_name_to_type.count(preconditioner.value()) == 0) {
+    std::string valid_types = "";
+    std::for_each(consts::preconditioner_name_to_type.begin(), consts::preconditioner_name_to_type.end(),
+        [&valid_types](std::pair<const std::string, const consts::PreconditionerType> p) {valid_types += p.first+" ";});
+    throw std::runtime_error("Unknown TYPE '" + preconditioner() + 
+        "' given in the XML <Linear_algebra> <Preconditioner> element.\nValid types are: " + valid_types);
+  }     
+
+  check_input_parameters();
+
+  values_set_ = true;
+}
+
+/// @brief Check the validity of the input parameters.
+void LinearAlgebraParameters::check_input_parameters()
+{
+  auto linear_algebra_type = LinearAlgebra::name_to_type.at(type());
+  auto prec_cond_type = consts::preconditioner_name_to_type.at(preconditioner.value()); 
+  auto assembly_type = LinearAlgebra::name_to_type.at(assembly.value()); 
+
+  auto linear_algebra = LinearAlgebraFactory::create_interface(linear_algebra_type);
+  linear_algebra->check_options(prec_cond_type, assembly_type);
+}
+
+//////////////////////////////////////////////////////////
 //                 LinearSolverParameters               //
 //////////////////////////////////////////////////////////
 
@@ -2169,11 +2325,9 @@ LinearSolverParameters::LinearSolverParameters()
   set_parameter("NS_GM_max_iterations", 1000, !required, ns_gm_max_iterations);
   set_parameter("NS_GM_tolerance", 1.0e-2, !required, ns_gm_tolerance);
 
-  set_parameter("Preconditioner", "", !required, preconditioner);
+  //set_parameter("Preconditioner", "", !required, preconditioner);
 
   set_parameter("Tolerance", 0.5, !required, tolerance);
-
-  set_parameter("Use_trilinos_for_assembly", false, !required, use_trilinos_for_assembly);
 }
 
 void LinearSolverParameters::print_parameters()
@@ -2189,7 +2343,6 @@ void LinearSolverParameters::print_parameters()
   for (auto& [ key, value ] : params_name_value) {
     std::cout << key << ": " << value << std::endl;
   }
-
 }
 
 void LinearSolverParameters::set_values(tinyxml2::XMLElement* xml_elem)
@@ -2202,6 +2355,7 @@ void LinearSolverParameters::set_values(tinyxml2::XMLElement* xml_elem)
   if (stype == nullptr) {
     throw std::runtime_error("No TYPE given in the XML <LStype=TYPE> element.");
   }
+
   type.set(std::string(stype));
 
   using std::placeholders::_1;
@@ -2212,6 +2366,20 @@ void LinearSolverParameters::set_values(tinyxml2::XMLElement* xml_elem)
       std::bind( &LinearSolverParameters::set_parameter_value, *this, _1, _2);
 
   // Parse XML and set parameter values.
-  xml_util_set_parameters(ftpr, xml_elem, error_msg);
+  std::set<std::string> sub_sections = {LinearAlgebraParameters::xml_element_name_};
+  xml_util_set_parameters(ftpr, xml_elem, error_msg, sub_sections);
+
+  // Set subsection values.
+  //
+  auto item = xml_elem->FirstChildElement();
+
+  while (item != nullptr) {
+    auto name = std::string(item->Value());
+    if (name == LinearAlgebraParameters::xml_element_name_) {
+      linear_algebra.set_values(item);
+    }
+    item = item->NextSiblingElement();
+  }
+
 }
 

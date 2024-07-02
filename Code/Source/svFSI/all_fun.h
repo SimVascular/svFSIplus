@@ -31,7 +31,9 @@
 #ifndef ALL_FUN_H 
 #define ALL_FUN_H 
 
+#include "Array3.h"
 #include "Array.h"
+#include "Vector.h"
 #include "ComMod.h"
 
 #include "consts.h"
@@ -70,7 +72,10 @@ namespace all_fun {
   double jacobian(ComMod& com_mod, const int nDim, const int eNoN, const Array<double>& x, const Array<double>&Nxi);
 
   Vector<int> local(const ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, Vector<int>& u);
+
   Array<double> local(const ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, Array<double>& u);
+
+  Array3<double> local(const ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, Array3<double>& u);
 
   Vector<double> mkc(const ComMod& com_mod, Vector<double>& U);
   Array<double> mkc(const ComMod& com_mod, Array<double>& U);

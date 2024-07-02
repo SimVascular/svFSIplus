@@ -104,7 +104,9 @@
    </Output>
 
    <LS type="CG" >
-      <Preconditioner> svfsi </Preconditioner> 
+      <Linear_algebra type="fsils" >
+         <Preconditioner> fsils </Preconditioner>
+      </Linear_algebra>
       <Tolerance> 1e-12 </Tolerance>
    </LS>
 

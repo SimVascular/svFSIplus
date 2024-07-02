@@ -1,0 +1,35 @@
+{
+    "simulation_parameters": {
+        "coupled_simulation": true,
+        "number_of_time_pts": 100,
+        "output_all_cycles": true,
+        "steady_initial": false
+    },
+    "boundary_conditions": [
+        {
+            "bc_name": "RCR",
+            "bc_type": "RCR",
+            "bc_values": {
+                "Rp": 121.0,
+                "Rd": 1212.0,
+                "C": 1.5e-4,
+                "Pd": 0.0
+            }
+        }
+    ],
+    "external_solver_coupling_blocks": [
+        {
+            "name": "RCR_coupling",
+            "type": "FLOW",
+            "location": "inlet",
+            "connected_block": "RCR",
+            "periodic": false,
+            "values": {
+                "t": [0.0, 1.0],
+                "Q": [1.0, 1.0]
+            }
+        }
+    ],
+    "junctions": [],
+    "vessels": []
+}
