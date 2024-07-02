@@ -832,6 +832,53 @@ void load_vtu(const std::string& file_name, mshType& mesh)
   store_element_conn(vtk_ugrid, mesh);
 }
 
+/// @brief Store a surface mesh read from a VTK .vtu file into a Face object.
+//
+void load_vtu(const std::string& file_name, faceType& face)
+{
+  #define n_debug_load_vtu 
+  #ifdef debug_load_vtu 
+  std::cout << "[load_vtu] " << std::endl;
+  std::cout << "[load_vtu] ===== vtk_xml_parser::load_vtu ===== " << std::endl;
+  std::cout << "[load_vtu] file_name: " << file_name << std::endl;
+  #endif
+
+  auto reader = vtkSmartPointer<vtkXMLUnstructuredGridReader>::New();
+  reader->SetFileName(file_name.c_str());
+  reader->Update();
+  vtkSmartPointer<vtkUnstructuredGrid> vtk_ugrid = reader->GetOutput();
+
+  vtkIdType num_nodes = vtk_ugrid->GetNumberOfPoints();
+  if (num_nodes == 0) {
+    throw std::runtime_error("Failed reading the VTK file '" + file_name + "'.");
+  }
+
+  vtkIdType num_elems = vtk_ugrid->GetNumberOfCells();
+  auto cell = vtkGenericCell::New();
+  vtk_ugrid->GetCell(0, cell);
+  int np_elem = cell->GetNumberOfPoints();
+
+  #ifdef debug_load_vtu 
+  std::cout << "[load_vtu] Number of nodes: " << num_nodes << std::endl;
+  std::cout << "[load_vtu] Number of elements: " << num_elems << std::endl;
+  std::cout << "[load_vtu] Number of nodes per element: " << np_elem << std::endl;
+  #endif
+
+  // Store nodal coordinates.
+  auto points = vtk_ugrid->GetPoints();
+  store_nodal_coords(points, face);
+
+  // Store nodal IDs.
+  store_nodal_ids(vtk_ugrid, face);
+
+  // Store element connectivity.
+  store_element_conn(vtk_ugrid, face);
+
+  // Store element IDs.
+  store_element_ids(vtk_ugrid, face);
+}
+
+
 /// @brief Read a time series field from a VTK .vtu file.
 ///
 /// Mesh variables set
