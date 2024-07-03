@@ -99,8 +99,6 @@ void cc_to_voigt_carray(const double CC[N][N][N][N], double Dm[2*N][2*N])
   } 
 }
 
-#include <cstddef>
-
 template <size_t N>
 void voigt_to_cc_carray(const double Dm[2*N][2*N], double CC[N][N][N][N]) {
     if (N == 3) {

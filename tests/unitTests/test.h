@@ -37,26 +37,6 @@
 #include "mat_models_carray.h"
 
 
-template<int N>
-void calc_JCE(double F[N][N], double &J, double C[N][N], double E[N][N]) {
-    // Compute Jacobian of F
-    J = mat_fun_carray::mat_det<N>(F);
-
-    // Compute transpose of F
-    double F_T[N][N];
-    mat_fun_carray::transpose<N>(F, F_T);
-
-    // Compute right Cauchy-Green deformation tensor
-    mat_fun_carray::mat_mul<N>(F_T, F, C);
-
-    // Compute Green-Lagrange strain tensor
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < N; j++) {
-            E[i][j] = 0.5 * (C[i][j] - (i == j));
-        }
-    }
-}
-
 
 class MockCepMod : public CepMod {
 public:
@@ -113,6 +93,7 @@ public:
         mat_fun_carray::ten_init(nsd);                        // initialize tensor index pointer
         dmn.stM.isoType = matType;                            // Mat_model
         double mu  = 0.5 * E / (1.0 + nu);                    // Shear_modulus
+        // TODO: Why is this here?
         dmn.stM.C10 = 0.5 * mu - C01;                         // set_material_props.h 
         dmn.stM.C01 = C01;
         dmn.stM.volType = penType;                            // Dilational_penalty_model
