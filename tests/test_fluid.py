@@ -86,3 +86,10 @@ def test_carreau_yasuda(n_proc):
 def test_iliac_artery(n_proc):
     test_folder = "iliac_artery"
     run_with_reference(base_folder, test_folder, fields, n_proc)
+
+
+def test_quadratic_tet10(n_proc):
+    test_folder = "quadratic_tet10"
+    t_max = 3
+    fields = ["Velocity", "Pressure", "Vorticity", "Divergence"]
+    run_with_reference(base_folder, test_folder, fields, n_proc, t_max) 
