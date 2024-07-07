@@ -40,6 +40,7 @@
 #include <vtkDoubleArray.h>
 #include "vtkCellData.h"
 #include <vtkGenericCell.h>
+#include <vtkGeometryFilter.h>
 #include <vtkIntArray.h>
 #include <vtkPointData.h>
 #include <vtkDataArray.h>
@@ -143,6 +144,144 @@ const std::string ELEMENT_IDS_NAME("GlobalElementID");
 //             I n t e r n a l  U t i l i t i e s              //
 /////////////////////////////////////////////////////////////////
 
+/// @brief Get the mesh nodes per element and ordering. 
+///
+void get_mesh_ordering(const int num_elems, vtkSmartPointer<vtkUnsignedCharArray> cell_types, int& np_elem, 
+    std::vector<std::vector<int>>& ordering)
+{
+  int num_hex = 0;
+  int num_line = 0;
+  int num_quad = 0;
+  int num_tet = 0;
+  int num_tri = 0;
+  int num_unknown = 0;
+  int num_wedge = 0;
+  int num_quadratic_tri = 0;
+  int num_biquadratic_tri = 0;
+  int num_quadratic_quad = 0;
+  int num_biquadratic_quad = 0;
+  int num_quadratic_tetra = 0;
+  int num_quadratic_hexahedron = 0;
+  int num_triquadratic_hexahedron = 0;
+
+  for (int i = 0; i < num_elems; i++) {
+    switch (cell_types->GetValue(i)) {
+      case VTK_HEXAHEDRON:
+        num_hex += 1;
+      break;
+
+      case VTK_LINE:
+        num_line += 1;
+      break;
+
+      case VTK_QUAD:
+        num_quad += 1;
+      break;
+
+      case VTK_TETRA:
+        num_tet += 1;
+      break;
+
+      case VTK_TRIANGLE:
+        num_tri += 1;
+      break;
+
+      case VTK_WEDGE:
+        num_wedge += 1;
+      break;
+
+      case VTK_QUADRATIC_TRIANGLE:
+        num_quadratic_tri += 1;
+      break;
+
+      case VTK_BIQUADRATIC_TRIANGLE:
+        num_biquadratic_tri += 1;
+      break;
+
+      case VTK_QUADRATIC_QUAD:
+        num_quadratic_quad += 1;
+      break;
+
+      case VTK_BIQUADRATIC_QUAD:
+        num_biquadratic_quad += 1;
+      break;
+
+      case VTK_QUADRATIC_TETRA:
+        num_quadratic_tetra += 1;
+      break;
+
+      case VTK_QUADRATIC_HEXAHEDRON:
+        num_quadratic_hexahedron += 1;
+      break;
+
+      case VTK_TRIQUADRATIC_HEXAHEDRON:
+        num_triquadratic_hexahedron += 1;
+      break;
+
+      default:
+        num_unknown += 1;
+      break;
+    }
+  }
+
+  #ifdef debug_get_mesh_ordering
+  std::cout << "[store_element_conn] num_line: " << num_line <<  std::endl;
+  std::cout << "[store_element_conn] num_quad: " << num_quad <<  std::endl;
+  std::cout << "[store_element_conn] num_hex: " << num_hex <<  std::endl;
+  std::cout << "[store_element_conn] num_tet: " << num_tet <<  std::endl;
+  std::cout << "[store_element_conn] num_tri: " << num_tri <<  std::endl;
+  std::cout << "[store_element_conn] num_unknown: " << num_unknown <<  std::endl;
+  #endif
+
+  np_elem = 0;
+  ordering.clear();
+
+  if (num_line != 0) {
+    np_elem = vtk_cell_to_elem[VTK_LINE];
+    ordering = vtk_cell_ordering[VTK_LINE];
+  } if (num_hex != 0) {
+    np_elem = vtk_cell_to_elem[VTK_HEXAHEDRON];
+    ordering = vtk_cell_ordering[VTK_HEXAHEDRON];
+  } if (num_quad != 0) {
+    np_elem = vtk_cell_to_elem[VTK_QUAD];
+    ordering = vtk_cell_ordering[VTK_QUAD];
+  } if (num_tet != 0) {
+    np_elem = vtk_cell_to_elem[VTK_TETRA];
+    ordering = vtk_cell_ordering[VTK_TETRA];
+  } if (num_tri != 0) {
+    np_elem = vtk_cell_to_elem[VTK_TRIANGLE];
+    ordering = vtk_cell_ordering[VTK_TRIANGLE];
+  } if (num_wedge != 0) {
+    np_elem = vtk_cell_to_elem[VTK_WEDGE];
+    ordering = vtk_cell_ordering[VTK_WEDGE];
+  }
+
+  // For higher-order elements with mid-side nodes. 
+  //
+  if (num_quadratic_tri != 0) {
+    np_elem = vtk_cell_to_elem[VTK_QUADRATIC_TRIANGLE];
+    ordering = vtk_cell_ordering[VTK_QUADRATIC_TRIANGLE];
+  } if (num_biquadratic_tri != 0){
+    np_elem = vtk_cell_to_elem[VTK_BIQUADRATIC_TRIANGLE];
+    ordering = vtk_cell_ordering[VTK_BIQUADRATIC_TRIANGLE];
+  } if (num_quadratic_quad != 0) {
+    np_elem = vtk_cell_to_elem[VTK_QUADRATIC_QUAD];
+    ordering = vtk_cell_ordering[VTK_QUADRATIC_QUAD];
+  } if (num_biquadratic_quad != 0) {
+    np_elem = vtk_cell_to_elem[VTK_BIQUADRATIC_QUAD];
+    ordering = vtk_cell_ordering[VTK_BIQUADRATIC_QUAD];
+  } if (num_quadratic_tetra != 0) {
+    np_elem = vtk_cell_to_elem[VTK_QUADRATIC_TETRA];
+    ordering = vtk_cell_ordering[VTK_QUADRATIC_TETRA];
+  } if (num_quadratic_hexahedron != 0) {
+    np_elem = vtk_cell_to_elem[VTK_QUADRATIC_HEXAHEDRON];
+    ordering = vtk_cell_ordering[VTK_QUADRATIC_HEXAHEDRON];
+  } if (num_triquadratic_hexahedron != 0) {
+    np_elem = vtk_cell_to_elem[VTK_TRIQUADRATIC_HEXAHEDRON];
+    ordering = vtk_cell_ordering[VTK_TRIQUADRATIC_HEXAHEDRON];
+  }
+}
+
 /// @brief Store element connectivity into the Face object.
 ///
 /// Face variables set
@@ -179,6 +318,28 @@ void store_element_conn(vtkSmartPointer<vtkPolyData> vtk_polydata, faceType& fac
 
   for (int i = 0; i < num_elems; i++) {
     vtk_polydata->GetCell(i, cell);
+    auto num_cell_pts = cell->GetNumberOfPoints();
+    for (int j = 0; j < num_cell_pts; j++) {
+      auto id = cell->PointIds->GetId(j);
+      face.IEN(j,i) = id;
+    }
+  }
+}
+
+void store_element_conn(vtkSmartPointer<vtkUnstructuredGrid> vtk_ugrid, faceType& face)
+{
+  // Get the number of nodes per cell.
+  auto cell = vtkGenericCell::New();
+  vtk_ugrid->GetCell(0, cell);
+  int np_elem = cell->GetNumberOfPoints();
+
+  auto num_elems = vtk_ugrid->GetNumberOfCells();
+  face.nEl = num_elems;
+  face.eNoN = np_elem; 
+  face.IEN = Array<int>(np_elem, num_elems);
+
+  for (int i = 0; i < num_elems; i++) {
+    vtk_ugrid->GetCell(i, cell);
     auto num_cell_pts = cell->GetNumberOfPoints();
     for (int j = 0; j < num_cell_pts; j++) {
       auto id = cell->PointIds->GetId(j);
@@ -241,135 +402,11 @@ void store_element_conn(vtkSmartPointer<vtkUnstructuredGrid> vtk_ugrid, mshType&
   std::cout << "[store_element_conn(ugrid)] num_elems: " << num_elems << std::endl;
   #endif
 
-  int num_hex = 0;
-  int num_line = 0;
-  int num_quad = 0;
-  int num_tet = 0;
-  int num_tri = 0;
-  int num_unknown = 0;
-  int num_wedge = 0;
-  int num_quadratic_tri = 0;
-  int num_biquadratic_tri = 0;
-  int num_quadratic_quad = 0;
-  int num_biquadratic_quad = 0;
-  int num_quadratic_tetra = 0;
-  int num_quadratic_hexahedron = 0;
-  int num_triquadratic_hexahedron = 0;
-  for (int i = 0; i < num_elems; i++) {
-    switch (cell_types->GetValue(i)) {
-      case VTK_HEXAHEDRON:
-        num_hex += 1;
-      break;
-
-      case VTK_LINE:
-        num_line += 1;
-      break;
-
-      case VTK_QUAD:
-        num_quad += 1;
-      break;
-
-      case VTK_TETRA:
-        num_tet += 1;
-      break;
-
-      case VTK_TRIANGLE:
-        num_tri += 1;
-      break;
-
-      case VTK_WEDGE:
-        num_wedge += 1;
-      break;
-
-      case VTK_QUADRATIC_TRIANGLE:
-        num_quadratic_tri += 1;
-      break;
-
-      case VTK_BIQUADRATIC_TRIANGLE:
-        num_biquadratic_tri += 1;
-      break;
-
-      case VTK_QUADRATIC_QUAD:
-        num_quadratic_quad += 1;
-      break;
-
-      case VTK_BIQUADRATIC_QUAD:
-        num_biquadratic_quad += 1;
-      break;
-
-      case VTK_QUADRATIC_TETRA:
-        num_quadratic_tetra += 1;
-      break;
-
-      case VTK_QUADRATIC_HEXAHEDRON:
-        num_quadratic_hexahedron += 1;
-      break;
-
-      case VTK_TRIQUADRATIC_HEXAHEDRON:
-        num_triquadratic_hexahedron += 1;
-      break;
-
-      default:
-        num_unknown += 1;
-      break;
-    }
-  }
-
-  #ifdef debug_store_element_conn
-  std::cout << "[store_element_conn] num_line: " << num_line <<  std::endl;
-  std::cout << "[store_element_conn] num_quad: " << num_quad <<  std::endl;
-  std::cout << "[store_element_conn] num_hex: " << num_hex <<  std::endl;
-  std::cout << "[store_element_conn] num_tet: " << num_tet <<  std::endl;
-  std::cout << "[store_element_conn] num_tri: " << num_tri <<  std::endl;
-  std::cout << "[store_element_conn] num_unknown: " << num_unknown <<  std::endl;
-  #endif
-
-  int np_elem = 0;
-  std::vector<std::vector<int>> ordering;
-  if (num_line != 0) {
-    np_elem = vtk_cell_to_elem[VTK_LINE];
-    ordering = vtk_cell_ordering[VTK_LINE];
-  } if (num_hex != 0) {
-    np_elem = vtk_cell_to_elem[VTK_HEXAHEDRON];
-    ordering = vtk_cell_ordering[VTK_HEXAHEDRON];
-  } if (num_quad != 0) {
-    np_elem = vtk_cell_to_elem[VTK_QUAD];
-    ordering = vtk_cell_ordering[VTK_QUAD];
-  } if (num_tet != 0) {
-    np_elem = vtk_cell_to_elem[VTK_TETRA];
-    ordering = vtk_cell_ordering[VTK_TETRA];
-  } if (num_tri != 0) {
-    np_elem = vtk_cell_to_elem[VTK_TRIANGLE];
-    ordering = vtk_cell_ordering[VTK_TRIANGLE];
-  } if (num_wedge != 0) {
-    np_elem = vtk_cell_to_elem[VTK_WEDGE];
-    ordering = vtk_cell_ordering[VTK_WEDGE];
-  }
-
-  // For higher-order elements with mid-side nodes. 
+  // Get the mesh nodes per element and ordering. 
   //
-  if (num_quadratic_tri != 0) {
-    np_elem = vtk_cell_to_elem[VTK_QUADRATIC_TRIANGLE];
-    ordering = vtk_cell_ordering[VTK_QUADRATIC_TRIANGLE];
-  } if (num_biquadratic_tri != 0){
-    np_elem = vtk_cell_to_elem[VTK_BIQUADRATIC_TRIANGLE];
-    ordering = vtk_cell_ordering[VTK_BIQUADRATIC_TRIANGLE];
-  } if (num_quadratic_quad != 0) {
-    np_elem = vtk_cell_to_elem[VTK_QUADRATIC_QUAD];
-    ordering = vtk_cell_ordering[VTK_QUADRATIC_QUAD];
-  } if (num_biquadratic_quad != 0) {
-    np_elem = vtk_cell_to_elem[VTK_BIQUADRATIC_QUAD];
-    ordering = vtk_cell_ordering[VTK_BIQUADRATIC_QUAD];
-  } if (num_quadratic_tetra != 0) {
-    np_elem = vtk_cell_to_elem[VTK_QUADRATIC_TETRA];
-    ordering = vtk_cell_ordering[VTK_QUADRATIC_TETRA];
-  } if (num_quadratic_hexahedron != 0) {
-    np_elem = vtk_cell_to_elem[VTK_QUADRATIC_HEXAHEDRON];
-    ordering = vtk_cell_ordering[VTK_QUADRATIC_HEXAHEDRON];
-  } if (num_triquadratic_hexahedron != 0) {
-    np_elem = vtk_cell_to_elem[VTK_TRIQUADRATIC_HEXAHEDRON];
-    ordering = vtk_cell_ordering[VTK_TRIQUADRATIC_HEXAHEDRON];
-  }
+  int np_elem = 0; 
+  std::vector<std::vector<int>> ordering;
+  get_mesh_ordering(num_elems, cell_types, np_elem, ordering);
 
   // For generic higher-order elements.
   //
@@ -445,6 +482,30 @@ void store_element_ids(vtkSmartPointer<vtkPolyData> vtk_polydata, faceType& face
   }
 }
 
+/// @brief Store element IDs into a faceType object.
+///
+/// Face data set
+///   face.gE
+//
+void store_element_ids(vtkSmartPointer<vtkUnstructuredGrid> vtk_ugrid, faceType& face)
+{
+  auto elem_ids = vtkIntArray::SafeDownCast(vtk_ugrid->GetCellData()->GetArray(ELEMENT_IDS_NAME.c_str()));
+  if (elem_ids == nullptr) {
+    throw std::runtime_error("No '" + ELEMENT_IDS_NAME + "' data of type Int32 found in VTK mesh.");
+    return;
+  }
+  #ifdef debug_store_element_ids
+  std::cout << "[store_element_ids] Allocate face.gE ... " <<  std::endl;
+  #endif
+  int num_elem_ids = elem_ids->GetNumberOfTuples();
+  face.gE = Vector<int>(num_elem_ids);
+  // [NOTE] It is not clear how these IDs are used but if they
+  // index into arrays or vectors then they need to be offset by -1.
+  for (int i = 0; i < num_elem_ids; i++) {
+    face.gE(i) = elem_ids->GetValue(i) - 1;
+  }
+}
+
 /// @brief Store nodal coordinates from the VTK points into a face.
 ///
 /// Face data set
@@ -503,6 +564,22 @@ void store_nodal_ids(vtkSmartPointer<vtkUnstructuredGrid> vtk_ugrid, mshType& me
   mesh.gN = Vector<int>(num_nodes);
   for (int i = 0; i < num_nodes; i++) {
     mesh.gN(i) = node_ids->GetValue(i);
+    //std::cout << "[store_nodal_ids] mesh.gN(" << i << "): " << mesh.gN(i) << std::endl;
+  }
+}
+
+/// @brief Store VTK node IDs data array into a face nodal IDs.
+///
+void store_nodal_ids(vtkSmartPointer<vtkUnstructuredGrid> vtk_ugrid, faceType& face)
+{
+  vtkIdType num_nodes = vtk_ugrid->GetNumberOfPoints();
+  auto node_ids = vtkIntArray::SafeDownCast(vtk_ugrid->GetPointData()->GetArray(NODE_IDS_NAME.c_str()));
+  if (node_ids == nullptr) {
+    return;
+  }
+  face.gN = Vector<int>(num_nodes);
+  for (int i = 0; i < num_nodes; i++) {
+    face.gN(i) = node_ids->GetValue(i);
     //std::cout << "[store_nodal_ids] mesh.gN(" << i << "): " << mesh.gN(i) << std::endl;
   }
 }
@@ -621,6 +698,7 @@ void load_fiber_direction_vtu(const std::string& file_name, const std::string& d
 //
 void load_vtp(const std::string& file_name, faceType& face)
 {
+  #define n_debug_load_vtp 
   #ifdef debug_load_vtp 
   std::cout << "[load_vtp] " << std::endl;
   std::cout << "[load_vtp] ===== vtk_xml_parser.cpp::load_vtp ===== " << std::endl;
@@ -752,6 +830,52 @@ void load_vtu(const std::string& file_name, mshType& mesh)
 
   // Store element connectivity.
   store_element_conn(vtk_ugrid, mesh);
+}
+
+/// @brief Store a surface mesh read from a VTK .vtu file into a Face object.
+//
+void load_vtu(const std::string& file_name, faceType& face)
+{
+  #define n_debug_load_vtu 
+  #ifdef debug_load_vtu 
+  std::cout << "[load_vtu] " << std::endl;
+  std::cout << "[load_vtu] ===== vtk_xml_parser::load_vtu ===== " << std::endl;
+  std::cout << "[load_vtu] file_name: " << file_name << std::endl;
+  #endif
+
+  auto reader = vtkSmartPointer<vtkXMLUnstructuredGridReader>::New();
+  reader->SetFileName(file_name.c_str());
+  reader->Update();
+  vtkSmartPointer<vtkUnstructuredGrid> vtk_ugrid = reader->GetOutput();
+
+  vtkIdType num_nodes = vtk_ugrid->GetNumberOfPoints();
+  if (num_nodes == 0) {
+    throw std::runtime_error("Failed reading the VTK file '" + file_name + "'.");
+  }
+
+  vtkIdType num_elems = vtk_ugrid->GetNumberOfCells();
+  auto cell = vtkGenericCell::New();
+  vtk_ugrid->GetCell(0, cell);
+  int np_elem = cell->GetNumberOfPoints();
+
+  #ifdef debug_load_vtu 
+  std::cout << "[load_vtu] Number of nodes: " << num_nodes << std::endl;
+  std::cout << "[load_vtu] Number of elements: " << num_elems << std::endl;
+  std::cout << "[load_vtu] Number of nodes per element: " << np_elem << std::endl;
+  #endif
+
+  // Store nodal coordinates.
+  auto points = vtk_ugrid->GetPoints();
+  store_nodal_coords(points, face);
+
+  // Store nodal IDs.
+  store_nodal_ids(vtk_ugrid, face);
+
+  // Store element connectivity.
+  store_element_conn(vtk_ugrid, face);
+
+  // Store element IDs.
+  store_element_ids(vtk_ugrid, face);
 }
 
 

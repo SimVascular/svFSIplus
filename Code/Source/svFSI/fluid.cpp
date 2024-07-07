@@ -517,6 +517,9 @@ void construct_fluid(ComMod& com_mod, const mshType& lM, const Array<double>& Ag
   int num_c = lM.nEl / 10;
 
   for (int e = 0; e < lM.nEl; e++) {
+    #ifdef debug_construct_fluid
+    dmsg << "---------- e: " << e+1;
+    #endif
     cDmn = all_fun::domain(com_mod, lM, cEq, e);
     auto cPhys = eq.dmn[cDmn].phys;
 
@@ -579,7 +582,7 @@ void construct_fluid(ComMod& com_mod, const mshType& lM, const Array<double>& Ag
     //
     #ifdef debug_construct_fluid
     dmsg;
-    dmsg << "Gauss integration 1 ... ";
+    dmsg << "Gauss integration 1 ... " << "";
     dmsg << "fs[1].nG: " << fs[0].nG;
     dmsg << "fs[1].lShpF: " << fs[0].lShpF;
     dmsg << "fs[2].nG: " << fs[1].nG;
@@ -590,6 +593,9 @@ void construct_fluid(ComMod& com_mod, const mshType& lM, const Array<double>& Ag
     Array<double> ksix(nsd,nsd);
 
     for (int g = 0; g < fs[0].nG; g++) {
+      #ifdef debug_construct_fluid
+      dmsg << "===== g: " << g+1;
+      #endif
       if (g == 0 || !fs[1].lShpF) {
         auto Nx = fs[1].Nx.rslice(g);
         nn::gnn(fs[1].eNoN, nsd, nsd, Nx, xql, Nqx, Jac, ksix);
@@ -605,14 +611,15 @@ void construct_fluid(ComMod& com_mod, const mshType& lM, const Array<double>& Ag
            throw std::runtime_error("[construct_fluid] Jacobian for element " + std::to_string(e) + " is < 0.");
         }
 
-        if (!vmsStab) {
-          auto Nx = fs[0].Nx.rslice(g);
-          auto Nxx = fs[0].Nxx.rslice(g);
-          nn::gn_nxx(l, fs[0].eNoN, nsd, nsd, Nx, Nxx, xwl, Nwx, Nwxx); 
-        }
+        auto Nxx = fs[0].Nxx.rslice(g);
+        nn::gn_nxx(l, fs[0].eNoN, nsd, nsd, Nx, Nxx, xwl, Nwx, Nwxx); 
       }
 
       double w = fs[0].w(g) * Jac;
+      #ifdef debug_construct_fluid
+      dmsg << "Jac: " << Jac;
+      dmsg << "w: " << w;
+      #endif
 
       // Compute momentum residual and tangent matrix.
       //
@@ -636,6 +643,15 @@ void construct_fluid(ComMod& com_mod, const mshType& lM, const Array<double>& Ag
 
     // Gauss integration 2
     //
+    #ifdef debug_construct_fluid
+    dmsg;
+    dmsg << "Gauss integration 2 ... " << "";
+    dmsg << "fs[1].nG: " << fs[0].nG;
+    dmsg << "fs[1].lShpF: " << fs[0].lShpF;
+    dmsg << "fs[2].nG: " << fs[1].nG;
+    dmsg << "fs[2].lShpF: " << fs[1].lShpF;
+    #endif
+
     for (int g = 0; g < fs[1].nG; g++) {
       if (g == 0 || !fs[0].lShpF) {
         auto Nx = fs[0].Nx.rslice(g);
@@ -1205,7 +1221,7 @@ void fluid_3d_c(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
   #endif
   
   // Maximum size of arrays sized by (3,eNoNw) -> (3,MAX_SIZE).
-  const int MAX_SIZE = 8;
+  const int MAX_SIZE = 27;
 
   using namespace consts;
 
@@ -1234,9 +1250,9 @@ void fluid_3d_c(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
   // Velocity and its gradients, inertia (acceleration & body force)
   //
   double ud[3] = {-f[0], -f[1], -f[2]};
-  double u[3] = {0.0};
-  double ux[3][3] = {0.0};
-  double uxx[3][3][3] = {0.0};
+  double u[3] = {};
+  double ux[3][3] = {};
+  double uxx[3][3][3] = {};
 
   for (int a = 0; a < eNoNw; a++) {
     ud[0] = ud[0] + Nw(a)*(al(0,a)-bfl(0,a));
@@ -1257,7 +1273,7 @@ void fluid_3d_c(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
     ux[1][2] = ux[1][2] + Nwx(1,a)*yl(2,a);
     ux[2][2] = ux[2][2] + Nwx(2,a)*yl(2,a);
 
-    uxx[0][0][1] += Nwxx(0,a)*yl(0,a);
+    uxx[0][0][0] += Nwxx(0,a)*yl(0,a);
     uxx[1][0][1] += Nwxx(1,a)*yl(0,a);
     uxx[2][0][2] += Nwxx(2,a)*yl(0,a);
     uxx[1][0][0] += Nwxx(3,a)*yl(0,a);
@@ -1293,14 +1309,14 @@ void fluid_3d_c(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
   uxx[1][2][2] = uxx[2][2][1];
   uxx[2][2][0] = uxx[0][2][2];
 
-  double d2u2[3] = {0.0};
+  double d2u2[3] = {};
   d2u2[0] = uxx[0][0][0] + uxx[1][0][1] + uxx[2][0][2];
   d2u2[1] = uxx[0][1][0] + uxx[1][1][1] + uxx[2][1][2];
   d2u2[2] = uxx[0][2][0] + uxx[1][2][1] + uxx[2][2][2];
 
   // Pressure and its gradient
   //
-  double px[3] = {0.0};
+  double px[3] = {};
 
   for (int a = 0; a < eNoNq; a++) {
     px[0] = px[0] + Nqx(0,a)*yl(3,a);
@@ -1320,7 +1336,7 @@ void fluid_3d_c(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
 
   // Strain rate tensor 2*e_ij := (u_i,j + u_j,i)
   //
-  double es[3][3] = {0.0};
+  double es[3][3] = {};
   es[0][0] = ux[0][0] + ux[0][0];
   es[1][1] = ux[1][1] + ux[1][1];
   es[2][2] = ux[2][2] + ux[2][2];
@@ -1339,7 +1355,7 @@ void fluid_3d_c(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
     esNx[2][a] = es[0][2]*Nwx(0,a) + es[1][2]*Nwx(1,a) + es[2][2]*Nwx(2,a);
   }
 
-  double es_x[3][3][3] = {0.0};
+  double es_x[3][3][3] = {};
 
   for (int k = 0; k < 3; k++) { 
      es_x[0][0][k] = uxx[0][0][k] + uxx[0][0][k];
@@ -1391,13 +1407,11 @@ void fluid_3d_c(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
   for (int i = 0; i < 3; i++) {
     mu_x[i] = mu_g * mu_x[i];
   }
-  //std::transform(mu_x.begin(), mu_x.end(), mu_x.begin(), [mu_g](double &v){return mu_g*v;});
-  //mu_x(:) = mu_g * mu_x(:)
 
   // Stabilization parameters
   //
-  double up[3] = {0.0};
-  double updu[3][3][MAX_SIZE] = {0.0};
+  double up[3] = {};
+  double updu[3][3][MAX_SIZE] = {};
   double tauM = 0.0;
 
   if (vmsFlag) {
@@ -1489,7 +1503,6 @@ void fluid_3d_c(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
   }
 }
 
-
 /// @brief Element momentum residual.
 ///
 ///  Modifies:
@@ -1508,11 +1521,12 @@ void fluid_3d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
   dmsg << "vmsFlag: " << vmsFlag;
   dmsg << "eNoNw: " << eNoNw;
   dmsg << "eNoNq: " << eNoNq;
+  dmsg << "w: " << w;
   double start_time = utils::cput();
   #endif
 
   // Maximum size of arrays sized by (3,eNoNw) -> (3,MAX_SIZE).
-  const int MAX_SIZE = 8;
+  const int MAX_SIZE = 27;
 
   using namespace consts;
 
@@ -1549,9 +1563,9 @@ void fluid_3d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
   //
   std::array<double,3> ud{-f[0], -f[1], -f[2]};
   //ud  = -f
-  double u[3] = {0.0};
-  double ux[3][3] = {0.0};
-  double uxx[3][3][3] = {0.0};
+  double u[3] = {};
+  double ux[3][3] = {};
+  double uxx[3][3][3] = {};
 
   for (int a = 0; a < eNoNw; a++) {
     ud[0] = ud[0] + Nw(a)*(al(0,a)-bfl(0,a));
@@ -1619,7 +1633,7 @@ void fluid_3d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
   // Pressure and its gradient
   //
   double p = 0.0;
-  double px[3] = {0.0};
+  double px[3] = {};
 
   for (int a = 0; a < eNoNq; a++) {
     p  = p + Nq(a)*yl(3,a);
@@ -1628,6 +1642,7 @@ void fluid_3d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
     px[2] = px[2] + Nqx(2,a)*yl(3,a);
   }
   #ifdef debug_fluid_3d_m
+  dmsg << "u: " << u[0] << " " << u[1] << " " << u[2];
   dmsg << "p: " << p;
   dmsg << "px: " << px[0] << " " << px[1] << " " << px[2];
   #endif
@@ -1644,7 +1659,7 @@ void fluid_3d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
 
   // Strain rate tensor 2*e_ij := (u_i,j + u_j,i)
   //
-  double es[3][3] = {0.0};
+  double es[3][3] = {};
   es[0][0] = ux[0][0] + ux[0][0];
   es[1][1] = ux[1][1] + ux[1][1];
   es[2][2] = ux[2][2] + ux[2][2];
@@ -1745,24 +1760,24 @@ void fluid_3d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
   dmsg << "tauM: " << tauM;
   #endif
 
-  double rV[3] = {0.0};
+  double rV[3] = {};
   rV[0] = ud[0] + u[0]*ux[0][0] + u[1]*ux[1][0] + u[2]*ux[2][0];
   rV[1] = ud[1] + u[0]*ux[0][1] + u[1]*ux[1][1] + u[2]*ux[2][1];
   rV[2] = ud[2] + u[0]*ux[0][2] + u[1]*ux[1][2] + u[2]*ux[2][2];
 
-  double rS[3] = {0.0};
+  double rS[3] = {};
   rS[0] = mu_x[0]*es[0][0] + mu_x[1]*es[1][0] + mu_x[2]*es[2][0] + mu*d2u2[0];
   rS[1] = mu_x[0]*es[0][1] + mu_x[1]*es[1][1] + mu_x[2]*es[2][1] + mu*d2u2[1];
   rS[2] = mu_x[0]*es[0][2] + mu_x[1]*es[1][2] + mu_x[2]*es[2][2] + mu*d2u2[2];
 
-  double up[3] = {0.0};
+  double up[3] = {};
   up[0] = -tauM*(rho*rV[0] + px[0] - rS[0]);
   up[1] = -tauM*(rho*rV[1] + px[1] - rS[1]);
   up[2] = -tauM*(rho*rV[2] + px[2] - rS[2]);
 
   double tauC, tauB, pa;
   double eps = std::numeric_limits<double>::epsilon();
-  double ua[3] = {0.0};
+  double ua[3] = {};
 
   if (vmsFlag) {
     tauC = 1.0 / (tauM * (Kxi(0,0) + Kxi(1,1) + Kxi(2,2)));
@@ -1814,10 +1829,10 @@ void fluid_3d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
 
   //  Local residual
   //
-  double updu[3][3][MAX_SIZE] = {0.0};
-  double uNx[MAX_SIZE] = {0.0};
-  double upNx[MAX_SIZE] = {0.0}; 
-  double uaNx[MAX_SIZE] = {0.0}; 
+  double updu[3][3][MAX_SIZE] = {};
+  double uNx[MAX_SIZE] = {};
+  double upNx[MAX_SIZE] = {}; 
+  double uaNx[MAX_SIZE] = {}; 
 
   for (int a = 0; a < eNoNw; a++) {
     lR(0,a) = lR(0,a) + wr*Nw(a)*rV[0] + w*(Nwx(0,a)*rM[0][0] + Nwx(1,a)*rM[1][0] + Nwx(2,a)*rM[2][0]);
@@ -1825,6 +1840,7 @@ void fluid_3d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
     lR(2,a) = lR(2,a) + wr*Nw(a)*rV[2] + w*(Nwx(0,a)*rM[0][2] + Nwx(1,a)*rM[1][2] + Nwx(2,a)*rM[2][2]);
 
     // Quantities used for stiffness matrix
+
     uNx[a]  = u[0]*Nwx(0,a)  + u[1]*Nwx(1,a)  + u[2]*Nwx(2,a);
     upNx[a] = up[0]*Nwx(0,a) + up[1]*Nwx(1,a) + up[2]*Nwx(2,a);
 
@@ -1904,6 +1920,8 @@ void fluid_3d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
       //dmsg << "lK(10,a,b): " << lK(10,a,b);
     }
   }
+
+  //exit(0);
 
   for (int b = 0; b < eNoNq; b++) {
     for (int a = 0; a < eNoNw; a++) {
