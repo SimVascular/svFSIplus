@@ -161,6 +161,103 @@ solidMechanicsTerms<N> calcSolidMechanicsTerms(const double F[N][N]) {
     return out;
 }
 
+// Class to contain material parameters
+class MatParams {
+public:
+    virtual ~MatParams() {} // Virtual destructor for proper cleanup
+};
+
+// Class to contain St. Venant-Kirchhoff material parameters
+class StVKParams : public MatParams {
+public:
+    double C01;
+    double C10;
+
+    StVKParams(double c01, double c10) : C01(c01), C10(c10) {}
+};
+
+// Class to contain Neo-Hookean material parameters
+class NeoHookeanParams : public MatParams {
+public:
+    double C10;
+
+    NeoHookeanParams(double c10) : C10(c10) {}
+};
+
+// Class to contain Mooney-Rivlin material parameters
+class MooneyRivlinParams : public MatParams {
+public:
+    double C01;
+    double C10;
+
+    MooneyRivlinParams(double c01, double c10) : C01(c01), C10(c10) {}
+};
+
+
+
+
+
+// Class to represent a strain energy density function
+class StrainEnergy {
+public:
+    virtual ~StrainEnergy() {}
+    virtual double compute(const double F[3][3], const MatParams& params) const = 0;
+};
+
+// Class to represent a St. Venant-Kirchhoff strain energy density function
+class StVKStrainEnergy : public StrainEnergy {
+public:
+    double compute(const double F[3][3], const MatParams& params) const override {
+        const StVKParams& stVKParams = dynamic_cast<const StVKParams&>(params);
+
+        // Compute solid mechanics terms
+        solidMechanicsTerms smTerms = calcSolidMechanicsTerms(F);
+
+        // Strain energy density for St. Venant-Kirchhoff material model
+        // Psi_iso = C10/2 * tr(E)^2 + C01 * tr(E^2)
+        double trE = mat_fun_carray::mat_trace<3>(smTerms.E);
+        double trE2 = mat_fun_carray::mat_trace<3>(smTerms.E2);
+        double Psi_iso = stVKParams.C10/2. * pow(trE, 2) + stVKParams.C01 * trE2;
+
+        return Psi_iso;
+    }
+};
+
+// Class to represent a Neo-Hookean strain energy density function
+class NeoHookeanStrainEnergy : public StrainEnergy {
+public:
+    double compute(const double F[3][3], const MatParams& params) const override {
+        const NeoHookeanParams& nhParams = dynamic_cast<const NeoHookeanParams&>(params);
+
+        // Compute solid mechanics terms
+        solidMechanicsTerms smTerms = calcSolidMechanicsTerms(F);
+
+        // Strain energy density for Neo-Hookean material model
+        // Psi_iso = C10 * (Ib1 - 3)
+        double Psi_iso = nhParams.C10 * (smTerms.Ib1 - 3.);
+
+        return Psi_iso;
+    }
+};
+
+
+// Class to represent a Mooney-Rivlin strain energy density function
+class MooneyRivlinStrainEnergy : public StrainEnergy {
+public:
+    double compute(const double F[3][3], const MatParams& params) const override {
+        const MooneyRivlinParams& mrParams = dynamic_cast<const MooneyRivlinParams&>(params);
+
+        // Compute solid mechanics terms
+        solidMechanicsTerms smTerms = calcSolidMechanicsTerms(F);
+
+        // Strain energy density for Mooney-Rivlin material model
+        // Psi_iso = C10 * (Ib1 - 3) + C01 * (Ib2 - 3)
+        double Psi_iso = mrParams.C10 * (smTerms.Ib1 - 3.) + mrParams.C01 * (smTerms.Ib2 - 3.);
+
+        return Psi_iso;
+
+    }
+};
 
 
 // Function to compute the strain energy density Psi for the
