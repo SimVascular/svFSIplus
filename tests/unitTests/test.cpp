@@ -331,6 +331,166 @@ double Psi_MR(const double C01, const double C10, const double F[N][N]) {
 
 }
 
+// Assuming Psi is a template function that takes the size, mat_params, and a 3x3 matrix as arguments
+template<int N>
+void calcPK2StressFiniteDifference(const double F[N][N], const StrainEnergy &PsiFunc, const MatParams &matParams, double (&S_ref)[N][N]) {
+    // Compute strain energy density given F
+    double Psi = PsiFunc.compute(F, matParams);
+
+    // Compute 1st PK stress P_ref_iJ = dPsi / dF[i][J] using finite difference, component by component
+    double P_ref[3][3] = {};
+    double delta = 1e-9; // perturbation size
+    double F_tilde[N][N]; // perturbed deformation gradient
+    for (int i = 0; i < N; i++) {
+        for (int J = 0; J < N; J++) {
+            // Perturb the iJ-th component of F by delta
+            for (int k = 0; k < N; k++) {
+                for (int l = 0; l < N; l++) {
+                    F_tilde[k][l] = F[k][l];
+                }
+            }
+            F_tilde[i][J] += delta;
+
+            // Compute Psi_MR for perturbed deformation gradient
+            double Psi_tilde = PsiFunc.compute(F_tilde, matParams);
+
+            // Compute differences in Psi
+            double dPsi = Psi_tilde - Psi;
+
+            // Compute P_ref[i][J] = dPsi / dF[i][J]
+            P_ref[i][J] = dPsi / delta;
+        }
+    }
+
+    // Compute S_ref = F^-1 * P_ref
+    double F_inv[N][N];
+    mat_fun_carray::mat_inv<N>(F, F_inv);
+    mat_fun_carray::mat_mul<N>(F_inv, P_ref, S_ref);
+}
+
+
+// Test fixture class for St. Venant-Kirchhoff material model
+class StVenantKirchhoffTest : public ::testing::Test {
+protected:
+    // Variables common across tests
+    consts::ConstitutiveModelType matType; // Material model type
+    consts::ConstitutiveModelType volType; // Dilational penalty model type
+    double E_mod; // Elasticity modulus
+    double nu; // Poisson ratio
+    double pen; // Volumetric penalty parameter
+    double C01; // St. Venant Kirckhoff parameter
+    double mu;  // Shear modulus
+    double C10; // St. Venant Kirckhoff parameter
+
+    // Add the UnitTestIso object as a member variable
+    UnitTestIso* StVK;
+
+    // Setup method to initialize variables before each test
+    void SetUp() override {
+        matType = consts::ConstitutiveModelType::stIso_StVK;
+        volType = consts::ConstitutiveModelType::stVol_ST91;
+        E_mod = 1e6;
+        nu = 0.495;
+        pen = 0.0;
+        C01 = 0.1;
+
+        // Compute derived material parameters
+        mu = 0.5 * E_mod / (1.0 + nu);
+        C10 = 0.5 * mu - C01;
+
+        // Initialize the UnitTestIso object
+        StVK = new UnitTestIso(matType, E_mod, nu, volType, pen, C01);
+    }
+
+    // TearDown method to clean up after each test, if needed
+    void TearDown() override {
+        // Clean up the UnitTestIso object
+        delete StVK;
+        StVK = nullptr;
+    }
+};
+
+// Test fixture class for Neo-Hookean material model
+class NeoHookeanTest : public ::testing::Test {
+protected:
+    // Variables common across tests
+    consts::ConstitutiveModelType matType; // Material model type
+    consts::ConstitutiveModelType volType; // Dilational penalty model type
+    double E_mod; // Elasticity modulus
+    double nu;    // Poisson ratio
+    double C01;   // NeoHookean parameter
+    double pen;   // Volumetric penalty parameter
+    double C10;   // NeoHookean parameter
+
+    // Add the UnitTestIso object as a member variable
+    UnitTestIso* nHook;
+
+    // Setup method to initialize variables before each test
+    void SetUp() override {
+        matType = consts::ConstitutiveModelType::stIso_nHook;
+        volType = consts::ConstitutiveModelType::stVol_ST91;
+        E_mod = 1e6;
+        nu = 0.495;
+        pen = 0.0;
+        C01 = 0.1;
+
+        // Compute derived material parameters
+        double mu = 0.5 * E_mod / (1.0 + nu);
+        C10 = 0.5 * mu - C01;
+
+        // Initialize the UnitTestIso object
+        nHook = new UnitTestIso(matType, E_mod, nu, volType, pen, C01);
+    }
+
+    // TearDown method to clean up after each test, if needed
+    void TearDown() override {
+        // Clean up the UnitTestIso object
+        delete nHook;
+        nHook = nullptr;
+    }
+};
+
+// Test fixture class for Mooney-Rivlin material model
+class MooneyRivlinTest : public ::testing::Test {
+protected:
+    // Variables common across tests
+    consts::ConstitutiveModelType matType; // Material model type
+    consts::ConstitutiveModelType volType; // Dilational penalty model type
+    double E_mod; // Elasticity modulus
+    double nu;   // Poisson ratio
+    double pen; // Volumetric penalty parameter
+    double C01; // Mooney-Rivlin parameter
+    double C10; // Mooney-Rivlin parameter
+
+    // Add the UnitTestIso object as a member variable
+    UnitTestIso* MR;
+
+    // Setup method to initialize variables before each test
+    void SetUp() override {
+        matType = consts::ConstitutiveModelType::stIso_MR;
+        volType = consts::ConstitutiveModelType::stVol_ST91;
+        E_mod = 1e6;
+        nu = 0.495;
+        pen = 0.0;
+        C01 = 0.1;
+
+        // Compute derived material parameters
+        double mu = 0.5 * E_mod / (1.0 + nu);
+        C10 = 0.5 * mu - C01;
+
+        // Initialize the UnitTestIso object
+        MR = new UnitTestIso(matType, E_mod, nu, volType, pen, C01);
+    }
+
+    // TearDown method to clean up after each test, if needed
+    void TearDown() override {
+        // Clean up the UnitTestIso object
+        delete MR;
+        MR = nullptr;
+    }
+};
+
+
 TEST(UnitTestIso_1, nHK) {
     // Step 1: define parameters
     auto matType = consts::ConstitutiveModelType::stIso_nHook;   // Material_model: options refer to consts.h 
@@ -393,30 +553,8 @@ TEST(UnitTestIso_2, MR) {
 //      - Compute dPsi = Psi(F + dF) - Psi(F)
 //      - Compute dE from dF
 //      - Check that S:dE = dPsi
-TEST(TestStVK, S_3D) {
-    // -------------------------
-    // Step 1: define parameters
-    // -------------------------
-    auto matType = consts::ConstitutiveModelType::stIso_StVK;   // Material_model: options refer to consts.h 
-    auto volType = consts::ConstitutiveModelType::stVol_ST91;   // Dilational_penalty_model
-    double E_mod = 1e6;   // Elasticity_modulus
-    double nu = 0.495;   // Poisson_ratio
-    double pen = 0.0;   // Penalty_parameter
-    double C01 = 0.1;   // additional parameter to C10 (optional)
-    
-
-    // Compute derived material parameters
-    double mu  = 0.5 * E_mod / (1.0 + nu);                    // Shear_modulus
-    double C10 = 0.5 * mu - C01;    
-
-    // -------------------------
-    // Step 2: construct test object
-    // -------------------------
-    UnitTestIso StVK(matType, E_mod, nu, volType, pen, C01);
-
-    // -------------------------
-    // Step 3: create random deformation gradient
-    // -------------------------
+TEST_F(StVenantKirchhoffTest, TestPK2Stress) {
+    // Create random deformation gradient
     double F[3][3];
     create_random_F(F);
 
@@ -424,21 +562,16 @@ TEST(TestStVK, S_3D) {
     double J, C[3][3], E[3][3];
     calc_JCE(F, J, C, E);
 
-    // -------------------------
-    // Step 4: compute Psi(F)
-    // -------------------------
+    // Compute strain energy density Psi
     double Psi = Psi_StVK<3>(C01, C10, F);
 
-    // -------------------------
-    // Step 5: compute S(F)
-    // -------------------------
+    // Compute S(F)
     double S[3][3], Dm[6][6];
-    StVK.get_pk2cc(F, S, Dm); // S from svFSI
+    StVK->get_pk2cc(F, S, Dm); // S from svFSI
 
-    // -------------------------
-    // Step 6: generate many random dF and check that S:dE = dPsi
+
+    // Generate many random dF and check that S:dE = dPsi
     // S was obtained from get_pk2cc(), and dPsi = Psi(F + dF) - Psi(F)
-    // -------------------------
     int n_iter = 10;
     double rel_tol = 1e-3; // relative tolerance for comparing dPsi and dS with values from svFSI
     double delta = 1e-6; // perturbation scaling factor
@@ -486,28 +619,8 @@ TEST(TestStVK, S_3D) {
 //      - Compute dS = S(F + dF) - S(F)
 //      - Compute dE from dF
 //      - Check that CC:dE = dS
-TEST(TestStVK, CC_3D) {
-    // -------------------------
-    // Step 1: define parameters
-    // -------------------------
-    auto matType = consts::ConstitutiveModelType::stIso_StVK;   // Material_model: options refer to consts.h 
-    auto volType = consts::ConstitutiveModelType::stVol_ST91;   // Dilational_penalty_model
-    double E_mod = 1e6;   // Elasticity_modulus
-    double nu = 0.495;   // Poisson_ratio
-    double pen = 0.0;   // Penalty_parameter
-    double C01 = 100.0;   // additional parameter to C10 (optional)
-    // Compute derived material parameters
-    double mu  = 0.5 * E_mod / (1.0 + nu);                    // Shear_modulus
-    double C10 = 0.5 * mu - C01;    
-
-    // -------------------------
-    // Step 2: construct test object
-    // -------------------------
-    UnitTestIso StVK(matType, E_mod, nu, volType, pen, C01);
-
-    // -------------------------
-    // Step 3: create random deformation gradient
-    // -------------------------
+TEST_F(StVenantKirchhoffTest, TestMaterialElasticityTensor) {
+    // Create random deformation gradient
     double F[3][3];
     create_random_F(F);
 
@@ -515,13 +628,11 @@ TEST(TestStVK, CC_3D) {
     double J, C[3][3], E[3][3];
     calc_JCE(F, J, C, E);
 
-    // -------------------------
-    // Step 4: compute S_ij(F)
-    // Step 5: compute CC_ijkl(F). 
+    // Compute S_ij(F)
+    // Compute CC_ijkl(F). 
     // CC is provided in Voigt notation as Dm, and we will convert it to CC
-    // -------------------------
     double S[3][3], Dm[6][6];
-    StVK.get_pk2cc(F, S, Dm); // S from svFSI
+    StVK->get_pk2cc(F, S, Dm); // S from svFSI
 
     // Calculate CC from Dm
     double CC[3][3][3][3];
@@ -540,11 +651,9 @@ TEST(TestStVK, CC_3D) {
     }
     // -------------------------------
 
-    // -------------------------
-    // Step 6: generate many random dF and check that CC:dE = dS
+    // Generate many random dF and check that CC:dE = dS
     // CC was obtained from get_pk2cc(), and dS = S(F + dF) - S(F), 
     // where S is also obtained from get_pk2cc()
-    // -------------------------
     int n_iter = 10;
     double rel_tol = 1e-3; // relative tolerance for comparing dPsi and dS with values from svFSI
     double delta = 1e-6; // perturbation scaling factor
@@ -569,7 +678,7 @@ TEST(TestStVK, CC_3D) {
 
         // Compute perturbed S with perturbed deformation gradient
         double S_tilde[3][3], Dm_tilde[6][6];
-        StVK.get_pk2cc(F_tilde, S_tilde, Dm_tilde);
+        StVK->get_pk2cc(F_tilde, S_tilde, Dm_tilde);
 
         // Compute dS
         double dS[3][3];
@@ -601,30 +710,8 @@ TEST(TestStVK, CC_3D) {
 //      - Compute dPsi = Psi(F + dF) - Psi(F)
 //      - Compute dE from dF
 //      - Check that S:dE = dPsi
-TEST(TestnHook, S_3D) {
-    // -------------------------
-    // Step 1: define parameters
-    // -------------------------
-    auto matType = consts::ConstitutiveModelType::stIso_nHook;   // Material_model: options refer to consts.h 
-    auto volType = consts::ConstitutiveModelType::stVol_ST91;   // Dilational_penalty_model
-    double E_mod = 1e6;   // Elasticity_modulus
-    double nu = 0.495;   // Poisson_ratio
-    double pen = 0.0;   // Penalty_parameter
-    double C01 = 0.1;   // additional parameter to C10 (optional)
-    
-
-    // Compute derived material parameters
-    double mu  = 0.5 * E_mod / (1.0 + nu);                    // Shear_modulus
-    double C10 = 0.5 * mu - C01;    
-
-    // -------------------------
-    // Step 2: construct test object
-    // -------------------------
-    UnitTestIso nHook(matType, E_mod, nu, volType, pen, C01);
-
-    // -------------------------
-    // Step 3: create random deformation gradient
-    // -------------------------
+TEST_F(NeoHookeanTest, TestPK2Stress) {
+    // Create random deformation gradient
     double F[3][3];
     create_random_F(F);
 
@@ -632,21 +719,15 @@ TEST(TestnHook, S_3D) {
     double J, C[3][3], E[3][3];
     calc_JCE(F, J, C, E);
 
-    // -------------------------
-    // Step 4: compute Psi(F)
-    // -------------------------
+    // Compute Psi(F)
     double Psi = Psi_nHook<3>(C10, F);
 
-    // -------------------------
-    // Step 5: compute S(F)
-    // -------------------------
+    // Compute S(F)
     double S[3][3], Dm[6][6];
-    nHook.get_pk2cc(F, S, Dm); // S from svFSI
+    nHook->get_pk2cc(F, S, Dm); // S from svFSI
 
-    // -------------------------
-    // Step 6: generate many random dF and check that S:dE = dPsi
+    // Generate many random dF and check that S:dE = dPsi
     // S was obtained from get_pk2cc(), and dPsi = Psi(F + dF) - Psi(F)
-    // -------------------------
     int n_iter = 10;
     double rel_tol = 1e-3; // relative tolerance for comparing dPsi and dS with values from svFSI
     double delta = 1e-6; // perturbation scaling factor
@@ -694,28 +775,8 @@ TEST(TestnHook, S_3D) {
 //      - Compute dS = S(F + dF) - S(F)
 //      - Compute dE from dF
 //      - Check that CC:dE = dS
-TEST(TestnHook, CC_3D) {
-    // -------------------------
-    // Step 1: define parameters
-    // -------------------------
-    auto matType = consts::ConstitutiveModelType::stIso_nHook;   // Material_model: options refer to consts.h 
-    auto volType = consts::ConstitutiveModelType::stVol_ST91;   // Dilational_penalty_model
-    double E_mod = 1e6;   // Elasticity_modulus
-    double nu = 0.495;   // Poisson_ratio
-    double pen = 0.0;   // Penalty_parameter
-    double C01 = 0.1;   // additional parameter to C10 (optional)
-    // Compute derived material parameters
-    double mu  = 0.5 * E_mod / (1.0 + nu);                    // Shear_modulus
-    double C10 = 0.5 * mu - C01;    
-
-    // -------------------------
-    // Step 2: construct test object
-    // -------------------------
-    UnitTestIso nHook(matType, E_mod, nu, volType, pen, C01);
-
-    // -------------------------
-    // Step 3: create random deformation gradient
-    // -------------------------
+TEST_F(NeoHookeanTest, TestMaterialElasticityTensor) {
+    // Create random deformation gradient
     double F[3][3];
     create_random_F(F);
 
@@ -723,13 +784,11 @@ TEST(TestnHook, CC_3D) {
     double J, C[3][3], E[3][3];
     calc_JCE(F, J, C, E);
 
-    // -------------------------
-    // Step 4: compute S_ij(F)
-    // Step 5: compute CC_ijkl(F). 
+    // Compute S_ij(F)
+    // Compute CC_ijkl(F). 
     // CC is provided in Voigt notation as Dm, and we will convert it to CC
-    // -------------------------
     double S[3][3], Dm[6][6];
-    nHook.get_pk2cc(F, S, Dm); // S from svFSI
+    nHook->get_pk2cc(F, S, Dm); // S from svFSI
 
     // Calculate CC from Dm
     double CC[3][3][3][3];
@@ -748,11 +807,9 @@ TEST(TestnHook, CC_3D) {
     }
     // -------------------------------
 
-    // -------------------------
-    // Step 6: generate many random dF and check that CC:dE = dS
+    // Generate many random dF and check that CC:dE = dS
     // CC was obtained from get_pk2cc(), and dS = S(F + dF) - S(F), 
     // where S is also obtained from get_pk2cc()
-    // -------------------------
     int n_iter = 10;
     double rel_tol = 1e-3; // relative tolerance for comparing dPsi and dS with values from svFSI
     double delta = 1e-6; // perturbation scaling factor
@@ -777,7 +834,7 @@ TEST(TestnHook, CC_3D) {
 
         // Compute perturbed S with perturbed deformation gradient
         double S_tilde[3][3], Dm_tilde[6][6];
-        nHook.get_pk2cc(F_tilde, S_tilde, Dm_tilde);
+        nHook->get_pk2cc(F_tilde, S_tilde, Dm_tilde);
 
         // Compute dS
         double dS[3][3];
@@ -807,81 +864,23 @@ TEST(TestnHook, CC_3D) {
 //      - dPsi = Psi(F + dF) - Psi(F)
 //      - P_ij = dPsi / dF_ij
 // - Compute S(F) = F^-1 * P(F)
-TEST(TestMR, S_3D_direct) {
-    // -------------------------
-    // Step 1: define parameters
-    // -------------------------
-
-    auto matType = consts::ConstitutiveModelType::stIso_MR;   // Material_model: options refer to consts.h 
-    auto volType = consts::ConstitutiveModelType::stVol_ST91;   // Dilational_penalty_model
-    double E_mod = 1e6;   // Elasticity_modulus
-    double nu = 0.495;   // Poisson_ratio
-    double pen = 0.0;   // Penalty_parameter
-    double C01 = 0.1;   // additional parameter to C10 (optional)
-
-
-    // Compute derived material parameters
-    double mu  = 0.5 * E_mod / (1.0 + nu);                    // Shear_modulus
-    double C10 = 0.5 * mu - C01;                 
-
-    // -------------------------
-    // Step 2: construct test object
-    // -------------------------
-    UnitTestIso MR(matType, E_mod, nu, volType, pen, C01);
-
-    // -------------------------
-    // Step 3: create random deformation gradient
-    // -------------------------
-
+TEST_F(MooneyRivlinTest, TestPK2StressDirect) {
+    // Create random deformation gradient
     double F[3][3];
     create_random_F(F);
 
-    // -------------------------
-    // Step 4: compute the reference S_ij using finite difference
-    // -------------------------
-
-    // Compute strain energy density given F
-    double Psi = Psi_MR<3>(C01, C10, F);
-
-    // Compute 1st PK stress P_ref_iJ = dPsi / dF[i][J] using finite difference, component by component
-    double P_ref[3][3] = {};
-    double delta = 1e-9; // perturbation size
-    double F_tilde[3][3]; // perturbed deformation gradient
-    for (int i = 0; i < 3; i++) {
-        for (int J = 0; J < 3; J++) {
-            // Perturb the iJ-th component of F by delta
-            for (int k = 0; k < 3; k++) {
-                for (int l = 0; l < 3; l++) {
-                    F_tilde[k][l] = F[k][l];
-                }
-            }
-            F_tilde[i][J] += delta;
-
-            // Compute Psi_MR for perturbed deformation gradient
-            double Psi_tilde = Psi_MR<3>(C01, C10, F_tilde);
-
-            // Compute differences in Psi and E
-            double dPsi = Psi_tilde - Psi;
-            double dF_iJ = delta;
-
-            // Compute P_ref[i][J] = dPsi / dF[i][J]
-            P_ref[i][J] = dPsi / dF_iJ;
-        }
-    }
-
-    // Compute S_ref = F^-1 * P_ref
-    double S_ref[3][3] = {};
-    double F_inv[3][3];
-    mat_fun_carray::mat_inv<3>(F, F_inv);
-    mat_fun_carray::mat_mul<3>(F_inv, P_ref, S_ref);
-
+    // Compute the reference S_ij using finite difference
+    MooneyRivlinStrainEnergy PsiFunc;
+    MooneyRivlinParams matParams = {C01, C10};
+    double S_ref[3][3];
+    calcPK2StressFiniteDifference<3>(F, PsiFunc, matParams, S_ref);
 
     // TODO: Compute Dm_ref
     double Dm_ref[6][6] = {};
 
-    // Step 5: Compare S and Dm from svFSI with reference solutions
+    // Compare S and Dm from svFSI with reference solutions
     double rel_tol = 1e-4;
-    MR.compare_S_Dm(F, S_ref, Dm_ref, rel_tol);
+    MR->compare_S_Dm(F, S_ref, Dm_ref, rel_tol);
 }
 
 // Test the consistency of the PK2 stress tensor S(F) from get_pk2cc() with the strain 
@@ -894,30 +893,8 @@ TEST(TestMR, S_3D_direct) {
 //      - Compute dPsi = Psi(F + dF) - Psi(F)
 //      - Compute dE from dF
 //      - Check that S:dE = dPsi
-TEST(TestMR, S_3D) {
-    // -------------------------
-    // Step 1: define parameters
-    // -------------------------
-    auto matType = consts::ConstitutiveModelType::stIso_MR;   // Material_model: options refer to consts.h 
-    auto volType = consts::ConstitutiveModelType::stVol_ST91;   // Dilational_penalty_model
-    double E_mod = 1e6;   // Elasticity_modulus
-    double nu = 0.495;   // Poisson_ratio
-    double pen = 0.0;   // Penalty_parameter
-    double C01 = 0.1;   // additional parameter to C10 (optional)
-    
-
-    // Compute derived material parameters
-    double mu  = 0.5 * E_mod / (1.0 + nu);                    // Shear_modulus
-    double C10 = 0.5 * mu - C01;    
-
-    // -------------------------
-    // Step 2: construct test object
-    // -------------------------
-    UnitTestIso MR(matType, E_mod, nu, volType, pen, C01);
-
-    // -------------------------
-    // Step 3: create random deformation gradient
-    // -------------------------
+TEST_F(MooneyRivlinTest, TestPK2Stress) {
+    // Create random deformation gradient
     double F[3][3];
     create_random_F(F);
 
@@ -925,21 +902,15 @@ TEST(TestMR, S_3D) {
     double J, C[3][3], E[3][3];
     calc_JCE(F, J, C, E);
 
-    // -------------------------
-    // Step 4: compute Psi(F)
-    // -------------------------
+    // Compute Psi(F)
     double Psi = Psi_MR<3>(C01, C10, F);
 
-    // -------------------------
-    // Step 5: compute S(F)
-    // -------------------------
+    // Compute S(F)
     double S[3][3], Dm[6][6];
-    MR.get_pk2cc(F, S, Dm); // S from svFSI
+    MR->get_pk2cc(F, S, Dm); // S from svFSI
 
-    // -------------------------
-    // Step 6: generate many random dF and check that S:dE = dPsi
+    // Generate many random dF and check that S:dE = dPsi
     // S was obtained from get_pk2cc(), and dPsi = Psi(F + dF) - Psi(F)
-    // -------------------------
     int n_iter = 10;
     double rel_tol = 1e-3; // relative tolerance for comparing dPsi and dS with values from svFSI
     double delta = 1e-6; // perturbation scaling factor
@@ -987,28 +958,8 @@ TEST(TestMR, S_3D) {
 //      - Compute dS = S(F + dF) - S(F)
 //      - Compute dE from dF
 //      - Check that CC:dE = dS
-TEST(TestMR, CC_3D) {
-    // -------------------------
-    // Step 1: define parameters
-    // -------------------------
-    auto matType = consts::ConstitutiveModelType::stIso_MR;   // Material_model: options refer to consts.h 
-    auto volType = consts::ConstitutiveModelType::stVol_ST91;   // Dilational_penalty_model
-    double E_mod = 1e6;   // Elasticity_modulus
-    double nu = 0.495;   // Poisson_ratio
-    double pen = 0.0;   // Penalty_parameter
-    double C01 = 0.1;   // additional parameter to C10 (optional)
-    // Compute derived material parameters
-    double mu  = 0.5 * E_mod / (1.0 + nu);                    // Shear_modulus
-    double C10 = 0.5 * mu - C01;    
-
-    // -------------------------
-    // Step 2: construct test object
-    // -------------------------
-    UnitTestIso MR(matType, E_mod, nu, volType, pen, C01);
-
-    // -------------------------
-    // Step 3: create random deformation gradient
-    // -------------------------
+TEST_F(MooneyRivlinTest, TestMaterialElasticityTensor) {
+    // Create random deformation gradient
     double F[3][3];
     create_random_F(F);
 
@@ -1016,13 +967,11 @@ TEST(TestMR, CC_3D) {
     double J, C[3][3], E[3][3];
     calc_JCE(F, J, C, E);
 
-    // -------------------------
-    // Step 4: compute S_ij(F)
-    // Step 5: compute CC_ijkl(F). 
+    // Compute S_ij(F)
+    // Compute CC_ijkl(F). 
     // CC is provided in Voigt notation as Dm, and we will convert it to CC
-    // -------------------------
     double S[3][3], Dm[6][6];
-    MR.get_pk2cc(F, S, Dm); // S from svFSI
+    MR->get_pk2cc(F, S, Dm); // S from svFSI
 
     // Calculate CC from Dm
     double CC[3][3][3][3];
@@ -1041,11 +990,9 @@ TEST(TestMR, CC_3D) {
     }
     // -------------------------------
 
-    // -------------------------
-    // Step 6: generate many random dF and check that CC:dE = dS
+    // Generate many random dF and check that CC:dE = dS
     // CC was obtained from get_pk2cc(), and dS = S(F + dF) - S(F), 
     // where S is also obtained from get_pk2cc()
-    // -------------------------
     int n_iter = 10;
     double rel_tol = 1e-3; // relative tolerance for comparing dPsi and dS with values from svFSI
     double delta = 1e-6; // perturbation scaling factor
@@ -1070,7 +1017,7 @@ TEST(TestMR, CC_3D) {
 
         // Compute perturbed S with perturbed deformation gradient
         double S_tilde[3][3], Dm_tilde[6][6];
-        MR.get_pk2cc(F_tilde, S_tilde, Dm_tilde);
+        MR->get_pk2cc(F_tilde, S_tilde, Dm_tilde);
 
         // Compute dS
         double dS[3][3];
