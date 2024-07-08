@@ -333,13 +333,12 @@ double Psi_MR(const double C01, const double C10, const double F[N][N]) {
 
 // Assuming Psi is a template function that takes the size, mat_params, and a 3x3 matrix as arguments
 template<int N>
-void calcPK2StressFiniteDifference(const double F[N][N], const StrainEnergy &PsiFunc, const MatParams &matParams, double (&S_ref)[N][N]) {
+void calcPK2StressFiniteDifference(const double F[N][N], const StrainEnergy &PsiFunc, const MatParams &matParams, double delta, double (&S_ref)[N][N]) {
     // Compute strain energy density given F
     double Psi = PsiFunc.compute(F, matParams);
 
     // Compute 1st PK stress P_ref_iJ = dPsi / dF[i][J] using finite difference, component by component
     double P_ref[3][3] = {};
-    double delta = 1e-9; // perturbation size
     double F_tilde[N][N]; // perturbed deformation gradient
     for (int i = 0; i < N; i++) {
         for (int J = 0; J < N; J++) {
@@ -872,8 +871,9 @@ TEST_F(MooneyRivlinTest, TestPK2StressDirect) {
     // Compute the reference S_ij using finite difference
     MooneyRivlinStrainEnergy PsiFunc;
     MooneyRivlinParams matParams = {C01, C10};
+    double delta = 1e-9; // perturbation size
     double S_ref[3][3];
-    calcPK2StressFiniteDifference<3>(F, PsiFunc, matParams, S_ref);
+    calcPK2StressFiniteDifference<3>(F, PsiFunc, matParams, delta, S_ref);
 
     // TODO: Compute Dm_ref
     double Dm_ref[6][6] = {};
