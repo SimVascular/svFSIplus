@@ -180,6 +180,20 @@ void mat_mul(const double A[N][N], const Vector<double>& v, double result[N])
 }
 
 template <size_t N>
+void mat_mul(const double A[N][N], const double v[N], double result[N])
+{
+  for (int i = 0; i < N; i++) {
+    double sum = 0.0;
+
+    for (int j = 0; j < N; j++) {
+      sum += A[i][j] * v[j];
+    }
+
+    result[i] = sum;
+  }
+}
+
+template <size_t N>
 void mat_mul6x3(const double A[2*N][2*N], const Array<double>& B, Array<double>& C)
 {
   int B_num_rows = B.nrows();
