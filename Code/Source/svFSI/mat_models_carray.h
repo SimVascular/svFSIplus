@@ -443,7 +443,7 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
       g1 = 4.0 * J4d * stM.C01;
 
       double CCb[N][N][N][N];
-      mat_fun_carray::ten_dyad_prod<N>(Idm, Idm, CCb);
+      mat_fun_carray::ten_dyad_prod<N>(Idm, Idm, Idm_prod);
 
       for (int i = 0; i < nsd; i++) {
         for (int j = 0; j < nsd; j++) {
