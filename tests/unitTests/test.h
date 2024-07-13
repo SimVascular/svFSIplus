@@ -61,13 +61,20 @@ public:
 // ---------------------- Helper functions ----------------------
 // --------------------------------------------------------------
 
+// Creates an identity deformation gradient F
+template<int N>
+void create_identity_F(double F[N][N]) {
+    for (int i = 0; i < N; i++) {
+        for (int J = 0; J < N; J++) {
+            F[i][J] = (i == J);
+        }
+    }
+}
+
 // Creates a random deformation gradient F with values between 0.1 and 10.0,
 // and det(F) > 0
 template<int N>
 void create_random_F(double F[N][N]) {
-    // Initialize random seed
-    srand(static_cast<unsigned int>(time(0))); // seed random number generator
-
     // Create a random deformation gradient with values between 0.1 and 10.0, 
     // and det(F) > 0
     double J = -1.0;
@@ -256,8 +263,11 @@ public:
     // Material parameters are set in each derived class
     }
 
+    // Pure virtual method to print material parameters
+    virtual void printMaterialParameters() = 0;
+
     // Pure virtual method for computing Strain Energy
-    virtual double computeStrainEnergy(double F[3][3]) = 0;
+    virtual double computeStrainEnergy(const double F[3][3]) = 0;
 
     // Function to get S and Dm for a given F, from the get_pk2cc function in mat_models_carray.h
     void get_pk2cc(double F[3][3], double S[3][3], double Dm[6][6]) {
@@ -272,23 +282,65 @@ public:
         mat_models_carray::get_pk2cc<3>(com_mod, cep_mod, dmn, F, nFn, fN, ya_g, S, Dm);
     }
 
+    // Function to compute the PK2 stress tensor S(F) from the strain energy density Psi(F)
+    // using finite differences
+    template<int N>
+    void calcPK2StressFiniteDifference(const double F[N][N], double delta, double (&S)[N][N]) {
+        // Compute strain energy density given F
+        double Psi = computeStrainEnergy(F);
+
+        // Compute 1st PK stress P_iJ = dPsi / dF[i][J] using finite difference, component by component
+        double P[3][3] = {};
+        double F_tilde[N][N]; // perturbed deformation gradient
+        for (int i = 0; i < N; i++) {
+            for (int J = 0; J < N; J++) {
+                // Perturb the iJ-th component of F by delta
+                for (int k = 0; k < N; k++) {
+                    for (int l = 0; l < N; l++) {
+                        F_tilde[k][l] = F[k][l];
+                    }
+                }
+                F_tilde[i][J] += delta;
+
+                // Compute Psi_MR for perturbed deformation gradient
+                double Psi_tilde = computeStrainEnergy(F_tilde);
+
+                // Compute differences in Psi
+                double dPsi = Psi_tilde - Psi;
+
+                // Compute P[i][J] = dPsi / dF[i][J]
+                P[i][J] = dPsi / delta;
+            }
+        }
+
+        // Compute S_ref = F^-1 * P_ref
+        double F_inv[N][N];
+        mat_fun_carray::mat_inv<N>(F, F_inv);
+        mat_fun_carray::mat_mul<N>(F_inv, P, S);
+
+        
+    }
+
     // Test the consistency of the PK2 stress tensor S(F) from get_pk2cc() with the strain 
     // energy density Psi(F) provided by the user.
     // Analytically, we should have S = dPsi/dE. We are checking whether
     // S:dE = dPsi, where dE and dPsi are computed using finite differences in F.
+    //
+    // ARGS:
+    // - F: Deformation gradient
+    // - n_iter: Number of random perturbations to test
+    // - rel_tol: Relative tolerance for comparing dPsi and S:dE
+    // - delta: Perturbation scaling factor
+    // - verbose: Show values of S, dE, SdE and dPsi
+    //
     // Psuedocode:
-    // - Generate random deformation gradient F
     // - Compute Psi(F)
     // - Compute S(F) from get_pk2cc()
     // - For many random dF
     //      - Compute dPsi = Psi(F + dF) - Psi(F)
     //      - Compute dE from dF
     //      - Check that S:dE = dPsi
-    void testPK2StressConsistentWithStrainEnergy(int n_iter, double rel_tol, double delta, bool verbose = false) {
-        // Create random deformation gradient
-        double F[3][3];
-        create_random_F(F);
-
+    void testPK2StressConsistentWithStrainEnergy(double F[3][3], int n_iter, double rel_tol, double delta, bool verbose = false) {
         // Compute E from F
         double J, C[3][3], E[3][3];
         calc_JCE(F, J, C, E);
@@ -334,6 +386,9 @@ public:
             // Print results if verbose
             if (verbose) {
                 std::cout << "Iteration " << i << ":" << std::endl;
+
+                printMaterialParameters();
+
                 std::cout << "F =" << std::endl;
                 for (int i = 0; i < 3; i++) {
                     for (int j = 0; j < 3; j++) {
@@ -341,6 +396,7 @@ public:
                     }
                     std::cout << std::endl;
                 }
+
                 std::cout << "S =" << std::endl;
                 for (int i = 0; i < 3; i++) {
                     for (int j = 0; j < 3; j++) {
@@ -348,6 +404,7 @@ public:
                     }
                     std::cout << std::endl;
                 }
+
                 std::cout << "dE =" << std::endl;
                 for (int i = 0; i < 3; i++) {
                     for (int j = 0; j < 3; j++) {
@@ -355,6 +412,7 @@ public:
                     }
                     std::cout << std::endl;
                 }
+
                 std::cout << "SdE = " << SdE << ", dPsi = " << dPsi << std::endl;
                 std::cout << std::endl;
             }
@@ -365,18 +423,22 @@ public:
     // PK2 stress tensor S(F) from get_pk2cc()
     // Analytically, we should have CC:dE = dS. We are checking whether
     // CC:dE = dS, where dE and dS are computed using finite differences in F.
+    //
+    // ARGS:
+    // - F: Deformation gradient
+    // - n_iter: Number of random perturbations to test
+    // - rel_tol: Relative tolerance for comparing dS and CC:dE
+    // - delta: Perturbation scaling factor
+    // - verbose: Show values of CC, dE, CCdE and dS
+    //
     // Psuedocode:
-    // - Generate random deformation gradient F
     // - Compute S(F) and CC(F) from get_pk2cc()
     // - For many random dF
     //      - Compute S(F + dF) from get_pk2cc()
     //      - Compute dS = S(F + dF) - S(F)
     //      - Compute dE from dF
     //      - Check that CC:dE = dS
-    void testMaterialElasticityConsistentWithPK2Stress(int n_iter, double rel_tol, double delta, bool verbose = false) {
-         // Create random deformation gradient
-        double F[3][3];
-        create_random_F(F);
+    void testMaterialElasticityConsistentWithPK2Stress(double F[3][3], int n_iter, double rel_tol, double delta, bool verbose = false) {
 
         // Compute E from F
         double J, C[3][3], E[3][3];
@@ -449,6 +511,9 @@ public:
             // Print results if verbose
             if (verbose) {
                 std::cout << "Iteration " << i << ":" << std::endl;
+
+                printMaterialParameters();
+
                 std::cout << "F =" << std::endl;
                 for (int i = 0; i < 3; i++) {
                     for (int j = 0; j < 3; j++) {
@@ -456,6 +521,7 @@ public:
                     }
                     std::cout << std::endl;
                 }
+
                 std::cout << "CC =" << std::endl;
                 for (int i = 0; i < 3; i++) {
                     for (int j = 0; j < 3; j++) {
@@ -468,6 +534,7 @@ public:
                     }
                     std::cout << std::endl;
                 }
+
                 std::cout << "dE =" << std::endl;
                 for (int i = 0; i < 3; i++) {
                     for (int j = 0; j < 3; j++) {
@@ -475,6 +542,7 @@ public:
                     }
                     std::cout << std::endl;
                 }
+
                 std::cout << "dS =" << std::endl;
                 for (int i = 0; i < 3; i++) {
                     for (int j = 0; j < 3; j++) {
@@ -482,6 +550,7 @@ public:
                     }
                     std::cout << std::endl;
                 }
+
                 std::cout << "CCdE =" << std::endl;
                 for (int i = 0; i < 3; i++) {
                     for (int j = 0; j < 3; j++) {
@@ -494,14 +563,14 @@ public:
         }
     }
 
-    // Function to compare S and Dm with a reference solution
-    void compare_S_Dm(double F[3][3], double S_ref[3][3], double Dm_ref[6][6], double rel_tol) {
-        // hard code for nHK
-        int nFn = 1; 
-        Array<double> fN(com_mod.nsd, nFn);
-        double ya_g = 0.0;   
+    // Function to compare PK2 stress with reference solution
+    // ARGS:
+    // - F: Deformation gradient
+    // - S_ref: Reference solution for PK2 stress
+    // - rel_tol: Relative tolerance for comparing S with S_ref
+    void testPK2StressAgainstReference(double F[3][3], double S_ref[3][3], double rel_tol, bool verbose = false) {
+        // Compute S(F) from get_pk2cc()
         double S[3][3], Dm[6][6];
-
         get_pk2cc(F, S, Dm);
 
         // Compare S with reference solution
@@ -509,6 +578,102 @@ public:
             for (int j = 0; j < 3; j++){
                 EXPECT_NEAR(S[i][j], S_ref[i][j], rel_tol * fabs(S_ref[i][j]));   
             }
+        }
+
+        // Print results if verbose
+        if (verbose) {
+            printMaterialParameters();
+
+            std::cout << "F =" << std::endl;
+            for (int i = 0; i < 3; i++) {
+                for (int j = 0; j < 3; j++) {
+                    std::cout << F[i][j] << " ";
+                }
+                std::cout << std::endl;
+            }
+
+            std::cout << "S =" << std::endl;
+            for (int i = 0; i < 3; i++) {
+                for (int j = 0; j < 3; j++) {
+                    std::cout << S[i][j] << " ";
+                }
+                std::cout << std::endl;
+            }
+
+            std::cout << "S_ref =" << std::endl;
+            for (int i = 0; i < 3; i++) {
+                for (int j = 0; j < 3; j++) {
+                    std::cout << S_ref[i][j] << " ";
+                }
+                std::cout << std::endl;
+            }
+            std::cout << std::endl;
+        }
+    }
+
+    // Function to compare material elasticity tensor with reference solution
+    // ARGS:
+    // - F: Deformation gradient
+    // - CC_ref: Reference solution for material elasticity tensor
+    // - rel_tol: Relative tolerance for comparing CC with CC_ref
+    void testMaterialElasticityAgainstReference(double F[3][3], double CC_ref[3][3][3][3], double rel_tol, bool verbose = false) {
+        // Compute CC(F) from get_pk2cc()
+        double S[3][3], Dm[6][6];
+        get_pk2cc(F, S, Dm);
+
+        // Calculate CC from Dm
+        double CC[3][3][3][3];
+        mat_models_carray::voigt_to_cc_carray<3>(Dm, CC);
+
+        // Compare CC with reference solution
+        for (int i = 0; i < 3; i++){
+            for (int j = 0; j < 3; j++){
+                for (int k = 0; k < 3; k++){
+                    for (int l = 0; l < 3; l++){
+                        EXPECT_NEAR(CC[i][j][k][l], CC_ref[i][j][k][l], rel_tol * fabs(CC_ref[i][j][k][l]));   
+                    }
+                }
+            }
+        }
+
+        // Print results if verbose
+        if (verbose) {
+            printMaterialParameters();
+
+            std::cout << "F =" << std::endl;
+            for (int i = 0; i < 3; i++) {
+                for (int j = 0; j < 3; j++) {
+                    std::cout << F[i][j] << " ";
+                }
+                std::cout << std::endl;
+            }
+
+            std::cout << "CC =" << std::endl;
+            for (int i = 0; i < 3; i++) {
+                for (int j = 0; j < 3; j++) {
+                    for (int k = 0; k < 3; k++) {
+                        for (int l = 0; l < 3; l++) {
+                            std::cout << CC[i][j][k][l] << " ";
+                        }
+                        std::cout << std::endl;
+                    }
+                }
+                std::cout << std::endl;
+            }
+
+            std::cout << "CC_ref =" << std::endl;
+            for (int i = 0; i < 3; i++) {
+                for (int j = 0; j < 3; j++) {
+                    for (int k = 0; k < 3; k++) {
+                        for (int l = 0; l < 3; l++) {
+                            std::cout << CC_ref[i][j][k][l] << " ";
+                        }
+                        std::cout << std::endl;
+                    }
+                }
+                std::cout << std::endl;
+            }
+            std::cout << std::endl;
         }
     }
 };
@@ -530,8 +695,13 @@ public:
         dmn.stM.Kpen = 0.0;         // Zero volumetric penalty parameter
     }
 
+    // Print Mooney-Rivlin material parameters
+    void printMaterialParameters() {
+        std::cout << "C01 = " << params.C01 << ", C10 = " << params.C10 << std::endl;
+    }
+
     // Compute strain energy for Mooney-Rivlin material model
-    double computeStrainEnergy(double F[3][3]) {
+    double computeStrainEnergy(const double F[3][3]) {
 
         // Compute solid mechanics terms
         solidMechanicsTerms smTerms = calcSolidMechanicsTerms(F);

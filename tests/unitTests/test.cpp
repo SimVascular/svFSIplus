@@ -33,25 +33,41 @@
 using namespace mat_fun;
 using namespace std;
 
+// ----------------------------------------------------------------------------
+// --------------------------- Neo-Hookean Material ---------------------------
+// ----------------------------------------------------------------------------
+
+
+// ----------------------------------------------------------------------------
+// --------------------------- Mooney-Rivlin Material -------------------------
+// ----------------------------------------------------------------------------
 
 // Test fixture class for Mooney-Rivlin material model
 class MooneyRivlinTest : public ::testing::Test {
 protected:
     // Variables common across tests
     MooneyRivlinParams params;
+    double F[3][3] = {}; // Deformation gradient
+    int n_iter = 10;       // Number of random perturbations to test
+    double rel_tol = 1e-3; // relative tolerance for comparing dPsi and dS with values from svFSI
+    double delta = 1e-6; // perturbation scaling factor
+    bool verbose = false; // Show values of S, dE, SdE and dPsi
+
 
     // Add the test object
     TestMooneyRivlin* TestMR;
 
+
+
     // Setup method to initialize variables before each test
     void SetUp() override {
 
+        // Seed random number generator
+        //srand(static_cast<unsigned int>(time(0)));
+
         // Set random values for the Mooney-Rivlin parameters between 1000 and 10000
-        srand(static_cast<unsigned int>(time(0))); // seed random number generator
         params.C01 = 1000 + 9000 * (double)rand() / RAND_MAX;
         params.C10 = 1000 + 9000 * (double)rand() / RAND_MAX;
-
-        std::cout << "C01 = " << params.C01 << ", C10 = " << params.C10 << std::endl;
 
         // Initialize the test object
         TestMR = new TestMooneyRivlin(params);
@@ -65,24 +81,64 @@ protected:
     }
 };
 
+// Test PK2 stress zero for F = I
+TEST_F(MooneyRivlinTest, TestPK2StressIdentityF) {
+    rel_tol = 1e-6; // relative tolerance for comparing S with reference value
+    bool verbose = true; // Show values of S and S_ref
 
-// Test PK2 stress consistent with strain energy
-TEST_F(MooneyRivlinTest, TestPK2Stress) {
-    int n_iter = 100;
-    double rel_tol = 1e-3; // relative tolerance for comparing dPsi and dS with values from svFSI
-    double delta = 1e-8; // perturbation scaling factor
-    bool verbose = false; // Show values of S, dE, SdE and dPsi
-    TestMR->testPK2StressConsistentWithStrainEnergy(n_iter, rel_tol, delta, verbose);
+    // Check identity F produces zero PK2 stress
+    create_identity_F(F);
+    double S_ref[3][3] = {0}; // PK2 stress initialized to zero
+    TestMR->testPK2StressAgainstReference(F, S_ref, rel_tol, verbose);
+}
+
+// Test PK2 stress with finite difference for random F
+TEST_F(MooneyRivlinTest, TestPK2StressRandomF) {
+    rel_tol = 1e-3; // relative tolerance for comparing S with values from svFSI
+    delta = 1e-6; // perturbation scaling factor
+    verbose = true; // Show values of S, dE, SdE and dPsi
+
+    // Compute reference PK2 stress with finite difference for random F
+    create_random_F(F);
+    double S_ref[3][3]; // PK2 stress
+    TestMR->calcPK2StressFiniteDifference(F, delta, S_ref);
+
+    // Check PK2 stress against reference value
+    TestMR->testPK2StressAgainstReference(F, S_ref, rel_tol, verbose);
+}
+
+// Test PK2 stress consistent with strain energy for random F
+TEST_F(MooneyRivlinTest, TestPK2StressConsistentRandomF) {
+    n_iter = 10;      // Number of random perturbations to test
+    rel_tol = 1e-3; // relative tolerance for comparing dPsi and dS with values from svFSI
+    delta = 1e-6; // perturbation scaling factor
+    verbose = true; // Show values of S, dE, SdE and dPsi
+
+    // Check random F produces consistent PK2 stress
+    create_random_F(F);
+    TestMR->testPK2StressConsistentWithStrainEnergy(F, n_iter, rel_tol, delta, verbose);
 }
 
 // Test material elasticity consistent with PK2 stress
-TEST_F(MooneyRivlinTest, TestMaterialElasticity) {
-    int n_iter = 100;
-    double rel_tol = 1e-3; // relative tolerance for comparing dPsi and dS with values from svFSI
-    double delta = 1e-8; // perturbation scaling factor
-    bool verbose = false; // Show values of CC, dE, CCdE and dS
-    TestMR->testMaterialElasticityConsistentWithPK2Stress(n_iter, rel_tol, delta, verbose);
+TEST_F(MooneyRivlinTest, TestMaterialElasticityConsistentRandomF) {
+    n_iter = 10;       // Number of random perturbations to test
+    rel_tol = 1e-3; // relative tolerance for comparing dPsi and dS with values from svFSI
+    delta = 1e-6; // perturbation scaling factor
+    verbose = false; // Show values of CC, dE, CCdE and dS
+
+    // Check with random F
+    create_random_F(F);
+    TestMR->testMaterialElasticityConsistentWithPK2Stress(F, n_iter, rel_tol, delta, verbose);
 }
 
+
+// ----------------------------------------------------------------------------
+// ------------------- Holzapfel-Gasser-Ogden Material -------------------------
+// ----------------------------------------------------------------------------
+
+
+// ----------------------------------------------------------------------------
+// ----------------------- Holzapfel-Ogden Material ---------------------------
+// ----------------------------------------------------------------------------
 
 
