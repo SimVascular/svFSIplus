@@ -69,6 +69,39 @@ public:
 
 };
 
+// Class to contain Holzapfel-Ogden material parameters
+class HolzapfelOgdenParams : public MatParams {
+public:
+    double a;    
+    double b;
+    double a_f;
+    double b_f;
+    double a_s;
+    double b_s;
+    double a_fs;
+    double b_fs;
+    double kappa;
+    double f[3];    // Fiber direction
+    double s[3];    // Sheet direction
+
+    double k; // Smoothed Heaviside function parameter
+
+    // Default constructor
+    HolzapfelOgdenParams() : a(0.0), b(0.0), a_f(0.0), b_f(0.0), a_s(0.0), b_s(0.0), a_fs(0.0), b_fs(0.0), kappa(0.0), k(0.0) {
+        for (int i = 0; i < 3; i++) {
+            f[i] = 0.0;
+            s[i] = 0.0;
+        }
+    }
+
+    // Constructor with parameters
+    HolzapfelOgdenParams(double a, double b, double a_f, double b_f, double a_s, double b_s, double a_fs, double b_fs, double kappa, double k, double f[3], double s[3]) : a(a), b(b), a_f(a_f), b_f(b_f), a_s(a_s), b_s(b_s), a_fs(a_fs), b_fs(b_fs), kappa(kappa), k(k) {
+        for (int i = 0; i < 3; i++) {
+            this->f[i] = f[i];
+            this->s[i] = s[i];
+        }
+    }
+};
 
 // --------------------------------------------------------------
 // ---------------------- Helper functions ----------------------
@@ -766,3 +799,99 @@ public:
 };
 
 // ----------------------------------------------------------------------------
+// Class for test of Holzapfel-Ogden material model
+class TestHolzapfelOgden : public TestMaterialModel {
+public:
+
+    HolzapfelOgdenParams params;
+
+    TestHolzapfelOgden(const HolzapfelOgdenParams &params_) : TestMaterialModel( consts::ConstitutiveModelType::stIso_HO, consts::ConstitutiveModelType::stVol_ST91),
+        params(params_) 
+        {
+
+        // Set Holzapfel-Ogden material parameters
+        auto &dmn = com_mod.mockEq.mockDmn;
+        dmn.stM.a = params.a;
+        dmn.stM.b = params.b;
+        dmn.stM.aff = params.a_f;
+        dmn.stM.bff = params.b_f;
+        dmn.stM.ass = params.a_s;
+        dmn.stM.bss = params.b_s;
+        dmn.stM.afs = params.a_fs;
+        dmn.stM.bfs = params.b_fs;
+        dmn.stM.Kpen = params.kappa;
+
+    }
+
+    // Print Holzapfel-Ogden material parameters
+    void printMaterialParameters() {
+        std::cout << "a = " << params.a << std::endl;
+        std::cout << "b = " << params.b << std::endl;
+        std::cout << "a_f = " << params.a_f << std::endl;
+        std::cout << "b_f = " << params.b_f << std::endl;
+        std::cout << "a_s = " << params.a_s << std::endl;
+        std::cout << "b_s = " << params.b_s << std::endl;
+        std::cout << "a_fs = " << params.a_fs << std::endl;
+        std::cout << "b_fs = " << params.b_fs << std::endl;
+        std::cout << "kappa = " << params.kappa << std::endl;
+        std::cout << "k = " << params.k << std::endl;
+        std::cout << "f = " << "[" << params.f[0] << " " << params.f[1] << " " << params.f[2] << "]" << std::endl;
+        std::cout << "s = " << "[" << params.s[0] << " " << params.s[1] << " " << params.s[2] << "]" << std::endl;
+    }
+
+    // Smooth Heaviside function centered at 1
+    double chi(const double x, const double k=100) const {
+        return 1. / (1. + exp(-k * (x - 1.)));
+    }
+
+    // Compute strain energy for Holzapfel-Ogden material model
+    double computeStrainEnergy(const double F[3][3]) {
+
+        // Compute solid mechanics terms
+        solidMechanicsTerms smTerms = calcSolidMechanicsTerms(F);
+
+        // Strain energy density for Holzapfel-Ogden material model
+        // Psi = a/2b * exp{b(I1_bar - 3)} + Sum_{i=f,s} [a_i/2b_i * chi(I4_i) * (exp{b_i(I4_i - 1)^2} - 1)]
+        //       + a_fs/2b_fs * (exp{b_fs*I8_fs^2} - 1) + kappa/4 * (J^2 - 1 - 2*ln(J))
+
+        // Material parameters
+        double a = params.a;
+        double b = params.b;
+        double a_f = params.a_f;
+        double b_f = params.b_f;
+        double a_s = params.a_s;
+        double b_s = params.b_s;
+        double a_fs = params.a_fs;
+        double b_fs = params.b_fs;
+        double kappa = params.kappa;
+
+        // Smoothed Heaviside parameter
+        double k = params.k;
+
+        // Fiber and sheet directions
+        double f[3] = {params.f[0], params.f[1], params.f[2]};
+        double s[3] = {params.s[0], params.s[1], params.s[2]};
+
+        // Invariants
+        double I1_bar = smTerms.Ib1;
+        // I4_f = f . C . f
+        double C_bar_f[3]; mat_fun_carray::mat_mul<3>(smTerms.C_bar, f, C_bar_f);
+        double I4_f = mat_fun_carray::norm<3>(f, C_bar_f);
+        // I4_s = s . C . s
+        double C_bar_s[3]; mat_fun_carray::mat_mul<3>(smTerms.C_bar, s, C_bar_s);
+        double I4_s = mat_fun_carray::norm<3>(s, C_bar_s);
+        // I8_fs = f . C . s
+        double I8_fs = mat_fun_carray::norm<3>(f, C_bar_s);
+
+        // Strain energy density for Holzapfel-Ogden material model
+        double Psi = 0.0;
+        Psi += a / (2.0 * b) * exp(b * (I1_bar - 3.0));                             // Isotropic term
+        Psi += a_f / (2.0 * b_f) * chi(I4_f, k) * (exp(b_f * pow(I4_f - 1.0, 2)) - 1.0);   // Fiber term
+        Psi += a_s / (2.0 * b_s) * chi(I4_s, k) * (exp(b_s * pow(I4_s - 1.0, 2)) - 1.0);   // Sheet term
+        Psi += a_fs / (2.0 * b_fs) * (exp(b_fs * pow(I8_fs, 2)) - 1.0);                   // Cross-fiber term
+        Psi += kappa / 4.0 * (pow(smTerms.J, 2) - 1.0 - 2.0 * log(smTerms.J));      // Volumetric penalty term
+        
+
+        return Psi;
+    }
+};
