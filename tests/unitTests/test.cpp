@@ -37,6 +37,83 @@ using namespace std;
 // --------------------------- Neo-Hookean Material ---------------------------
 // ----------------------------------------------------------------------------
 
+// Test fixture class for Neo-Hookean material model
+class NeoHookeanTest : public ::testing::Test {
+protected:
+    // Variables common across tests
+    NeoHookeanParams params;
+    double F[3][3] = {}; // Deformation gradient
+    int n_iter = 10;       // Number of random perturbations to test
+    double rel_tol = 1e-3; // relative tolerance for comparing values
+    double abs_tol = 1e-11; // absolute tolerance for comparing values
+    double delta = 1e-6; // perturbation scaling factor
+    bool verbose = false; // Show values of S, dE, SdE and dPsi
+
+    // Add the test object
+    TestNeoHookean* TestNH;
+
+    // Setup method to initialize variables before each test
+    void SetUp() override {
+
+        // Seed random number generator
+        //srand(static_cast<unsigned int>(time(0)));
+
+        // Set random values for the Neo-Hookean parameter between 1000 and 10000
+        params.C10 = 1000 + 9000 * (double)rand() / RAND_MAX;
+
+        // Initialize the test object
+        TestNH = new TestNeoHookean(params);
+    }
+
+    // TearDown method to clean up after each test, if needed
+    void TearDown() override {
+        // Clean up the test object
+        delete TestNH;
+        TestNH = nullptr;
+    }
+};
+
+// Test PK2 stress zero for F = I
+TEST_F(NeoHookeanTest, TestPK2StressIdentityF) {
+    //bool verbose = true; // Show values of S and S_ref
+
+    // Check identity F produces zero PK2 stress
+    create_identity_F(F);
+    double S_ref[3][3] = {}; // PK2 stress initialized to zero
+    TestNH->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test PK2 stress with finite difference for random F
+TEST_F(NeoHookeanTest, TestPK2StressRandomF) {
+    //verbose = true; // Show values of S, dE, SdE and dPsi
+
+    // Compute reference PK2 stress with finite difference for random F
+    create_random_F(F);
+    double S_ref[3][3]; // PK2 stress
+    TestNH->calcPK2StressFiniteDifference(F, delta, S_ref);
+
+    // Check PK2 stress against reference value
+    TestNH->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test PK2 stress consistent with strain energy for random F
+TEST_F(NeoHookeanTest, TestPK2StressConsistentRandomF) {
+    //verbose = true; // Show values of S, dE, SdE and dPsi
+
+    // Check random F produces consistent PK2 stress
+    create_random_F(F);
+    TestNH->testPK2StressConsistentWithStrainEnergy(F, n_iter, rel_tol, abs_tol, delta, verbose);
+}
+
+// Test material elasticity consistent with PK2 stress
+TEST_F(NeoHookeanTest, TestMaterialElasticityConsistentRandomF) {
+    //verbose = false; // Show values of CC, dE, CCdE and dS
+
+    // Check with random F
+    create_random_F(F);
+    TestNH->testMaterialElasticityConsistentWithPK2Stress(F, n_iter, rel_tol, abs_tol, delta, verbose);
+}
+
 
 // ----------------------------------------------------------------------------
 // --------------------------- Mooney-Rivlin Material -------------------------
@@ -50,6 +127,7 @@ protected:
     double F[3][3] = {}; // Deformation gradient
     int n_iter = 10;       // Number of random perturbations to test
     double rel_tol = 1e-3; // relative tolerance for comparing dPsi and dS with values from svFSI
+    double abs_tol = 1e-11; // absolute tolerance for comparing values
     double delta = 1e-6; // perturbation scaling factor
     bool verbose = false; // Show values of S, dE, SdE and dPsi
 
@@ -83,20 +161,17 @@ protected:
 
 // Test PK2 stress zero for F = I
 TEST_F(MooneyRivlinTest, TestPK2StressIdentityF) {
-    rel_tol = 1e-6; // relative tolerance for comparing S with reference value
-    bool verbose = true; // Show values of S and S_ref
+    //bool verbose = false; // Show values of S and S_ref
 
     // Check identity F produces zero PK2 stress
     create_identity_F(F);
-    double S_ref[3][3] = {0}; // PK2 stress initialized to zero
-    TestMR->testPK2StressAgainstReference(F, S_ref, rel_tol, verbose);
+    double S_ref[3][3] = {}; // PK2 stress initialized to zero
+    TestMR->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
 }
 
 // Test PK2 stress with finite difference for random F
 TEST_F(MooneyRivlinTest, TestPK2StressRandomF) {
-    rel_tol = 1e-3; // relative tolerance for comparing S with values from svFSI
-    delta = 1e-6; // perturbation scaling factor
-    verbose = true; // Show values of S, dE, SdE and dPsi
+    //verbose = false; // Show values of S, dE, SdE and dPsi
 
     // Compute reference PK2 stress with finite difference for random F
     create_random_F(F);
@@ -104,31 +179,25 @@ TEST_F(MooneyRivlinTest, TestPK2StressRandomF) {
     TestMR->calcPK2StressFiniteDifference(F, delta, S_ref);
 
     // Check PK2 stress against reference value
-    TestMR->testPK2StressAgainstReference(F, S_ref, rel_tol, verbose);
+    TestMR->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
 }
 
 // Test PK2 stress consistent with strain energy for random F
 TEST_F(MooneyRivlinTest, TestPK2StressConsistentRandomF) {
-    n_iter = 10;      // Number of random perturbations to test
-    rel_tol = 1e-3; // relative tolerance for comparing dPsi and dS with values from svFSI
-    delta = 1e-6; // perturbation scaling factor
-    verbose = true; // Show values of S, dE, SdE and dPsi
+    //verbose = false; // Show values of S, dE, SdE and dPsi
 
     // Check random F produces consistent PK2 stress
     create_random_F(F);
-    TestMR->testPK2StressConsistentWithStrainEnergy(F, n_iter, rel_tol, delta, verbose);
+    TestMR->testPK2StressConsistentWithStrainEnergy(F, n_iter, rel_tol, abs_tol, delta, verbose);
 }
 
 // Test material elasticity consistent with PK2 stress
 TEST_F(MooneyRivlinTest, TestMaterialElasticityConsistentRandomF) {
-    n_iter = 10;       // Number of random perturbations to test
-    rel_tol = 1e-3; // relative tolerance for comparing dPsi and dS with values from svFSI
-    delta = 1e-6; // perturbation scaling factor
-    verbose = false; // Show values of CC, dE, CCdE and dS
+    //verbose = false; // Show values of CC, dE, CCdE and dS
 
     // Check with random F
     create_random_F(F);
-    TestMR->testMaterialElasticityConsistentWithPK2Stress(F, n_iter, rel_tol, delta, verbose);
+    TestMR->testMaterialElasticityConsistentWithPK2Stress(F, n_iter, rel_tol, abs_tol, delta, verbose);
 }
 
 

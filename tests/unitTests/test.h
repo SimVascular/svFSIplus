@@ -42,6 +42,19 @@ public:
     virtual ~MatParams() {} // Virtual destructor for proper cleanup
 };
 
+// Class to contain Neo-Hookean material parameters
+class NeoHookeanParams : public MatParams {
+public:
+    double C10;
+
+    // Default constructor
+    NeoHookeanParams() : C10(0.0) {}
+
+    // Constructor with parameters
+    NeoHookeanParams(double c10) : C10(c10) {}
+
+};
+
 // Class to contain Mooney-Rivlin material parameters
 class MooneyRivlinParams : public MatParams {
 public:
@@ -340,7 +353,7 @@ public:
     //      - Compute dPsi = Psi(F + dF) - Psi(F)
     //      - Compute dE from dF
     //      - Check that S:dE = dPsi
-    void testPK2StressConsistentWithStrainEnergy(double F[3][3], int n_iter, double rel_tol, double delta, bool verbose = false) {
+    void testPK2StressConsistentWithStrainEnergy(double F[3][3], int n_iter, double rel_tol, double abs_tol, double delta, bool verbose = false) {
         // Compute E from F
         double J, C[3][3], E[3][3];
         calc_JCE(F, J, C, E);
@@ -381,7 +394,7 @@ public:
             double SdE = mat_fun_carray::mat_ddot<3>(S, dE);
 
             // Check that S:dE = dPsi
-            EXPECT_NEAR(SdE, dPsi, rel_tol * fabs(dPsi));
+            EXPECT_NEAR(SdE, dPsi, fmax(abs_tol, rel_tol * fabs(dPsi)));
             
             // Print results if verbose
             if (verbose) {
@@ -438,7 +451,7 @@ public:
     //      - Compute dS = S(F + dF) - S(F)
     //      - Compute dE from dF
     //      - Check that CC:dE = dS
-    void testMaterialElasticityConsistentWithPK2Stress(double F[3][3], int n_iter, double rel_tol, double delta, bool verbose = false) {
+    void testMaterialElasticityConsistentWithPK2Stress(double F[3][3], int n_iter, double rel_tol, double abs_tol, double delta, bool verbose = false) {
 
         // Compute E from F
         double J, C[3][3], E[3][3];
@@ -462,7 +475,7 @@ public:
         // Check that Dm_check = Dm, for sanity
         for (int i = 0; i < 6; i++) {
             for (int j = 0; j < 6; j++) {
-                EXPECT_NEAR(Dm_check[i][j], Dm[i][j], 1e-12 * fabs(Dm[i][j]));
+                EXPECT_NEAR(Dm_check[i][j], Dm[i][j], abs_tol);
             }
         }
         // -------------------------------
@@ -504,7 +517,7 @@ public:
             mat_fun_carray::ten_mat_ddot<3>(CC, dE, CCdE);
             for (int i = 0; i < 3; i++) {
                 for (int j = 0; j < 3; j++) {
-                    EXPECT_NEAR(CCdE[i][j], dS[i][j], rel_tol * fabs(dS[i][j]));
+                    EXPECT_NEAR(CCdE[i][j], dS[i][j], fmax(abs_tol, rel_tol * fabs(dS[i][j])));
                 }
             }
 
@@ -568,7 +581,7 @@ public:
     // - F: Deformation gradient
     // - S_ref: Reference solution for PK2 stress
     // - rel_tol: Relative tolerance for comparing S with S_ref
-    void testPK2StressAgainstReference(double F[3][3], double S_ref[3][3], double rel_tol, bool verbose = false) {
+    void testPK2StressAgainstReference(double F[3][3], double S_ref[3][3], double rel_tol, double abs_tol, bool verbose = false) {
         // Compute S(F) from get_pk2cc()
         double S[3][3], Dm[6][6];
         get_pk2cc(F, S, Dm);
@@ -576,7 +589,7 @@ public:
         // Compare S with reference solution
         for (int i = 0; i < 3; i++){
             for (int j = 0; j < 3; j++){
-                EXPECT_NEAR(S[i][j], S_ref[i][j], rel_tol * fabs(S_ref[i][j]));   
+                EXPECT_NEAR(S[i][j], S_ref[i][j], fmax(abs_tol, rel_tol * fabs(S_ref[i][j])));
             }
         }
 
@@ -616,7 +629,7 @@ public:
     // - F: Deformation gradient
     // - CC_ref: Reference solution for material elasticity tensor
     // - rel_tol: Relative tolerance for comparing CC with CC_ref
-    void testMaterialElasticityAgainstReference(double F[3][3], double CC_ref[3][3][3][3], double rel_tol, bool verbose = false) {
+    void testMaterialElasticityAgainstReference(double F[3][3], double CC_ref[3][3][3][3], double rel_tol, double abs_tol, bool verbose = false) {
         // Compute CC(F) from get_pk2cc()
         double S[3][3], Dm[6][6];
         get_pk2cc(F, S, Dm);
@@ -630,7 +643,8 @@ public:
             for (int j = 0; j < 3; j++){
                 for (int k = 0; k < 3; k++){
                     for (int l = 0; l < 3; l++){
-                        EXPECT_NEAR(CC[i][j][k][l], CC_ref[i][j][k][l], rel_tol * fabs(CC_ref[i][j][k][l]));   
+                        EXPECT_NEAR(CC[i][j][k][l], CC_ref[i][j][k][l], 
+                        fmax(abs_tol, rel_tol * fabs(CC_ref[i][j][k][l])));   
                     }
                 }
             }
@@ -678,6 +692,43 @@ public:
     }
 };
 
+// --------------------------------------------------------------
+// Class for test of Neo-Hookean material model
+class TestNeoHookean : public TestMaterialModel {
+public:
+
+    NeoHookeanParams params;
+
+    TestNeoHookean(const NeoHookeanParams &params_) : TestMaterialModel( consts::ConstitutiveModelType::stIso_nHook, consts::ConstitutiveModelType::stVol_ST91),
+        params(params_) 
+        {
+
+        // Set Neo-Hookean material parameters for svFSIplus
+        auto &dmn = com_mod.mockEq.mockDmn;
+        dmn.stM.C10 = params.C10;
+        dmn.stM.Kpen = 0.0;         // Zero volumetric penalty parameter
+    }
+
+    // Print Neo-Hookean material parameters
+    void printMaterialParameters() {
+        std::cout << "C10 = " << params.C10 << std::endl;
+    }
+
+    // Compute strain energy for Neo-Hookean material model
+    double computeStrainEnergy(const double F[3][3]) {
+
+        // Compute solid mechanics terms
+        solidMechanicsTerms smTerms = calcSolidMechanicsTerms(F);
+
+        // Strain energy density for Neo-Hookean material model
+        // Psi_iso = C10 * (Ib1 - 3)
+        double Psi_iso = params.C10 * (smTerms.Ib1 - 3.);
+
+        return Psi_iso;
+    }
+};
+
+// --------------------------------------------------------------
 // Class for test of Mooney-Rivlin material model
 class TestMooneyRivlin : public TestMaterialModel {
 public:
@@ -713,3 +764,5 @@ public:
         return Psi_iso;
     }
 };
+
+// ----------------------------------------------------------------------------
