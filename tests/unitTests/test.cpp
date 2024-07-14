@@ -78,7 +78,9 @@ TEST_F(NeoHookeanTest, TestPK2StressIdentityF) {
     //verbose = true; // Show values of S and S_ref
 
     // Check identity F produces zero PK2 stress
-    create_identity_F(F);
+    double F[3][3] = {{1.0, 0.0, 0.0},
+                       {0.0, 1.0, 0.0},
+                       {0.0, 0.0, 1.0}};
     double S_ref[3][3] = {}; // PK2 stress initialized to zero
     TestNH->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
 }
@@ -135,8 +137,6 @@ protected:
     // Add the test object
     TestMooneyRivlin* TestMR;
 
-
-
     // Setup method to initialize variables before each test
     void SetUp() override {
 
@@ -164,7 +164,9 @@ TEST_F(MooneyRivlinTest, TestPK2StressIdentityF) {
     //verbose = true; // Show values of S and S_ref
 
     // Check identity F produces zero PK2 stress
-    create_identity_F(F);
+    double F[3][3] = {1.0, 0.0, 0.0,
+                      0.0, 1.0, 0.0,
+                      0.0, 0.0, 1.0};
     double S_ref[3][3] = {}; // PK2 stress initialized to zero
     TestMR->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
 }
@@ -231,35 +233,51 @@ protected:
         // Seed random number generator
         //srand(static_cast<unsigned int>(time(0)));
 
-        // Set random values for the Holzapfel-Ogden 'a' parameters between 1000 and 10000
-        params.a = 1000 + 9000 * (double)rand() / RAND_MAX;
-        params.a_f = 1000 + 9000 * (double)rand() / RAND_MAX;
-        params.a_s = 1000 + 9000 * (double)rand() / RAND_MAX;
-        params.a_fs = 1000 + 9000 * (double)rand() / RAND_MAX;
+        // Set Holzapfel-Ogden parameters from cardiac benchmark paper
+        params.a = 59.0; // Pa
+        params.a_f = 18472.0; // Pa
+        params.a_s = 2481.0; // Pa
+        params.a_fs = 216.0; // Pa
+        params.b = 8.023; // Pa
+        params.b_f = 16.026; // Pa
+        params.b_s = 11.12; // Pa
+        params.b_fs = 11.436; // Pa
+        params.kappa = 1.0e6; // Pa
+        params.k = 100000.0; // Pa 
 
-        // Set random values for the Holzapfel-Ogden 'b' parameters between 1 and 20
-        params.b = 1 + 19 * (double)rand() / RAND_MAX;
-        params.b_f = 1 + 19 * (double)rand() / RAND_MAX;
-        params.b_s = 1 + 19 * (double)rand() / RAND_MAX;
-        params.b_fs = 1 + 19 * (double)rand() / RAND_MAX;
-
-        // Set volumetric penalty parameter between 10^5 and 10^7
-        params.kappa = 1e5 + 9e6 * (double)rand() / RAND_MAX;
-
-        // Set smoothed Heaviside parameter between 10 and 200
-        params.k = 10 + 190 * (double)rand() / RAND_MAX;
-
-        // Set random values for f and s fiber directions and normalize them
+        // Set random values for f and normalize
         params.f[0] = (double)rand() / RAND_MAX;
         params.f[1] = (double)rand() / RAND_MAX;
         params.f[2] = (double)rand() / RAND_MAX;
-        params.s[0] = (double)rand() / RAND_MAX;
-        params.s[1] = (double)rand() / RAND_MAX;
-        params.s[2] = (double)rand() / RAND_MAX;
         double norm_f = sqrt(params.f[0]*params.f[0] + params.f[1]*params.f[1] + params.f[2]*params.f[2]);
-        double norm_s = sqrt(params.s[0]*params.s[0] + params.s[1]*params.s[1] + params.s[2]*params.s[2]);
         params.f[0] /= norm_f; params.f[1] /= norm_f; params.f[2] /= norm_f;
+
+        // Create random orthogonal s
+        if (fabs(params.f[0]) < 0.9) { // Check if f[0] is not the dominant component
+            params.s[0] = 0;
+            params.s[1] = params.f[2];
+            params.s[2] = -params.f[1];
+        } else { // If f[0] is the dominant component, use another approach
+            params.s[0] = -params.f[2];
+            params.s[1] = 0;
+            params.s[2] = params.f[0];
+        }
+
+        // Normalize s
+        double norm_s = sqrt(params.s[0]*params.s[0] + params.s[1]*params.s[1] + params.s[2]*params.s[2]);
         params.s[0] /= norm_s; params.s[1] /= norm_s; params.s[2] /= norm_s;
+
+        // Check f.s = 0
+        double dot_fs = params.f[0]*params.s[0] + params.f[1]*params.s[1] + params.f[2]*params.s[2];
+        if (fabs(dot_fs) > 1e-6) {
+            cout << "f.s = " << dot_fs << endl;
+            cout << "f = [" << params.f[0] << ", " << params.f[1] << ", " << params.f[2] << "]" << endl;
+            cout << "s = [" << params.s[0] << ", " << params.s[1] << ", " << params.s[2] << "]" << endl;
+            throw runtime_error("f and s are not orthogonal");
+        }
+
+        // Flag to use full anisotropic invariants for strain energy computation
+        params.full_anisotropic_invariants = false;
 
 
         // Initialize the test object
@@ -276,20 +294,56 @@ protected:
 
 // Test PK2 stress zero for F = I
 TEST_F(HolzapfelOgdenTest, TestPK2StressIdentityF) {
-    verbose = true; // Show values of S and S_ref
+    //verbose = true; // Show values of S and S_ref
 
     // Check identity F produces zero PK2 stress
-    create_identity_F(F);
+    double F[3][3] = {{1.0, 0.0, 0.0},
+                       {0.0, 1.0, 0.0},
+                       {0.0, 0.0, 1.0}};
     double S_ref[3][3] = {}; // PK2 stress initialized to zero
+    TestHO->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test PK2 stress for triaxial stretch
+TEST_F(HolzapfelOgdenTest, TestPK2StressTriaxialStretch) {
+    //verbose = true; // Show values of S and S_ref
+
+    // Check triaxial stretch produces PK2 stress consistent with svFSI
+    double F[3][3] = {{1.1, 0.0, 0.0},
+                       {0.0, 1.2, 0.0},
+                       {0.0, 0.0, 1.3}};
+    
+    // Compute reference PK2 stress with finite difference for triaxial stretch
+    double S_ref[3][3]; // PK2 stress
+    TestHO->calcPK2StressFiniteDifference(F, delta, S_ref);
+    
+    // Check PK2 stress against reference value
+    TestHO->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test PK2 stress for triaxial compression
+TEST_F(HolzapfelOgdenTest, TestPK2StressTriaxialCompression) {
+    //verbose = true; // Show values of S and S_ref
+
+    // Check triaxial compression produces PK2 stress consistent with svFSI
+    double F[3][3] = {{0.9, 0.0, 0.0},
+                       {0.0, 0.8, 0.0},
+                       {0.0, 0.0, 0.7}};
+    
+    // Compute reference PK2 stress with finite difference for triaxial compression
+    double S_ref[3][3]; // PK2 stress
+    TestHO->calcPK2StressFiniteDifference(F, delta, S_ref);
+    
+    // Check PK2 stress against reference value
     TestHO->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
 }
 
 // Test PK2 stress with finite difference for random F
 TEST_F(HolzapfelOgdenTest, TestPK2StressRandomF) {
-    verbose = true; // Show values of S, dE, SdE and dPsi
+    //verbose = true; // Show values of S, dE, SdE and dPsi
 
-    // Compute reference PK2 stress with finite difference for random F
-    create_random_F(F);
+    // Compute reference PK2 stress with finite difference for F = I + random perturbations
+    create_random_perturbed_identity_F(F, 0.5);
     double S_ref[3][3]; // PK2 stress
     TestHO->calcPK2StressFiniteDifference(F, delta, S_ref);
 
@@ -301,8 +355,8 @@ TEST_F(HolzapfelOgdenTest, TestPK2StressRandomF) {
 TEST_F(HolzapfelOgdenTest, TestPK2StressConsistentRandomF) {
     //verbose = true; // Show values of S, dE, SdE and dPsi
 
-    // Check random F produces consistent PK2 stress
-    create_random_F(F);
+    // Check F = I + random perturbations produces consistent PK2 stress
+    create_random_perturbed_identity_F(F, 0.5);
     TestHO->testPK2StressConsistentWithStrainEnergy(F, n_iter, rel_tol, abs_tol, delta, verbose);
 }
 
@@ -310,8 +364,8 @@ TEST_F(HolzapfelOgdenTest, TestPK2StressConsistentRandomF) {
 TEST_F(HolzapfelOgdenTest, TestMaterialElasticityConsistentRandomF) {
     //verbose = true; // Show values of CC, dE, CCdE and dS
 
-    // Check with random F
-    create_random_F(F);
+    // Check F = I + random perturbations produces consistent PK2 stress
+    create_random_perturbed_identity_F(F, 0.5);
     TestHO->testMaterialElasticityConsistentWithPK2Stress(F, n_iter, rel_tol, abs_tol, delta, verbose);
 }
 
