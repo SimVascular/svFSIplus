@@ -28,6 +28,23 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+
+// --------------------------------------------------------------
+// To add a new material model to test:
+// In test.h:
+// 1. Create a new material parameters class derived from MatParams (e.g. NeoHookeanParams)
+// 2. Create a new material model test class derived from TestMaterialModel (e.g. TestNeoHookean)
+// 3. Implement required functions in the material model test class:
+//    - Constructor: Sets the material model type and parameters for svFSIplus (e.g. TestNeoHookean())
+//    - printMaterialParameters(): Prints the material parameters
+//    - computeStrainEnergy(): Computes the strain energy density function
+// In test.cpp:
+// 4. Create a new text fixture class derived from ::testing::Test (e.g. NeoHookeanTest)
+//    - In this you set the values of the material parameters for testing
+// 5. Add tests for your new material model (e.g. TEST_F(NeoHookeanTest, TestPK2StressIdentityF))
+// --------------------------------------------------------------
+
+
 #include <stdlib.h>
 #include <iostream>
 #include "gtest/gtest.h"   // include GoogleTest
