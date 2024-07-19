@@ -46,7 +46,7 @@ protected:
     int n_iter = 10;       // Number of random perturbations to test
     double rel_tol = 1e-3; // relative tolerance for comparing values
     double abs_tol = 1e-11; // absolute tolerance for comparing values
-    double delta = 1e-6; // perturbation scaling factor
+    double delta = 1e-7; // perturbation scaling factor
     bool verbose = false; // Show values of S, dE, SdE and dPsi
 
     // Add the test object
@@ -55,11 +55,8 @@ protected:
     // Setup method to initialize variables before each test
     void SetUp() override {
 
-        // Seed random number generator
-        //srand(static_cast<unsigned int>(time(0)));
-
-        // Set random values for the Neo-Hookean parameter between 1000 and 10000
-        params.C10 = 1000 + 9000 * (double)rand() / RAND_MAX;
+        // Set random values for the Neo-Hookean parameters between 1000 and 10000
+        params.C10 = getRandomDouble(1000.0, 10000.0);
 
         // Initialize the test object
         TestNH = new TestNeoHookean(params);
@@ -130,7 +127,7 @@ protected:
     int n_iter = 10;       // Number of random perturbations to test
     double rel_tol = 1e-3; // relative tolerance for comparing dPsi and dS with values from svFSI
     double abs_tol = 1e-11; // absolute tolerance for comparing values
-    double delta = 1e-6; // perturbation scaling factor
+    double delta = 1e-7; // perturbation scaling factor
     bool verbose = false; // Show values of S, dE, SdE and dPsi
 
 
@@ -140,12 +137,9 @@ protected:
     // Setup method to initialize variables before each test
     void SetUp() override {
 
-        // Seed random number generator
-        //srand(static_cast<unsigned int>(time(0)));
-
         // Set random values for the Mooney-Rivlin parameters between 1000 and 10000
-        params.C01 = 1000 + 9000 * (double)rand() / RAND_MAX;
-        params.C10 = 1000 + 9000 * (double)rand() / RAND_MAX;
+        params.C01 = getRandomDouble(1000.0, 10000.0);
+        params.C10 = getRandomDouble(1000.0, 10000.0);
 
         // Initialize the test object
         TestMR = new TestMooneyRivlin(params);
@@ -221,7 +215,7 @@ protected:
     int n_iter = 10;       // Number of random perturbations to test
     double rel_tol = 1e-3; // relative tolerance for comparing dPsi and dS with values from svFSI
     double abs_tol = 1e-11; // absolute tolerance for comparing values
-    double delta = 1e-6; // perturbation scaling factor
+    double delta = 1e-7; // perturbation scaling factor
     bool verbose = false; // Show values of S, dE, SdE and dPsi
 
     // Add the test object
@@ -229,9 +223,6 @@ protected:
 
     // Setup method to initialize variables before each test
     void SetUp() override {
-
-        // Seed random number generator
-        //srand(static_cast<unsigned int>(time(0)));
 
         // Set Holzapfel-Ogden parameters from cardiac benchmark paper
         params.a = 59.0; // Pa
@@ -245,14 +236,14 @@ protected:
         params.kappa = 1.0e6; // Pa
         params.k = 100000.0; // Pa 
 
-        // Set random values for f and normalize
-        params.f[0] = (double)rand() / RAND_MAX;
-        params.f[1] = (double)rand() / RAND_MAX;
-        params.f[2] = (double)rand() / RAND_MAX;
+        // Set random values for f between 0 and 1 and normalize
+        params.f[0] = getRandomDouble(0.0, 1.0);
+        params.f[1] = getRandomDouble(0.0, 1.0);
+        params.f[2] = getRandomDouble(0.0, 1.0);
         double norm_f = sqrt(params.f[0]*params.f[0] + params.f[1]*params.f[1] + params.f[2]*params.f[2]);
         params.f[0] /= norm_f; params.f[1] /= norm_f; params.f[2] /= norm_f;
 
-        // Create random orthogonal s
+        // Create s orthogonal to f
         if (fabs(params.f[0]) < 0.9) { // Check if f[0] is not the dominant component
             params.s[0] = 0;
             params.s[1] = params.f[2];

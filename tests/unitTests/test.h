@@ -47,6 +47,8 @@
 
 #include <stdlib.h>
 #include <iostream>
+#include <random>
+#include <chrono>
 #include "gtest/gtest.h"   // include GoogleTest
 #include "mat_fun.h"
 #include "mat_fun_carray.h"
@@ -136,6 +138,16 @@ void create_identity_F(double F[N][N]) {
     }
 }
 
+// Inline getRandomDouble function
+inline double getRandomDouble(double min, double max) {
+    // Uncomment to use a random seed
+    //unsigned int seed = std::chrono::system_clock::now().time_since_epoch().count();
+    unsigned int seed = 42;
+    static std::default_random_engine engine(seed);
+    std::uniform_real_distribution<double> distribution(min, max);
+    return distribution(engine);
+}
+
 // Creates a random deformation gradient F with values between min and max,
 // and det(F) > 0
 template<int N>
@@ -146,7 +158,7 @@ void create_random_F(double F[N][N], double min=0.1, double max=10.0) {
     while (J < 0) {
         for (int i = 0; i < N; i++) {
             for (int J = 0; J < N; J++) {
-                F[i][J] = min + (max - min) * rand() / RAND_MAX;
+                F[i][J] = getRandomDouble(min, max);
             }
         }
         J = mat_fun_carray::mat_det<N>(F);
@@ -162,7 +174,7 @@ void create_random_perturbed_identity_F(double F[N][N], double max_deviation) {
     while (J < 0) {
         for (int i = 0; i < N; i++) {
             for (int J = 0; J < N; J++) {
-                F[i][J] = (i == J) + max_deviation * (2.0 * rand() / RAND_MAX - 1.0);
+                F[i][J] = (i == J) + max_deviation * getRandomDouble(-1.0, 1.0);
             }
         }
         J = mat_fun_carray::mat_det<N>(F);
@@ -178,7 +190,7 @@ void perturb_random_F(const double F[N][N], const double delta, double F_tilde[N
     double dF_iJ;
     for (int i = 0; i < N; i++) {
         for (int J = 0; J < N; J++) {
-            dF_iJ = delta * (2.0 * std::rand() / RAND_MAX - 1.0); // (random number between -1 and 1) * delta
+            dF_iJ = delta * getRandomDouble(-1.0, 1.0);
             F_tilde[i][J] = F[i][J] + dF_iJ; // perturbed deformation gradient
         }
     }
