@@ -97,7 +97,7 @@ SeMaterialPropertiesMapType set_material_props = {
 {
   lDmn.stM.isoType = consts::ConstitutiveModelType::stIso_MR;
   lDmn.stM.C10 = domain_params->constitutive_model.mooney_rivlin.c1.value();
-  lDmn.stM.C01 = lDmn.stM.C10 = domain_params->constitutive_model.mooney_rivlin.c2.value();
+  lDmn.stM.C01 = domain_params->constitutive_model.mooney_rivlin.c2.value();
 } },
 
 //---------------------------//

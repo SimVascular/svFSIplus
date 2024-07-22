@@ -99,6 +99,67 @@ void cc_to_voigt_carray(const double CC[N][N][N][N], double Dm[2*N][2*N])
   } 
 }
 
+template <size_t N>
+void voigt_to_cc_carray(const double Dm[2*N][2*N], double CC[N][N][N][N]) {
+    if (N == 3) {
+        // Initialize the CC array with zeros
+        for (size_t i = 0; i < N; ++i) {
+            for (size_t j = 0; j < N; ++j) {
+                for (size_t k = 0; k < N; ++k) {
+                    for (size_t l = 0; l < N; ++l) {
+                        CC[i][j][k][l] = 0.0;
+                    }
+                }
+            }
+        }
+
+        // Voigt indices mapping
+        const int index_map[6][2] = {
+            {0, 0}, {1, 1}, {2, 2}, {0, 1}, {1, 2}, {2, 0}
+        };
+
+        // Fill in the CC array based on the Dm matrix
+        for (int I = 0; I < 6; ++I) {
+            for (int J = 0; J < 6; ++J) {
+                int i = index_map[I][0], j = index_map[I][1];
+                int k = index_map[J][0], l = index_map[J][1];
+                CC[i][j][k][l] = Dm[I][J];
+                CC[j][i][k][l] = Dm[I][J];
+                CC[i][j][l][k] = Dm[I][J];
+                CC[j][i][l][k] = Dm[I][J];
+            }
+        }
+    } else if (N == 2) {
+        // Initialize the CC array with zeros
+        for (size_t i = 0; i < N; ++i) {
+            for (size_t j = 0; j < N; ++j) {
+                for (size_t k = 0; k < N; ++k) {
+                    for (size_t l = 0; l < N; ++l) {
+                        CC[i][j][k][l] = 0.0;
+                    }
+                }
+            }
+        }
+
+        // Voigt indices mapping for 2D
+        const int index_map[3][2] = {
+            {0, 0}, {1, 1}, {0, 1}
+        };
+
+        // Fill in the CC array based on the Dm matrix
+        for (int I = 0; I < 3; ++I) {
+            for (int J = 0; J < 3; ++J) {
+                int i = index_map[I][0], j = index_map[I][1];
+                int k = index_map[J][0], l = index_map[J][1];
+                CC[i][j][k][l] = Dm[I][J];
+                CC[i][j][l][k] = Dm[I][J];
+                CC[j][i][k][l] = Dm[I][J];
+                CC[j][i][l][k] = Dm[I][J];
+            }
+        }
+    }
+}
+
 //-----------
 // get_pk2cc
 //-----------
@@ -382,7 +443,7 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
       g1 = 4.0 * J4d * stM.C01;
 
       double CCb[N][N][N][N];
-      mat_fun_carray::ten_dyad_prod<N>(Idm, Idm, CCb);
+      mat_fun_carray::ten_dyad_prod<N>(Idm, Idm, Idm_prod);
 
       for (int i = 0; i < nsd; i++) {
         for (int j = 0; j < nsd; j++) {
