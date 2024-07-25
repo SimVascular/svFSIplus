@@ -381,6 +381,22 @@ public:
 
     // Function to compute the PK2 stress tensor S(F) from the strain energy density Psi(F)
     // using finite differences
+    // Analytically, we should have S = dPsi/dE. Since we have Psi(F), we cannot
+    // directly compute S. Instead, we compute S = F^-1 * P, where P = dPsi/dF 
+    // is computed using finite differences in each component of F.
+    // ARGS:
+    // - F: Deformation gradient
+    // - delta: Perturbation scaling factor
+    // - S: PK2 stress tensor
+    // 
+    // Pseudocode:
+    // - Compute strain energy density Psi(F)
+    // - For each component of F, F[i][J]
+    //      - Perturb F[i][J] by delta to get F_tilde
+    //      - Compute Psi(F_tilde)
+    //      - Compute dPsi = Psi(F_tilde) - Psi(F)
+    //      - Compute P[i][J] = dPsi / delta
+    // - Compute S = F^-1 * P
     template<int N>
     void calcPK2StressFiniteDifference(const double F[N][N], double delta, double (&S)[N][N]) {
         // Compute strain energy density given F
