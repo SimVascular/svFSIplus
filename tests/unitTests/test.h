@@ -28,6 +28,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// --------------------------------------------------------------
+// To run the tests in test.cpp
+// 1.  Navigate to <svFSIplus_root_directory>/build/svFSI-build/Source/svFSI
+// 2.  Run `make` to build the tests
+// 3.  Run `ctest --verbose` to run the tests
+
 
 // --------------------------------------------------------------
 // To add a new material model to test:
