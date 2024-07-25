@@ -361,3 +361,354 @@ TEST_F(HolzapfelOgdenTest, TestMaterialElasticityConsistentRandomF) {
 }
 
 
+
+
+
+
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// ----------------------- Volumetric penalty models -------------------------
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+
+// ----------------------------------------------------------------------------
+// --------------------------- Quadratic Volumetric Penalty Model ------------------------
+// ----------------------------------------------------------------------------
+// Test fixture class for Quadratic penalty model
+class QuadraticVolumetricPenaltyTest : public ::testing::Test {
+protected:
+    // Variables common across tests
+    VolumetricPenaltyParams params;
+    double F[3][3] = {}; // Deformation gradient
+    int n_iter = 10;       // Number of random perturbations to test
+    double rel_tol = 1e-3; // relative tolerance for comparing dPsi and dS with values from svFSI
+    double abs_tol = 1e-11; // absolute tolerance for comparing values
+    double delta = 1e-7; // perturbation scaling factor
+    bool verbose = false; // Show values of S, dE, SdE and dPsi
+
+    // Add the test object
+    TestQuadraticVolumetricPenalty* TestQVP;
+
+    // Setup method to initialize variables before each test
+    void SetUp() override {
+
+        // Set random values for the Quadratic penalty parameters between 1000 and 10000
+        params.kappa = getRandomDouble(1000.0, 10000.0);
+
+        // Initialize the test object
+        TestQVP = new TestQuadraticVolumetricPenalty(params);
+    }
+
+    // TearDown method to clean up after each test, if needed
+    void TearDown() override {
+        // Clean up the test object
+        delete TestQVP;
+        TestQVP = nullptr;
+    }
+};
+
+// Test PK2 stress zero for F = I
+TEST_F(QuadraticVolumetricPenaltyTest, TestPK2StressIdentityF) {
+    //verbose = true; // Show values of S and S_ref
+
+    // Check identity F produces zero PK2 stress
+    double F[3][3] = {{1.0, 0.0, 0.0},
+                       {0.0, 1.0, 0.0},
+                       {0.0, 0.0, 1.0}};
+    double S_ref[3][3] = {}; // PK2 stress initialized to zero
+    TestQVP->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test PK2 stress zero for prescribed isochoric deformation
+TEST_F(QuadraticVolumetricPenaltyTest, TestPK2StressPrescribedIsochoricDeformation) {
+    //verbose = true; // Show values of S and S_ref
+
+    // Check isochoric deformation produces zero PK2 stress
+    double F[3][3] = {{1.1, 0.0, 0.0},
+                       {0.0, 1.2, 0.0},
+                       {0.0, 0.0, 1.0/(1.1*1.2)}};
+    double S_ref[3][3] = {}; // PK2 stress initialized to zero
+    TestQVP->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test PK2 stress zero for random isochoric deformation
+TEST_F(QuadraticVolumetricPenaltyTest, TestPK2StressRandomIsochoricDeformation) {
+    //verbose = true; // Show values of S and S_ref
+
+    // Create random deformation gradient tensor
+    create_random_F(F);
+
+    // Make det(F) = 1
+    double J = mat_fun_carray::mat_det(F);
+    double J13 = pow(J, 1.0/3.0);
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            F[i][j] /= J13;
+        }
+    }
+
+    // Check random isochoric deformation produces zero PK2 stress
+    double S_ref[3][3] = {}; // PK2 stress initialized to zero
+    TestQVP->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test PK2 stress with finite difference for random F
+TEST_F(QuadraticVolumetricPenaltyTest, TestPK2StressRandomF) {
+    //verbose = true; // Show values of S, dE, SdE and dPsi
+
+    // Compute reference PK2 stress with finite difference for random F
+    create_random_F(F);
+    double S_ref[3][3]; // PK2 stress
+    TestQVP->calcPK2StressFiniteDifference(F, delta, S_ref);
+
+    // Check PK2 stress against reference value
+    TestQVP->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test PK2 stress consistent with strain energy for random F
+TEST_F(QuadraticVolumetricPenaltyTest, TestPK2StressConsistentRandomF) {
+    //verbose = true; // Show values of S, dE, SdE and dPsi
+
+    // Check random F produces consistent PK2 stress
+    create_random_F(F);
+    TestQVP->testPK2StressConsistentWithStrainEnergy(F, n_iter, rel_tol, abs_tol, delta, verbose);
+}
+
+// Test material elasticity consistent with PK2 stress
+TEST_F(QuadraticVolumetricPenaltyTest, TestMaterialElasticityConsistentRandomF) {
+    //verbose = true; // Show values of CC, dE, CCdE and dS
+
+    // Check with random F
+    create_random_F(F);
+    TestQVP->testMaterialElasticityConsistentWithPK2Stress(F, n_iter, rel_tol, abs_tol, delta, verbose);
+}
+
+// ----------------------------------------------------------------------------
+// --------------------------- Simo-Taylor91 Volumetric Penalty Model ---------
+// ----------------------------------------------------------------------------
+
+// Test fixture class for Simo-Taylor91 penalty model
+class SimoTaylor91VolumetricPenaltyTest : public ::testing::Test {
+protected:
+    // Variables common across tests
+    VolumetricPenaltyParams params;
+    double F[3][3] = {}; // Deformation gradient
+    int n_iter = 10;       // Number of random perturbations to test
+    double rel_tol = 1e-3; // relative tolerance for comparing dPsi and dS with values from svFSI
+    double abs_tol = 1e-9; // absolute tolerance for comparing values
+    double delta = 1e-7; // perturbation scaling factor
+    bool verbose = false; // Show values of S, dE, SdE and dPsi
+
+    // Add the test object
+    TestSimoTaylor91VolumetricPenalty* TestST91;
+
+    // Setup method to initialize variables before each test
+    void SetUp() override {
+
+        // Set random values for the Simo-Taylor91 penalty parameters between 1000 and 10000
+        params.kappa = getRandomDouble(1000.0, 10000.0);
+
+        // Initialize the test object
+        TestST91 = new TestSimoTaylor91VolumetricPenalty(params);
+    }
+
+    // TearDown method to clean up after each test, if needed
+    void TearDown() override {
+        // Clean up the test object
+        delete TestST91;
+        TestST91 = nullptr;
+    }
+};
+
+// Test PK2 stress zero for F = I
+TEST_F(SimoTaylor91VolumetricPenaltyTest, TestPK2StressIdentityF) {
+    //verbose = true; // Show values of S and S_ref
+
+    // Check identity F produces zero PK2 stress
+    double F[3][3] = {{1.0, 0.0, 0.0},
+                       {0.0, 1.0, 0.0},
+                       {0.0, 0.0, 1.0}};
+    double S_ref[3][3] = {}; // PK2 stress initialized to zero
+    TestST91->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test PK2 stress zero for prescribed isochoric deformation
+TEST_F(SimoTaylor91VolumetricPenaltyTest, TestPK2StressPrescribedIsochoricDeformation) {
+    //verbose = true; // Show values of S and S_ref
+
+    // Check isochoric deformation produces zero PK2 stress
+    double F[3][3] = {{1.1, 0.0, 0.0},
+                       {0.0, 1.2, 0.0},
+                       {0.0, 0.0, 1.0/(1.1*1.2)}};
+    double S_ref[3][3] = {}; // PK2 stress initialized to zero
+    TestST91->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test PK2 stress zero for random isochoric deformation
+TEST_F(SimoTaylor91VolumetricPenaltyTest, TestPK2StressRandomIsochoricDeformation) {
+    //verbose = true; // Show values of S and S_ref
+
+    // Create random deformation gradient tensor
+    create_random_F(F);
+
+    // Make det(F) = 1
+    double J = mat_fun_carray::mat_det(F);
+    double J13 = pow(J, 1.0/3.0);
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            F[i][j] /= J13;
+        }
+    }
+
+    // Check random isochoric deformation produces zero PK2 stress
+    double S_ref[3][3] = {}; // PK2 stress initialized to zero
+    TestST91->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test PK2 stress with finite difference for random F
+TEST_F(SimoTaylor91VolumetricPenaltyTest, TestPK2StressRandomF) {
+    //verbose = true; // Show values of S, dE, SdE and dPsi
+
+    // Compute reference PK2 stress with finite difference for random F
+    create_random_F(F);
+    double S_ref[3][3]; // PK2 stress
+    TestST91->calcPK2StressFiniteDifference(F, delta, S_ref);
+
+    // Check PK2 stress against reference value
+    TestST91->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test PK2 stress consistent with strain energy for random F
+TEST_F(SimoTaylor91VolumetricPenaltyTest, TestPK2StressConsistentRandomF) {
+    //verbose = true; // Show values of S, dE, SdE and dPsi
+
+    // Check random F produces consistent PK2 stress
+    create_random_F(F);
+    TestST91->testPK2StressConsistentWithStrainEnergy(F, n_iter, rel_tol, abs_tol, delta, verbose);
+}
+
+// Test material elasticity consistent with PK2 stress
+TEST_F(SimoTaylor91VolumetricPenaltyTest, TestMaterialElasticityConsistentRandomF) {
+    //verbose = true; // Show values of CC, dE, CCdE and dS
+
+    // Check with random F
+    create_random_F(F);
+    TestST91->testMaterialElasticityConsistentWithPK2Stress(F, n_iter, rel_tol, abs_tol, delta, verbose);
+}
+
+// ----------------------------------------------------------------------------
+// --------------------------- Miehe94 Volumetric Penalty Model ---------------
+// ----------------------------------------------------------------------------
+// Test fixture class for Miehe94 penalty model
+class Miehe94VolumetricPenaltyTest : public ::testing::Test {
+protected:
+    // Variables common across tests
+    VolumetricPenaltyParams params;
+    double F[3][3] = {}; // Deformation gradient
+    int n_iter = 10;       // Number of random perturbations to test
+    double rel_tol = 1e-3; // relative tolerance for comparing dPsi and dS with values from svFSI
+    double abs_tol = 1e-9; // absolute tolerance for comparing values
+    double delta = 1e-7; // perturbation scaling factor
+    bool verbose = false; // Show values of S, dE, SdE and dPsi
+
+    // Add the test object
+    TestMiehe94VolumetricPenalty* TestM94;
+
+    // Setup method to initialize variables before each test
+    void SetUp() override {
+
+        // Set random values for the Miehe94 penalty parameters between 1000 and 10000
+        params.kappa = getRandomDouble(1000.0, 10000.0);
+
+        // Initialize the test object
+        TestM94 = new TestMiehe94VolumetricPenalty(params);
+    }
+
+    // TearDown method to clean up after each test, if needed
+    void TearDown() override {
+        // Clean up the test object
+        delete TestM94;
+        TestM94 = nullptr;
+    }
+};
+
+// Test PK2 stress zero for F = I
+TEST_F(Miehe94VolumetricPenaltyTest, TestPK2StressIdentityF) {
+    //verbose = true; // Show values of S and S_ref
+
+    // Check identity F produces zero PK2 stress
+    double F[3][3] = {{1.0, 0.0, 0.0},
+                       {0.0, 1.0, 0.0},
+                       {0.0, 0.0, 1.0}};
+    double S_ref[3][3] = {}; // PK2 stress initialized to zero
+    TestM94->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test PK2 stress zero for prescribed isochoric deformation
+TEST_F(Miehe94VolumetricPenaltyTest, TestPK2StressPrescribedIsochoricDeformation) {
+    //verbose = true; // Show values of S and S_ref
+
+    // Check isochoric deformation produces zero PK2 stress
+    double F[3][3] = {{1.1, 0.0, 0.0},
+                       {0.0, 1.2, 0.0},
+                       {0.0, 0.0, 1.0/(1.1*1.2)}};
+    double S_ref[3][3] = {}; // PK2 stress initialized to zero
+    TestM94->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test PK2 stress zero for random isochoric deformation
+TEST_F(Miehe94VolumetricPenaltyTest, TestPK2StressRandomIsochoricDeformation) {
+    //verbose = true; // Show values of S and S_ref
+
+    // Create random deformation gradient tensor
+    create_random_F(F);
+
+    // Make det(F) = 1
+    double J = mat_fun_carray::mat_det(F);
+    double J13 = pow(J, 1.0/3.0);
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            F[i][j] /= J13;
+        }
+    }
+
+    // Check random isochoric deformation produces zero PK2 stress
+    double S_ref[3][3] = {}; // PK2 stress initialized to zero
+    TestM94->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test PK2 stress with finite difference for random F
+TEST_F(Miehe94VolumetricPenaltyTest, TestPK2StressRandomF) {
+    //verbose = true; // Show values of S, dE, SdE and dPsi
+
+    // Compute reference PK2 stress with finite difference for random F
+    create_random_F(F);
+    double S_ref[3][3]; // PK2 stress
+    TestM94->calcPK2StressFiniteDifference(F, delta, S_ref);
+
+    // Check PK2 stress against reference value
+    TestM94->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test PK2 stress consistent with strain energy for random F
+TEST_F(Miehe94VolumetricPenaltyTest, TestPK2StressConsistentRandomF) {
+    //verbose = true; // Show values of S, dE, SdE and dPsi
+
+    // Check random F produces consistent PK2 stress
+    create_random_F(F);
+    TestM94->testPK2StressConsistentWithStrainEnergy(F, n_iter, rel_tol, abs_tol, delta, verbose);
+}
+
+// Test material elasticity consistent with PK2 stress
+TEST_F(Miehe94VolumetricPenaltyTest, TestMaterialElasticityConsistentRandomF) {
+    //verbose = true; // Show values of CC, dE, CCdE and dS
+
+    // Check with random F
+    create_random_F(F);
+    TestM94->testMaterialElasticityConsistentWithPK2Stress(F, n_iter, rel_tol, abs_tol, delta, verbose);
+}
+
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+
+

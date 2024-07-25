@@ -130,6 +130,18 @@ public:
     }
 };
 
+// Class to contain volumetric penalty parameters (just the penalty parameter)
+class VolumetricPenaltyParams : public MatParams {
+public:
+    double kappa;
+
+    // Default constructor
+    VolumetricPenaltyParams() : kappa(0.0) {}
+
+    // Constructor with parameters
+    VolumetricPenaltyParams(double kappa) : kappa(kappa) {}
+};
+
 // --------------------------------------------------------------
 // ---------------------- Helper functions ----------------------
 // --------------------------------------------------------------
@@ -1002,5 +1014,120 @@ public:
 
             return Psi;
         }
+    }
+};
+
+
+// ----------------------------------------------------------------------------
+// Class for test of quadratic volumetric penalty model
+class TestQuadraticVolumetricPenalty : public TestMaterialModel {
+public:
+
+    VolumetricPenaltyParams params;
+
+    TestQuadraticVolumetricPenalty(const VolumetricPenaltyParams &params_) : TestMaterialModel( consts::ConstitutiveModelType::stIso_nHook, consts::ConstitutiveModelType::stVol_Quad),
+        params(params_) 
+        {
+
+        // Set volumetric penalty parameter for svFSIplus
+        auto &dmn = com_mod.mockEq.mockDmn;
+        dmn.stM.Kpen = params.kappa;         // Volumetric penalty parameter
+
+        // Note: Use Neo-Hookean material model for isochoric part, but set parameters to zero
+        dmn.stM.C10 = 0.0;         // Zero Neo-Hookean parameter
+    }
+
+    // Print volumetric penalty parameters
+    void printMaterialParameters() {
+        std::cout << "kappa = " << params.kappa << std::endl;
+    }
+
+    // Compute strain energy for quadratic volumetric penalty model
+    double computeStrainEnergy(const double F[3][3]) {
+            
+            // Compute solid mechanics terms
+            solidMechanicsTerms smTerms = calcSolidMechanicsTerms(F);
+    
+            // Strain energy density for quadratic volumetric penalty model
+            // Psi = kappa/2 * (J - 1)^2  
+            double Psi = params.kappa/2.0 * pow(smTerms.J - 1.0, 2);
+    
+            return Psi;
+    }
+};
+
+// ----------------------------------------------------------------------------
+// Class for test of Simo-Taylor91 volumetric penalty model
+class TestSimoTaylor91VolumetricPenalty : public TestMaterialModel {
+public:
+
+    VolumetricPenaltyParams params;
+
+    TestSimoTaylor91VolumetricPenalty(const VolumetricPenaltyParams &params_) : TestMaterialModel( consts::ConstitutiveModelType::stIso_nHook, consts::ConstitutiveModelType::stVol_ST91),
+        params(params_) 
+        {
+
+        // Set volumetric penalty parameter for svFSIplus
+        auto &dmn = com_mod.mockEq.mockDmn;
+        dmn.stM.Kpen = params.kappa;         // Volumetric penalty parameter
+
+        // Note: Use Neo-Hookean material model for isochoric part, but set parameters to zero
+        dmn.stM.C10 = 0.0;         // Zero Neo-Hookean parameter
+    }
+
+    // Print volumetric penalty parameters
+    void printMaterialParameters() {
+        std::cout << "kappa = " << params.kappa << std::endl;
+    }
+
+    // Compute strain energy for Simo-Taylor91 volumetric penalty model
+    double computeStrainEnergy(const double F[3][3]) {
+            
+            // Compute solid mechanics terms
+            solidMechanicsTerms smTerms = calcSolidMechanicsTerms(F);
+    
+            // Strain energy density for Simo-Taylor91 volumetric penalty model
+            // Psi = kappa/4 * (J^2 - 1 - 2*ln(J))
+            double Psi = params.kappa/4.0 * (pow(smTerms.J, 2) - 1.0 - 2.0 * log(smTerms.J));
+    
+            return Psi;
+    }
+};
+
+// ----------------------------------------------------------------------------
+// Class for test of Miehe94 volumetric penalty model
+class TestMiehe94VolumetricPenalty : public TestMaterialModel {
+public:
+
+    VolumetricPenaltyParams params;
+
+    TestMiehe94VolumetricPenalty(const VolumetricPenaltyParams &params_) : TestMaterialModel( consts::ConstitutiveModelType::stIso_nHook, consts::ConstitutiveModelType::stVol_M94),
+        params(params_) 
+        {
+
+        // Set volumetric penalty parameter for svFSIplus
+        auto &dmn = com_mod.mockEq.mockDmn;
+        dmn.stM.Kpen = params.kappa;         // Volumetric penalty parameter
+
+        // Note: Use Neo-Hookean material model for isochoric part, but set parameters to zero
+        dmn.stM.C10 = 0.0;         // Zero Neo-Hookean parameter
+    }
+
+    // Print volumetric penalty parameters
+    void printMaterialParameters() {
+        std::cout << "kappa = " << params.kappa << std::endl;
+    }
+
+    // Compute strain energy for Miehe94 volumetric penalty model
+    double computeStrainEnergy(const double F[3][3]) {
+            
+            // Compute solid mechanics terms
+            solidMechanicsTerms smTerms = calcSolidMechanicsTerms(F);
+    
+            // Strain energy density for Miehe94 volumetric penalty model
+            // Psi = kappa * (J - ln(J) - 1)
+            double Psi = params.kappa * (smTerms.J - log(smTerms.J) - 1.0);
+    
+            return Psi;
     }
 };
