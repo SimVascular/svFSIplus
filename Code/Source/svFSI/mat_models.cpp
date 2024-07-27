@@ -765,7 +765,7 @@ void get_pk2cc_dev(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& 
       }
 
       double r1 = J2d*mat_ddot(C, Sb, nsd) / nd;
-      auto S = J2d*Sb - r1*Ci;
+      S = J2d*Sb - r1*Ci;
 
       auto PP = ten_ids(nsd) - (1.0/nd) * ten_dyad_prod(Ci, C, nsd);
       CC = ten_ddot(CCb, PP, nsd);
