@@ -164,6 +164,23 @@ void voigt_to_cc_carray(const double Dm[2*N][2*N], double CC[N][N][N][N]) {
 // get_pk2cc
 //-----------
 //
+/// @brief Compute 2nd Piola-Kirchhoff stress and material stiffness tensors
+/// including both dilational and isochoric components.
+///
+/// Reproduces the Fortran 'GETPK2CC' subroutine.
+//
+// ARGS:
+// - com_mod: Object containing global common variables.
+// - cep_mod: Object containing electrophysiology-specific common variables.
+// - lDmn: Domain object
+// - F: Deformation gradient tensor
+// - nfd: Number of fiber directions
+// - fl: Fiber directions
+// - ya: Electrophysiology active stress
+// - S: 2nd Piola-Kirchhoff stress tensor
+// - Dm: Material stiffness tensor
+//
+// RETURNS: None, but modifies S and Dm in place
 template <size_t N>
 void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn, const double F[N][N], const int nfd,
     const Array<double>& fl, const double ya, double S[N][N], double Dm[2*N][2*N])

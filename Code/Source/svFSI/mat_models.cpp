@@ -142,6 +142,18 @@ void get_fib_stress(const ComMod& com_mod, const CepMod& cep_mod, const fibStrsT
 ///
 /// Reproduces the Fortran 'GETPK2CC' subroutine.
 //
+// ARGS:
+// - com_mod: Object containing global common variables.
+// - cep_mod: Object containing electrophysiology-specific common variables.
+// - lDmn: Domain object
+// - F: Deformation gradient tensor
+// - nfd: Number of fiber directions
+// - fl: Fiber directions
+// - ya: Electrophysiology active stress
+// - S: 2nd Piola-Kirchhoff stress tensor
+// - Dm: Material stiffness tensor
+//
+// RETURNS: None, but modifies S and Dm in place.
 void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn, const Array<double>& F, const int nfd,
     const Array<double>& fl, const double ya, Array<double>& S, Array<double>& Dm)
 {
@@ -483,6 +495,19 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
 ///
 /// Reproduces 'SUBROUTINE GETPK2CCdev(lDmn, F, nfd, fl, ya, S, Dm, Ja)'. 
 //
+// ARGS:
+// - com_mod: Object containing global common variables.
+// - cep_mod: Object containing electrophysiology-specific common variables.
+// - lDmn: Domain object
+// - F: Deformation gradient tensor
+// - nfd: Number of fiber directions
+// - fl: Fiber directions
+// - ya: Electrophysiology active stress
+// - S: 2nd Piola-Kirchhoff stress tensor (isochoric part)
+// - Dm: Material stiffness tensor (isochoric part)
+// - Ja: Jacobian for active strain
+//
+// RETURNS: None, but modifies S, Dm, and Ja in place.
 void get_pk2cc_dev(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn, const Array<double>& F, const int nfd, 
     const Array<double>& fl, const double ya, Array<double>& S, Array<double>& Dm, double& Ja)
 {
