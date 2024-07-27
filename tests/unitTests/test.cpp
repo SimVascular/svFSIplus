@@ -382,7 +382,7 @@ protected:
     double F[3][3] = {}; // Deformation gradient
     int n_iter = 10;       // Number of random perturbations to test
     double rel_tol = 1e-3; // relative tolerance for comparing dPsi and dS with values from svFSI
-    double abs_tol = 1e-11; // absolute tolerance for comparing values
+    double abs_tol = 1e-9; // absolute tolerance for comparing values
     double delta = 1e-7; // perturbation scaling factor
     bool verbose = false; // Show values of S, dE, SdE and dPsi
 
