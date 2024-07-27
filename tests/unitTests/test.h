@@ -366,10 +366,12 @@ public:
     int nFn;
     Array<double> fN;
     double ya_g;
+    bool ustruct;
 
     TestMaterialModel(const consts::ConstitutiveModelType matType, const consts::ConstitutiveModelType penType) {
         int nsd = com_mod.nsd;
-        mat_fun_carray::ten_init(nsd);                        // initialize tensor index pointer
+        mat_fun_carray::ten_init(nsd);                        // initialize tensor index pointer for mat_fun_carray
+        mat_fun::ten_init(nsd);                               // initialize tensor index pointer for mat_fun
 
         // Set material and penalty models
         auto &dmn = com_mod.mockEq.mockDmn;
@@ -381,6 +383,11 @@ public:
         fN = Array<double>(nsd, nFn);     // Fiber directions array (initialized to zeros)
         ya_g = 0.0;                       // ?
 
+        // Flag to use struct or ustruct material models
+        // If struct, calls get_pk2cc() and uses strain energy composed of isochoric and volumetric parts
+        // If ustruct, calls get_pk2cc_dev() and uses strain energy composed of isochoric part only
+        ustruct = false;
+
     // Material parameters are set in each derived class
     }
 
@@ -391,10 +398,51 @@ public:
     virtual double computeStrainEnergy(const double F[3][3]) = 0;
 
     // Function to get S and Dm for a given F, from the get_pk2cc function in mat_models_carray.h
-    void get_pk2cc(double F[3][3], double S[3][3], double Dm[6][6]) {
+    // If ustruct is true, the deviatoric part of the PK2 stress tensor is returned from get_pk2cc_dev
+    // function in mat_models.h
+    //
+    // ARGS:
+    // - F: Deformation gradient
+    // - S: PK2 stress tensor
+    // - Dm: Material elasticity tensor
+    //
+    // RETURNS:
+    // - None, but fills S and Dm with the computed values
+    void get_pk2cc(const double F[3][3], double S[3][3], double Dm[6][6]) {
         auto &dmn = com_mod.mockEq.mockDmn;
 
-        mat_models_carray::get_pk2cc<3>(com_mod, cep_mod, dmn, F, nFn, fN, ya_g, S, Dm);
+        if (ustruct) {
+            double J = 0; // Jacobian (not used in this function)
+
+            // Cast F, S, and Dm to Array<double> for use in get_pk2cc_dev
+            Array<double> F_arr(3,3);
+            Array<double> S_arr(3,3);
+            Array<double> Dm_arr(6,6);
+            for (int i = 0; i < 3; i++) {
+                for (int J = 0; J < 3; J++) {
+                    F_arr(i, J) = F[i][J];
+                }
+            }
+
+            mat_models::get_pk2cc_dev(com_mod, cep_mod, dmn, F_arr, nFn, fN, ya_g, S_arr, Dm_arr, J);
+
+
+            // Copy data from S_arr and Dm_arr to S and Dm
+            for (int I = 0; I < 3; I++) {
+                for (int J = 0; J < 3; J++) {
+                    S[I][J] = S_arr(I, J);
+                }
+            }
+            for (int I = 0; I < 6; I++) {
+                for (int J = 0; J < 6; J++) {
+                    Dm[I][J] = Dm_arr(I, J);
+                }
+            }
+
+        } else {
+
+            mat_models_carray::get_pk2cc<3>(com_mod, cep_mod, dmn, F, nFn, fN, ya_g, S, Dm);
+        }
     }
 
     // Function to compute the PK2 stress tensor S(F) from the strain energy density Psi(F)
@@ -885,6 +933,11 @@ public:
 
 // ----------------------------------------------------------------------------
 // Class for test of Holzapfel-Ogden material model
+// Implements two versions of the Holzapfel-Ogden model:
+// - Full anisotropic invariants (I1_bar, I4_f, I4_s, I8_fs) used by cardiac mechanics benchmark paper (Arostica et al., 2024)
+// - Modified anisotropic invariants (I1_bar, I4_bar_f, I4_bar_s, I8_bar_fs) used by svFSIplus
+// Also, the strain energy includes the Simo-Taylor 91 volumetric penalty term,
+// with parameter HolzapfelOgdenParams.kappa
 class TestHolzapfelOgden : public TestMaterialModel {
 public:
 
@@ -985,7 +1038,9 @@ public:
             Psi += a_f / (2.0 * b_f) * chi(I4_f, k) * (exp(b_f * pow(I4_f - 1.0, 2)) - 1.0);   // Fiber term
             Psi += a_s / (2.0 * b_s) * chi(I4_s, k) * (exp(b_s * pow(I4_s - 1.0, 2)) - 1.0);   // Sheet term
             Psi += a_fs / (2.0 * b_fs) * (exp(b_fs * pow(I8_fs, 2)) - 1.0);                   // Cross-fiber term
-            Psi += kappa / 4.0 * (pow(smTerms.J, 2) - 1.0 - 2.0 * log(smTerms.J));      // Simo-Taylor 91 volumetric penalty term
+            if (!ustruct) {
+                Psi += kappa / 4.0 * (pow(smTerms.J, 2) - 1.0 - 2.0 * log(smTerms.J));      // Add Simo-Taylor 91 volumetric penalty term
+            }
 
             return Psi;
         }
@@ -1010,7 +1065,10 @@ public:
             Psi += a_f / (2.0 * b_f) * chi(I4_bar_f, k) * (exp(b_f * pow(I4_bar_f - 1.0, 2)) - 1.0);   // Fiber term
             Psi += a_s / (2.0 * b_s) * chi(I4_bar_s, k) * (exp(b_s * pow(I4_bar_s - 1.0, 2)) - 1.0);   // Sheet term
             Psi += a_fs / (2.0 * b_fs) * (exp(b_fs * pow(I8_bar_fs, 2)) - 1.0);                   // Cross-fiber term
-            Psi += kappa / 4.0 * (pow(smTerms.J, 2) - 1.0 - 2.0 * log(smTerms.J));      // Volumetric penalty term
+
+            if (!ustruct) {
+                Psi += kappa / 4.0 * (pow(smTerms.J, 2) - 1.0 - 2.0 * log(smTerms.J));      // Add Simo-Taylor 91 volumetric penalty term
+            }
 
             return Psi;
         }

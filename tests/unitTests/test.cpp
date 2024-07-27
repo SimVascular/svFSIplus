@@ -70,8 +70,20 @@ protected:
     }
 };
 
+// ------------------------------ STRUCT TESTS --------------------------------
+// Test fixture class for STRUCT Neo-Hookean material model
+class STRUCT_NeoHookeanTest : public NeoHookeanTest {
+protected:
+    void SetUp() override {
+        NeoHookeanTest::SetUp();
+
+        // Use struct
+        TestNH->ustruct = false;
+    }
+};
+
 // Test PK2 stress zero for F = I
-TEST_F(NeoHookeanTest, TestPK2StressIdentityF) {
+TEST_F(STRUCT_NeoHookeanTest, TestPK2StressIdentityF) {
     //verbose = true; // Show values of S and S_ref
 
     // Check identity F produces zero PK2 stress
@@ -83,7 +95,7 @@ TEST_F(NeoHookeanTest, TestPK2StressIdentityF) {
 }
 
 // Test PK2 stress with finite difference for random F
-TEST_F(NeoHookeanTest, TestPK2StressRandomF) {
+TEST_F(STRUCT_NeoHookeanTest, TestPK2StressRandomF) {
     //verbose = true; // Show values of S, dE, SdE and dPsi
 
     // Compute reference PK2 stress with finite difference for random F
@@ -96,7 +108,7 @@ TEST_F(NeoHookeanTest, TestPK2StressRandomF) {
 }
 
 // Test PK2 stress consistent with strain energy for random F
-TEST_F(NeoHookeanTest, TestPK2StressConsistentRandomF) {
+TEST_F(STRUCT_NeoHookeanTest, TestPK2StressConsistentRandomF) {
     //verbose = true; // Show values of S, dE, SdE and dPsi
 
     // Check random F produces consistent PK2 stress
@@ -105,7 +117,62 @@ TEST_F(NeoHookeanTest, TestPK2StressConsistentRandomF) {
 }
 
 // Test material elasticity consistent with PK2 stress
-TEST_F(NeoHookeanTest, TestMaterialElasticityConsistentRandomF) {
+TEST_F(STRUCT_NeoHookeanTest, TestMaterialElasticityConsistentRandomF) {
+    //verbose = true; // Show values of CC, dE, CCdE and dS
+
+    // Check with random F
+    create_random_F(F);
+    TestNH->testMaterialElasticityConsistentWithPK2Stress(F, n_iter, rel_tol, abs_tol, delta, verbose);
+}
+
+// ------------------------------ USTRUCT TESTS --------------------------------
+// Test fixture class for USTRUCT Neo-Hookean material model
+class USTRUCT_NeoHookeanTest : public NeoHookeanTest {
+protected:
+    void SetUp() override {
+        NeoHookeanTest::SetUp();
+
+        // Use ustruct
+        TestNH->ustruct = true;
+    }
+};
+
+// Test PK2 stress zero for F = I
+TEST_F(USTRUCT_NeoHookeanTest, TestPK2StressIdentityF) {
+    //verbose = true; // Show values of S and S_ref
+
+    // Check identity F produces zero PK2 stress
+    double F[3][3] = {{1.0, 0.0, 0.0},
+                       {0.0, 1.0, 0.0},
+                       {0.0, 0.0, 1.0}};
+    double S_ref[3][3] = {}; // PK2 stress initialized to zero
+    TestNH->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test PK2 stress with finite difference for random F
+TEST_F(USTRUCT_NeoHookeanTest, TestPK2StressRandomF) {
+    //verbose = true; // Show values of S, dE, SdE and dPsi
+
+    // Compute reference PK2 stress with finite difference for random F
+    create_random_F(F);
+    double S_ref[3][3]; // PK2 stress
+    TestNH->calcPK2StressFiniteDifference(F, delta, S_ref);
+
+    // Check PK2 stress against reference value
+    TestNH->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test PK2 stress consistent with strain energy for random F
+TEST_F(USTRUCT_NeoHookeanTest, TestPK2StressConsistentRandomF) {
+    //verbose = true; // Show values of S, dE, SdE and dPsi
+
+    // Check random F produces consistent PK2 stress
+    create_random_F(F);
+    TestNH->testPK2StressConsistentWithStrainEnergy(F, n_iter, rel_tol, abs_tol, delta, verbose);
+}
+
+// Test material elasticity consistent with PK2 stress
+TEST_F(USTRUCT_NeoHookeanTest, TestMaterialElasticityConsistentRandomF) {
     //verbose = true; // Show values of CC, dE, CCdE and dS
 
     // Check with random F
@@ -153,8 +220,20 @@ protected:
     }
 };
 
+// ------------------------------ STRUCT TESTS --------------------------------
+// Test fixture class for STRUCT Mooney-Rivlin material model
+class STRUCT_MooneyRivlinTest : public MooneyRivlinTest {
+protected:
+    void SetUp() override {
+        MooneyRivlinTest::SetUp();
+
+        // Use struct
+        TestMR->ustruct = false;
+    }
+};
+
 // Test PK2 stress zero for F = I
-TEST_F(MooneyRivlinTest, TestPK2StressIdentityF) {
+TEST_F(STRUCT_MooneyRivlinTest, TestPK2StressIdentityF) {
     //verbose = true; // Show values of S and S_ref
 
     // Check identity F produces zero PK2 stress
@@ -166,7 +245,7 @@ TEST_F(MooneyRivlinTest, TestPK2StressIdentityF) {
 }
 
 // Test PK2 stress with finite difference for random F
-TEST_F(MooneyRivlinTest, TestPK2StressRandomF) {
+TEST_F(STRUCT_MooneyRivlinTest, TestPK2StressRandomF) {
     //verbose = true; // Show values of S, dE, SdE and dPsi
 
     // Compute reference PK2 stress with finite difference for random F
@@ -179,7 +258,7 @@ TEST_F(MooneyRivlinTest, TestPK2StressRandomF) {
 }
 
 // Test PK2 stress consistent with strain energy for random F
-TEST_F(MooneyRivlinTest, TestPK2StressConsistentRandomF) {
+TEST_F(STRUCT_MooneyRivlinTest, TestPK2StressConsistentRandomF) {
     //verbose = true; // Show values of S, dE, SdE and dPsi
 
     // Check random F produces consistent PK2 stress
@@ -188,7 +267,62 @@ TEST_F(MooneyRivlinTest, TestPK2StressConsistentRandomF) {
 }
 
 // Test material elasticity consistent with PK2 stress
-TEST_F(MooneyRivlinTest, TestMaterialElasticityConsistentRandomF) {
+TEST_F(STRUCT_MooneyRivlinTest, TestMaterialElasticityConsistentRandomF) {
+    //verbose = true; // Show values of CC, dE, CCdE and dS
+
+    // Check with random F
+    create_random_F(F);
+    TestMR->testMaterialElasticityConsistentWithPK2Stress(F, n_iter, rel_tol, abs_tol, delta, verbose);
+}
+
+// ------------------------------ USTRUCT TESTS --------------------------------
+// Test fixture class for USTRUCT Mooney-Rivlin material model
+class USTRUCT_MooneyRivlinTest : public MooneyRivlinTest {
+protected:
+    void SetUp() override {
+        MooneyRivlinTest::SetUp();
+
+        // Use ustruct
+        TestMR->ustruct = true;
+    }
+};
+
+// Test PK2 stress zero for F = I
+TEST_F(USTRUCT_MooneyRivlinTest, TestPK2StressIdentityF) {
+    //verbose = true; // Show values of S and S_ref
+
+    // Check identity F produces zero PK2 stress
+    double F[3][3] = {1.0, 0.0, 0.0,
+                      0.0, 1.0, 0.0,
+                      0.0, 0.0, 1.0};
+    double S_ref[3][3] = {}; // PK2 stress initialized to zero
+    TestMR->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test PK2 stress with finite difference for random F
+TEST_F(USTRUCT_MooneyRivlinTest, TestPK2StressRandomF) {
+    //verbose = true; // Show values of S, dE, SdE and dPsi
+
+    // Compute reference PK2 stress with finite difference for random F
+    create_random_F(F);
+    double S_ref[3][3]; // PK2 stress
+    TestMR->calcPK2StressFiniteDifference(F, delta, S_ref);
+
+    // Check PK2 stress against reference value
+    TestMR->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test PK2 stress consistent with strain energy for random F
+TEST_F(USTRUCT_MooneyRivlinTest, TestPK2StressConsistentRandomF) {
+    //verbose = true; // Show values of S, dE, SdE and dPsi
+
+    // Check random F produces consistent PK2 stress
+    create_random_F(F);
+    TestMR->testPK2StressConsistentWithStrainEnergy(F, n_iter, rel_tol, abs_tol, delta, verbose);
+}
+
+// Test material elasticity consistent with PK2 stress
+TEST_F(USTRUCT_MooneyRivlinTest, TestMaterialElasticityConsistentRandomF) {
     //verbose = true; // Show values of CC, dE, CCdE and dS
 
     // Check with random F
@@ -283,8 +417,20 @@ protected:
     }
 };
 
+// ------------------------------ STRUCT TESTS --------------------------------
+// Test fixture class for STRUCT Holzapfel-Ogden material model
+class STRUCT_HolzapfelOgdenTest : public HolzapfelOgdenTest {
+protected:
+    void SetUp() override {
+        HolzapfelOgdenTest::SetUp();
+
+        // Use struct
+        TestHO->ustruct = false;
+    }
+};
+
 // Test PK2 stress zero for F = I
-TEST_F(HolzapfelOgdenTest, TestPK2StressIdentityF) {
+TEST_F(STRUCT_HolzapfelOgdenTest, TestPK2StressIdentityF) {
     //verbose = true; // Show values of S and S_ref
 
     // Check identity F produces zero PK2 stress
@@ -296,7 +442,7 @@ TEST_F(HolzapfelOgdenTest, TestPK2StressIdentityF) {
 }
 
 // Test PK2 stress for triaxial stretch
-TEST_F(HolzapfelOgdenTest, TestPK2StressTriaxialStretch) {
+TEST_F(STRUCT_HolzapfelOgdenTest, TestPK2StressTriaxialStretch) {
     //verbose = true; // Show values of S and S_ref
 
     // Check triaxial stretch produces PK2 stress consistent with svFSI
@@ -313,7 +459,7 @@ TEST_F(HolzapfelOgdenTest, TestPK2StressTriaxialStretch) {
 }
 
 // Test PK2 stress for triaxial compression
-TEST_F(HolzapfelOgdenTest, TestPK2StressTriaxialCompression) {
+TEST_F(STRUCT_HolzapfelOgdenTest, TestPK2StressTriaxialCompression) {
     //verbose = true; // Show values of S and S_ref
 
     // Check triaxial compression produces PK2 stress consistent with svFSI
@@ -330,7 +476,7 @@ TEST_F(HolzapfelOgdenTest, TestPK2StressTriaxialCompression) {
 }
 
 // Test PK2 stress with finite difference for random F
-TEST_F(HolzapfelOgdenTest, TestPK2StressRandomF) {
+TEST_F(STRUCT_HolzapfelOgdenTest, TestPK2StressRandomF) {
     //verbose = true; // Show values of S, dE, SdE and dPsi
 
     // Compute reference PK2 stress with finite difference for F = I + random perturbations
@@ -343,7 +489,7 @@ TEST_F(HolzapfelOgdenTest, TestPK2StressRandomF) {
 }
 
 // Test PK2 stress consistent with strain energy for random F
-TEST_F(HolzapfelOgdenTest, TestPK2StressConsistentRandomF) {
+TEST_F(STRUCT_HolzapfelOgdenTest, TestPK2StressConsistentRandomF) {
     //verbose = true; // Show values of S, dE, SdE and dPsi
 
     // Check F = I + random perturbations produces consistent PK2 stress
@@ -352,7 +498,7 @@ TEST_F(HolzapfelOgdenTest, TestPK2StressConsistentRandomF) {
 }
 
 // Test material elasticity consistent with PK2 stress
-TEST_F(HolzapfelOgdenTest, TestMaterialElasticityConsistentRandomF) {
+TEST_F(STRUCT_HolzapfelOgdenTest, TestMaterialElasticityConsistentRandomF) {
     //verbose = true; // Show values of CC, dE, CCdE and dS
 
     // Check F = I + random perturbations produces consistent PK2 stress
@@ -360,7 +506,94 @@ TEST_F(HolzapfelOgdenTest, TestMaterialElasticityConsistentRandomF) {
     TestHO->testMaterialElasticityConsistentWithPK2Stress(F, n_iter, rel_tol, abs_tol, delta, verbose);
 }
 
+// ------------------------------ USTRUCT TESTS --------------------------------
+// Test fixture class for USTRUCT Holzapfel-Ogden material model
+class USTRUCT_HolzapfelOgdenTest : public HolzapfelOgdenTest {
+protected:
+    void SetUp() override {
+        HolzapfelOgdenTest::SetUp();
 
+        // Use ustruct
+        TestHO->ustruct = true;
+    }
+};
+
+// Test PK2 stress zero for F = I
+TEST_F(USTRUCT_HolzapfelOgdenTest, TestPK2StressIdentityF) {
+    //verbose = true; // Show values of S and S_ref
+
+    // Check identity F produces zero PK2 stress
+    double F[3][3] = {{1.0, 0.0, 0.0},
+                       {0.0, 1.0, 0.0},
+                       {0.0, 0.0, 1.0}};
+    double S_ref[3][3] = {}; // PK2 stress initialized to zero
+    TestHO->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test PK2 stress for triaxial stretch
+TEST_F(USTRUCT_HolzapfelOgdenTest, TestPK2StressTriaxialStretch) {
+    //verbose = true; // Show values of S and S_ref
+
+    // Check triaxial stretch produces PK2 stress consistent with svFSI
+    double F[3][3] = {{1.1, 0.0, 0.0},
+                       {0.0, 1.2, 0.0},
+                       {0.0, 0.0, 1.3}};
+    
+    // Compute reference PK2 stress with finite difference for triaxial stretch
+    double S_ref[3][3]; // PK2 stress
+    TestHO->calcPK2StressFiniteDifference(F, delta, S_ref);
+    
+    // Check PK2 stress against reference value
+    TestHO->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test PK2 stress for triaxial compression
+TEST_F(USTRUCT_HolzapfelOgdenTest, TestPK2StressTriaxialCompression) {
+    //verbose = true; // Show values of S and S_ref
+
+    // Check triaxial compression produces PK2 stress consistent with svFSI
+    double F[3][3] = {{0.9, 0.0, 0.0},
+                       {0.0, 0.8, 0.0},
+                       {0.0, 0.0, 0.7}};
+    
+    // Compute reference PK2 stress with finite difference for triaxial compression
+    double S_ref[3][3]; // PK2 stress
+    TestHO->calcPK2StressFiniteDifference(F, delta, S_ref);
+    
+    // Check PK2 stress against reference value
+    TestHO->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test PK2 stress with finite difference for random F
+TEST_F(USTRUCT_HolzapfelOgdenTest, TestPK2StressRandomF) {
+    //verbose = true; // Show values of S, dE, SdE and dPsi
+
+    // Compute reference PK2 stress with finite difference for F = I + random perturbations
+    create_random_perturbed_identity_F(F, 0.5);
+    double S_ref[3][3]; // PK2 stress
+    TestHO->calcPK2StressFiniteDifference(F, delta, S_ref);
+
+    // Check PK2 stress against reference value
+    TestHO->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test PK2 stress consistent with strain energy for random F
+TEST_F(USTRUCT_HolzapfelOgdenTest, TestPK2StressConsistentRandomF) {
+    //verbose = true; // Show values of S, dE, SdE and dPsi
+
+    // Check F = I + random perturbations produces consistent PK2 stress
+    create_random_perturbed_identity_F(F, 0.5);
+    TestHO->testPK2StressConsistentWithStrainEnergy(F, n_iter, rel_tol, abs_tol, delta, verbose);
+}
+
+// Test material elasticity consistent with PK2 stress
+TEST_F(USTRUCT_HolzapfelOgdenTest, TestMaterialElasticityConsistentRandomF) {
+    //verbose = true; // Show values of CC, dE, CCdE and dS
+
+    // Check F = I + random perturbations produces consistent PK2 stress
+    create_random_perturbed_identity_F(F, 0.5);
+    TestHO->testMaterialElasticityConsistentWithPK2Stress(F, n_iter, rel_tol, abs_tol, delta, verbose);
+}
 
 
 
