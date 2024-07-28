@@ -640,8 +640,20 @@ protected:
     }
 };
 
+// ------------------------------ STRUCT TESTS --------------------------------
+// Test fixture class for STRUCT Quadratic penalty model
+class STRUCT_QuadraticVolumetricPenaltyTest : public QuadraticVolumetricPenaltyTest {
+protected:
+    void SetUp() override {
+        QuadraticVolumetricPenaltyTest::SetUp();
+
+        // Use struct
+        //TestQVP->ustruct = false;
+    }
+};
+
 // Test PK2 stress zero for F = I
-TEST_F(QuadraticVolumetricPenaltyTest, TestPK2StressIdentityF) {
+TEST_F(STRUCT_QuadraticVolumetricPenaltyTest, TestPK2StressIdentityF) {
     //verbose = true; // Show values of S and S_ref
 
     // Check identity F produces zero PK2 stress
@@ -653,7 +665,7 @@ TEST_F(QuadraticVolumetricPenaltyTest, TestPK2StressIdentityF) {
 }
 
 // Test PK2 stress zero for prescribed isochoric deformation
-TEST_F(QuadraticVolumetricPenaltyTest, TestPK2StressPrescribedIsochoricDeformation) {
+TEST_F(STRUCT_QuadraticVolumetricPenaltyTest, TestPK2StressPrescribedIsochoricDeformation) {
     //verbose = true; // Show values of S and S_ref
 
     // Check isochoric deformation produces zero PK2 stress
@@ -665,7 +677,7 @@ TEST_F(QuadraticVolumetricPenaltyTest, TestPK2StressPrescribedIsochoricDeformati
 }
 
 // Test PK2 stress zero for random isochoric deformation
-TEST_F(QuadraticVolumetricPenaltyTest, TestPK2StressRandomIsochoricDeformation) {
+TEST_F(STRUCT_QuadraticVolumetricPenaltyTest, TestPK2StressRandomIsochoricDeformation) {
     //verbose = true; // Show values of S and S_ref
 
     // Create random deformation gradient tensor
@@ -686,7 +698,7 @@ TEST_F(QuadraticVolumetricPenaltyTest, TestPK2StressRandomIsochoricDeformation) 
 }
 
 // Test PK2 stress with finite difference for random F
-TEST_F(QuadraticVolumetricPenaltyTest, TestPK2StressRandomF) {
+TEST_F(STRUCT_QuadraticVolumetricPenaltyTest, TestPK2StressRandomF) {
     //verbose = true; // Show values of S, dE, SdE and dPsi
 
     // Compute reference PK2 stress with finite difference for random F
@@ -699,7 +711,7 @@ TEST_F(QuadraticVolumetricPenaltyTest, TestPK2StressRandomF) {
 }
 
 // Test PK2 stress consistent with strain energy for random F
-TEST_F(QuadraticVolumetricPenaltyTest, TestPK2StressConsistentRandomF) {
+TEST_F(STRUCT_QuadraticVolumetricPenaltyTest, TestPK2StressConsistentRandomF) {
     //verbose = true; // Show values of S, dE, SdE and dPsi
 
     // Check random F produces consistent PK2 stress
@@ -708,12 +720,46 @@ TEST_F(QuadraticVolumetricPenaltyTest, TestPK2StressConsistentRandomF) {
 }
 
 // Test material elasticity consistent with PK2 stress
-TEST_F(QuadraticVolumetricPenaltyTest, TestMaterialElasticityConsistentRandomF) {
+TEST_F(STRUCT_QuadraticVolumetricPenaltyTest, TestMaterialElasticityConsistentRandomF) {
     //verbose = true; // Show values of CC, dE, CCdE and dS
 
     // Check with random F
     create_random_F(F);
     TestQVP->testMaterialElasticityConsistentWithPK2Stress(F, n_iter, rel_tol, abs_tol, delta, verbose);
+}
+
+// ------------------------------ USTRUCT TESTS --------------------------------
+// Test fixture class for USTRUCT Quadratic penalty model
+class USTRUCT_QuadraticVolumetricPenaltyTest : public QuadraticVolumetricPenaltyTest {
+protected:
+    void SetUp() override {
+        QuadraticVolumetricPenaltyTest::SetUp();
+
+        // Use ustruct
+        //TestQVP->ustruct = true;
+    }
+};
+
+// Test rho, beta, drho/dp and dbeta/dp for random pressure
+TEST_F(USTRUCT_QuadraticVolumetricPenaltyTest, TestRhoBeta) {
+    //verbose = true; // Show values of rho, beta, drho/dp and dbeta/dp and reference values
+
+    // Generate random pressure p between 100 and 1000
+    double p = getRandomDouble(100.0, 1000.0);
+
+    // Other parameters
+    double rho0 = 1000.0; // Reference density
+    double kappa = TestQVP->params.kappa; // Volumetric penalty parameter
+
+    // Compute reference values for rho, beta, drho/dp and dbeta/dp
+    // See ustruct paper (https://doi.org/10.1016/j.cma.2018.03.045) Section 2.4
+    double rho_ref = rho0 / (1.0 - p/kappa);
+    double beta_ref = 1.0 / (kappa - p);
+    double drhodp_ref = -rho0 / pow(1.0 - p/kappa, 2) * (-1.0/kappa); // Derivative of rho with respect to p
+    double dbetadp_ref = -1.0 / pow(kappa - p, 2) * (-1.0); // Derivative of beta with respect to p
+
+    // Check rho, beta, drho/dp and dbeta/dp against reference values
+    TestQVP->testRhoBetaAgainstReference(p, rho0, rho_ref, beta_ref, drhodp_ref, dbetadp_ref, rel_tol, abs_tol, verbose);
 }
 
 // ----------------------------------------------------------------------------
@@ -753,8 +799,20 @@ protected:
     }
 };
 
+// ------------------------------ STRUCT TESTS --------------------------------
+// Test fixture class for STRUCT Simo-Taylor91 penalty model
+class STRUCT_SimoTaylor91VolumetricPenaltyTest : public SimoTaylor91VolumetricPenaltyTest {
+protected:
+    void SetUp() override {
+        SimoTaylor91VolumetricPenaltyTest::SetUp();
+
+        // Use struct
+        //TestST91->ustruct = false;
+    }
+};
+
 // Test PK2 stress zero for F = I
-TEST_F(SimoTaylor91VolumetricPenaltyTest, TestPK2StressIdentityF) {
+TEST_F(STRUCT_SimoTaylor91VolumetricPenaltyTest, TestPK2StressIdentityF) {
     //verbose = true; // Show values of S and S_ref
 
     // Check identity F produces zero PK2 stress
@@ -766,7 +824,7 @@ TEST_F(SimoTaylor91VolumetricPenaltyTest, TestPK2StressIdentityF) {
 }
 
 // Test PK2 stress zero for prescribed isochoric deformation
-TEST_F(SimoTaylor91VolumetricPenaltyTest, TestPK2StressPrescribedIsochoricDeformation) {
+TEST_F(STRUCT_SimoTaylor91VolumetricPenaltyTest, TestPK2StressPrescribedIsochoricDeformation) {
     //verbose = true; // Show values of S and S_ref
 
     // Check isochoric deformation produces zero PK2 stress
@@ -778,7 +836,7 @@ TEST_F(SimoTaylor91VolumetricPenaltyTest, TestPK2StressPrescribedIsochoricDeform
 }
 
 // Test PK2 stress zero for random isochoric deformation
-TEST_F(SimoTaylor91VolumetricPenaltyTest, TestPK2StressRandomIsochoricDeformation) {
+TEST_F(STRUCT_SimoTaylor91VolumetricPenaltyTest, TestPK2StressRandomIsochoricDeformation) {
     //verbose = true; // Show values of S and S_ref
 
     // Create random deformation gradient tensor
@@ -799,7 +857,7 @@ TEST_F(SimoTaylor91VolumetricPenaltyTest, TestPK2StressRandomIsochoricDeformatio
 }
 
 // Test PK2 stress with finite difference for random F
-TEST_F(SimoTaylor91VolumetricPenaltyTest, TestPK2StressRandomF) {
+TEST_F(STRUCT_SimoTaylor91VolumetricPenaltyTest, TestPK2StressRandomF) {
     //verbose = true; // Show values of S, dE, SdE and dPsi
 
     // Compute reference PK2 stress with finite difference for random F
@@ -812,7 +870,7 @@ TEST_F(SimoTaylor91VolumetricPenaltyTest, TestPK2StressRandomF) {
 }
 
 // Test PK2 stress consistent with strain energy for random F
-TEST_F(SimoTaylor91VolumetricPenaltyTest, TestPK2StressConsistentRandomF) {
+TEST_F(STRUCT_SimoTaylor91VolumetricPenaltyTest, TestPK2StressConsistentRandomF) {
     //verbose = true; // Show values of S, dE, SdE and dPsi
 
     // Check random F produces consistent PK2 stress
@@ -821,12 +879,46 @@ TEST_F(SimoTaylor91VolumetricPenaltyTest, TestPK2StressConsistentRandomF) {
 }
 
 // Test material elasticity consistent with PK2 stress
-TEST_F(SimoTaylor91VolumetricPenaltyTest, TestMaterialElasticityConsistentRandomF) {
+TEST_F(STRUCT_SimoTaylor91VolumetricPenaltyTest, TestMaterialElasticityConsistentRandomF) {
     //verbose = true; // Show values of CC, dE, CCdE and dS
 
     // Check with random F
     create_random_F(F);
     TestST91->testMaterialElasticityConsistentWithPK2Stress(F, n_iter, rel_tol, abs_tol, delta, verbose);
+}
+
+// ------------------------------ USTRUCT TESTS --------------------------------
+// Test fixture class for USTRUCT Simo-Taylor91 penalty model
+class USTRUCT_SimoTaylor91VolumetricPenaltyTest : public SimoTaylor91VolumetricPenaltyTest {
+protected:
+    void SetUp() override {
+        SimoTaylor91VolumetricPenaltyTest::SetUp();
+
+        // Use ustruct
+        //TestST91->ustruct = true;
+    }
+};
+
+// Test rho and beta values for random p
+TEST_F(USTRUCT_SimoTaylor91VolumetricPenaltyTest, TestRhoBeta) {
+    //verbose = true; // Show values of rho, beta and rho_ref
+
+    // Generate random pressure p between 100 and 1000
+    double p = getRandomDouble(100.0, 1000.0);
+
+    // Other parameters
+    double rho0 = 1000.0; // Reference density
+    double kappa = TestST91->params.kappa; // Volumetric penalty parameter
+
+    // Compute reference values for rho, beta, drho/dp and dbeta/dp
+    // See ustruct paper (https://doi.org/10.1016/j.cma.2018.03.045) Section 2.4
+    double rho_ref = rho0 / kappa * (sqrt(p*p + kappa*kappa) + p);
+    double beta_ref = 1.0 / sqrt(p*p + kappa*kappa);
+    double drhodp_ref = rho0 / kappa * (1.0/2.0 * (1.0/sqrt(p*p + kappa*kappa)) * 2.0*p + 1.0); // Derivative of rho with respect to p
+    double dbetadp_ref = -1.0/2.0 * 1.0/pow(p*p + kappa*kappa, 3.0/2.0) * 2.0*p; // Derivative of beta with respect to p
+
+    // Check rho, beta, drho/dp and dbeta/dp against reference values
+    TestST91->testRhoBetaAgainstReference(p, rho0, rho_ref, beta_ref, drhodp_ref, dbetadp_ref, rel_tol, abs_tol, verbose);
 }
 
 // ----------------------------------------------------------------------------
@@ -865,8 +957,20 @@ protected:
     }
 };
 
+// ------------------------------ STRUCT TESTS --------------------------------
+// Test fixture class for STRUCT Miehe94 penalty model
+class STRUCT_Miehe94VolumetricPenaltyTest : public Miehe94VolumetricPenaltyTest {
+protected:
+    void SetUp() override {
+        Miehe94VolumetricPenaltyTest::SetUp();
+
+        // Use struct
+        //TestM94->ustruct = false;
+    }
+};
+
 // Test PK2 stress zero for F = I
-TEST_F(Miehe94VolumetricPenaltyTest, TestPK2StressIdentityF) {
+TEST_F(STRUCT_Miehe94VolumetricPenaltyTest, TestPK2StressIdentityF) {
     //verbose = true; // Show values of S and S_ref
 
     // Check identity F produces zero PK2 stress
@@ -878,7 +982,7 @@ TEST_F(Miehe94VolumetricPenaltyTest, TestPK2StressIdentityF) {
 }
 
 // Test PK2 stress zero for prescribed isochoric deformation
-TEST_F(Miehe94VolumetricPenaltyTest, TestPK2StressPrescribedIsochoricDeformation) {
+TEST_F(STRUCT_Miehe94VolumetricPenaltyTest, TestPK2StressPrescribedIsochoricDeformation) {
     //verbose = true; // Show values of S and S_ref
 
     // Check isochoric deformation produces zero PK2 stress
@@ -890,7 +994,7 @@ TEST_F(Miehe94VolumetricPenaltyTest, TestPK2StressPrescribedIsochoricDeformation
 }
 
 // Test PK2 stress zero for random isochoric deformation
-TEST_F(Miehe94VolumetricPenaltyTest, TestPK2StressRandomIsochoricDeformation) {
+TEST_F(STRUCT_Miehe94VolumetricPenaltyTest, TestPK2StressRandomIsochoricDeformation) {
     //verbose = true; // Show values of S and S_ref
 
     // Create random deformation gradient tensor
@@ -911,7 +1015,7 @@ TEST_F(Miehe94VolumetricPenaltyTest, TestPK2StressRandomIsochoricDeformation) {
 }
 
 // Test PK2 stress with finite difference for random F
-TEST_F(Miehe94VolumetricPenaltyTest, TestPK2StressRandomF) {
+TEST_F(STRUCT_Miehe94VolumetricPenaltyTest, TestPK2StressRandomF) {
     //verbose = true; // Show values of S, dE, SdE and dPsi
 
     // Compute reference PK2 stress with finite difference for random F
@@ -924,7 +1028,7 @@ TEST_F(Miehe94VolumetricPenaltyTest, TestPK2StressRandomF) {
 }
 
 // Test PK2 stress consistent with strain energy for random F
-TEST_F(Miehe94VolumetricPenaltyTest, TestPK2StressConsistentRandomF) {
+TEST_F(STRUCT_Miehe94VolumetricPenaltyTest, TestPK2StressConsistentRandomF) {
     //verbose = true; // Show values of S, dE, SdE and dPsi
 
     // Check random F produces consistent PK2 stress
@@ -933,12 +1037,46 @@ TEST_F(Miehe94VolumetricPenaltyTest, TestPK2StressConsistentRandomF) {
 }
 
 // Test material elasticity consistent with PK2 stress
-TEST_F(Miehe94VolumetricPenaltyTest, TestMaterialElasticityConsistentRandomF) {
+TEST_F(STRUCT_Miehe94VolumetricPenaltyTest, TestMaterialElasticityConsistentRandomF) {
     //verbose = true; // Show values of CC, dE, CCdE and dS
 
     // Check with random F
     create_random_F(F);
     TestM94->testMaterialElasticityConsistentWithPK2Stress(F, n_iter, rel_tol, abs_tol, delta, verbose);
+}
+
+// ------------------------------ USTRUCT TESTS --------------------------------
+// Test fixture class for USTRUCT Miehe94 penalty model
+class USTRUCT_Miehe94VolumetricPenaltyTest : public Miehe94VolumetricPenaltyTest {
+protected:
+    void SetUp() override {
+        Miehe94VolumetricPenaltyTest::SetUp();
+
+        // Use ustruct
+        //TestM94->ustruct = true;
+    }
+};
+
+// Test rho and beta values for random p
+TEST_F(USTRUCT_Miehe94VolumetricPenaltyTest, TestRhoBeta) {
+    //verbose = true; // Show values of rho, beta and rho_ref
+
+    // Generate random pressure p between 100 and 1000
+    double p = getRandomDouble(100.0, 1000.0);
+
+    // Other parameters
+    double rho0 = 1000.0; // Reference density
+    double kappa = TestM94->params.kappa; // Volumetric penalty parameter
+
+    // Compute reference values for rho, beta, drho/dp and dbeta/dp
+    // See ustruct paper (https://doi.org/10.1016/j.cma.2018.03.045) Section 2.4
+    double rho_ref = rho0 * (1.0 + p/kappa);
+    double beta_ref = 1.0 / (p + kappa);
+    double drhodp_ref = rho0 / kappa; // Derivative of rho with respect to p
+    double dbetadp_ref = -1.0 / pow(p + kappa, 2); // Derivative of beta with respect to p
+
+    // Check rho, beta, drho/dp and dbeta/dp against reference values
+    TestM94->testRhoBetaAgainstReference(p, rho0, rho_ref, beta_ref, drhodp_ref, dbetadp_ref, rel_tol, abs_tol, verbose);
 }
 
 // ----------------------------------------------------------------------------

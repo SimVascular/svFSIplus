@@ -445,6 +445,26 @@ public:
         }
     }
 
+    // Function to get rho, beta, drho, and dbeta for a given pressure p, from the g_vol_pen() function in mat_models.h
+    //
+    // ARGS:
+    // - p: Pressure
+    // - rho0: Initial solid density
+    // - rho: Solid density
+    // - beta: Isothermal compressibility coefficient
+    // - drho: Derivative of solid density with respect to pressure
+    // - dbeta: Derivative of beta with respect to pressure
+    // - Ja: Jacobian (not used in this function)
+    //
+    // RETURNS:
+    // - None, but fills rho, beta, drho, and dbeta with the computed values
+    void g_vol_pen(const double p, const double rho0, double &rho, double &beta, double &drho, double &dbeta, const double Ja) {
+        auto &dmn = com_mod.mockEq.mockDmn;
+        dmn.prop[consts::PhysicalProperyType::solid_density] = rho0; // Set initial solid density
+
+        mat_models::g_vol_pen(com_mod, dmn, p, rho, beta, drho, dbeta, Ja);
+    }
+
     // Function to compute the PK2 stress tensor S(F) from the strain energy density Psi(F)
     // using finite differences
     // Analytically, we should have S = dPsi/dE. Since we have Psi(F), we cannot
@@ -509,6 +529,7 @@ public:
     // - F: Deformation gradient
     // - n_iter: Number of random perturbations to test
     // - rel_tol: Relative tolerance for comparing dPsi and S:dE
+    // - abs_tol: Absolute tolerance for comparing dPsi and S:dE
     // - delta: Perturbation scaling factor
     // - verbose: Show values of S, dE, SdE and dPsi
     //
@@ -607,6 +628,7 @@ public:
     // - F: Deformation gradient
     // - n_iter: Number of random perturbations to test
     // - rel_tol: Relative tolerance for comparing dS and CC:dE
+    // - abs_tol: Absolute tolerance for comparing dS and CC:dE
     // - delta: Perturbation scaling factor
     // - verbose: Show values of CC, dE, CCdE and dS
     //
@@ -747,6 +769,8 @@ public:
     // - F: Deformation gradient
     // - S_ref: Reference solution for PK2 stress
     // - rel_tol: Relative tolerance for comparing S with S_ref
+    // - abs_tol: Absolute tolerance for comparing S with S_ref
+    // - verbose: Show values of F, S, and S_ref
     void testPK2StressAgainstReference(double F[3][3], double S_ref[3][3], double rel_tol, double abs_tol, bool verbose = false) {
         // Compute S(F) from get_pk2cc()
         double S[3][3], Dm[6][6];
@@ -795,6 +819,8 @@ public:
     // - F: Deformation gradient
     // - CC_ref: Reference solution for material elasticity tensor
     // - rel_tol: Relative tolerance for comparing CC with CC_ref
+    // - abs_tol: Absolute tolerance for comparing CC with CC_ref
+    // - verbose: Show values of F, CC, and CC_ref
     void testMaterialElasticityAgainstReference(double F[3][3], double CC_ref[3][3][3][3], double rel_tol, double abs_tol, bool verbose = false) {
         // Compute CC(F) from get_pk2cc()
         double S[3][3], Dm[6][6];
@@ -856,6 +882,47 @@ public:
             std::cout << std::endl;
         }
     }
+
+    // Function to test rho, beta, drho/dp, and dbeta/dp from g_vol_pen() against 
+    // reference solution. These are required for treating a volumetric penalty
+    // term in the ustruct formulation
+    // ARGS:
+    // - p: Pressure
+    // - rho0: Initial solid density
+    // - rho_ref: Reference solution for rho
+    // - beta_ref: Reference solution for beta
+    // - drhodp_ref: Reference solution for drho/dp
+    // - dbetadp_ref: Reference solution for dbeta/dp
+    // - rel_tol: Relative tolerance for comparing rho and beta with reference solutions
+    // - abs_tol: Absolute tolerance for comparing rho and beta with reference solutions
+    // - verbose: Show values of p, rho, beta, rho_ref, beta_ref
+    void testRhoBetaAgainstReference(double p, double rho0, double rho_ref, double beta_ref, double drhodp_ref, double dbetadp_ref, double rel_tol, double abs_tol, bool verbose = false) {
+        double rho, beta, drhodp, dbetadp;
+        double Ja = 1.0; // Active strain Jacobian (not used in this function)
+
+        // Compute rho, beta, drhodp, dbetadp from g_vol_pen()
+        g_vol_pen(p, rho0, rho, beta, drhodp, dbetadp, Ja);
+
+        // Compare rho, beta, drho, dbeta with reference solutions
+        EXPECT_NEAR(rho, rho_ref, fmax(abs_tol, rel_tol * fabs(rho_ref)));
+        EXPECT_NEAR(beta, beta_ref, fmax(abs_tol, rel_tol * fabs(beta_ref)));
+        EXPECT_NEAR(drhodp, drhodp_ref, fmax(abs_tol, rel_tol * fabs(drhodp_ref)));
+        EXPECT_NEAR(dbetadp, dbetadp_ref, fmax(abs_tol, rel_tol * fabs(dbetadp_ref)));
+
+        // Print results if verbose
+        if (verbose) {
+            printMaterialParameters();
+
+            std::cout << "p = " << p << std::endl;
+            std::cout << "rho0 = " << rho0 << std::endl;
+            std::cout << "rho = " << rho << ", rho_ref = " << rho_ref << std::endl;
+            std::cout << "beta = " << beta << ", beta_ref = " << beta_ref << std::endl;
+            std::cout << "drhodp = " << drhodp << ", drhodp_ref = " << drhodp_ref << std::endl;
+            std::cout << "dbetadp = " << dbetadp << ", dbetadp_ref = " << dbetadp_ref << std::endl;
+            std::cout << std::endl;
+        }
+    }
+
 };
 
 // --------------------------------------------------------------

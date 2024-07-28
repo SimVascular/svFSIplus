@@ -1434,6 +1434,21 @@ void get_tau(const ComMod& com_mod, const dmnType& lDmn, const double detF, cons
   tauC = ctC * (he*c) * (rho0/detF);
 }
 
+/// @brief Compute rho, beta, drho/dp, dbeta/dp for volumetric penalty terms in 
+/// the ustruct formulation.
+/// See ustruct paper (https://doi.org/10.1016/j.cma.2018.03.045) Section 2.4
+//
+// ARGS:
+//  com_mod:  ComMod object
+//  lDmn:     dmnType object
+//  p:        pressure
+//  ro:       Solid density, rho
+//  bt:       Isothermal compressibility coefficient, beta
+//  dro:      Derivative of rho w.r.t. p
+//  dbt:      Derivative of beta w.r.t. p
+//  Ja:       Active strain Jacobian
+//
+// RETURNS: None, but updates ro, bt, dro, dbt
 void g_vol_pen(const ComMod& com_mod, const dmnType& lDmn, const double p, 
     double& ro, double& bt, double& dro, double& dbt, const double Ja)
 {
