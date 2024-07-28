@@ -28,6 +28,23 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/* 
+This structural mechanics implementation is based on the following reference:
+
+Ju Liu, Alison L. Marsden,
+A unified continuum and variational multiscale formulation for fluids, solids, and fluid–structure interaction,
+Computer Methods in Applied Mechanics and Engineering,
+Volume 337,
+2018,
+Pages 549-597,
+ISSN 0045-7825,
+https://doi.org/10.1016/j.cma.2018.03.045.
+
+This paper describes a unified framework for fluid, solids, and FSI. The code
+in this file is based on the solid mechanics portion of the paper, which can be
+found in Section 4
+*/
+
 #include "ustruct.h"
 
 #include "all_fun.h"
