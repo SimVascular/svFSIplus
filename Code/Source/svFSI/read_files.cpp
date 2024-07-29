@@ -2160,7 +2160,7 @@ void read_mat_model(Simulation* simulation, EquationParameters* eq_params, Domai
 
     } else if (fiber_stress == "unsteady") {
       lDmn.stM.Tf.fType = utils::ibset(lDmn.stM.Tf.fType, static_cast<int>(BoundaryConditionType::bType_ustd));
-      lDmn.stM.Tf.gt.lrmp = fiber_params.ramp_function.defined();
+      lDmn.stM.Tf.gt.lrmp = fiber_params.ramp_function.value();
       read_fiber_temporal_values_file(fiber_params, lDmn);
     }
   }
