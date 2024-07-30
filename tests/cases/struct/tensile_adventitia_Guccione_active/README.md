@@ -10,7 +10,7 @@ The active stress data is defined in `stress.dat`, which can be generated with
 `generate_stress.py`
 
 The resulting deformation is shown in the video below:
-<video width="640" height="480">
+<video width="640" height="480" controls autoplay loop>
   <source src="movie.mp4" type="video/mp4">
   Your browser does not support the video tag.
 </video>
