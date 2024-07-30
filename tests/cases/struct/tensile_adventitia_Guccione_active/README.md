@@ -5,13 +5,12 @@ of the slab (z-direction) and secondary fibers run across the width of the slab
 
 The active stress profile is sinusoidal over a period of 1 second with an amplitude
 of 100 dynes/cm^2. 
+
 ![Stress Profile](stress.png)
+
 The active stress data is defined in `stress.dat`, which can be generated with
 `generate_stress.py`
 
 The resulting deformation is shown in the video below:
-<video width="640" height="480" controls autoplay loop>
-  <source src="movie.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+![Deformation](movie.gif)
 
