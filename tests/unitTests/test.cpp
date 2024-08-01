@@ -367,7 +367,6 @@ protected:
         params.b_f = 16.026; // Pa
         params.b_s = 11.12; // Pa
         params.b_fs = 11.436; // Pa
-        params.kappa = 1.0e6; // Pa
         params.k = 100000.0; // Pa 
 
         // Set random values for f between 0 and 1 and normalize
