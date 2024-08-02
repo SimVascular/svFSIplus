@@ -88,25 +88,31 @@ virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>printMaterial
 <tr class="memitem:ab0fa53fe7da20afaeb54bd1cf0dc16ad"><td class="memItemLeft" align="right" valign="top"><a id="ab0fa53fe7da20afaeb54bd1cf0dc16ad"></a>
 virtual double&#160;</td><td class="memItemRight" valign="bottom"><b>computeStrainEnergy</b> (const double F[3][3])=0</td></tr>
 <tr class="separator:ab0fa53fe7da20afaeb54bd1cf0dc16ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad5d359866b5da25c30e224502f8830fe"><td class="memItemLeft" align="right" valign="top"><a id="ad5d359866b5da25c30e224502f8830fe"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>get_pk2cc</b> (double F[3][3], double S[3][3], double Dm[6][6])</td></tr>
-<tr class="separator:ad5d359866b5da25c30e224502f8830fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa5ee3608e827bd04a622b289ce18a65a"><td class="memTemplParams" colspan="2"><a id="aa5ee3608e827bd04a622b289ce18a65a"></a>
-template&lt;int N&gt; </td></tr>
-<tr class="memitem:aa5ee3608e827bd04a622b289ce18a65a"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>calcPK2StressFiniteDifference</b> (const double F[N][N], double delta, double(&amp;S)[N][N])</td></tr>
+<tr class="memitem:a4da7963ec50bad5167f0bd705294c927"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_test_material_model.html#a4da7963ec50bad5167f0bd705294c927">get_pk2cc</a> (const double F[3][3], double S[3][3], double Dm[6][6])</td></tr>
+<tr class="memdesc:a4da7963ec50bad5167f0bd705294c927"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the PK2 stress tensor S and material elasticity tensor Dm for a given deformation gradient F.  <a href="class_test_material_model.html#a4da7963ec50bad5167f0bd705294c927">More...</a><br /></td></tr>
+<tr class="separator:a4da7963ec50bad5167f0bd705294c927"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a196866ebfd0de9af38bdf7946f89431f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_test_material_model.html#a196866ebfd0de9af38bdf7946f89431f">g_vol_pen</a> (const double p, const double rho0, double &amp;rho, double &amp;beta, double &amp;drho, double &amp;dbeta, const double Ja)</td></tr>
+<tr class="memdesc:a196866ebfd0de9af38bdf7946f89431f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the solid density, isothermal compressibility coefficient, and their derivatives for a given pressure.  <a href="class_test_material_model.html#a196866ebfd0de9af38bdf7946f89431f">More...</a><br /></td></tr>
+<tr class="separator:a196866ebfd0de9af38bdf7946f89431f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa5ee3608e827bd04a622b289ce18a65a"><td class="memTemplParams" colspan="2">template&lt;int N&gt; </td></tr>
+<tr class="memitem:aa5ee3608e827bd04a622b289ce18a65a"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="class_test_material_model.html#aa5ee3608e827bd04a622b289ce18a65a">calcPK2StressFiniteDifference</a> (const double F[N][N], double delta, double(&amp;S)[N][N])</td></tr>
+<tr class="memdesc:aa5ee3608e827bd04a622b289ce18a65a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the PK2 stress tensor S(F) from the strain energy density Psi(F) using finite differences.  <a href="class_test_material_model.html#aa5ee3608e827bd04a622b289ce18a65a">More...</a><br /></td></tr>
 <tr class="separator:aa5ee3608e827bd04a622b289ce18a65a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a664877e8f455e0e0222efabe0fca1642"><td class="memItemLeft" align="right" valign="top"><a id="a664877e8f455e0e0222efabe0fca1642"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>testPK2StressConsistentWithStrainEnergy</b> (double F[3][3], int n_iter, double rel_tol, double abs_tol, double delta, bool verbose=false)</td></tr>
+<tr class="memitem:a664877e8f455e0e0222efabe0fca1642"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_test_material_model.html#a664877e8f455e0e0222efabe0fca1642">testPK2StressConsistentWithStrainEnergy</a> (double F[3][3], int n_iter, double rel_tol, double abs_tol, double delta, bool verbose=false)</td></tr>
+<tr class="memdesc:a664877e8f455e0e0222efabe0fca1642"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tests the consistency of the PK2 stress tensor S(F) from <a class="el" href="class_test_material_model.html#a4da7963ec50bad5167f0bd705294c927" title="Computes the PK2 stress tensor S and material elasticity tensor Dm for a given deformation gradient F...">get_pk2cc()</a> with the strain energy density Psi(F) provided by the user.  <a href="class_test_material_model.html#a664877e8f455e0e0222efabe0fca1642">More...</a><br /></td></tr>
 <tr class="separator:a664877e8f455e0e0222efabe0fca1642"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8f1c07238538edc829d2537b16b7d5c2"><td class="memItemLeft" align="right" valign="top"><a id="a8f1c07238538edc829d2537b16b7d5c2"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>testMaterialElasticityConsistentWithPK2Stress</b> (double F[3][3], int n_iter, double rel_tol, double abs_tol, double delta, bool verbose=false)</td></tr>
+<tr class="memitem:a8f1c07238538edc829d2537b16b7d5c2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_test_material_model.html#a8f1c07238538edc829d2537b16b7d5c2">testMaterialElasticityConsistentWithPK2Stress</a> (double F[3][3], int n_iter, double rel_tol, double abs_tol, double delta, bool verbose=false)</td></tr>
+<tr class="memdesc:a8f1c07238538edc829d2537b16b7d5c2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tests the consistency of the material elasticity tensor CC(F) from <a class="el" href="class_test_material_model.html#a4da7963ec50bad5167f0bd705294c927" title="Computes the PK2 stress tensor S and material elasticity tensor Dm for a given deformation gradient F...">get_pk2cc()</a> with the PK2 stress tensor S(F) from <a class="el" href="class_test_material_model.html#a4da7963ec50bad5167f0bd705294c927" title="Computes the PK2 stress tensor S and material elasticity tensor Dm for a given deformation gradient F...">get_pk2cc()</a>.  <a href="class_test_material_model.html#a8f1c07238538edc829d2537b16b7d5c2">More...</a><br /></td></tr>
 <tr class="separator:a8f1c07238538edc829d2537b16b7d5c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aba21f1997bad70d373cbed5659969546"><td class="memItemLeft" align="right" valign="top"><a id="aba21f1997bad70d373cbed5659969546"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>testPK2StressAgainstReference</b> (double F[3][3], double S_ref[3][3], double rel_tol, double abs_tol, bool verbose=false)</td></tr>
+<tr class="memitem:aba21f1997bad70d373cbed5659969546"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_test_material_model.html#aba21f1997bad70d373cbed5659969546">testPK2StressAgainstReference</a> (double F[3][3], double S_ref[3][3], double rel_tol, double abs_tol, bool verbose=false)</td></tr>
+<tr class="memdesc:aba21f1997bad70d373cbed5659969546"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compares the PK2 stress tensor S(F) with a reference solution.  <a href="class_test_material_model.html#aba21f1997bad70d373cbed5659969546">More...</a><br /></td></tr>
 <tr class="separator:aba21f1997bad70d373cbed5659969546"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6998932025e05687bdbbf6c4eb414aef"><td class="memItemLeft" align="right" valign="top"><a id="a6998932025e05687bdbbf6c4eb414aef"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>testMaterialElasticityAgainstReference</b> (double F[3][3], double CC_ref[3][3][3][3], double rel_tol, double abs_tol, bool verbose=false)</td></tr>
+<tr class="memitem:a6998932025e05687bdbbf6c4eb414aef"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_test_material_model.html#a6998932025e05687bdbbf6c4eb414aef">testMaterialElasticityAgainstReference</a> (double F[3][3], double CC_ref[3][3][3][3], double rel_tol, double abs_tol, bool verbose=false)</td></tr>
+<tr class="memdesc:a6998932025e05687bdbbf6c4eb414aef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compares the material elasticity tensor CC(F) with a reference solution.  <a href="class_test_material_model.html#a6998932025e05687bdbbf6c4eb414aef">More...</a><br /></td></tr>
 <tr class="separator:a6998932025e05687bdbbf6c4eb414aef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac313c211729dacf1a4a9b85d8f0f815b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_test_material_model.html#ac313c211729dacf1a4a9b85d8f0f815b">testRhoBetaAgainstReference</a> (double p, double rho0, double rho_ref, double beta_ref, double drhodp_ref, double dbetadp_ref, double rel_tol, double abs_tol, bool verbose=false)</td></tr>
+<tr class="memdesc:ac313c211729dacf1a4a9b85d8f0f815b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tests rho, beta, drho/dp, and dbeta/dp from <a class="el" href="class_test_material_model.html#a196866ebfd0de9af38bdf7946f89431f" title="Computes the solid density, isothermal compressibility coefficient, and their derivatives for a given...">g_vol_pen()</a> against reference solutions.  <a href="class_test_material_model.html#ac313c211729dacf1a4a9b85d8f0f815b">More...</a><br /></td></tr>
+<tr class="separator:ac313c211729dacf1a4a9b85d8f0f815b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -125,7 +131,622 @@ Array&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>fN</
 <tr class="memitem:ae4eb1ec02c26298f3c3a8a1d0c1c859b"><td class="memItemLeft" align="right" valign="top"><a id="ae4eb1ec02c26298f3c3a8a1d0c1c859b"></a>
 double&#160;</td><td class="memItemRight" valign="bottom"><b>ya_g</b></td></tr>
 <tr class="separator:ae4eb1ec02c26298f3c3a8a1d0c1c859b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9067886cc09b95e964c82bfe4ebadf72"><td class="memItemLeft" align="right" valign="top"><a id="a9067886cc09b95e964c82bfe4ebadf72"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>ustruct</b></td></tr>
+<tr class="separator:a9067886cc09b95e964c82bfe4ebadf72"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a id="aa5ee3608e827bd04a622b289ce18a65a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa5ee3608e827bd04a622b289ce18a65a">&#9670;&nbsp;</a></span>calcPK2StressFiniteDifference()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;int N&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void TestMaterialModel::calcPK2StressFiniteDifference </td>
+          <td>(</td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>F</em>[N][N], </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>delta</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double(&amp;)&#160;</td>
+          <td class="paramname"><em>S</em>[N][N]&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Computes the PK2 stress tensor S(F) from the strain energy density Psi(F) using finite differences. </p>
+<p>Analytically, we should have S = dPsi/dE. Since we have Psi(F), we cannot directly compute S. Instead, we compute S = F^-1 * P, where P = dPsi/dF is computed using finite differences in each component of F.</p>
+<p>Pseudocode:</p><ul>
+<li>Compute strain energy density Psi(F)</li>
+<li>For each component of F, F[i][J]<ul>
+<li>Perturb F[i][J] by delta to get F_tilde</li>
+<li>Compute Psi(F_tilde)</li>
+<li>Compute dPsi = Psi(F_tilde) - Psi(F)</li>
+<li>Compute P[i][J] = dPsi / delta</li>
+</ul>
+</li>
+<li>Compute S = F^-1 * P</li>
+</ul>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">N</td><td>The size of the deformation gradient tensor (NxN). </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">F</td><td>The deformation gradient tensor. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">delta</td><td>The perturbation scaling factor. </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">S</td><td>The computed PK2 stress tensor. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>None, but fills S with the computed values. </dd></dl>
+
+</div>
+</div>
+<a id="a196866ebfd0de9af38bdf7946f89431f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a196866ebfd0de9af38bdf7946f89431f">&#9670;&nbsp;</a></span>g_vol_pen()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void TestMaterialModel::g_vol_pen </td>
+          <td>(</td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>p</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>rho0</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double &amp;&#160;</td>
+          <td class="paramname"><em>rho</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double &amp;&#160;</td>
+          <td class="paramname"><em>beta</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double &amp;&#160;</td>
+          <td class="paramname"><em>drho</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double &amp;&#160;</td>
+          <td class="paramname"><em>dbeta</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>Ja</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Computes the solid density, isothermal compressibility coefficient, and their derivatives for a given pressure. </p>
+<p>This function computes the solid density (rho), isothermal compressibility coefficient (beta), and their derivatives with respect to pressure (drho and dbeta) for a given pressure (p) using the <a class="el" href="class_test_material_model.html#a196866ebfd0de9af38bdf7946f89431f" title="Computes the solid density, isothermal compressibility coefficient, and their derivatives for a given...">g_vol_pen()</a> function from <a class="el" href="mat__models_8h_source.html">mat_models.h</a>.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">p</td><td>Pressure. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">rho0</td><td>Initial solid density. </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">rho</td><td>Computed solid density. </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">beta</td><td>Computed isothermal compressibility coefficient. </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">drho</td><td>Computed Derivative of solid density with respect to pressure. </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">dbeta</td><td>Computed Derivative of beta with respect to pressure. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">Ja</td><td>Jacobian (not used in this function). </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>None. </dd></dl>
+
+</div>
+</div>
+<a id="a4da7963ec50bad5167f0bd705294c927"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4da7963ec50bad5167f0bd705294c927">&#9670;&nbsp;</a></span>get_pk2cc()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void TestMaterialModel::get_pk2cc </td>
+          <td>(</td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>F</em>[3][3], </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>S</em>[3][3], </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>Dm</em>[6][6]&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Computes the PK2 stress tensor S and material elasticity tensor Dm for a given deformation gradient F. </p>
+<p>This function computes the PK2 stress tensor S and the material elasticity tensor Dm from the deformation gradient F. If <code>ustruct</code> is true, the deviatoric part of the PK2 stress tensor is returned using the <code>get_pk2cc_dev</code> function.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">F</td><td>The deformation gradient tensor. </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">S</td><td>The computed PK2 stress tensor. </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">Dm</td><td>The computed material elasticity tensor. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>None, but fills S and Dm with the computed values. </dd></dl>
+
+</div>
+</div>
+<a id="a6998932025e05687bdbbf6c4eb414aef"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6998932025e05687bdbbf6c4eb414aef">&#9670;&nbsp;</a></span>testMaterialElasticityAgainstReference()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void TestMaterialModel::testMaterialElasticityAgainstReference </td>
+          <td>(</td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>F</em>[3][3], </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>CC_ref</em>[3][3][3][3], </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>rel_tol</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>abs_tol</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>verbose</em> = <code>false</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compares the material elasticity tensor CC(F) with a reference solution. </p>
+<p>This function computes the material elasticity tensor CC(F) from the deformation gradient F using <a class="el" href="class_test_material_model.html#a4da7963ec50bad5167f0bd705294c927" title="Computes the PK2 stress tensor S and material elasticity tensor Dm for a given deformation gradient F...">get_pk2cc()</a> and compares it with a reference solution CC_ref. The comparison is done using relative and absolute tolerances.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">F</td><td>Deformation gradient. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">CC_ref</td><td>Reference solution for material elasticity tensor. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">rel_tol</td><td>Relative tolerance for comparing CC with CC_ref. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">abs_tol</td><td>Absolute tolerance for comparing CC with CC_ref. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">verbose</td><td>Show values of F, CC, and CC_ref if true. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>None. </dd></dl>
+
+</div>
+</div>
+<a id="a8f1c07238538edc829d2537b16b7d5c2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8f1c07238538edc829d2537b16b7d5c2">&#9670;&nbsp;</a></span>testMaterialElasticityConsistentWithPK2Stress()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void TestMaterialModel::testMaterialElasticityConsistentWithPK2Stress </td>
+          <td>(</td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>F</em>[3][3], </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>n_iter</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>rel_tol</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>abs_tol</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>delta</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>verbose</em> = <code>false</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Tests the consistency of the material elasticity tensor CC(F) from <a class="el" href="class_test_material_model.html#a4da7963ec50bad5167f0bd705294c927" title="Computes the PK2 stress tensor S and material elasticity tensor Dm for a given deformation gradient F...">get_pk2cc()</a> with the PK2 stress tensor S(F) from <a class="el" href="class_test_material_model.html#a4da7963ec50bad5167f0bd705294c927" title="Computes the PK2 stress tensor S and material elasticity tensor Dm for a given deformation gradient F...">get_pk2cc()</a>. </p>
+<p>Analytically, we should have CC:dE = dS. This function checks whether CC:dE = dS, where dE and dS are computed using finite differences in F.</p>
+<p>Pseudocode:</p><ul>
+<li>Compute S(F) and CC(F) from <a class="el" href="class_test_material_model.html#a4da7963ec50bad5167f0bd705294c927" title="Computes the PK2 stress tensor S and material elasticity tensor Dm for a given deformation gradient F...">get_pk2cc()</a></li>
+<li>For many random dF<ul>
+<li>Compute S(F + dF) from <a class="el" href="class_test_material_model.html#a4da7963ec50bad5167f0bd705294c927" title="Computes the PK2 stress tensor S and material elasticity tensor Dm for a given deformation gradient F...">get_pk2cc()</a></li>
+<li>Compute dS = S(F + dF) - S(F)</li>
+<li>Compute dE from dF</li>
+<li>Check that CC:dE = dS</li>
+</ul>
+</li>
+</ul>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">F</td><td>Deformation gradient. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">n_iter</td><td>Number of random perturbations to test. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">rel_tol</td><td>Relative tolerance for comparing dS and CC:dE. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">abs_tol</td><td>Absolute tolerance for comparing dS and CC:dE. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">delta</td><td>Perturbation scaling factor. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">verbose</td><td>Show values of CC, dE, CCdE, and dS if true. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>None. </dd></dl>
+
+</div>
+</div>
+<a id="aba21f1997bad70d373cbed5659969546"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aba21f1997bad70d373cbed5659969546">&#9670;&nbsp;</a></span>testPK2StressAgainstReference()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void TestMaterialModel::testPK2StressAgainstReference </td>
+          <td>(</td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>F</em>[3][3], </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>S_ref</em>[3][3], </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>rel_tol</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>abs_tol</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>verbose</em> = <code>false</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compares the PK2 stress tensor S(F) with a reference solution. </p>
+<p>This function computes the PK2 stress tensor S(F) from the deformation gradient F using <a class="el" href="class_test_material_model.html#a4da7963ec50bad5167f0bd705294c927" title="Computes the PK2 stress tensor S and material elasticity tensor Dm for a given deformation gradient F...">get_pk2cc()</a> and compares it with a reference solution S_ref. The comparison is done using relative and absolute tolerances.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">F</td><td>Deformation gradient. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">S_ref</td><td>Reference solution for PK2 stress. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">rel_tol</td><td>Relative tolerance for comparing S with S_ref. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">abs_tol</td><td>Absolute tolerance for comparing S with S_ref. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">verbose</td><td>Show values of F, S, and S_ref if true. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>None. </dd></dl>
+
+</div>
+</div>
+<a id="a664877e8f455e0e0222efabe0fca1642"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a664877e8f455e0e0222efabe0fca1642">&#9670;&nbsp;</a></span>testPK2StressConsistentWithStrainEnergy()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void TestMaterialModel::testPK2StressConsistentWithStrainEnergy </td>
+          <td>(</td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>F</em>[3][3], </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>n_iter</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>rel_tol</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>abs_tol</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>delta</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>verbose</em> = <code>false</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Tests the consistency of the PK2 stress tensor S(F) from <a class="el" href="class_test_material_model.html#a4da7963ec50bad5167f0bd705294c927" title="Computes the PK2 stress tensor S and material elasticity tensor Dm for a given deformation gradient F...">get_pk2cc()</a> with the strain energy density Psi(F) provided by the user. </p>
+<p>Analytically, we should have S = dPsi/dE. This function checks whether S:dE = dPsi, where dE and dPsi are computed using finite differences in F.</p>
+<p>Pseudocode:</p><ul>
+<li>Compute Psi(F)</li>
+<li>Compute S(F) from <a class="el" href="class_test_material_model.html#a4da7963ec50bad5167f0bd705294c927" title="Computes the PK2 stress tensor S and material elasticity tensor Dm for a given deformation gradient F...">get_pk2cc()</a></li>
+<li>For many random dF<ul>
+<li>Compute dPsi = Psi(F + dF) - Psi(F)</li>
+<li>Compute dE from dF</li>
+<li>Check that S:dE = dPsi</li>
+</ul>
+</li>
+</ul>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">F</td><td>Deformation gradient. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">n_iter</td><td>Number of random perturbations to test. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">rel_tol</td><td>Relative tolerance for comparing dPsi and S:dE. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">abs_tol</td><td>Absolute tolerance for comparing dPsi and S:dE. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">delta</td><td>Perturbation scaling factor. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">verbose</td><td>Show values of S, dE, SdE, and dPsi if true. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>None. </dd></dl>
+
+</div>
+</div>
+<a id="ac313c211729dacf1a4a9b85d8f0f815b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac313c211729dacf1a4a9b85d8f0f815b">&#9670;&nbsp;</a></span>testRhoBetaAgainstReference()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void TestMaterialModel::testRhoBetaAgainstReference </td>
+          <td>(</td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>p</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>rho0</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>rho_ref</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>beta_ref</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>drhodp_ref</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>dbetadp_ref</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>rel_tol</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>abs_tol</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>verbose</em> = <code>false</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Tests rho, beta, drho/dp, and dbeta/dp from <a class="el" href="class_test_material_model.html#a196866ebfd0de9af38bdf7946f89431f" title="Computes the solid density, isothermal compressibility coefficient, and their derivatives for a given...">g_vol_pen()</a> against reference solutions. </p>
+<p>This function computes rho, beta, drho/dp, and dbeta/dp from the pressure p using <a class="el" href="class_test_material_model.html#a196866ebfd0de9af38bdf7946f89431f" title="Computes the solid density, isothermal compressibility coefficient, and their derivatives for a given...">g_vol_pen()</a> and compares them with reference solutions. These values are required for treating a volumetric penalty term in the ustruct formulation.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">p</td><td>Pressure. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">rho0</td><td>Initial solid density. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">rho_ref</td><td>Reference solution for rho. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">beta_ref</td><td>Reference solution for beta. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">drhodp_ref</td><td>Reference solution for drho/dp. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dbetadp_ref</td><td>Reference solution for dbeta/dp. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">rel_tol</td><td>Relative tolerance for comparing rho and beta with reference solutions. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">abs_tol</td><td>Absolute tolerance for comparing rho and beta with reference solutions. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">verbose</td><td>Show values of p, rho, beta, rho_ref, beta_ref if true. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>None. </dd></dl>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li>/home/runner/work/svFSIplus/svFSIplus/tests/unitTests/<a class="el" href="test_8h_source.html">test.h</a></li>
 </ul>

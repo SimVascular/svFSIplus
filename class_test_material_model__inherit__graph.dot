@@ -3,11 +3,18 @@ digraph "TestMaterialModel"
  // LATEX_PDF_SIZE
   edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
   node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="LR";
   Node1 [label="TestMaterialModel",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black",tooltip=" "];
   Node1 -> Node2 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
-  Node2 [label="TestHolzapfelOgden",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_test_holzapfel_ogden.html",tooltip=" "];
+  Node2 [label="TestHolzapfelOgden",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_test_holzapfel_ogden.html",tooltip="Class for testing the Holzapfel-Ogden material model."];
   Node1 -> Node3 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
-  Node3 [label="TestMooneyRivlin",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_test_mooney_rivlin.html",tooltip=" "];
+  Node3 [label="TestMiehe94VolumetricPenalty",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_test_miehe94_volumetric_penalty.html",tooltip="Class for testing the Miehe94 volumetric penalty model."];
   Node1 -> Node4 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
-  Node4 [label="TestNeoHookean",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_test_neo_hookean.html",tooltip=" "];
+  Node4 [label="TestMooneyRivlin",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_test_mooney_rivlin.html",tooltip="Class for testing the Mooney-Rivlin material model."];
+  Node1 -> Node5 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node5 [label="TestNeoHookean",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_test_neo_hookean.html",tooltip="Class for testing the Neo-Hookean material model."];
+  Node1 -> Node6 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node6 [label="TestQuadraticVolumetricPenalty",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_test_quadratic_volumetric_penalty.html",tooltip="Class for testing the quadratic volumetric penalty model."];
+  Node1 -> Node7 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node7 [label="TestSimoTaylor91Volumetric\lPenalty",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_test_simo_taylor91_volumetric_penalty.html",tooltip="Class for testing the Simo-Taylor91 volumetric penalty model."];
 }
