@@ -37,7 +37,11 @@ using namespace std;
 // --------------------------- Neo-Hookean Material ---------------------------
 // ----------------------------------------------------------------------------
 
-// Test fixture class for Neo-Hookean material model
+/**
+ * @brief Test fixture class for the Neo-Hookean material model.
+ *
+ * This class sets up the necessary parameters and objects for testing the Neo-Hookean material model.
+ */
 class NeoHookeanTest : public ::testing::Test {
 protected:
     // Variables common across tests
@@ -71,7 +75,11 @@ protected:
 };
 
 // ------------------------------ STRUCT TESTS --------------------------------
-// Test fixture class for STRUCT Neo-Hookean material model
+/**
+ * @brief Test fixture class for STRUCT Neo-Hookean material model.
+ * 
+ * This class sets up the necessary parameters and objects for testing the STRUCT Neo-Hookean material model.
+ */
 class STRUCT_NeoHookeanTest : public NeoHookeanTest {
 protected:
     void SetUp() override {
@@ -126,7 +134,11 @@ TEST_F(STRUCT_NeoHookeanTest, TestMaterialElasticityConsistentRandomF) {
 }
 
 // ------------------------------ USTRUCT TESTS --------------------------------
-// Test fixture class for USTRUCT Neo-Hookean material model
+/**
+ * @brief Test fixture class for USTRUCT Neo-Hookean material model.
+ * 
+ * This class sets up the necessary parameters and objects for testing the USTRUCT Neo-Hookean material model.
+ */
 class USTRUCT_NeoHookeanTest : public NeoHookeanTest {
 protected:
     void SetUp() override {
@@ -185,7 +197,11 @@ TEST_F(USTRUCT_NeoHookeanTest, TestMaterialElasticityConsistentRandomF) {
 // --------------------------- Mooney-Rivlin Material -------------------------
 // ----------------------------------------------------------------------------
 
-// Test fixture class for Mooney-Rivlin material model
+/**
+ * @brief  Test fixture class for the Mooney-Rivlin material model.
+ * 
+ * This class sets up the necessary parameters and objects for testing the Mooney-Rivlin material model.
+ */
 class MooneyRivlinTest : public ::testing::Test {
 protected:
     // Variables common across tests
@@ -221,7 +237,11 @@ protected:
 };
 
 // ------------------------------ STRUCT TESTS --------------------------------
-// Test fixture class for STRUCT Mooney-Rivlin material model
+/**
+ * @brief Test fixture class for STRUCT Mooney-Rivlin material model.
+ * 
+ * This class sets up the necessary parameters and objects for testing the STRUCT Mooney-Rivlin material model.
+ */
 class STRUCT_MooneyRivlinTest : public MooneyRivlinTest {
 protected:
     void SetUp() override {
@@ -276,7 +296,11 @@ TEST_F(STRUCT_MooneyRivlinTest, TestMaterialElasticityConsistentRandomF) {
 }
 
 // ------------------------------ USTRUCT TESTS --------------------------------
-// Test fixture class for USTRUCT Mooney-Rivlin material model
+/**
+ * @brief Test fixture class for USTRUCT Mooney-Rivlin material model.
+ * 
+ * This class sets up the necessary parameters and objects for testing the USTRUCT Mooney-Rivlin material model.
+ */
 class USTRUCT_MooneyRivlinTest : public MooneyRivlinTest {
 protected:
     void SetUp() override {
@@ -340,7 +364,11 @@ TEST_F(USTRUCT_MooneyRivlinTest, TestMaterialElasticityConsistentRandomF) {
 // ----------------------- Holzapfel-Ogden Material ---------------------------
 // ----------------------------------------------------------------------------
 
-// Test fixture class for Holzapfel-Ogden material model
+/**
+ * @brief Test fixture class for the Holzapfel-Ogden material model.
+ * 
+ * This class sets up the necessary parameters and objects for testing the Holzapfel-Ogden material model.
+*/
 class HolzapfelOgdenTest : public ::testing::Test {
 protected:
     // Variables common across tests
@@ -417,7 +445,11 @@ protected:
 };
 
 // ------------------------------ STRUCT TESTS --------------------------------
-// Test fixture class for STRUCT Holzapfel-Ogden material model
+/**
+ * @brief Test fixture class for STRUCT Holzapfel-Ogden material model.
+ * 
+ * This class sets up the necessary parameters and objects for testing the STRUCT Holzapfel-Ogden material model.
+ */
 class STRUCT_HolzapfelOgdenTest : public HolzapfelOgdenTest {
 protected:
     void SetUp() override {
@@ -506,7 +538,11 @@ TEST_F(STRUCT_HolzapfelOgdenTest, TestMaterialElasticityConsistentRandomF) {
 }
 
 // ------------------------------ USTRUCT TESTS --------------------------------
-// Test fixture class for USTRUCT Holzapfel-Ogden material model
+/**
+ * @brief Test fixture class for USTRUCT Holzapfel-Ogden material model.
+ * 
+ * This class sets up the necessary parameters and objects for testing the USTRUCT Holzapfel-Ogden material model.
+ */
 class USTRUCT_HolzapfelOgdenTest : public HolzapfelOgdenTest {
 protected:
     void SetUp() override {
@@ -606,7 +642,11 @@ TEST_F(USTRUCT_HolzapfelOgdenTest, TestMaterialElasticityConsistentRandomF) {
 // ----------------------------------------------------------------------------
 // --------------------------- Quadratic Volumetric Penalty Model ------------------------
 // ----------------------------------------------------------------------------
-// Test fixture class for Quadratic penalty model
+/**
+ * @brief Test fixture class for the Quadratic Volumetric penalty model.
+ * 
+ * This class sets up the necessary parameters and objects for testing the Quadratic Volumetric penalty model.
+ */
 class QuadraticVolumetricPenaltyTest : public ::testing::Test {
 protected:
     // Variables common across tests
@@ -640,7 +680,11 @@ protected:
 };
 
 // ------------------------------ STRUCT TESTS --------------------------------
-// Test fixture class for STRUCT Quadratic penalty model
+/**
+ * @brief Test fixture class for STRUCT Quadratic penalty model.
+ * 
+ * This class sets up the necessary parameters and objects for testing the STRUCT Quadratic penalty model.
+ */
 class STRUCT_QuadraticVolumetricPenaltyTest : public QuadraticVolumetricPenaltyTest {
 protected:
     void SetUp() override {
@@ -728,7 +772,11 @@ TEST_F(STRUCT_QuadraticVolumetricPenaltyTest, TestMaterialElasticityConsistentRa
 }
 
 // ------------------------------ USTRUCT TESTS --------------------------------
-// Test fixture class for USTRUCT Quadratic penalty model
+/**
+ * @brief Test fixture class for USTRUCT Quadratic penalty model.
+ * 
+ * This class sets up the necessary parameters and objects for testing the USTRUCT Quadratic penalty model.
+ */
 class USTRUCT_QuadraticVolumetricPenaltyTest : public QuadraticVolumetricPenaltyTest {
 protected:
     void SetUp() override {
@@ -765,7 +813,11 @@ TEST_F(USTRUCT_QuadraticVolumetricPenaltyTest, TestRhoBeta) {
 // --------------------------- Simo-Taylor91 Volumetric Penalty Model ---------
 // ----------------------------------------------------------------------------
 
-// Test fixture class for Simo-Taylor91 penalty model
+/**
+ * @brief Test fixture class for the Simo-Taylor91 Volumetric penalty model.
+ * 
+ * This class sets up the necessary parameters and objects for testing the Simo-Taylor91 Volumetric penalty model.
+ */
 class SimoTaylor91VolumetricPenaltyTest : public ::testing::Test {
 protected:
     // Variables common across tests
@@ -799,7 +851,11 @@ protected:
 };
 
 // ------------------------------ STRUCT TESTS --------------------------------
-// Test fixture class for STRUCT Simo-Taylor91 penalty model
+/**
+ * @brief Test fixture class for STRUCT Simo-Taylor91 penalty model.
+ * 
+ * This class sets up the necessary parameters and objects for testing the STRUCT Simo-Taylor91 penalty model.
+ */
 class STRUCT_SimoTaylor91VolumetricPenaltyTest : public SimoTaylor91VolumetricPenaltyTest {
 protected:
     void SetUp() override {
@@ -887,7 +943,11 @@ TEST_F(STRUCT_SimoTaylor91VolumetricPenaltyTest, TestMaterialElasticityConsisten
 }
 
 // ------------------------------ USTRUCT TESTS --------------------------------
-// Test fixture class for USTRUCT Simo-Taylor91 penalty model
+/**
+ * @brief Test fixture class for USTRUCT Simo-Taylor91 penalty model.
+ * 
+ * This class sets up the necessary parameters and objects for testing the USTRUCT Simo-Taylor91 penalty model.
+ */
 class USTRUCT_SimoTaylor91VolumetricPenaltyTest : public SimoTaylor91VolumetricPenaltyTest {
 protected:
     void SetUp() override {
@@ -923,7 +983,11 @@ TEST_F(USTRUCT_SimoTaylor91VolumetricPenaltyTest, TestRhoBeta) {
 // ----------------------------------------------------------------------------
 // --------------------------- Miehe94 Volumetric Penalty Model ---------------
 // ----------------------------------------------------------------------------
-// Test fixture class for Miehe94 penalty model
+/**
+ * @brief Test fixture class for the Miehe94 Volumetric penalty model.
+ * 
+ * This class sets up the necessary parameters and objects for testing the Miehe94 Volumetric penalty model.
+ */
 class Miehe94VolumetricPenaltyTest : public ::testing::Test {
 protected:
     // Variables common across tests
@@ -957,7 +1021,11 @@ protected:
 };
 
 // ------------------------------ STRUCT TESTS --------------------------------
-// Test fixture class for STRUCT Miehe94 penalty model
+/**
+ * @brief Test fixture class for STRUCT Miehe94 penalty model.
+ * 
+ * This class sets up the necessary parameters and objects for testing the STRUCT Miehe94 penalty model.
+ */
 class STRUCT_Miehe94VolumetricPenaltyTest : public Miehe94VolumetricPenaltyTest {
 protected:
     void SetUp() override {
@@ -1045,7 +1113,11 @@ TEST_F(STRUCT_Miehe94VolumetricPenaltyTest, TestMaterialElasticityConsistentRand
 }
 
 // ------------------------------ USTRUCT TESTS --------------------------------
-// Test fixture class for USTRUCT Miehe94 penalty model
+/**
+ * @brief Test fixture class for USTRUCT Miehe94 penalty model.
+ * 
+ * This class sets up the necessary parameters and objects for testing the USTRUCT Miehe94 penalty model.
+ */
 class USTRUCT_Miehe94VolumetricPenaltyTest : public Miehe94VolumetricPenaltyTest {
 protected:
     void SetUp() override {

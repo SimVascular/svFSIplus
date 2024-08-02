@@ -137,23 +137,23 @@ void get_fib_stress(const ComMod& com_mod, const CepMod& cep_mod, const fibStrsT
   }
 }
 
-/// @brief Compute 2nd Piola-Kirchhoff stress and material stiffness tensors
-/// including both dilational and isochoric components.
-///
-/// Reproduces the Fortran 'GETPK2CC' subroutine.
-//
-// ARGS:
-// - com_mod: Object containing global common variables.
-// - cep_mod: Object containing electrophysiology-specific common variables.
-// - lDmn: Domain object
-// - F: Deformation gradient tensor
-// - nfd: Number of fiber directions
-// - fl: Fiber directions
-// - ya: Electrophysiology active stress
-// - S: 2nd Piola-Kirchhoff stress tensor
-// - Dm: Material stiffness tensor
-//
-// RETURNS: None, but modifies S and Dm in place.
+/**
+ * @brief Compute 2nd Piola-Kirchhoff stress and material stiffness tensors
+ * including both dilational and isochoric components.
+ *
+ * Reproduces the Fortran 'GETPK2CC' subroutine.
+ *
+ * @param[in] com_mod Object containing global common variables.
+ * @param[in] cep_mod Object containing electrophysiology-specific common variables.
+ * @param[in] lDmn Domain object.
+ * @param[in] F Deformation gradient tensor.
+ * @param[in] nfd Number of fiber directions.
+ * @param[in] fl Fiber directions.
+ * @param[in] ya Electrophysiology active stress.
+ * @param[out] S 2nd Piola-Kirchhoff stress tensor (modified in place).
+ * @param[out] Dm Material stiffness tensor (modified in place).
+ * @return None, but modifies S and Dm in place.
+ */
 void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn, const Array<double>& F, const int nfd,
     const Array<double>& fl, const double ya, Array<double>& S, Array<double>& Dm)
 {
@@ -491,23 +491,23 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
   cc_to_voigt(nsd, CC, Dm);
 }
 
-/// @brief Compute isochoric (deviatoric) component of 2nd Piola-Kirchhoff stress and material stiffness tensors.
-///
-/// Reproduces 'SUBROUTINE GETPK2CCdev(lDmn, F, nfd, fl, ya, S, Dm, Ja)'. 
-//
-// ARGS:
-// - com_mod: Object containing global common variables.
-// - cep_mod: Object containing electrophysiology-specific common variables.
-// - lDmn: Domain object
-// - F: Deformation gradient tensor
-// - nfd: Number of fiber directions
-// - fl: Fiber directions
-// - ya: Electrophysiology active stress
-// - S: 2nd Piola-Kirchhoff stress tensor (isochoric part)
-// - Dm: Material stiffness tensor (isochoric part)
-// - Ja: Jacobian for active strain
-//
-// RETURNS: None, but modifies S, Dm, and Ja in place.
+/**
+ * @brief Compute isochoric (deviatoric) component of 2nd Piola-Kirchhoff stress and material stiffness tensors.
+ *
+ * Reproduces 'SUBROUTINE GETPK2CCdev(lDmn, F, nfd, fl, ya, S, Dm, Ja)'.
+ *
+ * @param[in] com_mod Object containing global common variables.
+ * @param[in] cep_mod Object containing electrophysiology-specific common variables.
+ * @param[in] lDmn Domain object.
+ * @param[in] F Deformation gradient tensor.
+ * @param[in] nfd Number of fiber directions.
+ * @param[in] fl Fiber directions.
+ * @param[in] ya Electrophysiology active stress.
+ * @param[out] S 2nd Piola-Kirchhoff stress tensor (isochoric part).
+ * @param[out] Dm Material stiffness tensor (isochoric part).
+ * @param[out] Ja Jacobian for active strain.
+ * @return None, but modifies S, Dm, and Ja in place.
+ */
 void get_pk2cc_dev(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn, const Array<double>& F, const int nfd, 
     const Array<double>& fl, const double ya, Array<double>& S, Array<double>& Dm, double& Ja)
 {
@@ -1434,21 +1434,22 @@ void get_tau(const ComMod& com_mod, const dmnType& lDmn, const double detF, cons
   tauC = ctC * (he*c) * (rho0/detF);
 }
 
-/// @brief Compute rho, beta, drho/dp, dbeta/dp for volumetric penalty terms in 
-/// the ustruct formulation.
-/// See ustruct paper (https://doi.org/10.1016/j.cma.2018.03.045) Section 2.4
-//
-// ARGS:
-//  com_mod:  ComMod object
-//  lDmn:     dmnType object
-//  p:        pressure
-//  ro:       Solid density, rho
-//  bt:       Isothermal compressibility coefficient, beta
-//  dro:      Derivative of rho w.r.t. p
-//  dbt:      Derivative of beta w.r.t. p
-//  Ja:       Active strain Jacobian
-//
-// RETURNS: None, but updates ro, bt, dro, dbt
+/**
+ * @brief Compute rho, beta, drho/dp, dbeta/dp for volumetric penalty terms in 
+ * the ustruct formulation.
+ *
+ * See ustruct paper (https://doi.org/10.1016/j.cma.2018.03.045) Section 2.4.
+ *
+ * @param[in] com_mod Object containing global common variables
+ * @param[in] lDmn Domain object
+ * @param[in] p Pressure.
+ * @param[out] ro Solid density, rho.
+ * @param[out] bt Isothermal compressibility coefficient, beta.
+ * @param[out] dro Derivative of rho with respect to p.
+ * @param[out] dbt Derivative of beta with respect to p.
+ * @param[out] Ja Active strain Jacobian.
+ * @return None, but updates ro, bt, dro, and dbt.
+ */
 void g_vol_pen(const ComMod& com_mod, const dmnType& lDmn, const double p, 
     double& ro, double& bt, double& dro, double& dbt, const double Ja)
 {
