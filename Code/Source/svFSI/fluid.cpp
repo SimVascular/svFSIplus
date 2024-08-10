@@ -526,6 +526,9 @@ void construct_fluid(ComMod& com_mod, const mshType& lM, const Array<double>& Ag
     if (cPhys != EquationType::phys_fluid) {
       continue;
     }
+    
+    // Constant kb = mu/sigma (mu/vf)
+    double Kb = 1;
 
     //  Update shape functions for NURBS
     if (lM.eType == ElementType::NRB) {
@@ -627,13 +630,13 @@ void construct_fluid(ComMod& com_mod, const mshType& lM, const Array<double>& Ag
         auto N0 = fs[0].N.rcol(g); 
         auto N1 = fs[1].N.rcol(g); 
         fluid_3d_m(com_mod, vmsStab, fs[0].eNoN, fs[1].eNoN, w, ksix, N0, N1, 
-            Nwx, Nqx, Nwxx, al, yl, bfl, lR, lK);
+            Nwx, Nqx, Nwxx, al, yl, bfl, lR, lK, Kb);
 
       } else if (nsd == 2) {
         auto N0 = fs[0].N.rcol(g); 
         auto N1 = fs[1].N.rcol(g); 
         fluid_2d_m(com_mod, vmsStab, fs[0].eNoN, fs[1].eNoN, w, ksix, N0, N1, 
-            Nwx, Nqx, Nwxx, al, yl, bfl, lR, lK);
+            Nwx, Nqx, Nwxx, al, yl, bfl, lR, lK, Kb);
       }
     } // g: loop
 
@@ -677,12 +680,12 @@ void construct_fluid(ComMod& com_mod, const mshType& lM, const Array<double>& Ag
       if (nsd == 3) {
         auto N0 = fs[0].N.rcol(g); 
         auto N1 = fs[1].N.rcol(g); 
-        fluid_3d_c(com_mod, vmsStab, fs[0].eNoN, fs[1].eNoN, w, ksix, N0, N1, Nwx, Nqx, Nwxx, al, yl, bfl, lR, lK);
+        fluid_3d_c(com_mod, vmsStab, fs[0].eNoN, fs[1].eNoN, w, ksix, N0, N1, Nwx, Nqx, Nwxx, al, yl, bfl, lR, lK, Kb);
 
       } else if (nsd == 2) {
         auto N0 = fs[0].N.rcol(g); 
         auto N1 = fs[1].N.rcol(g); 
-        fluid_2d_c(com_mod, vmsStab, fs[0].eNoN, fs[1].eNoN, w, ksix, N0, N1, Nwx, Nqx, Nwxx, al, yl, bfl, lR, lK);
+        fluid_2d_c(com_mod, vmsStab, fs[0].eNoN, fs[1].eNoN, w, ksix, N0, N1, Nwx, Nqx, Nwxx, al, yl, bfl, lR, lK, Kb);
       }
 
     } // g: loop
@@ -702,7 +705,7 @@ void construct_fluid(ComMod& com_mod, const mshType& lM, const Array<double>& Ag
 void fluid_2d_c(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int eNoNq, const double w, 
     const Array<double>& Kxi, const Vector<double>& Nw, const Vector<double>& Nq, const Array<double>& Nwx, 
     const Array<double>& Nqx, const Array<double>& Nwxx, const Array<double>& al, const Array<double>& yl, 
-    const Array<double>& bfl, Array<double>& lR, Array3<double>& lK)
+    const Array<double>& bfl, Array<double>& lR, Array3<double>& lK, double kb)
 {
   using namespace consts;
 
@@ -864,7 +867,12 @@ void fluid_2d_c(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
   double tauM{0.0};
 
   if (vmsFlag) {
+    // Stabilization parameters
     double kT = 4.0 * pow(ctM/dt,2.0);
+    
+    // If we consider the NSB model, we need to add an extra term inside the computation for the stab parameter 
+    kT = kT + pow(kb/rho, 2.0);  
+    
     double kU = u(0)*u(0)*Kxi(0,0) + u(1)*u(0)*Kxi(1,0) + u(0)*u(1)*Kxi(0,1) + u(1)*u(1)*Kxi(1,1);
     double kS = Kxi(0,0)*Kxi(0,0) + Kxi(1,0)*Kxi(1,0) + Kxi(0,1)*Kxi(0,1) + Kxi(1,1)*Kxi(1,1);
 
@@ -879,12 +887,12 @@ void fluid_2d_c(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
     rS(0) = mu_x(0)*es(0,0) + mu_x(1)*es(1,0) + mu*d2u2(0);
     rS(1) = mu_x(0)*es(0,1) + mu_x(1)*es(1,1) + mu*d2u2(1);
 
-    up(0) = -tauM*(rho*rV(0) + px(0) - rS(0));
-    up(1) = -tauM*(rho*rV(1) + px(1) - rS(1));
+    up(0) = -tauM*(rho*rV(0) + px(0) - rS(0) + kb*u(0));
+    up(1) = -tauM*(rho*rV(1) + px(1) - rS(1) + kb*u(1));
 
     for (int a = 0; a < eNoNw; a++) {
       double uNx = u(0)*Nwx(0,a) + u(1)*Nwx(1,a);
-      T1 = -rho*uNx + mu*(Nwxx(0,a) + Nwxx(1,a)) + mu_x(0)*Nwx(0,a) + mu_x(1)*Nwx(1,a);
+      T1 = -rho*uNx + mu*(Nwxx(0,a) + Nwxx(1,a)) + mu_x(0)*Nwx(0,a) + mu_x(1)*Nwx(1,a) - kb*Nw(a);
 
       updu(0,0,a) = mu_x(0)*Nwx(0,a) + d2u2(0)*mu_g*esNx(0,a) + T1;
       updu(1,0,a) = mu_x(1)*Nwx(0,a) + d2u2(0)*mu_g*esNx(1,a);
@@ -948,7 +956,7 @@ void fluid_2d_c(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
 void fluid_2d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int eNoNq, const double w, 
     const Array<double>& Kxi, const Vector<double>& Nw, const Vector<double>& Nq, const Array<double>& Nwx, 
     const Array<double>& Nqx, const Array<double>& Nwxx, const Array<double>& al, const Array<double>& yl, 
-    const Array<double>& bfl, Array<double>& lR, Array3<double>& lK)
+    const Array<double>& bfl, Array<double>& lR, Array3<double>& lK, double kb)
 {
   using namespace consts;
 
@@ -1079,6 +1087,9 @@ void fluid_2d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
 
   //  Stabilization parameters
   double kT = 4.0 * pow(ctM/dt,2.0);
+  
+  // If we consider the NSB model, we need to add an extra term inside the computation for the stab parameter 
+  kT = kT + pow(kb/rho, 2.0);   
 
   double kU = u(0)*u(0)*Kxi(0,0) + u(1)*u(0)*Kxi(1,0) + u(0)*u(1)*Kxi(0,1) + u(1)*u(1)*Kxi(1,1);
   double kS = Kxi(0,0)*Kxi(0,0) + Kxi(1,0)*Kxi(1,0) + Kxi(0,1)*Kxi(0,1) + Kxi(1,1)*Kxi(1,1);
@@ -1094,8 +1105,8 @@ void fluid_2d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
   rS(1) = mu_x(0)*es(0,1) + mu_x(1)*es(1,1) + mu*d2u2(1);
 
   Vector<double> up(2);
-  up(0) = -tauM*(rho*rV(0) + px(0) - rS(0));
-  up(1) = -tauM*(rho*rV(1) + px(1) - rS(1));
+  up(0) = -tauM*(rho*rV(0) + px(0) - rS(0) + kb*u(0));
+  up(1) = -tauM*(rho*rV(1) + px(1) - rS(1) + kb*u(1));
 
   double tauC, tauB, pa;
   double eps = std::numeric_limits<double>::epsilon();
@@ -1151,7 +1162,7 @@ void fluid_2d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
       uaNx(a) = uNx(a);
     }
 
-    T1 = -rho*uNx(a) + mu*(Nwxx(0,a) + Nwxx(1,a)) + mu_x(0)*Nwx(0,a) + mu_x(1)*Nwx(1,a);
+    T1 = -rho*uNx(a) + mu*(Nwxx(0,a) + Nwxx(1,a)) + mu_x(0)*Nwx(0,a) + mu_x(1)*Nwx(1,a) - kb*Nw(a);
 
     updu(0,0,a) = mu_x(0)*Nwx(0,a) + d2u2(0)*mu_g*esNx(0,a) + T1;
     updu(1,0,a) = mu_x(1)*Nwx(0,a) + d2u2(0)*mu_g*esNx(1,a);
@@ -1174,6 +1185,7 @@ void fluid_2d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
       // dRm_a1/du_b1
       double T2 = (mu + tauC)*rM(0,0) + esNx(0,a)*mu_g*esNx(0,b) - rho*tauM*uaNx(a)*updu(0,0,b);
       lK(0,a,b) = lK(0,a,b)  + wl*(T2 + T1);
+      lK(0,a,b) = lK(0,a,b)  + kb*wl*Nw(b)*Nw(a);
 
       // dRm_a1/du_b2
       T2 = mu*rM(1,0) + tauC*rM(0,1) + esNx(0,a)*mu_g*esNx(1,b) - rho*tauM*uaNx(a)*updu(1,0,b);
@@ -1186,6 +1198,7 @@ void fluid_2d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
       // dRm_a2/du_b2
       T2 = (mu + tauC)*rM(1,1) + esNx(1,a)*mu_g*esNx(1,b) - rho*tauM*uaNx(a)*updu(1,1,b);
       lK(4,a,b) = lK(4,a,b) + wl*(T2 + T1);
+      lK(4,a,b) = lK(4,a,b)  + kb*wl*Nw(b)*Nw(a);
     }
   }
 
@@ -1200,6 +1213,13 @@ void fluid_2d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
       lK(5,a,b) = lK(5,a,b)  - wl*(Nwx(1,a)*Nq(b) - Nqx(1,b)*T1);
     }
   }
+  
+  // Residual contribution Birkman term 
+  // Local residue
+  for (int a = 0; a < eNoNw; a++) {
+      lR(0,a) = lR(0,a) + kb*w*Nw(a)*(u(0)+up(0));
+      lR(1,a) = lR(1,a) + kb*w*Nw(a)*(u(1)+up(1));
+  }
 }
 
 
@@ -1208,7 +1228,7 @@ void fluid_2d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
 void fluid_3d_c(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int eNoNq, const double w, 
     const Array<double>& Kxi, const Vector<double>& Nw, const Vector<double>& Nq, const Array<double>& Nwx, 
     const Array<double>& Nqx, const Array<double>& Nwxx, const Array<double>& al, const Array<double>& yl, 
-    const Array<double>& bfl, Array<double>& lR, Array3<double>& lK)
+    const Array<double>& bfl, Array<double>& lR, Array3<double>& lK, double kb)
 {
   #define n_debug_fluid3d_c
   #ifdef debug_fluid3d_c
@@ -1415,7 +1435,11 @@ void fluid_3d_c(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
   double tauM = 0.0;
 
   if (vmsFlag) {
+    // Stabilization parameters
     double kT = 4.0 * pow(ctM/dt,2.0);
+    
+    // If we consider the NSB model, we need to add an extra term inside the computation for the stab parameter 
+    kT = kT + pow(kb/rho, 2.0);  
 
     double kU = u[0]*u[0]*Kxi(0,0) + u[1]*u[0]*Kxi(1,0) + u[2]*u[0]*Kxi(2,0)
               + u[0]*u[1]*Kxi(0,1) + u[1]*u[1]*Kxi(1,1) + u[2]*u[1]*Kxi(2,1)
@@ -1438,13 +1462,13 @@ void fluid_3d_c(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
     rS[1] = mu_x[0]*es[0][1] + mu_x[1]*es[1][1] + mu_x[2]*es[2][1] + mu*d2u2[1];
     rS[2] = mu_x[0]*es[0][2] + mu_x[1]*es[1][2] + mu_x[2]*es[2][2] + mu*d2u2[2];
 
-    up[0] = -tauM*(rho*rV[0] + px[0] - rS[0]);
-    up[1] = -tauM*(rho*rV[1] + px[1] - rS[1]);
-    up[2] = -tauM*(rho*rV[2] + px[2] - rS[2]);
+    up[0] = -tauM*(rho*rV[0] + px[0] - rS[0] + kb*u[0]);
+    up[1] = -tauM*(rho*rV[1] + px[1] - rS[1] + kb*u[1]);
+    up[2] = -tauM*(rho*rV[2] + px[2] - rS[2] + kb*u[2]);
 
     for (int a = 0; a < eNoNw; a++) {
       double uNx = u[0]*Nwx(0,a) + u[1]*Nwx(1,a) + u[2]*Nwx(2,a);
-      T1 = -rho*uNx + mu*(Nwxx(0,a) + Nwxx(1,a) + Nwxx(2,a)) + mu_x[0]*Nwx(0,a) + mu_x[1]*Nwx(1,a) + mu_x[2]*Nwx(2,a);
+      T1 = -rho*uNx + mu*(Nwxx(0,a) + Nwxx(1,a) + Nwxx(2,a)) + mu_x[0]*Nwx(0,a) + mu_x[1]*Nwx(1,a) + mu_x[2]*Nwx(2,a) - kb*Nw(a);
 
       updu[0][0][a] = mu_x[0]*Nwx(0,a) + d2u2[0]*mu_g*esNx[0][a] + T1;
       updu[1][0][a] = mu_x[1]*Nwx(0,a) + d2u2[0]*mu_g*esNx[1][a];
@@ -1512,7 +1536,7 @@ void fluid_3d_c(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
 void fluid_3d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int eNoNq, const double w,
     const Array<double>& Kxi, const Vector<double>& Nw, const Vector<double>& Nq, const Array<double>& Nwx,
     const Array<double>& Nqx, const Array<double>& Nwxx, const Array<double>& al, const Array<double>& yl,
-    const Array<double>& bfl, Array<double>& lR, Array3<double>& lK)
+    const Array<double>& bfl, Array<double>& lR, Array3<double>& lK, double kb)
 {
   #define n_debug_fluid_3d_m
   #ifdef debug_fluid_3d_m
@@ -1742,6 +1766,9 @@ void fluid_3d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
   // Stabilization parameters
   //
   double kT = 4.0 * pow(ctM/dt,2.0);
+  
+  // If we consider the NSB model, we need to add an extra term inside the computation for the stab parameter 
+  kT = kT + pow(kb/rho, 2.0);   
 
   double kU = u[0]*u[0]*Kxi(0,0) + u[1]*u[0]*Kxi(1,0) + u[2]*u[0]*Kxi(2,0)
             + u[0]*u[1]*Kxi(0,1) + u[1]*u[1]*Kxi(1,1) + u[2]*u[1]*Kxi(2,1)
@@ -1771,9 +1798,9 @@ void fluid_3d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
   rS[2] = mu_x[0]*es[0][2] + mu_x[1]*es[1][2] + mu_x[2]*es[2][2] + mu*d2u2[2];
 
   double up[3] = {};
-  up[0] = -tauM*(rho*rV[0] + px[0] - rS[0]);
-  up[1] = -tauM*(rho*rV[1] + px[1] - rS[1]);
-  up[2] = -tauM*(rho*rV[2] + px[2] - rS[2]);
+  up[0] = -tauM*(rho*rV[0] + px[0] - rS[0] + kb * u[0]);
+  up[1] = -tauM*(rho*rV[1] + px[1] - rS[1] + kb * u[1]);
+  up[2] = -tauM*(rho*rV[2] + px[2] - rS[2] + kb * u[2]);
 
   double tauC, tauB, pa;
   double eps = std::numeric_limits<double>::epsilon();
@@ -1850,7 +1877,7 @@ void fluid_3d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
        uaNx[a] = uNx[a];
     }
 
-    T1 = -rho*uNx[a] + mu*(Nwxx(0,a) + Nwxx(1,a) + Nwxx(2,a)) + mu_x[0]*Nwx(0,a) + mu_x[1]*Nwx(1,a) + mu_x[2]*Nwx(2,a);
+    T1 = -rho*uNx[a] + mu*(Nwxx(0,a) + Nwxx(1,a) + Nwxx(2,a)) + mu_x[0]*Nwx(0,a) + mu_x[1]*Nwx(1,a) + mu_x[2]*Nwx(2,a) - kb*Nw(a);
 
     updu[0][0][a] = mu_x[0]*Nwx(0,a) + d2u2[0]*mu_g*esNx[0][a] + T1;
     updu[1][0][a] = mu_x[1]*Nwx(0,a) + d2u2[0]*mu_g*esNx[1][a];
@@ -1885,6 +1912,7 @@ void fluid_3d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
       // dRm_a1/du_b1
       double T2 = (mu + tauC)*rM[0][0] + esNx[0][a]*mu_g*esNx[0][b] - rho*tauM*uaNx[a]*updu[0][0][b];
       lK(0,a,b)  = lK(0,a,b)  + wl*(T2 + T1);
+      lK(0,a,b)  = lK(0,a,b)  + kb*wl*Nw(b)*Nw(a);
 
       // dRm_a1/du_b2
       T2 = mu*rM[1][0] + tauC*rM[0][1] + esNx[0][a]*mu_g*esNx[1][b] - rho*tauM*uaNx[a]*updu[1][0][b];
@@ -1901,6 +1929,7 @@ void fluid_3d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
       // dRm_a2/du_b2
       T2 = (mu + tauC)*rM[1][1] + esNx[1][a]*mu_g*esNx[1][b] - rho*tauM*uaNx[a]*updu[1][1][b];
       lK(5,a,b)  = lK(5,a,b)  + wl*(T2 + T1);
+      lK(5,a,b)  = lK(5,a,b)  + kb*wl*Nw(b)*Nw(a);
 
       // dRm_a2/du_b3
       T2 = mu*rM[2][1] + tauC*rM[1][2] + esNx[1][a]*mu_g*esNx[2][b] - rho*tauM*uaNx[a]*updu[2][1][b];
@@ -1917,6 +1946,7 @@ void fluid_3d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
       // dRm_a3/du_b3;
       T2 = (mu + tauC)*rM[2][2] + esNx[2][a]*mu_g*esNx[2][b] - rho*tauM*uaNx[a]*updu[2][2][b];
       lK(10,a,b) = lK(10,a,b) + wl*(T2 + T1);
+      lK(10,a,b) = lK(10,a,b) + kb*wl*Nw(b)*Nw(a);
       //dmsg << "lK(10,a,b): " << lK(10,a,b);
     }
   }
@@ -1936,6 +1966,14 @@ void fluid_3d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
       // dRm_a3/dp_b
       lK(11,a,b) = lK(11,a,b) - wl*(Nwx(2,a)*Nq(b) - Nqx(2,b)*T1);
     }
+  }
+  
+  // Residual contribution Birkman term 
+  // Local residue
+  for (int a = 0; a < eNoNw; a++) {
+      lR(0,a) = lR(0,a) + kb*w*Nw(a)*(u[0]+up[0]);
+      lR(1,a) = lR(1,a) + kb*w*Nw(a)*(u[1]+up[1]);
+      lR(2,a) = lR(2,a) + kb*w*Nw(a)*(u[2]+up[2]);
   }
 }
 
