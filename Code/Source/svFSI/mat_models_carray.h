@@ -1051,7 +1051,7 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
 
     } break;
 
-//  HO (Holzapfel-Ogden) model for myocardium with full invariants for the anisotropy terms (modified-anisotropy)
+//  HO (Holzapfel-Ogden)-MA model for myocardium with full invariants for the anisotropy terms (modified-anisotropy)
     case ConstitutiveModelType::stIso_HO_ma: {
       if (nfd != 2) {
         //err = "Min fiber directions not defined for Holzapfel material model (2)"
