@@ -60,6 +60,22 @@
 #include <cmath>
 #include <fstream>
 
+//------------------------
+// add_eq_linear_algebra
+//------------------------
+// Create a LinearAlgebra object for an equation.
+//
+void add_eq_linear_algebra(ComMod& com_mod, eqType& lEq)
+{
+  lEq.linear_algebra = LinearAlgebraFactory::create_interface(lEq.linear_algebra_type);
+  lEq.linear_algebra->set_preconditioner(lEq.linear_algebra_preconditioner);
+  lEq.linear_algebra->initialize(com_mod, lEq);
+
+  if (lEq.linear_algebra_assembly_type != consts::LinearAlgebraType::none) {
+    lEq.linear_algebra->set_assembly(lEq.linear_algebra_assembly_type);
+  }
+}
+
 /// @brief Read in a solver XML file and all mesh and BC data.  
 //
 void read_files(Simulation* simulation, const std::string& file_name)
@@ -397,6 +413,7 @@ void iterate_solution(Simulation* simulation)
       #endif
 
       ls_ns::ls_alloc(com_mod, eq);
+      com_mod.Val.write("Val_alloc"+ istr);
 
       // Compute body forces. If phys is shells or CMM (init), apply
       // contribution from body forces (pressure) to residual
@@ -408,6 +425,7 @@ void iterate_solution(Simulation* simulation)
       #endif
 
       bf::set_bf(com_mod, Dg);
+      com_mod.Val.write("Val_bf"+ istr);
 
       // Assemble equations.
       //
@@ -420,9 +438,6 @@ void iterate_solution(Simulation* simulation)
       }
       com_mod.R.write("R_as"+ istr);
       com_mod.Val.write("Val_as"+ istr);
-
-      com_mod.Val.write("Val_as"+ istr);
-      com_mod.R.write("R_as"+ istr);
 
       // Treatment of boundary conditions on faces
       // Apply Neumman or Traction boundary conditions
@@ -811,6 +826,13 @@ int main(int argc, char *argv[])
     dmsg << "Initialize " << " ... ";
     #endif
     initialize(simulation, init_time);
+
+    // Create LinearAlgebra objects for each equation.
+    //
+    for (int iEq = 0; iEq < simulation->com_mod.nEq; iEq++) {
+      auto& eq = simulation->com_mod.eq[iEq];
+      add_eq_linear_algebra(simulation->com_mod, eq);
+    }
 
     #ifdef debug_main
     for (int iM = 0; iM < simulation->com_mod.nMsh; iM++) {

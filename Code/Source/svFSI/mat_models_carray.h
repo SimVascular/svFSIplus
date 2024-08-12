@@ -99,10 +99,85 @@ void cc_to_voigt_carray(const double CC[N][N][N][N], double Dm[2*N][2*N])
   } 
 }
 
-//-----------
-// get_pk2cc
-//-----------
-//
+template <size_t N>
+void voigt_to_cc_carray(const double Dm[2*N][2*N], double CC[N][N][N][N]) {
+    if (N == 3) {
+        // Initialize the CC array with zeros
+        for (size_t i = 0; i < N; ++i) {
+            for (size_t j = 0; j < N; ++j) {
+                for (size_t k = 0; k < N; ++k) {
+                    for (size_t l = 0; l < N; ++l) {
+                        CC[i][j][k][l] = 0.0;
+                    }
+                }
+            }
+        }
+
+        // Voigt indices mapping
+        const int index_map[6][2] = {
+            {0, 0}, {1, 1}, {2, 2}, {0, 1}, {1, 2}, {2, 0}
+        };
+
+        // Fill in the CC array based on the Dm matrix
+        for (int I = 0; I < 6; ++I) {
+            for (int J = 0; J < 6; ++J) {
+                int i = index_map[I][0], j = index_map[I][1];
+                int k = index_map[J][0], l = index_map[J][1];
+                CC[i][j][k][l] = Dm[I][J];
+                CC[j][i][k][l] = Dm[I][J];
+                CC[i][j][l][k] = Dm[I][J];
+                CC[j][i][l][k] = Dm[I][J];
+            }
+        }
+    } else if (N == 2) {
+        // Initialize the CC array with zeros
+        for (size_t i = 0; i < N; ++i) {
+            for (size_t j = 0; j < N; ++j) {
+                for (size_t k = 0; k < N; ++k) {
+                    for (size_t l = 0; l < N; ++l) {
+                        CC[i][j][k][l] = 0.0;
+                    }
+                }
+            }
+        }
+
+        // Voigt indices mapping for 2D
+        const int index_map[3][2] = {
+            {0, 0}, {1, 1}, {0, 1}
+        };
+
+        // Fill in the CC array based on the Dm matrix
+        for (int I = 0; I < 3; ++I) {
+            for (int J = 0; J < 3; ++J) {
+                int i = index_map[I][0], j = index_map[I][1];
+                int k = index_map[J][0], l = index_map[J][1];
+                CC[i][j][k][l] = Dm[I][J];
+                CC[i][j][l][k] = Dm[I][J];
+                CC[j][i][k][l] = Dm[I][J];
+                CC[j][i][l][k] = Dm[I][J];
+            }
+        }
+    }
+}
+
+/**
+ * @brief Compute 2nd Piola-Kirchhoff stress and material stiffness tensors
+ * including both dilational and isochoric components.
+ *
+ * Reproduces the Fortran 'GETPK2CC' subroutine.
+ *
+ * @tparam N Template parameter for number of spatial dimensions.
+ * @param[in] com_mod Object containing global common variables.
+ * @param[in] cep_mod Object containing electrophysiology-specific common variables.
+ * @param[in] lDmn Domain object.
+ * @param[in] F Deformation gradient tensor.
+ * @param[in] nfd Number of fiber directions.
+ * @param[in] fl Fiber directions.
+ * @param[in] ya Electrophysiology active stress.
+ * @param[out] S 2nd Piola-Kirchhoff stress tensor (modified in place).
+ * @param[out] Dm Material stiffness tensor (modified in place).
+ * @return None, but modifies S and Dm in place.
+ */
 template <size_t N>
 void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn, const double F[N][N], const int nfd,
     const Array<double>& fl, const double ya, double S[N][N], double Dm[2*N][2*N])
@@ -382,7 +457,7 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
       g1 = 4.0 * J4d * stM.C01;
 
       double CCb[N][N][N][N];
-      mat_fun_carray::ten_dyad_prod<N>(Idm, Idm, CCb);
+      mat_fun_carray::ten_dyad_prod<N>(Idm, Idm, Idm_prod);
 
       for (int i = 0; i < nsd; i++) {
         for (int j = 0; j < nsd; j++) {

@@ -180,6 +180,20 @@ void mat_mul(const double A[N][N], const Vector<double>& v, double result[N])
 }
 
 template <size_t N>
+void mat_mul(const double A[N][N], const double v[N], double result[N])
+{
+  for (int i = 0; i < N; i++) {
+    double sum = 0.0;
+
+    for (int j = 0; j < N; j++) {
+      sum += A[i][j] * v[j];
+    }
+
+    result[i] = sum;
+  }
+}
+
+template <size_t N>
 void mat_mul6x3(const double A[2*N][2*N], const Array<double>& B, Array<double>& C)
 {
   int B_num_rows = B.nrows();
@@ -199,6 +213,24 @@ void mat_mul6x3(const double A[2*N][2*N], const Array<double>& B, Array<double>&
       }
 
       C(i,j) = sum;
+    }
+  }
+}
+
+template <size_t N>
+void ten_mat_ddot(const double A[N][N][N][N], const double B[N][N], double C[N][N])
+{
+  for (int i = 0; i < N; i++) {
+    for (int j = 0; j < N; j++) {
+      double sum = 0.0;
+
+      for (int k = 0; k < N; k++) {
+        for (int l = 0; l < N; l++) {
+          sum += A[i][j][k][l] * B[k][l];
+        }
+      }
+
+      C[i][j] = sum;
     }
   }
 }

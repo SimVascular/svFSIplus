@@ -34,6 +34,7 @@
 #include "ComMod.h"
 #include "Parameters.h"
 #include "SimulationLogger.h"
+#include "LinearAlgebra.h"
 
 #include <string>
 
@@ -85,6 +86,8 @@ class Simulation {
 
     // Name of the history file.
     std::string history_file_name;
+
+    LinearAlgebra* linear_algebra = nullptr;
 };
 
 #endif

@@ -28,6 +28,24 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/**
+ * @file ustruct.cpp
+ * @brief Structural mechanics implementation based on the following reference:
+ *
+ * Ju Liu, Alison L. Marsden,
+ * A unified continuum and variational multiscale formulation for fluids, solids, and fluid–structure interaction,
+ * Computer Methods in Applied Mechanics and Engineering,
+ * Volume 337,
+ * 2018,
+ * Pages 549-597,
+ * ISSN 0045-7825,
+ * https://doi.org/10.1016/j.cma.2018.03.045.
+ *
+ * This paper describes a unified framework for fluid, solids, and FSI. The code
+ * in this file is based on the solid mechanics portion of the paper, which can be
+ * found in Section 4.
+ */
+
 #include "ustruct.h"
 
 #include "all_fun.h"
@@ -376,24 +394,6 @@ void construct_usolid(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const
       }
 
     } // for g = 0 to fs[1].nG
-
-#if 0
-    if (e+1 == 100) { 
-      Array3<double>::write_enabled = true;
-      Array<double>::write_enabled = true;
-      lR.write("lR");
-      lK.write("lK");
-      lKd.write("lKd");
-      exit(0);
-    }
-#endif
-
-    // Assembly
-#ifdef WITH_TRILINOS
-    if (eq.assmTLS) {
-      throw std::runtime_error("[construct_usolid] Cannot assemble USTRUCT using Trilinos");
-    }
-#endif
 
     ustruct_do_assem(com_mod, eNoN, ptr, lKd, lK, lR);
 
