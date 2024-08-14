@@ -36,10 +36,6 @@
 #include "nn.h"
 #include "utils.h"
 
-#ifdef WITH_TRILINOS
-#include "trilinos_linear_solver.h"
-#endif
-
 #include <math.h>
 
 namespace heatf {
@@ -157,19 +153,10 @@ void construct_heatf(ComMod& com_mod, const mshType& lM, const Array<double>& Ag
       }
     } // for g = 0
 
-    // Assembly
-#ifdef WITH_TRILINOS
-   if (eq.assmTLS) {
-     trilinos_doassem_(const_cast<int&>(eNoN), const_cast<int*>(ptr.data()), lK.data(), lR.data());
-   } else {
-#endif
-     lhsa_ns::do_assem(com_mod, eNoN, ptr, lK, lR);
-#ifdef WITH_TRILINOS
-    }
-#endif
+    eq.linear_algebra->assemble(com_mod, eNoN, ptr, lK, lR);
+
   } // for e = 0
 }
-
 
 void heatf_2d(ComMod& com_mod, const int eNoN, const double w, const Vector<double>& N, const Array<double>& Nx,
     const Array<double>& al, const Array<double>& yl, const Array<double>& ksix, Array<double>& lR, Array3<double>& lK)

@@ -53,10 +53,6 @@
 
 #include <math.h>
 
-#ifdef WITH_TRILINOS
-#include "trilinos_linear_solver.h"
-#endif
-
 namespace eq_assem {
 
 void b_assem_neu_bc(ComMod& com_mod, const faceType& lFa, const Vector<double>& hg, const Array<double>& Yg) 
@@ -171,20 +167,9 @@ void b_assem_neu_bc(ComMod& com_mod, const faceType& lFa, const Vector<double>& 
       }
     }
 
-    // Now doing the assembly part
-
-#ifdef WITH_TRILINOS
-    if (eq.assmTLS) {
-      trilinos_doassem_(const_cast<int&>(eNoN), ptr.data(), lK.data(), lR.data());
-    } else {
-      lhsa_ns::do_assem(com_mod, eNoN, ptr, lK, lR);
-    }
-#else
-    lhsa_ns::do_assem(com_mod, eNoN, ptr, lK, lR);
-#endif
+    eq.linear_algebra->assemble(com_mod, eNoN, ptr, lK, lR);
   }
 }
-
 
 /// @brief  For struct/ustruct - construct follower pressure load contribution
 /// to the residual vector and stiffness matrix.
@@ -309,103 +294,20 @@ void b_neu_folw_p(ComMod& com_mod, const bcType& lBc, const faceType& lFa, const
       }
     }
 
-    // Now doing the assembly part
-    //
-#ifdef WITH_TRILINOS
-    if (eq.assmTLS) {
-      trilinos_doassem_(const_cast<int&>(eNoN), const_cast<int*>(ptr.data()), lK.data(), lR.data());
-    } else {
-#endif
-      if (cPhys == EquationType::phys_ustruct) {
-        ustruct::ustruct_do_assem(com_mod, eNoN, ptr, lKd, lK, lR);
-      } else if (cPhys == EquationType::phys_struct) {
-        lhsa_ns::do_assem(com_mod, eNoN, ptr, lK, lR);
-      }
-#ifdef WITH_TRILINOS
+    if (cPhys == EquationType::phys_ustruct) {
+      ustruct::ustruct_do_assem(com_mod, eNoN, ptr, lKd, lK, lR);
+    } else if (cPhys == EquationType::phys_struct) {
+      eq.linear_algebra->assemble(com_mod, eNoN, ptr, lK, lR);
     }
-#endif
-  }
-
-  // Now update surface integrals involved in coupled/resistance BC
-  // contribution to stiffness matrix to reflect deformed geometry.
-  if (btest(lBc.bType, iBC_res)) {
-    fsi_ls_upd(com_mod, lBc, lFa);
   }
 }
-
-/// @brief Update the surface integral involved in the coupled/resistance BC
-/// contribution to the stiffness matrix to reflect deformed geometry, if using
-/// a follower pressure load.
-/// The value of this integral is stored in lhs%face%val.
-/// This integral is sV = int_Gammat (Na * n_i) (See Brown et al. 2024, Eq. 56)
-/// where Na is the shape function and n_i is the normal vector.
-///
-/// This function updates the variable lhs%face%val with the new value, which
-/// is eventually used in ADDBCMUL() in the linear solver to add the contribution
-/// from the resistance BC to the matrix-vector product of the tangent matrix and
-/// an arbitrary vector.
-void fsi_ls_upd(ComMod& com_mod, const bcType& lBc, const faceType& lFa)
-{
-  using namespace consts;
-  using namespace utils;
-  using namespace fsi_linear_solver;
-
-  #define n_debug_fsi_ls_upd
-  #ifdef debug_fsi_ls_upd
-  DebugMsg dmsg(__func__, com_mod.cm.idcm());
-  dmsg.banner();
-  dmsg << "lFa.name: " << lFa.name;
-  #endif
-
-  auto& cm = com_mod.cm;
-  int nsd = com_mod.nsd;
-  int tnNo = com_mod.tnNo;
-
-  int iM = lFa.iM;
-  int nNo = lFa.nNo;
-
-  Array<double> sVl(nsd,nNo); 
-  Array<double> sV(nsd,tnNo); 
-
-  // Updating the value of the surface integral of the normal vector
-  // using the deformed configuration ('n' = new = timestep n+1)
-  sV = 0.0;
-  for (int e = 0; e < lFa.nEl; e++) {
-    if (lFa.eType == ElementType::NRB) {
-      // CALL NRBNNXB(msh(iM),lFa,e)
-    }
-    for (int g = 0; g < lFa.nG; g++) {
-      Vector<double> n(nsd);
-      auto Nx = lFa.Nx.slice(g);
-
-      auto cfg = MechanicalConfigurationType::new_timestep;
-
-      nn::gnnb(com_mod, lFa, e, g, nsd, nsd-1, lFa.eNoN, Nx, n, cfg);
-      // 
-      for (int a = 0; a < lFa.eNoN; a++) {
-        int Ac = lFa.IEN(a,e);
-        for (int i = 0; i < nsd; i++) {
-          sV(i,Ac) = sV(i,Ac) + lFa.N(a,g)*lFa.w(g)*n(i);
-        }
-      }
-    }
-  }
-
-  if (sVl.size() != 0) { 
-    for (int a = 0; a < lFa.nNo; a++) {
-      int Ac = lFa.gN(a);
-      sVl.set_col(a, sV.col(Ac));
-    }
-  }
-  // Update lhs.face(i).val with the new value of the surface integral
-  fsils_bc_update(com_mod.lhs, lBc.lsPtr, lFa.nNo, nsd, sVl); 
-};
 
 /// @brief This routine assembles the equation on a given mesh.
 ///
 /// Ag(tDof,tnNo), Yg(tDof,tnNo), Dg(tDof,tnNo)
 //
-void global_eq_assem(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Array<double>& Ag, const Array<double>& Yg, const Array<double>& Dg)
+void global_eq_assem(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Array<double>& Ag, 
+    const Array<double>& Yg, const Array<double>& Dg)
 {
   #define n_debug_global_eq_assem
   #ifdef debug_global_eq_assem

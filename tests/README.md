@@ -4,8 +4,9 @@
 
 [Integration testing](https://en.wikipedia.org/wiki/Integration_testing) is an essential part of software development. It is performed when integrating code changes into the main development branch to verify that the code works as expected. Below is a quick guide on how to run and add integration tests for `svFSI`.
 
+
 ## Prerequisites
-There are two things you need to do before you can run a test case: Build `svFSI` and install `Git LFS` to download the test cases.
+There are two things you need to do before you can run a test case: Build `svFSI` and install `Git LFS` to download the test cases. To run certain test cases, you also need `svZeroDSolver` (see below).
 
 ### Build svFSI
 Follow the build instructions outlined [here](https://simvascular.github.io/svFSIplus/index.html#autotoc_md52). Importantly, to automatically run test cases with `pytest` (see below), you need to build `svFSI` in the folder
@@ -13,6 +14,7 @@ Follow the build instructions outlined [here](https://simvascular.github.io/svFS
 ./build
 ``` 
 in the repository root.
+
 
 ### Install Git LFS
 You need to install `Git LFS` ([*Large File Storage*](https://git-lfs.com/)) to run any test, which we use to track large files. Tracking large files with `Git` can significantly add to the repository size. These large files include meshes and boundary conditions for all test cases. They are stored on `GitHub`, but the files themselves just contain a hash or Object ID that is tracked with `Git`. All file extensions currently tracked with `Git LFS` are listed under [in this file](../.gitattributes).
@@ -28,6 +30,26 @@ When using `Git LFS` for the first time, you need to follow these simple steps:
     git lfs pull
     ```
 After performing these steps once, you never need to worry about Git LFS again. All large files are handled automatically during all Git operations, like `push`, `pull`, or `commit`.
+
+
+### Build svZeroDSolver
+Some test cases require svZeroDSolver built in the svFSIplus directory.
+Importantly, to automatically run test cases with `pytest` (see below), you need to build `svZeroDSolver` in the folder
+```
+./svZeroDSolver/build
+``` 
+in the repository root.
+
+To do so, you can run the following in the svFSIplus repository root:
+```
+git clone https://github.com/SimVascular/svZeroDSolver.git
+cd svZeroDSolver
+mkdir build
+cd build
+cmake ..
+make -j2
+``` 
+
 
 ## Running tests with pytest
 You can run an individual test by navigating to the `./tests/cases/<physics>/<test>` folder you want to run and execute `svFSIplus` with the `svFSI.xml` input file as an argument. A more elegant way, e.g., to run a whole group of tests, is using [`pytest`](https://docs.pytest.org/). By default, it will run all tests defined in the `test_*.py` files in the [./tests](https://github.com/SimVascular/svFSIplus/tree/main/tests) folder. Tests and input files in [./tests/cases](https://github.com/SimVascular/svFSIplus/tree/main/tests/cases) are grouped by physics type, e.g., [struct](https://github.com/SimVascular/svFSIplus/tree/main/tests/cases/struct), [fluid](https://github.com/SimVascular/svFSIplus/tree/main/tests/cases/fluid), or [fsi](https://github.com/SimVascular/svFSIplus/tree/main/tests/cases/fsi) (using the naming convention from `EquationType`). Here are a couple of useful `Pytest` commands:

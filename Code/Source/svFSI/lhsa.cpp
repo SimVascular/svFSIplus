@@ -96,10 +96,13 @@ void add_col(const int tnNo, const int row, const int col, int& mnnzeic, Array<i
 //
 void do_assem(ComMod& com_mod, const int d, const Vector<int>& eqN, const Array3<double>& lK, const Array<double>& lR)
 {
+  //std::cout << "[lhs::do_assem] ======================= do_assem ==============" << std::endl;
   auto& R = com_mod.R;
   auto& Val = com_mod.Val;
   const auto& rowPtr = com_mod.rowPtr;
   const auto& colPtr = com_mod.colPtr;
+  //std::cout << "[lhs::do_assem] R.size(): " << R.size() << std::endl;
+  //std::cout << "[lhs::do_assem] Val.size(): " << Val.size() << std::endl;
 
   for (int a = 0; a < d; a++) {
     int rowN = eqN(a);
