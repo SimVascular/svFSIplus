@@ -221,6 +221,7 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
   // Fiber-reinforced stress
   double Tfa = 0.0;
   mat_models::get_fib_stress(com_mod, cep_mod, stM.Tf, Tfa);
+  double Tsa = Tfa*stM.Tf.eta_s;
 
   // Electromechanics coupling - active stress
   if (cep_mod.cem.aStress) {
