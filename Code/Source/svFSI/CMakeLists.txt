@@ -124,6 +124,28 @@ else()
 
 endif()
 
+# Build with the SymEngine library.
+if(SV_USE_SYMENGINE)
+  include(FetchContent)
+  FetchContent_Declare(
+            symengine
+            GIT_REPOSITORY https://github.com/symengine/symengine.git
+            GIT_TAG        master
+            GIT_SHALLOW    TRUE
+            GIT_PROGRESS   TRUE)
+  set(FETCHCONTENT_QUIET FALSE)
+  FetchContent_GetProperties(symengine)
+  if(NOT symengine_POPULATED)
+    FetchContent_Populate(symengine)
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build." FORCE) # Set the build type for SymEngine
+    add_subdirectory(${symengine_SOURCE_DIR} ${symengine_BINARY_DIR})
+  endif()
+  message(STATUS "SymEngine fetched from source.")
+  set(USE_SYMENGINE 1)
+else()
+  set(USE_SYMENGINE 0)
+endif()
+
 if(ENABLE_ARRAY_INDEX_CHECKING)
   ADD_DEFINITIONS(-DENABLE_ARRAY_INDEX_CHECKING)
 endif()
@@ -238,6 +260,10 @@ if(USE_TRILINOS)
   link_directories(${Trilinos_TPL_LIBRARY_DIRS})
 endif()
 
+if(SV_USE_SYMENGINE)
+  set(CSRCS ${CSRCS} odes.h odes.cpp)
+endif()
+
 simvascular_add_executable(${SV_SVFSI_EXE}
   SRCS ${CSRCS}
   DEV_SCRIPT_NAME "mysvfsi"
@@ -270,6 +296,10 @@ endif()
 
 if(USE_PETSC)
   target_link_libraries(${SV_SVFSI_EXE} ${PETSC_LIBRARY_DIRS})
+endif()
+
+if(USE_SYMENGINE)
+  target_link_libraries(${SV_SVFSI_EXE} symengine)
 endif()
 
 # coverage

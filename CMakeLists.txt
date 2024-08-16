@@ -89,7 +89,7 @@ set(ENABLE_COVERAGE OFF CACHE BOOL "Enable code coverage")
 set(ENABLE_ARRAY_INDEX_CHECKING OFF CACHE BOOL "Enable Array index checking")
 set(SV_LOCAL_VTK_PATH "" CACHE STRING "Path to a local build of VTK.")
 set(ENABLE_UNIT_TEST OFF CACHE BOOL "Enable Unit Test by Google Test")
-
+set(SV_USE_SYMENGINE OFF CACHE BOOL "Build with the SymEngine symbolic algebra package")
 #-----------------------------------------------------------------------------
 # RPATH handling
 # No objects built directly with project. Not needed!
@@ -145,6 +145,7 @@ ExternalProject_Add(svFSI
     -DSV_EXTERNALS_USE_TOPLEVEL_DIR:BOOL=ON
     -DSV_EXTERNALS_TOPLEVEL_DIR:PATH=${SV_EXTERNALS_TOPLEVEL_DIR}
     -DSV_USE_TRILINOS:BOOL=${SV_USE_TRILINOS}
+    -DSV_USE_SYMENGINE:BOOL=${SV_USE_SYMENGINE}
     #-DSV_USE_PETSC:BOOL=${SV_USE_PETSC}
     -DSV_PETSC_DIR:STRING=${SV_PETSC_DIR}
     -DENABLE_COVERAGE:BOOL=${ENABLE_COVERAGE}
