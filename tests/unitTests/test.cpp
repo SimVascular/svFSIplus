@@ -631,6 +631,275 @@ TEST_F(USTRUCT_HolzapfelOgdenTest, TestMaterialElasticityConsistentRandomF) {
 }
 
 
+// ----------------------------------------------------------------------------
+// ----------------------- Holzapfel-Ogden (Modified Anisotropy) Material ---------------------------
+// ----------------------------------------------------------------------------
+
+/**
+ * @brief Test fixture class for the Holzapfel-Ogden (Modified Anisotropy) material model.
+ * 
+ * This class sets up the necessary parameters and objects for testing the Holzapfel-Ogden (Modified Anisotropy) material model.
+*/
+class HolzapfelOgdenMATest : public ::testing::Test {
+protected:
+    // Variables common across tests
+    HolzapfelOgdenMAParams params;
+    double F[3][3] = {}; // Deformation gradient
+    int n_iter = 10;       // Number of random perturbations to test
+    double rel_tol = 1e-3; // relative tolerance for comparing dPsi and dS with values from svFSI
+    double abs_tol = 1e-11; // absolute tolerance for comparing values
+    double delta = 1e-7; // perturbation scaling factor
+    bool verbose = false; // Show values of S, dE, SdE and dPsi
+
+    // Add the test object
+    TestHolzapfelOgdenMA* TestHO_ma;
+
+    // Setup method to initialize variables before each test
+    void SetUp() override {
+
+        // Set Holzapfel-Ogden parameters from cardiac benchmark paper
+        params.a = 59.0; // Pa
+        params.a_f = 18472.0; // Pa
+        params.a_s = 2481.0; // Pa
+        params.a_fs = 216.0; // Pa
+        params.b = 8.023; // Pa
+        params.b_f = 16.026; // Pa
+        params.b_s = 11.12; // Pa
+        params.b_fs = 11.436; // Pa
+        params.k = 100000.0; // Pa 
+
+        // Set random values for f between 0 and 1 and normalize
+        params.f[0] = getRandomDouble(0.0, 1.0);
+        params.f[1] = getRandomDouble(0.0, 1.0);
+        params.f[2] = getRandomDouble(0.0, 1.0);
+        double norm_f = sqrt(params.f[0]*params.f[0] + params.f[1]*params.f[1] + params.f[2]*params.f[2]);
+        params.f[0] /= norm_f; params.f[1] /= norm_f; params.f[2] /= norm_f;
+
+        // Create s orthogonal to f
+        if (fabs(params.f[0]) < 0.9) { // Check if f[0] is not the dominant component
+            params.s[0] = 0;
+            params.s[1] = params.f[2];
+            params.s[2] = -params.f[1];
+        } else { // If f[0] is the dominant component, use another approach
+            params.s[0] = -params.f[2];
+            params.s[1] = 0;
+            params.s[2] = params.f[0];
+        }
+
+        // Normalize s
+        double norm_s = sqrt(params.s[0]*params.s[0] + params.s[1]*params.s[1] + params.s[2]*params.s[2]);
+        params.s[0] /= norm_s; params.s[1] /= norm_s; params.s[2] /= norm_s;
+
+        // Check f.s = 0
+        double dot_fs = params.f[0]*params.s[0] + params.f[1]*params.s[1] + params.f[2]*params.s[2];
+        if (fabs(dot_fs) > 1e-6) {
+            cout << "f.s = " << dot_fs << endl;
+            cout << "f = [" << params.f[0] << ", " << params.f[1] << ", " << params.f[2] << "]" << endl;
+            cout << "s = [" << params.s[0] << ", " << params.s[1] << ", " << params.s[2] << "]" << endl;
+            throw runtime_error("f and s are not orthogonal");
+        }
+
+        // Flag to use full anisotropic invariants for strain energy computation (switches to HO-ma strain energy)
+        params.full_anisotropic_invariants = true;
+
+
+        // Initialize the test object
+        TestHO_ma = new TestHolzapfelOgdenMA(params);
+    }
+
+    // TearDown method to clean up after each test, if needed
+    void TearDown() override {
+        // Clean up the test object
+        delete TestHO_ma;
+        TestHO_ma = nullptr;
+    }
+};
+
+// ------------------------------ STRUCT TESTS --------------------------------
+/**
+ * @brief Test fixture class for STRUCT Holzapfel-Ogden material model.
+ * 
+ * This class sets up the necessary parameters and objects for testing the STRUCT Holzapfel-Ogden material model.
+ */
+class STRUCT_HolzapfelOgdenMATest : public HolzapfelOgdenMATest {
+protected:
+    void SetUp() override {
+        HolzapfelOgdenMATest::SetUp();
+
+        // Use struct
+        TestHO_ma->ustruct = false;
+    }
+};
+
+// Test PK2 stress zero for F = I
+TEST_F(STRUCT_HolzapfelOgdenMATest, TestPK2StressIdentityF) {
+    //verbose = true; // Show values of S and S_ref
+
+    // Check identity F produces zero PK2 stress
+    double F[3][3] = {{1.0, 0.0, 0.0},
+                       {0.0, 1.0, 0.0},
+                       {0.0, 0.0, 1.0}};
+    double S_ref[3][3] = {}; // PK2 stress initialized to zero
+    TestHO_ma->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose=true);
+}
+
+// Test PK2 stress for triaxial stretch
+TEST_F(STRUCT_HolzapfelOgdenMATest, TestPK2StressTriaxialStretch) {
+    //verbose = true; // Show values of S and S_ref
+
+    // Check triaxial stretch produces PK2 stress consistent with svFSI
+    double F[3][3] = {{1.1, 0.0, 0.0},
+                       {0.0, 1.2, 0.0},
+                       {0.0, 0.0, 1.3}};
+    
+    // Compute reference PK2 stress with finite difference for triaxial stretch
+    double S_ref[3][3]; // PK2 stress
+    TestHO_ma->calcPK2StressFiniteDifference(F, delta, S_ref);
+    
+    // Check PK2 stress against reference value
+    TestHO_ma->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose=true);
+}
+
+// Test PK2 stress for triaxial compression
+TEST_F(STRUCT_HolzapfelOgdenMATest, TestPK2StressTriaxialCompression) {
+    //verbose = true; // Show values of S and S_ref
+
+    // Check triaxial compression produces PK2 stress consistent with svFSI
+    double F[3][3] = {{0.9, 0.0, 0.0},
+                       {0.0, 0.8, 0.0},
+                       {0.0, 0.0, 0.7}};
+    
+    // Compute reference PK2 stress with finite difference for triaxial compression
+    double S_ref[3][3]; // PK2 stress
+    TestHO_ma->calcPK2StressFiniteDifference(F, delta, S_ref);
+    
+    // Check PK2 stress against reference value
+    TestHO_ma->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose=true);
+}
+
+// Test PK2 stress with finite difference for random F
+TEST_F(STRUCT_HolzapfelOgdenMATest, TestPK2StressRandomF) {
+    //verbose = true; // Show values of S, dE, SdE and dPsi
+
+    // Compute reference PK2 stress with finite difference for F = I + random perturbations
+    create_random_perturbed_identity_F(F, 0.5);
+    double S_ref[3][3]; // PK2 stress
+    TestHO_ma->calcPK2StressFiniteDifference(F, delta, S_ref);
+
+    // Check PK2 stress against reference value
+    TestHO_ma->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose=true);
+}
+
+// Test PK2 stress consistent with strain energy for random F
+TEST_F(STRUCT_HolzapfelOgdenMATest, TestPK2StressConsistentRandomF) {
+    //verbose = true; // Show values of S, dE, SdE and dPsi
+
+    // Check F = I + random perturbations produces consistent PK2 stress
+    create_random_perturbed_identity_F(F, 0.5);
+    TestHO_ma->testPK2StressConsistentWithStrainEnergy(F, n_iter, rel_tol, abs_tol, delta, verbose=true);
+}
+
+// Test material elasticity consistent with PK2 stress
+TEST_F(STRUCT_HolzapfelOgdenMATest, TestMaterialElasticityConsistentRandomF) {
+    //verbose = true; // Show values of CC, dE, CCdE and dS
+
+    // Check F = I + random perturbations produces consistent PK2 stress
+    create_random_perturbed_identity_F(F, 0.5);
+    TestHO_ma->testMaterialElasticityConsistentWithPK2Stress(F, n_iter, rel_tol, abs_tol, delta, verbose=true);
+}
+
+// ------------------------------ USTRUCT TESTS --------------------------------
+/**
+ * @brief Test fixture class for USTRUCT Holzapfel-Ogden material model.
+ * 
+ * This class sets up the necessary parameters and objects for testing the USTRUCT Holzapfel-Ogden material model.
+ */
+class USTRUCT_HolzapfelOgdenMATest : public HolzapfelOgdenMATest {
+protected:
+    void SetUp() override {
+        HolzapfelOgdenMATest::SetUp();
+
+        // Use ustruct
+        TestHO_ma->ustruct = true;
+    }
+};
+
+// Test PK2 stress zero for F = I
+TEST_F(USTRUCT_HolzapfelOgdenMATest, TestPK2StressIdentityF) {
+    //verbose = true; // Show values of S and S_ref
+
+    // Check identity F produces zero PK2 stress
+    double F[3][3] = {{1.0, 0.0, 0.0},
+                       {0.0, 1.0, 0.0},
+                       {0.0, 0.0, 1.0}};
+    double S_ref[3][3] = {}; // PK2 stress initialized to zero
+    TestHO_ma->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose=true);
+}
+
+// Test PK2 stress for triaxial stretch
+TEST_F(USTRUCT_HolzapfelOgdenMATest, TestPK2StressTriaxialStretch) {
+    //verbose = true; // Show values of S and S_ref
+
+    // Check triaxial stretch produces PK2 stress consistent with svFSI
+    double F[3][3] = {{1.1, 0.0, 0.0},
+                       {0.0, 1.2, 0.0},
+                       {0.0, 0.0, 1.3}};
+    
+    // Compute reference PK2 stress with finite difference for triaxial stretch
+    double S_ref[3][3]; // PK2 stress
+    TestHO_ma->calcPK2StressFiniteDifference(F, delta, S_ref);
+    
+    // Check PK2 stress against reference value
+    TestHO_ma->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose=true);
+}
+
+// Test PK2 stress for triaxial compression
+TEST_F(USTRUCT_HolzapfelOgdenMATest, TestPK2StressTriaxialCompression) {
+    //verbose = true; // Show values of S and S_ref
+
+    // Check triaxial compression produces PK2 stress consistent with svFSI
+    double F[3][3] = {{0.9, 0.0, 0.0},
+                       {0.0, 0.8, 0.0},
+                       {0.0, 0.0, 0.7}};
+    
+    // Compute reference PK2 stress with finite difference for triaxial compression
+    double S_ref[3][3]; // PK2 stress
+    TestHO_ma->calcPK2StressFiniteDifference(F, delta, S_ref);
+    
+    // Check PK2 stress against reference value
+    TestHO_ma->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test PK2 stress with finite difference for random F
+TEST_F(USTRUCT_HolzapfelOgdenMATest, TestPK2StressRandomF) {
+    //verbose = true; // Show values of S, dE, SdE and dPsi
+
+    // Compute reference PK2 stress with finite difference for F = I + random perturbations
+    create_random_perturbed_identity_F(F, 0.5);
+    double S_ref[3][3]; // PK2 stress
+    TestHO_ma->calcPK2StressFiniteDifference(F, delta, S_ref);
+
+    // Check PK2 stress against reference value
+    TestHO_ma->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test PK2 stress consistent with strain energy for random F
+TEST_F(USTRUCT_HolzapfelOgdenMATest, TestPK2StressConsistentRandomF) {
+    //verbose = true; // Show values of S, dE, SdE and dPsi
+
+    // Check F = I + random perturbations produces consistent PK2 stress
+    create_random_perturbed_identity_F(F, 0.5);
+    TestHO_ma->testPK2StressConsistentWithStrainEnergy(F, n_iter, rel_tol, abs_tol, delta, verbose);
+}
+
+// Test material elasticity consistent with PK2 stress
+TEST_F(USTRUCT_HolzapfelOgdenMATest, TestMaterialElasticityConsistentRandomF) {
+    //verbose = true; // Show values of CC, dE, CCdE and dS
+
+    // Check F = I + random perturbations produces consistent PK2 stress
+    create_random_perturbed_identity_F(F, 0.5);
+    TestHO_ma->testMaterialElasticityConsistentWithPK2Stress(F, n_iter, rel_tol, abs_tol, delta, verbose);
+}
 
 
 // ----------------------------------------------------------------------------

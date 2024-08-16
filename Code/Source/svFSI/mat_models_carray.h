@@ -1187,6 +1187,7 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
           S[i][j] = J2d*Sb[i][j] - r1*Ci[i][j];
         }
       }
+      mat_fun_carray::print("S isochoric",S);
       CArray4 Ci_C_prod;
       mat_fun_carray::ten_dyad_prod<N>(Ci, C, Ci_C_prod);
       double PP[N][N][N][N];
@@ -1230,6 +1231,7 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
           S[i][j] += p*J*Ci[i][j];
         }
       }
+      mat_fun_carray::print("S pressure",S);
     CArray4 Ci_Ci_prod;
     mat_fun_carray::ten_dyad_prod(Ci,Ci,Ci_Ci_prod);
     CArray4 Ci_Ci_symprod;
@@ -1280,7 +1282,7 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
             S[i][j] += g1*Hff[i][j];
           }
         }
-
+        mat_fun_carray::print("S fiber-fiber",S);
     // Fiber-fiber interaction stiffness
       g1   = c4f*(1.0 + (2.0*stM.bff*Eff*Eff));
       g1   = (g1 + (2.0*dc4f*Eff))*rexp;
@@ -1309,7 +1311,7 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
             S[i][j] += g2*Hss[i][j];
           }
         }
-
+      mat_fun_carray::print("S sheet-sheet",S);
       // Sheet-sheet interaction stiffness
          g2   = c4s*(1.0 + (2.0*stM.bss*Ess*Ess));
          g2   = (g2 + (2.0*dc4s*Ess))*rexp;
