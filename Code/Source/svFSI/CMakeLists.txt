@@ -260,9 +260,7 @@ if(USE_TRILINOS)
   link_directories(${Trilinos_TPL_LIBRARY_DIRS})
 endif()
 
-if(SV_USE_SYMENGINE)
-  set(CSRCS ${CSRCS} odes.h odes.cpp)
-endif()
+
 
 simvascular_add_executable(${SV_SVFSI_EXE}
   SRCS ${CSRCS}
