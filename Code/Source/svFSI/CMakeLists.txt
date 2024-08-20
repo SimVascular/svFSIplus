@@ -29,6 +29,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 include_directories(${SV_SOURCE_DIR}/ThirdParty/parmetis_svfsi/simvascular_parmetis_svfsi/ParMETISLib)
 include_directories(${SV_SOURCE_DIR}/ThirdParty/tetgen/simvascular_tetgen)
 include_directories(${SV_SOURCE_DIR}/ThirdParty/tinyxml/simvascular_tinyxml)
+include_directories(${SV_SOURCE_DIR}/ThirdParty/exprtk/simvascular_exprtk)
 include_directories(${MPI_C_INCLUDE_PATH})
 
 # Find Trilinos package if requested
@@ -127,18 +128,20 @@ endif()
 # Build with the SymEngine library.
 if(SV_USE_SYMENGINE)
   include(FetchContent)
+  set(FETCHCONTENT_BASE_DIR "${CMAKE_BINARY_DIR}/ThirdParty/symengine")
   FetchContent_Declare(
             symengine
             GIT_REPOSITORY https://github.com/symengine/symengine.git
-            GIT_TAG        master
+            GIT_TAG        v0.12.0
             GIT_SHALLOW    TRUE
-            GIT_PROGRESS   TRUE)
+            GIT_PROGRESS   TRUE
+  )
   set(FETCHCONTENT_QUIET FALSE)
   FetchContent_GetProperties(symengine)
   if(NOT symengine_POPULATED)
     FetchContent_Populate(symengine)
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build." FORCE) # Set the build type for SymEngine
-    add_subdirectory(${symengine_SOURCE_DIR} ${symengine_BINARY_DIR})
+    #add_subdirectory(${symengine_SOURCE_DIR} ${symengine_BINARY_DIR})
   endif()
   message(STATUS "SymEngine fetched from source.")
   set(USE_SYMENGINE 1)
