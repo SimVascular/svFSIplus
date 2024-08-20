@@ -906,41 +906,46 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
         //err = "Min fiber directions not defined for Holzapfel material model (2)"
       }
 
+      // Compute fiber-based isochoric invariants
       double C_fl[N];
       mat_fun_carray::mat_mul(C, fl.rcol(0), C_fl);
       double Inv4 = J2d * mat_fun_carray::norm<N>(fl.rcol(0), C_fl);
-      //double Inv4 = J2d*utils::norm(fl.col(0), mat_mul(C, fl.col(0)));
 
       mat_fun_carray::mat_mul(C, fl.rcol(1), C_fl);
       double Inv6 = J2d * mat_fun_carray::norm<N>(fl.rcol(1), C_fl);
-      //double Inv6 = J2d*utils::norm(fl.col(1), mat_mul(C, fl.col(1)));
 
       mat_fun_carray::mat_mul(C, fl.rcol(0), C_fl);
       double Inv8 = J2d * mat_fun_carray::norm<N>(fl.rcol(1), C_fl);
-      //double Inv8 = J2d*utils::norm(fl.col(0), mat_mul(C, fl.col(1)));
 
       double Eff = Inv4 - 1.0;
       double Ess = Inv6 - 1.0;
       double Efs = Inv8;
 
+      // Smoothed Heaviside function
+      double c4f  = 1.0 / (1.0 + exp(-stM.khs*Eff));
+      double c4s  = 1.0 / (1.0 + exp(-stM.khs*Ess));
+      
+      // Approx. derivative of smoothed heaviside function
+      double dc4f = 0.25*stM.khs*exp(-stM.khs*abs(Eff));
+      double dc4s = 0.25*stM.khs*exp(-stM.khs*abs(Ess));
+
+      // Isotropic + fiber-sheet interaction stress
       double g1 = stM.a * exp(stM.b*(Inv1-3.0));
-      double g2 = 2.0 * stM.afs * Efs * exp(stM.bfs*Efs*Efs);
+      double g2 = 2.0 * stM.afs * exp(stM.bfs*Efs*Efs);
 
       double Hfs[N][N];
       mat_fun_carray::mat_symm_prod<N>(fl.rcol(0), fl.rcol(1), Hfs);
-      //auto Hfs = mat_symm_prod(fl.col(0), fl.col(1), nsd);
 
       double Sb[N][N];
       for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
-          Sb[i][j] = g1*Idm[i][j] + g2*Hfs[i][j];
+          Sb[i][j] = g1*Idm[i][j] + g2*Efs*Hfs[i][j];
         }
       }
-      //auto Sb = g1*Idm + g2*Hfs;
 
-      Efs = Efs * Efs;
-      g1 = 2.0*J4d*stM.b*g1;
-      g2 = 4.0*J4d*stM.afs*(1.0 + 2.0*stM.bfs*Efs)* exp(stM.bfs*Efs);
+      // Isotropic + fiber-sheet interaction stiffness
+      g1 = g1 * 2.0*J4d*stM.b;
+      g2 = g2 * 2.0 * (1.0 + 2.0*stM.bfs*Efs*Efs);
 
       CArray4 Idm_prod;
       mat_fun_carray::ten_dyad_prod<N>(Idm, Idm, Idm_prod);
@@ -959,84 +964,77 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
           }
         }
       }
-      //auto CCb  = g1 * ten_dyad_prod(Idm, Idm, nsd) + g2 * ten_dyad_prod(Hfs, Hfs, nsd);
 
-      //  Fiber reinforcement/active stress
-      if (Eff > 0.0) {
-        g1 = Tfa;
-        g1 = g1 + 2.0 * stM.aff * Eff * exp(stM.bff*Eff*Eff);
-
-        double Hff[N][N];
-        mat_fun_carray::mat_dyad_prod<N>(fl.col(0), fl.col(0), Hff);
-        //auto Hff = mat_dyad_prod(fl.col(0), fl.col(0), nsd);
-
-        for (int i = 0; i < N; i++) {
+      //  Fiber-fiber interaction stress + additional reinforcement (Tfa)
+      double rexp = exp(stM.bff*Eff*Eff);
+      g1 = c4f * Eff * rexp;
+      g1 = g1 + (0.5*dc4f/stM.bff) * (rexp - 1.0);
+      g1 = 2.0 * stM.aff * g1 + Tfa;
+      double Hff[N][N];
+      mat_fun_carray::mat_dyad_prod<N>(fl.col(0), fl.col(0), Hff);
+      for (int i = 0; i < N; i++) {
           for (int j = 0; j < N; j++) {
             Sb[i][j] += g1 * Hff[i][j]; 
           }
         }
-        //Sb  = Sb + g1*Hff;
 
-        Eff = Eff * Eff;
-        g1  = 4.0*J4d*stM.aff*(1.0 + 2.0*stM.bff*Eff)*exp(stM.bff*Eff);
+      // Fiber-fiber interaction stiffness
+      g1 = c4f * (1.0 + 2.0*stM.bff*Eff*Eff);
+      g1 = (g1 + 2.0*dc4f*Eff) * rexp;
+      g1 = 4.0 * J4d * stM.aff * g1;
+      CArray4 Hff_prod;
+      mat_fun_carray::ten_dyad_prod<N>(Hff, Hff, Hff_prod);
 
-        CArray4 Hff_prod;
-        mat_fun_carray::ten_dyad_prod<N>(Hff, Hff, Hff_prod);
-
-        for (int i = 0; i < N; i++) {
-          for (int j = 0; j < N; j++) {
-            for (int k = 0; k < N; k++) {
-              for (int l = 0; l < N; l++) {
-                CCb[i][j][k][l] += g1 * Hff_prod[i][j][k][l];
-              }
+      for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+          for (int k = 0; k < N; k++) {
+            for (int l = 0; l < N; l++) {
+              CCb[i][j][k][l] += g1 * Hff_prod[i][j][k][l];
             }
           }
         }
-        //CCb = CCb + g1*ten_dyad_prod(Hff, Hff, nsd);
       }
 
-      if (Ess > 0.0) {
-        g2 = 2.0 * stM.ass * Ess * exp(stM.bss*Ess*Ess);
+      // Sheet-sheet interaction stress + additional cross-fiber stress
+      rexp = exp(stM.bss*Ess*Ess);
+      g2 = c4s * Ess * rexp;
+      g2 = g2 + (0.5*dc4s/stM.bss) * (rexp - 1.0);
+      g2 = 2.0 * stM.ass * g2 + Tsa;
+      double Hss[N][N];
+      mat_fun_carray::mat_dyad_prod<N>(fl.col(1), fl.col(1), Hss);
 
-        double Hss[N][N];
-        mat_fun_carray::mat_dyad_prod<N>(fl.col(1), fl.col(1), Hss);
-        //auto Hss = mat_dyad_prod(fl.col(1), fl.col(1), nsd);
-
-        for (int i = 0; i < N; i++) {
-          for (int j = 0; j < N; j++) {
-            Sb[i][j] += g2 * Hss[i][j];
-          }
+      for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+          Sb[i][j] += g2 * Hss[i][j];
         }
-        //Sb  = Sb + g2*Hss;
+      }
 
-        Ess = Ess * Ess;
-        g2 = 4.0 * J4d * stM.ass  *  (1.0 + 2.0*stM.bss*Ess)  *  exp(stM.bss * Ess);
+      // Sheet-sheet interaction stiffness
+      g2 = c4s * (1.0 + 2.0 * stM.bss * Ess * Ess);
+      g2 = (g2 + 2.0*dc4s*Ess) * rexp;
+      g2 = 4.0 * J4d * stM.ass * g2;
 
-        CArray4 Hss_prod;
-        mat_fun_carray::ten_dyad_prod<N>(Hss, Hss, Hss_prod);
+      CArray4 Hss_prod;
+      mat_fun_carray::ten_dyad_prod<N>(Hss, Hss, Hss_prod);
 
-        for (int i = 0; i < N; i++) {
-          for (int j = 0; j < N; j++) {
-            for (int k = 0; k < N; k++) {
-              for (int l = 0; l < N; l++) {
-                CCb[i][j][k][l] += g2 * Hss_prod[i][j][k][l];
-              }
+      for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+          for (int k = 0; k < N; k++) {
+            for (int l = 0; l < N; l++) {
+              CCb[i][j][k][l] += g2 * Hss_prod[i][j][k][l];
             }
           }
         }
-        //CCb = CCb + g2*ten_dyad_prod(Hss, Hss, nsd);
-
       }
 
+      // Isochoric 2nd-Piola-Kirchhoff stress and stiffness tensors
       double r1 = J2d * mat_fun_carray::mat_ddot<N>(C, Sb) / nd;
-      //double r1 = J2d*mat_ddot(C, Sb, nsd) / nd;
 
       for (int i = 0; i < nsd; i++) {
         for (int j = 0; j < nsd; j++) {
           S[i][j] = J2d*Sb[i][j] - r1*Ci[i][j];
         }
       }
-      //S  = J2d*Sb - r1*Ci;
 
       CArray4 Ci_C_prod;
       mat_fun_carray::ten_dyad_prod<N>(Ci, C, Ci_C_prod);
@@ -1051,17 +1049,13 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
           }
         }
       }
-      //auto PP = ten_ids(nsd) - (1.0/nd) * ten_dyad_prod(Ci, C, nsd);
 
       mat_fun_carray::ten_ddot<N>(CCb, PP, CC);
-      //CC = ten_ddot(CCb, PP, nsd);
 
       CArray4 CC_t;
       mat_fun_carray::ten_transpose<N>(CC, CC_t);
-      //CC  = ten_transpose(CC, nsd);
 
       mat_fun_carray::ten_ddot<N>(PP, CC_t, CC);
-      //CC  = ten_ddot(PP, CC, nsd);
 
       CArray4 Ci_S_prod;
       mat_fun_carray::ten_dyad_prod<N>(Ci, S, Ci_S_prod);
@@ -1078,14 +1072,13 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
           }
         }
       }
-      // CC  = CC - (2.0/nd) * ( ten_dyad_prod(Ci, S, nsd) + ten_dyad_prod(S, Ci, nsd) );
 
+      // Add pressure contribution
       for (int i = 0; i < nsd; i++) {
         for (int j = 0; j < nsd; j++) {
           S[i][j] += p * J * Ci[i][j];
         }
       }
-      //S = S + p*J*Ci;
 
       CArray4 Ci_sym_prod;
       mat_fun_carray::ten_symm_prod<N>(Ci, Ci, Ci_sym_prod);
@@ -1102,7 +1095,6 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
           }
         }
       }
-      //CC  = CC + 2.0*(r1 - p*J) * ten_symm_prod(Ci, Ci, nsd) + (pl*J - 2.0*r1/nd) * ten_dyad_prod(Ci, Ci, nsd);
 
       if (cep_mod.cem.aStrain) {
         double S_prod[N][N];
