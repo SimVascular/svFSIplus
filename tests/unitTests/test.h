@@ -110,10 +110,8 @@ public:
 
     double k; // Smoothed Heaviside function parameter
 
-    bool full_anisotropic_invariants; // Flag to use full anisotropic invariants in strain energy density function
-
     // Default constructor
-    HolzapfelOgdenParams() : a(0.0), b(0.0), a_f(0.0), b_f(0.0), a_s(0.0), b_s(0.0), a_fs(0.0), b_fs(0.0), k(0.0), full_anisotropic_invariants(false) {
+    HolzapfelOgdenParams() : a(0.0), b(0.0), a_f(0.0), b_f(0.0), a_s(0.0), b_s(0.0), a_fs(0.0), b_fs(0.0), k(0.0) {
         for (int i = 0; i < 3; i++) {
             f[i] = 0.0;
             s[i] = 0.0;
@@ -121,7 +119,7 @@ public:
     }
 
     // Constructor with parameters
-    HolzapfelOgdenParams(double a, double b, double a_f, double b_f, double a_s, double b_s, double a_fs, double b_fs, double k, double f[3], double s[3], bool full_anisotropic_invariants = false) : a(a), b(b), a_f(a_f), b_f(b_f), a_s(a_s), b_s(b_s), a_fs(a_fs), b_fs(b_fs), k(k), full_anisotropic_invariants(full_anisotropic_invariants) {
+    HolzapfelOgdenParams(double a, double b, double a_f, double b_f, double a_s, double b_s, double a_fs, double b_fs, double k, double f[3], double s[3]) : a(a), b(b), a_f(a_f), b_f(b_f), a_s(a_s), b_s(b_s), a_fs(a_fs), b_fs(b_fs), k(k) {
         for (int i = 0; i < 3; i++) {
             this->f[i] = f[i];
             this->s[i] = s[i];
@@ -145,10 +143,8 @@ public:
 
     double k; // Smoothed Heaviside function parameter
 
-    bool full_anisotropic_invariants; // Flag to use full anisotropic invariants in strain energy density function
-
     // Default constructor
-    HolzapfelOgdenMAParams() : a(0.0), b(0.0), a_f(0.0), b_f(0.0), a_s(0.0), b_s(0.0), a_fs(0.0), b_fs(0.0), k(0.0), full_anisotropic_invariants(true) {
+    HolzapfelOgdenMAParams() : a(0.0), b(0.0), a_f(0.0), b_f(0.0), a_s(0.0), b_s(0.0), a_fs(0.0), b_fs(0.0), k(0.0) {
         for (int i = 0; i < 3; i++) {
             f[i] = 0.0;
             s[i] = 0.0;
@@ -156,7 +152,7 @@ public:
     }
 
     // Constructor with parameters
-    HolzapfelOgdenMAParams(double a, double b, double a_f, double b_f, double a_s, double b_s, double a_fs, double b_fs, double k, double f[3], double s[3], bool full_anisotropic_invariants = true) : a(a), b(b), a_f(a_f), b_f(b_f), a_s(a_s), b_s(b_s), a_fs(a_fs), b_fs(b_fs), k(k), full_anisotropic_invariants(full_anisotropic_invariants) {
+    HolzapfelOgdenMAParams(double a, double b, double a_f, double b_f, double a_s, double b_s, double a_fs, double b_fs, double k, double f[3], double s[3]) : a(a), b(b), a_f(a_f), b_f(b_f), a_s(a_s), b_s(b_s), a_fs(a_fs), b_fs(b_fs), k(k) {
         for (int i = 0; i < 3; i++) {
             this->f[i] = f[i];
             this->s[i] = s[i];
@@ -1167,10 +1163,6 @@ public:
  * 
  * This class provides methods to set up and test the Holzapfel-Ogden material 
  * model, including computing the strain energy and printing material parameters.
- *
- * Implements two versions of the Holzapfel-Ogden model:
- * - Full anisotropic invariants (I1_bar, I4_f, I4_s, I8_fs) used by cardiac mechanics benchmark paper (Arostica et al., 2024)
- * - Modified anisotropic invariants (I1_bar, I4_bar_f, I4_bar_s, I8_bar_fs) used by svFSIplus
  */
 class TestHolzapfelOgden : public TestMaterialModel {
 public:
@@ -1200,6 +1192,7 @@ public:
         dmn.stM.bss = params.b_s;
         dmn.stM.afs = params.a_fs;
         dmn.stM.bfs = params.b_fs;
+        dmn.stM.khs = params.k;     // Smoothed Heaviside function parameter
         dmn.stM.Kpen = 0.0;         // Zero volumetric penalty parameter
 
         // Set number of fiber directions and fiber directions
@@ -1225,7 +1218,6 @@ public:
         std::cout << "k = " << params.k << std::endl;
         std::cout << "f = " << "[" << params.f[0] << " " << params.f[1] << " " << params.f[2] << "]" << std::endl;
         std::cout << "s = " << "[" << params.s[0] << " " << params.s[1] << " " << params.s[2] << "]" << std::endl;
-        std::cout << "full_anisotropic_invariants = " << params.full_anisotropic_invariants << std::endl;
     }
 
     /**
@@ -1268,62 +1260,33 @@ public:
 
         // Strain energy density for Holzapfel-Ogden material model
 
-        // Formulation used by cardiac mechanics benchmark paper (Arostica et al., 2024)
-        // Uses I1_bar (bar = isochoric), but I4_f, I4_s, I8_fs (not bar)
-        // Psi = a/2b * exp{b(I1_bar - 3)} 
-        //       + a_f/2b_f * chi(I4_f) * (exp{b_f(I4_f - 1)^2} - 1
-        //       + a_s/2b_s * chi(I4_s) * (exp{b_s(I4_s - 1)^2} - 1
-        //       + a_fs/2b_fs * (exp{b_fs*I8_fs^2} - 1)
-        // This corresponds to the HO-ma (modified anisotropy) implementation in svFSIplus
-        if (params.full_anisotropic_invariants) {
-            // Invariants
-            double I1_bar = smTerms.Ib1;
-            // I4_f = f . C . f
-            double C_f[3]; mat_fun_carray::mat_mul<3>(smTerms.C, f, C_f);
-            double I4_f = mat_fun_carray::norm<3>(f, C_f);
-            // I4_s = s . C . s
-            double C_s[3]; mat_fun_carray::mat_mul<3>(smTerms.C, s, C_s);
-            double I4_s = mat_fun_carray::norm<3>(s, C_s);
-            // I8_fs = f . C . s
-            double I8_fs = mat_fun_carray::norm<3>(f, C_s);
-
-            // Strain energy density for Holzapfel-Ogden material model with full anisotropic invariants
-            double Psi = 0.0;
-            Psi += a / (2.0 * b) * exp(b * (I1_bar - 3.0));                             // Isotropic term
-            Psi += a_f / (2.0 * b_f) * chi(I4_f, k) * (exp(b_f * pow(I4_f - 1.0, 2)) - 1.0);   // Fiber term
-            Psi += a_s / (2.0 * b_s) * chi(I4_s, k) * (exp(b_s * pow(I4_s - 1.0, 2)) - 1.0);   // Sheet term
-            Psi += a_fs / (2.0 * b_fs) * (exp(b_fs * pow(I8_fs, 2)) - 1.0);                   // Cross-fiber term
-
-            return Psi;
-        }
         // Formulation with fully decoupled isochoric-volumetric split
         // Uses I1_bar, I4_bar_f, I4_bar_s, I8_bar_fs (bar = isochoric)
         // Psi = a/2b * exp{b(I1_bar - 3)} 
         //       + a_f/2b_f * chi(I4_bar_f) * (exp{b_f(I4_bar_f - 1)^2} - 1
         //       + a_s/2b_s * chi(I4_bar_s) * (exp{b_s(I4_bar_s - 1)^2} - 1
         //       + a_fs/2b_fs * (exp{b_fs*I8_bar_fs^2} - 1)
-        // This corresponds to the HO-d (decoupled) implementation in svFSIplus
-        else {
-            // Invariants
-            double I1_bar = smTerms.Ib1;
-            // I4_bar_f = f . C_bar . f
-            double C_bar_f[3]; mat_fun_carray::mat_mul<3>(smTerms.C_bar, f, C_bar_f);
-            double I4_bar_f = mat_fun_carray::norm<3>(f, C_bar_f);
-            // I4_bar_s = s . C_bar . s
-            double C_bar_s[3]; mat_fun_carray::mat_mul<3>(smTerms.C_bar, s, C_bar_s);
-            double I4_bar_s = mat_fun_carray::norm<3>(s, C_bar_s);
-            // I8_bar_fs = f . C_bar . s
-            double I8_bar_fs = mat_fun_carray::norm<3>(f, C_bar_s);
+        // This corresponds to the HO implementation in svFSIplus
 
-            // Strain energy density for Holzapfel-Ogden material model with modified anisotropic invariants (bar quantities)
-            double Psi = 0.0;
-            Psi += a / (2.0 * b) * exp(b * (I1_bar - 3.0));                             // Isotropic term
-            Psi += a_f / (2.0 * b_f) * chi(I4_bar_f, k) * (exp(b_f * pow(I4_bar_f - 1.0, 2)) - 1.0);   // Fiber term
-            Psi += a_s / (2.0 * b_s) * chi(I4_bar_s, k) * (exp(b_s * pow(I4_bar_s - 1.0, 2)) - 1.0);   // Sheet term
-            Psi += a_fs / (2.0 * b_fs) * (exp(b_fs * pow(I8_bar_fs, 2)) - 1.0);                   // Cross-fiber term
+        // Invariants
+        double I1_bar = smTerms.Ib1;
+        // I4_bar_f = f . C_bar . f
+        double C_bar_f[3]; mat_fun_carray::mat_mul<3>(smTerms.C_bar, f, C_bar_f);
+        double I4_bar_f = mat_fun_carray::norm<3>(f, C_bar_f);
+        // I4_bar_s = s . C_bar . s
+        double C_bar_s[3]; mat_fun_carray::mat_mul<3>(smTerms.C_bar, s, C_bar_s);
+        double I4_bar_s = mat_fun_carray::norm<3>(s, C_bar_s);
+        // I8_bar_fs = f . C_bar . s
+        double I8_bar_fs = mat_fun_carray::norm<3>(f, C_bar_s);
 
-            return Psi;
-        }
+        // Strain energy density for Holzapfel-Ogden material model with modified anisotropic invariants (bar quantities)
+        double Psi = 0.0;
+        Psi += a / (2.0 * b) * exp(b * (I1_bar - 3.0));                             // Isotropic term
+        Psi += a_f / (2.0 * b_f) * chi(I4_bar_f, k) * (exp(b_f * pow(I4_bar_f - 1.0, 2)) - 1.0);   // Fiber term
+        Psi += a_s / (2.0 * b_s) * chi(I4_bar_s, k) * (exp(b_s * pow(I4_bar_s - 1.0, 2)) - 1.0);   // Sheet term
+        Psi += a_fs / (2.0 * b_fs) * (exp(b_fs * pow(I8_bar_fs, 2)) - 1.0);                   // Cross-fiber term
+
+        return Psi;
     }
 };
 
@@ -1363,6 +1326,7 @@ public:
         dmn.stM.bss = params.b_s;
         dmn.stM.afs = params.a_fs;
         dmn.stM.bfs = params.b_fs;
+        dmn.stM.khs = params.k;     // Smoothed Heaviside function parameter
         dmn.stM.Kpen = 0.0;         // Zero volumetric penalty parameter
 
         // Set number of fiber directions and fiber directions
@@ -1388,7 +1352,6 @@ public:
         std::cout << "k = " << params.k << std::endl;
         std::cout << "f = " << "[" << params.f[0] << " " << params.f[1] << " " << params.f[2] << "]" << std::endl;
         std::cout << "s = " << "[" << params.s[0] << " " << params.s[1] << " " << params.s[2] << "]" << std::endl;
-        std::cout << "full_anisotropic_invariants = " << params.full_anisotropic_invariants << std::endl;
     }
 
     /**
@@ -1438,55 +1401,27 @@ public:
         //       + a_s/2b_s * chi(I4_s) * (exp{b_s(I4_s - 1)^2} - 1
         //       + a_fs/2b_fs * (exp{b_fs*I8_fs^2} - 1)
         // This corresponds to the HO-ma (modified anisotropy) implementation in svFSIplus
-        if (params.full_anisotropic_invariants) {
-            // Invariants
-            double I1_bar = smTerms.Ib1;
-            // I4_f = f . C . f
-            double C_f[3]; mat_fun_carray::mat_mul<3>(smTerms.C, f, C_f);
-            double I4_f = mat_fun_carray::norm<3>(f, C_f);
-            // I4_s = s . C . s
-            double C_s[3]; mat_fun_carray::mat_mul<3>(smTerms.C, s, C_s);
-            double I4_s = mat_fun_carray::norm<3>(s, C_s);
-            // I8_fs = f . C . s
-            double I8_fs = mat_fun_carray::norm<3>(f, C_s);
 
-            // Strain energy density for Holzapfel-Ogden material model with full anisotropic invariants
-            double Psi = 0.0;
-            Psi += a / (2.0 * b) * exp(b * (I1_bar - 3.0));                             // Isotropic term
-            Psi += a_f / (2.0 * b_f) * chi(I4_f, k) * (exp(b_f * pow(I4_f - 1.0, 2)) - 1.0);   // Fiber term
-            Psi += a_s / (2.0 * b_s) * chi(I4_s, k) * (exp(b_s * pow(I4_s - 1.0, 2)) - 1.0);   // Sheet term
-            Psi += a_fs / (2.0 * b_fs) * (exp(b_fs * pow(I8_fs, 2)) - 1.0);                   // Cross-fiber term
+        // Invariants
+        double I1_bar = smTerms.Ib1;
+        // I4_f = f . C . f
+        double C_f[3]; mat_fun_carray::mat_mul<3>(smTerms.C, f, C_f);
+        double I4_f = mat_fun_carray::norm<3>(f, C_f);
+        // I4_s = s . C . s
+        double C_s[3]; mat_fun_carray::mat_mul<3>(smTerms.C, s, C_s);
+        double I4_s = mat_fun_carray::norm<3>(s, C_s);
+        // I8_fs = f . C . s
+        double I8_fs = mat_fun_carray::norm<3>(f, C_s);
 
-            return Psi;
-        }
-        // Formulation with fully decoupled isochoric-volumetric split
-        // Uses I1_bar, I4_bar_f, I4_bar_s, I8_bar_fs (bar = isochoric)
-        // Psi = a/2b * exp{b(I1_bar - 3)} 
-        //       + a_f/2b_f * chi(I4_bar_f) * (exp{b_f(I4_bar_f - 1)^2} - 1
-        //       + a_s/2b_s * chi(I4_bar_s) * (exp{b_s(I4_bar_s - 1)^2} - 1
-        //       + a_fs/2b_fs * (exp{b_fs*I8_bar_fs^2} - 1)
-        // This corresponds to the HO-d (decoupled) implementation in svFSIplus
-        else {
-            // Invariants
-            double I1_bar = smTerms.Ib1;
-            // I4_bar_f = f . C_bar . f
-            double C_bar_f[3]; mat_fun_carray::mat_mul<3>(smTerms.C_bar, f, C_bar_f);
-            double I4_bar_f = mat_fun_carray::norm<3>(f, C_bar_f);
-            // I4_bar_s = s . C_bar . s
-            double C_bar_s[3]; mat_fun_carray::mat_mul<3>(smTerms.C_bar, s, C_bar_s);
-            double I4_bar_s = mat_fun_carray::norm<3>(s, C_bar_s);
-            // I8_bar_fs = f . C_bar . s
-            double I8_bar_fs = mat_fun_carray::norm<3>(f, C_bar_s);
+        // Strain energy density for Holzapfel-Ogden material model with full anisotropic invariants
+        double Psi = 0.0;
+        Psi += a / (2.0 * b) * exp(b * (I1_bar - 3.0));                             // Isotropic term
+        Psi += a_f / (2.0 * b_f) * chi(I4_f, k) * (exp(b_f * pow(I4_f - 1.0, 2)) - 1.0);   // Fiber term
+        Psi += a_s / (2.0 * b_s) * chi(I4_s, k) * (exp(b_s * pow(I4_s - 1.0, 2)) - 1.0);   // Sheet term
+        Psi += a_fs / (2.0 * b_fs) * (exp(b_fs * pow(I8_fs, 2)) - 1.0);                   // Cross-fiber term
 
-            // Strain energy density for Holzapfel-Ogden material model with modified anisotropic invariants (bar quantities)
-            double Psi = 0.0;
-            Psi += a / (2.0 * b) * exp(b * (I1_bar - 3.0));                             // Isotropic term
-            Psi += a_f / (2.0 * b_f) * chi(I4_bar_f, k) * (exp(b_f * pow(I4_bar_f - 1.0, 2)) - 1.0);   // Fiber term
-            Psi += a_s / (2.0 * b_s) * chi(I4_bar_s, k) * (exp(b_s * pow(I4_bar_s - 1.0, 2)) - 1.0);   // Sheet term
-            Psi += a_fs / (2.0 * b_fs) * (exp(b_fs * pow(I8_bar_fs, 2)) - 1.0);                   // Cross-fiber term
+        return Psi;
 
-            return Psi;
-        }
     }
 };
 

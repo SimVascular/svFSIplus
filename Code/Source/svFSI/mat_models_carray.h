@@ -1133,7 +1133,7 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
         //err = "Min fiber directions not defined for Holzapfel material model (2)"
       }
 
-    // Compute fiber-based full invariants (not isochoric)
+      // Compute fiber-based full invariants (not isochoric)
       double C_fl[N];
       mat_fun_carray::mat_mul(C, fl.rcol(0), C_fl);
       double Inv4 = mat_fun_carray::norm<N>(fl.rcol(0), C_fl);
@@ -1144,7 +1144,6 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
       mat_fun_carray::mat_mul(C, fl.rcol(0), C_fl);
       double Inv8 = mat_fun_carray::norm<N>(fl.rcol(1), C_fl);
 
-      double fds = mat_fun_carray::norm<N>(fl.rcol(0), fl.rcol(1));
       double Eff = Inv4 - 1.0;
       double Ess = Inv6 - 1.0;
       double Efs = Inv8;
@@ -1169,6 +1168,9 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
       double r1 = J2d/nd*mat_fun_carray::mat_ddot(C,Sb);
       g1 = g1*2.0*J4d*stM.b;
 
+      CArray4 Idm_prod;
+      mat_fun_carray::ten_dyad_prod<N>(Idm, Idm, Idm_prod);
+
       CArray4 CCb;
       for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
@@ -1181,13 +1183,11 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
       }
 
       // Add isochoric stress and stiffness contribution
-      double S[N][N];
       for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
           S[i][j] = J2d*Sb[i][j] - r1*Ci[i][j];
         }
       }
-      mat_fun_carray::print("S isochoric",S);
       CArray4 Ci_C_prod;
       mat_fun_carray::ten_dyad_prod<N>(Ci, C, Ci_C_prod);
       double PP[N][N][N][N];
@@ -1225,109 +1225,109 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
         }
       }
 
-    // Add pressure contribution to stress and stiffness
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < N; j++) {
-          S[i][j] += p*J*Ci[i][j];
-        }
-      }
-      mat_fun_carray::print("S pressure",S);
-    CArray4 Ci_Ci_prod;
-    mat_fun_carray::ten_dyad_prod(Ci,Ci,Ci_Ci_prod);
-    CArray4 Ci_Ci_symprod;
-    mat_fun_carray::ten_symm_prod(Ci,Ci,Ci_Ci_symprod);
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < N; j++) {
-          for (int k = 0; k < N; k++) {
-            for (int l = 0; l < N; l++) {
-              CC[i][j][k][l] += 2.0*(r1 - p*J)*Ci_Ci_symprod[i][j][k][l] + (pl*J - 2.0*r1/nd)*Ci_Ci_prod[i][j][k][l];
-            }
-          }
-        }
-      }
-    // Now that both isochoric and volumetric components were added, anisotropic components need to be added
-
-    // Fiber-sheet interaction terms
-    g1   = 2.0 * stM.afs * exp(stM.bfs*Efs*Efs);
-    double Hfs[N][N];
-    mat_fun_carray::mat_symm_prod<N>(fl.rcol(0), fl.rcol(1), Hfs);
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < N; j++) {
-          S[i][j] += g1*Efs*fds*Hfs[i][j];
-        }
-      }
-    g1   = g1 * 2.0*(1.0 + 2.0*stM.bfs*Efs*Efs);
-    g1   = g1 * fds * fds;
-    CArray4 Hfs_Hfs_prod;
-    mat_fun_carray::ten_dyad_prod(Hfs,Hfs,Hfs_Hfs_prod);
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < N; j++) {
-          for (int k = 0; k < N; k++) {
-            for (int l = 0; l < N; l++) {
-              CC[i][j][k][l] += g1*Hfs_Hfs_prod[i][j][k][l];
-            }
-          }
-        }
-      }
-
-    // Fiber-fiber interaction stress + additional reinforcement (Tfa)
-         double rexp = exp(stM.bff * Eff * Eff);
-         g1   = c4f*Eff*rexp;
-         g1   = g1 + (0.5*dc4f/stM.bff)*(rexp - 1.0);
-         g1   = (2.0*stM.aff*g1) + Tfa;
-         double Hff[N][N];
-         mat_fun_carray::mat_symm_prod<N>(fl.rcol(0), fl.rcol(0), Hff);
-         for (int i = 0; i < N; i++) {
+      // Add pressure contribution to stress and stiffness
+      for (int i = 0; i < N; i++) {
           for (int j = 0; j < N; j++) {
-            S[i][j] += g1*Hff[i][j];
+            S[i][j] += p*J*Ci[i][j];
           }
         }
-        mat_fun_carray::print("S fiber-fiber",S);
-    // Fiber-fiber interaction stiffness
+    
+      CArray4 Ci_Ci_prod;
+      mat_fun_carray::ten_dyad_prod(Ci,Ci,Ci_Ci_prod);
+      CArray4 Ci_Ci_symprod;
+      mat_fun_carray::ten_symm_prod(Ci,Ci,Ci_Ci_symprod);
+      for (int i = 0; i < N; i++) {
+          for (int j = 0; j < N; j++) {
+            for (int k = 0; k < N; k++) {
+              for (int l = 0; l < N; l++) {
+                CC[i][j][k][l] += 2.0*(r1 - p*J)*Ci_Ci_symprod[i][j][k][l] + (pl*J - 2.0*r1/nd)*Ci_Ci_prod[i][j][k][l];
+              }
+            }
+          }
+        }
+      // Now that both isochoric and volumetric components were added, anisotropic components need to be added
+
+      // Fiber-sheet interaction terms
+      g1   = 2.0 * stM.afs * exp(stM.bfs*Efs*Efs);
+      double Hfs[N][N];
+      mat_fun_carray::mat_symm_prod<N>(fl.rcol(0), fl.rcol(1), Hfs);
+      for (int i = 0; i < N; i++) {
+          for (int j = 0; j < N; j++) {
+            S[i][j] += g1*Efs*Hfs[i][j];
+          }
+        }
+      g1   = g1 * 2.0*(1.0 + 2.0*stM.bfs*Efs*Efs);
+
+      CArray4 Hfs_Hfs_prod;
+      mat_fun_carray::ten_dyad_prod(Hfs,Hfs,Hfs_Hfs_prod);
+      for (int i = 0; i < N; i++) {
+          for (int j = 0; j < N; j++) {
+            for (int k = 0; k < N; k++) {
+              for (int l = 0; l < N; l++) {
+                CC[i][j][k][l] += g1*Hfs_Hfs_prod[i][j][k][l];
+              }
+            }
+          }
+        }
+
+      // Fiber-fiber interaction stress + additional reinforcement (Tfa)
+      double rexp = exp(stM.bff * Eff * Eff);
+      g1   = c4f*Eff*rexp;
+      g1   = g1 + (0.5*dc4f/stM.bff)*(rexp - 1.0);
+      g1   = (2.0*stM.aff*g1) + Tfa;
+      double Hff[N][N];
+      mat_fun_carray::mat_symm_prod<N>(fl.rcol(0), fl.rcol(0), Hff);
+      for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+          S[i][j] += g1*Hff[i][j];
+        }
+      }
+ 
+      // Fiber-fiber interaction stiffness
       g1   = c4f*(1.0 + (2.0*stM.bff*Eff*Eff));
       g1   = (g1 + (2.0*dc4f*Eff))*rexp;
       g1   = 4.0*stM.aff*g1;
       CArray4 Hff_Hff_prod;
       mat_fun_carray::ten_dyad_prod(Hff,Hff,Hff_Hff_prod);
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < N; j++) {
-          for (int k = 0; k < N; k++) {
-            for (int l = 0; l < N; l++) {
-              CC[i][j][k][l] += g1*Hff_Hff_prod[i][j][k][l];
-            }
-          }
-        }
-      }
-         
-    // Sheet-sheet interaction stress + additional cross-fiber stress
-         rexp = exp(stM.bss * Ess * Ess);
-         double g2   = c4s*Ess*rexp;
-         g2   = g2 + (0.5*dc4s/stM.bss)*(rexp - 1.0);
-         g2   = 2.0*stM.ass*g2 + Tsa;
-         double Hss[N][N];
-         mat_fun_carray::mat_symm_prod<N>(fl.rcol(1), fl.rcol(1), Hss);
-         for (int i = 0; i < N; i++) {
+      for (int i = 0; i < N; i++) {
           for (int j = 0; j < N; j++) {
-            S[i][j] += g2*Hss[i][j];
-          }
-        }
-      mat_fun_carray::print("S sheet-sheet",S);
-      // Sheet-sheet interaction stiffness
-         g2   = c4s*(1.0 + (2.0*stM.bss*Ess*Ess));
-         g2   = (g2 + (2.0*dc4s*Ess))*rexp;
-         g2   = 4.0*stM.ass*g2;
-         CArray4 Hss_Hss_prod;
-      mat_fun_carray::ten_dyad_prod(Hss,Hss,Hss_Hss_prod);
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < N; j++) {
-          for (int k = 0; k < N; k++) {
-            for (int l = 0; l < N; l++) {
-              CC[i][j][k][l] += g2*Hss_Hss_prod[i][j][k][l];
+            for (int k = 0; k < N; k++) {
+              for (int l = 0; l < N; l++) {
+                CC[i][j][k][l] += g1*Hff_Hff_prod[i][j][k][l];
+              }
             }
           }
         }
+         
+      // Sheet-sheet interaction stress + additional cross-fiber stress
+      rexp = exp(stM.bss * Ess * Ess);
+      double g2   = c4s*Ess*rexp;
+      g2   = g2 + (0.5*dc4s/stM.bss)*(rexp - 1.0);
+      g2   = 2.0*stM.ass*g2 + Tsa;
+      double Hss[N][N];
+      mat_fun_carray::mat_symm_prod<N>(fl.rcol(1), fl.rcol(1), Hss);
+      for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+          S[i][j] += g2*Hss[i][j];
+        }
       }
-    } break;
+  
+      // Sheet-sheet interaction stiffness
+      g2   = c4s*(1.0 + (2.0*stM.bss*Ess*Ess));
+      g2   = (g2 + (2.0*dc4s*Ess))*rexp;
+      g2   = 4.0*stM.ass*g2;
+      CArray4 Hss_Hss_prod;
+      mat_fun_carray::ten_dyad_prod(Hss,Hss,Hss_Hss_prod);
+      for (int i = 0; i < N; i++) {
+          for (int j = 0; j < N; j++) {
+            for (int k = 0; k < N; k++) {
+              for (int l = 0; l < N; l++) {
+                CC[i][j][k][l] += g2*Hss_Hss_prod[i][j][k][l];
+              }
+            }
+          }
+        }
+      } break;
 
     default:
       throw std::runtime_error("Undefined material constitutive model.");
