@@ -6,6 +6,8 @@ Applications
 
 eigen - A header-only application for matrix objects.
 
+exprtk - A header-only application for parsing and evaluating mathematical expressions.
+
 gklib_svfsi - A library used by METIS and ParMETIS applications.
 
 metis_svfsi - The METIS mesh partitioning application used by ParMETIS.
