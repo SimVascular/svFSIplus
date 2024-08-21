@@ -102,7 +102,7 @@ void b_assem_neu_bc(ComMod& com_mod, const faceType& lFa, const Vector<double>& 
 
     for (int g = 0; g < lFa.nG; g++) {
       Vector<double> nV(nsd);
-      auto Nx = lFa.Nx.slice(g);
+      auto Nx = lFa.Nx.rslice(g);
       nn::gnnb(com_mod, lFa, e, g, nsd, nsd-1, eNoN, Nx, nV);
       double Jac = sqrt(utils::norm(nV));
       nV = nV / Jac;
@@ -271,7 +271,7 @@ void b_neu_folw_p(ComMod& com_mod, const bcType& lBc, const faceType& lFa, const
 
       // Get surface normal vector
       Vector<double> nV(nsd);
-      auto Nx_g = lFa.Nx.slice(g);
+      auto Nx_g = lFa.Nx.rslice(g);
       nn::gnnb(com_mod, lFa, e, g, nsd, nsd-1, eNoNb, Nx_g, nV);
       Jac = sqrt(utils::norm(nV));
       nV = nV / Jac;
@@ -345,7 +345,7 @@ void fsi_ls_upd(ComMod& com_mod, const bcType& lBc, const faceType& lFa)
     }
     for (int g = 0; g < lFa.nG; g++) {
       Vector<double> n(nsd);
-      auto Nx = lFa.Nx.slice(g);
+      auto Nx = lFa.Nx.rslice(g);
 
       auto cfg = MechanicalConfigurationType::new_timestep;
 
