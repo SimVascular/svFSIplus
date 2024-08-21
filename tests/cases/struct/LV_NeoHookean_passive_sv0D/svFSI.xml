@@ -50,7 +50,7 @@
 
    <Coupled> true </Coupled>
    <Min_iterations> 3 </Min_iterations>  
-   <Max_iterations> 10 </Max_iterations> 
+   <Max_iterations> 20 </Max_iterations> 
    <Tolerance> 1e-9 </Tolerance> 
 
    <Density> 1.0 </Density>                           <!-- g/cm^3 -->
