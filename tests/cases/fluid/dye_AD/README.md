@@ -1,36 +1,30 @@
 
 # **Problem Description**
 
-Solve dye transportation with fluid flow in a cylindrical tube with RCR boundary conditions at the outlet and unsteady flow at the inlet. The dye is passively transported by the flow through advection and diffusion.
-
-The input file `svFSI.inp` follows the master input file [`svFSI_master.inp`](./svFSI_master.inp) as a template. Some specific input options are discussed below:
+Simulate a fluid flow with dye transport in a cylindrical tube with RCR boundary conditions at the outlet and unsteady flow at the inlet. The dye is passively transported by the flow through advection and diffusion.
 
 ## Scalar transport equation
 
-In addition to the fluid equation, the advection-diffusion equation that governs the dye transportation is added to the input file. This equation is built on top of the heat transfer equation, so some of the terminology in the input file follows those in the heat equation, e.g. "Conductivity", "Temperature".
+In addition to the fluid equation, the advection-diffusion equation that governs the dye transportation is added to the input file. 
 
-Some noticeable setting in the input file are:
-
+The `Coupled` keyword set to `false` under the `<Add_equation type="scalarTransport" >` specifies a one-way coupling and the dye is passively transported by the flow.
 ```
-   Coupled: f
-```
-
-This tell the solver that this is a one-way coupling study, and the dye is passively transported by the flow.
-
-```
-   Output: Alias {
-      Temperature: Concentration
-   }
+<Coupled> false </Coupled>
 ```
 
-This renames  "Temperature" to "Concentration" for ease of interpretation.
+The **Temperature** quantities normally output for the simulation are renamed `Concentration` 
 
 ```
-   Add BC: lumen_inlet {
-      Type: Dir
-      Time dependence: Steady
-      Value: 1.0
-   }
+<Output type="Alias" >
+  <Temperature> Concentration </Temperature>
+</Output>
 ```
 
-The dye is constantly released at the inlet.
+The inlfow boundary condition specifies a contant inflow of dye
+```
+<Add_BC name="lumen_inlet" >
+  <Type> Dirichlet </Type>
+  <Time_dependence> Steady </Time_dependence>
+  <Value> 1.0 </Value>
+</Add_BC>
+```
