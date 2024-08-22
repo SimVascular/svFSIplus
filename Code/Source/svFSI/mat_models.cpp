@@ -758,39 +758,55 @@ void get_pk2cc_dev(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& 
       double Ess = Inv6 - 1.0;
       double Efs = Inv8;
 
+      // Smoothed Heaviside function
+      double c4f  = 1.0 / (1.0 + exp(-stM.khs*Eff));
+      double c4s  = 1.0 / (1.0 + exp(-stM.khs*Ess));
+      
+      // Approx. derivative of smoothed heaviside function
+      double dc4f = 0.25*stM.khs*exp(-stM.khs*abs(Eff));
+      double dc4s = 0.25*stM.khs*exp(-stM.khs*abs(Ess));
+
+      // Isotropic + fiber-sheet interaction stress
       double g1 = stM.a * exp(stM.b*(Inv1-3.0));
       double g2 = 2.0 * stM.afs * Efs * exp(stM.bfs*Efs*Efs);
       auto Hfs = mat_symm_prod(fl.col(0), fl.col(1), nsd);
       auto Sb = g1*IDm + g2*Hfs;
 
-      Efs  = Efs * Efs;
-      g1 = 2.0*J4d*stM.b*g1;
-      g2 = 4.0*J4d*stM.afs*(1.0 + 2.0*stM.bfs*Efs)* exp(stM.bfs*Efs);
+      // Isotropic + fiber-sheet interaction stiffness
+      g1 = g1 * 2.0 * J4d * stM.b;
+      g2 = g2 * 2.0 * J4d * (1.0 + 2.0*stM.bfs*Efs*Efs);
       auto CCb = g1 * ten_dyad_prod(IDm, IDm, nsd) + g2 * ten_dyad_prod(Hfs, Hfs, nsd);
 
-      // Fiber reinforcement/active stress
-      //
-      if (Eff > 0.0) {
-        g1 = Tfa;
-        g1  = g1 + 2.0 * stM.aff * Eff * exp(stM.bff*Eff*Eff);
-        auto Hff = mat_dyad_prod(fl.col(0), fl.col(0), nsd);
-        Sb  = Sb + g1*Hff;
 
-        Eff = Eff * Eff;
-        g1  = 4.0*J4d*stM.aff*(1.0 + 2.0*stM.bff*Eff)*exp(stM.bff*Eff);
-        CCb = CCb + g1*ten_dyad_prod(Hff, Hff, nsd);
-      }
+      // Fiber-fiber interaction stress + additional reinforcement (Tfa)
+      double rexp = exp(stM.bff*Eff*Eff);
+      g1 = c4f * Eff * rexp;
+      g1 = g1 + (0.5*dc4f/stM.bff) * (rexp - 1.0);
+      g1 = 2.0 * stM.aff * g1 + Tfa;
+      auto Hff = mat_dyad_prod(fl.col(0), fl.col(0), nsd);
+      Sb  = Sb + g1*Hff;
 
-      if (Ess >  0.0) {
-        g2 = 2.0 * stM.ass * Ess * exp(stM.bss*Ess*Ess);
-        auto Hss = mat_dyad_prod(fl.col(1), fl.col(1), nsd);
-        Sb  = Sb + g2*Hss;
+      // Fiber-fiber interaction stiffness
+      g1 = c4f * (1.0 + 2.0*stM.bff*Eff*Eff);
+      g1 = (g1 + 2.0*dc4f*Eff) * rexp;
+      g1 = 4.0 * J4d * stM.aff * g1;
+      CCb = CCb + g1*ten_dyad_prod(Hff, Hff, nsd);
 
-        Ess = Ess * Ess;
-        g2  = 4.0*J4d*stM.ass*(1.0 + 2.0*stM.bss*Ess)*exp(stM.bss*Ess);
-        CCb = CCb + g2*ten_dyad_prod(Hss, Hss, nsd);
-      }
+      // Sheet-sheet interaction stress + additional cross-fiber stress (Tsa)
+      rexp = exp(stM.bss*Ess*Ess);
+      g2 = c4s * Ess * rexp;
+      g2 = g2 + (0.5*dc4s/stM.bss) * (rexp - 1.0);
+      g2 = 2.0 * stM.ass * g2 + Tsa;
+      auto Hss = mat_dyad_prod(fl.col(1), fl.col(1), nsd);
+      Sb  = Sb + g2*Hss;
 
+      // Sheet-sheet interaction stiffness
+      g2 = c4s * (1.0 + 2.0*stM.bss*Ess*Ess);
+      g2 = (g2 + 2.8*dc4s*Ess) * rexp;
+      g2 = 4.0 * J4d * stM.ass * g2;
+      CCb = CCb + g2*ten_dyad_prod(Hss, Hss, nsd);
+      
+      // Isochoric 2nd-Piola-Kirchoff stress and stiffness tensors
       double r1 = J2d*mat_ddot(C, Sb, nsd) / nd;
       S = J2d*Sb - r1*Ci;
 
@@ -817,11 +833,11 @@ void get_pk2cc_dev(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& 
       if (nfd != 2) {
         //err = "Min fiber directions not defined for Holzapfel material model (2)"
       }
-      double Inv4 = J2d*norm(fl.col(0), mat_mul(C, fl.col(0)));
-      double Inv6 = J2d*norm(fl.col(1), mat_mul(C, fl.col(1)));
-      double Inv8 = J2d*norm(fl.col(0), mat_mul(C, fl.col(1)));
+      double Inv4 = norm(fl.col(0), mat_mul(C, fl.col(0)));
+      double Inv6 = norm(fl.col(1), mat_mul(C, fl.col(1)));
+      double Inv8 = norm(fl.col(0), mat_mul(C, fl.col(1)));
 
-      double fds = norm(fl.col(0),fl.col(1));
+      //double fds = norm(fl.col(0),fl.col(1));
       double Eff = Inv4 - 1.0;
       double Ess = Inv6 - 1.0;
       double Efs = Inv8;
@@ -834,15 +850,11 @@ void get_pk2cc_dev(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& 
       double dc4f = 0.25*stM.khs*exp(-stM.khs*abs(Eff));
       double dc4s = 0.25*stM.khs*exp(-stM.khs*abs(Ess));
 
-      // Contribution of dilational penalty terms to S and CC
-      double p  = 0.0;
-      double pl = 0.0;
-
       // Isochoric stress and stiffness
       double g1 = stM.a * exp(stM.b*(Inv1-3.0));
       auto Sb = g1*IDm;
-
       double r1 = J2d/nd*mat_fun::mat_ddot(C,Sb,nsd);
+
       g1 = g1*2.0*J4d*stM.b;
       auto CCb = g1 * ten_dyad_prod(IDm, IDm, nsd);
 
@@ -853,49 +865,47 @@ void get_pk2cc_dev(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& 
       CC = ten_ddot(CCb, PP, nsd);
       CC = ten_transpose(CC, nsd);
       CC = ten_ddot(PP, CC, nsd);
-      CC = CC - 2.0/nd * (ten_dyad_prod(Ci, S, nsd) + ten_dyad_prod(S, Ci, nsd));
+      CC = CC + 2.0*r1 * (ten_symm_prod(Ci, Ci, nsd) - 
+                1.0/nd * ten_dyad_prod(Ci, Ci, nsd)) 
+              - 2.0/nd * (ten_dyad_prod(Ci, S, nsd) + ten_dyad_prod(S, Ci, nsd));
 
-      // Add pressure contribution to stress and stiffness
-      S += p*J*Ci;
-      CC = CC + 2.0*(r1 - p*J)*ten_symm_prod(Ci, Ci, nsd) + (pl*J - 2.0*r1/nd)*ten_dyad_prod(Ci, Ci, nsd);
+      // Now add aniostropic components
+      // Fiber-sheet interaction terms
+      g1 = 2.0 * stM.afs * exp(stM.bfs*Efs*Efs);
+      auto Hfs = mat_symm_prod(fl.col(0), fl.col(1), nsd);
+      S  = S + g1*Efs*Hfs;
 
-      // Fiber reinforcement/active stress
-      //
-      if (Efs > 0.0) {
-        g1   = 2.0 * stM.afs * exp(stM.bfs*Efs*Efs);
-        auto Hfs = mat_dyad_prod(fl.col(0), fl.col(1), nsd);
-        S  = S + g1*Efs*fds*Hfs;
-        g1   = g1 * 2.0*(1.0 + 2.0*stM.bfs*Efs*Efs);
-        g1   = g1 * fds * fds;
-        CC = CC + g1*ten_dyad_prod(Hfs, Hfs, nsd);
-      }
+      g1 = g1 * 2.0*(1.0 + 2.0*stM.bfs*Efs*Efs);
 
-      if (Eff > 0.0) {
-        double rexp = exp(stM.bff * Eff * Eff);
-        g1   = c4f*Eff*rexp;
-        g1   = g1 + (0.5*dc4f/stM.bff)*(rexp - 1.0);
-        g1   = (2.0*stM.aff*g1) + Tfa;
-        auto Hff = mat_dyad_prod(fl.col(0), fl.col(0), nsd);
-        S  = S + g1*Hff;
-        g1   = c4f*(1.0 + (2.0*stM.bff*Eff*Eff));
-        g1   = (g1 + (2.0*dc4f*Eff))*rexp;
-        g1   = 4.0*stM.aff*g1;
-        CC = CC + g1*ten_dyad_prod(Hff, Hff, nsd);
-      }
+      CC = CC + g1*ten_dyad_prod(Hfs, Hfs, nsd);
 
-      if (Ess >  0.0) {
-        double rexp2 = exp(stM.bss * Ess * Ess);
-        double g2   = c4s*Ess*rexp2;
-        g2   = g2 + (0.5*dc4s/stM.bss)*(rexp2 - 1.0);
-        g2   = 2.0*stM.ass*g2 + Tsa;
-        g2 = 2.0 * stM.ass * Ess * exp(stM.bss*Ess*Ess);
-        auto Hss = mat_dyad_prod(fl.col(1), fl.col(1), nsd);
-        S  = S + g2*Hss;
-        g2   = c4s*(1.0 + (2.0*stM.bss*Ess*Ess));
-        g2   = (g2 + (2.0*dc4s*Ess))*rexp2;
-        g2   = 4.0*stM.ass*g2;
-        CC = CC + g1*ten_dyad_prod(Hss, Hss, nsd);
-      }
+      // Fiber-fiber interaction stress + additional reinforcement (Tfa)
+      double rexp = exp(stM.bff * Eff * Eff);
+      g1 = c4f*Eff*rexp;
+      g1 = g1 + (0.5*dc4f/stM.bff)*(rexp - 1.0);
+      g1 = (2.0*stM.aff*g1) + Tfa;
+      auto Hff = mat_dyad_prod(fl.col(0), fl.col(0), nsd);
+      S  = S + g1*Hff;
+
+      // Fiber-fiber interaction stiffness
+      g1 = c4f*(1.0 + (2.0*stM.bff*Eff*Eff));
+      g1 = (g1 + (2.0*dc4f*Eff))*rexp;
+      g1 = 4.0*stM.aff*g1;
+      CC = CC + g1*ten_dyad_prod(Hff, Hff, nsd);
+
+      // Sheet-sheet interaction stress + additional cross-fiber stress (Tsa)
+      rexp = exp(stM.bss * Ess * Ess);
+      double g2 = c4s*Ess*rexp;
+      g2 = g2 + (0.5*dc4s/stM.bss)*(rexp - 1.0);
+      g2 = 2.0*stM.ass*g2 + Tsa;
+      auto Hss = mat_dyad_prod(fl.col(1), fl.col(1), nsd);
+      S  = S + g2*Hss;
+
+      // Sheet-sheet interaction stiffness
+      g2   = c4s*(1.0 + (2.0*stM.bss*Ess*Ess));
+      g2   = (g2 + (2.0*dc4s*Ess))*rexp;
+      g2   = 4.0*stM.ass*g2;
+      CC = CC + g2*ten_dyad_prod(Hss, Hss, nsd);
     } break;
 
 

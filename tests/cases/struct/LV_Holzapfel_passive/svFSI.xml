@@ -52,7 +52,7 @@
 
    <Coupled> true </Coupled>
    <Min_iterations> 3 </Min_iterations>  
-   <Max_iterations> 4 </Max_iterations> 
+   <Max_iterations> 20 </Max_iterations> 
    <Tolerance> 1e-10 </Tolerance> 
 
    <Density> 1.0 </Density>                           <!-- g/cm^3 -->
@@ -71,7 +71,7 @@
      <b4s> 11.12 </b4s>
      <afs> 2160.0 </afs>
      <bfs> 11.436 </bfs>
-     <k> 100.0 </k>
+     <k> 100000.0 </k>
    </Constitutive_model>
 
    <Dilational_penalty_model> ST91 </Dilational_penalty_model>
