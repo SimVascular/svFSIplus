@@ -1,11 +1,11 @@
 
 # **Problem Description**
 
-Simulate a pulsatile flow in a pipe with a deformable wall using the coupled momentum method (CMM). Only a few time steps are tested and compared. Pusaltile inflow and RCR are used as the inflow and outflow boundary conditions (BCs), respectively. 
+Simulate the fluid-structure interaction of a pipe with a deformable wall using the coupled momentum method (CMM). Only a few time steps are tested and compared. Pusaltile inflow and RCR are used as the inflow and outflow boundary conditions (BCs), respectively. 
 
 ## Solution workflow
 
-This problem is solved in three major steps:
+This problem is solved in three major steps
 
 1. Solve for fluid flow with a rigid wall and using the same inflow and outflow BCs. 
 
@@ -13,17 +13,17 @@ This problem is solved in three major steps:
 
 3. Start CMM simulation with the intial pressure and velocity fields from the rigid wall simulation and the intial displacement field given by 2a or the presstress field by 2b.
 
-## Rigid Wall Simulation (Step 1)
+## Step 1: Rigid Wall Simulation
 
 A python script (calcMeanPressTrac.py) is available in the rigid wall solution folder to obtain a mean pressure/traction on the wall used for **Setp 2**.
 
-## Inflation (Step 2)
+## Step2: Inflation
 
-Four settings in the input file need closer attention when performing inflation step for CMM:
+Four settings in the input file need closer attention when performing inflation step for CMM
 
 ### (I) Load mesh as shell surface
 
-The inflation step is performed on the wall set as a shell,
+The inflation step is performed on the wall set as a shell
 
 ```
 <Add_mesh name="wall"> 
@@ -34,26 +34,23 @@ The inflation step is performed on the wall set as a shell,
 
 ### (II) Set Initialize keyword
 
-Within <Add_equation type="CMM">, the keyword <Initialize> needs to be set to "inflate":
+The CMM equation can be initialized in two ways
+
+1) Inflate the pipe wall 
 ```
 <Initialize> inflate </Initialize>
 ```
-Alternately, one could also prestress the vessel wall by using the prestress option:
+
+2) Prestress the pipe wall 
 ```
 <Prestress> true </Prestress>
 <Initialize> prestress </Initialize>
 ```
-and output the stress field as well:
-```
-<Output type="Spatial">
-  <Displacement> true </Displacement>
-  <Stress> true </Stress>
-</Output>
-```
+
 
 ### (III) Diastolic loading
 
-CMM is initialized via inflation or prestress approaches by applying a diastolic load on the wall. This is performed either using a constant pressure or traction, or from a spatially-varying pressure or traction computed from the rigid wall flow simulation. Examples are provided below for constant pressure,
+CMM is initialized via inflation or prestress approaches by applying a diastolic load on the wall. This is performed either using a constant pressure or traction, or from a spatially-varying pressure or traction computed from the rigid wall flow simulation. Examples are provided below for constant pressure
 
 ```
 <Add_BF mesh="wall">
@@ -61,7 +58,8 @@ CMM is initialized via inflation or prestress approaches by applying a diastolic
   <Value> 8000.0 </Value>
 </Add_BF>
 ```
-and, spatially-varying traction field as,
+
+and spatially-varying traction field
 ```
 <Add_BF mesh="wall">
   <Type> Trac </Type>
