@@ -68,11 +68,11 @@ and spatially-varying traction field
 </Add_BF>
 ```
 
-Note that because the wall is modeled as a shell surface, the above setting applies pressure/traction as a *body force* on the shell surface using `Add BF` keyword and **not** as a *surface traction* using the `Add BC` keyword.
+Note that because the wall is modeled as a shell surface the above setting applies pressure/traction as a *body force* on the shell surface using `Add BF` keyword and not as a *surface traction* using the `Add BC` keyword.
 
 
-## FSI using CMM (Step 3)
-To run a CMM simulation, complete mesh files (instead of a wall surface mesh) are added into the solver input file. The parameters including <Prestress> and <Initialize> for **Step 2** need to be removed. 
+## Step 3: Perform the CMM simulation
+To run a CMM simulation the complete mesh files (instead of a wall surface mesh) are added into the solver input file. The parameters including <Prestress> and <Initialize> for **Step 2** need to be removed. 
  
 ### (I) Initialize flow field
 
@@ -100,7 +100,7 @@ Results from **Step 2** will be used for the wall BC. If an inflation procedure 
 </Add_BC>
 ```
 
-If the prestress procedure is employed in **Step 2**, replace <Initial_displacements_file_path> with <Prestress_file_path>:
+If the prestress procedure is employed in **Step 2**, replace `<Initial_displacements_file_path>` with `<Prestress_file_path>`
 
 ```
 <Add_BC name="lumen_wall" > 
