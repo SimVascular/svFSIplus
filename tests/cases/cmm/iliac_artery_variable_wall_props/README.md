@@ -6,7 +6,7 @@ Simulate the fluid-structure interaction in an anatomic model of the abdominal a
 ## Material properties
 The arterial wall material properties are defined using spatially varying values for elasticity modulus and wall thickness. These values are read in from a VTK-format **svFSI_var_wall_props.vtp** file containing the two *PointData DataArray*s named **Thickness** and **Elasticity modulus**.
 
-The **svFSI_var_wall_props.vtp** file is specified in using the **Wall_properties_file_path** parameter
+The **svFSI_var_wall_props.vtp** file is specified in using the `Wall_properties_file_path` keyword
 ```
 <Variable_wall_properties mesh_name="wall">
     <Wall_properties_file_path> ../svFSI_var_wall_props.vtp </Wall_properties_file_path>
@@ -32,7 +32,7 @@ The aorta inlet boundary condition uses user-defined pulsatile flow data read in
 .
 .
 ```
-The  **bct.vtp** file is specified using the **Bct_file_path** parameter
+The  **bct.vtp** file is specified using the ``Bct_file_path` keyword
 ```
 <Add_BC name="inlet_aorta" > 
    <Type> Dir </Type>
