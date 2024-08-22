@@ -51,6 +51,9 @@ protected:
     double rel_tol = 1e-3; // relative tolerance for comparing values
     double abs_tol = 1e-11; // absolute tolerance for comparing values
     double delta = 1e-7; // perturbation scaling factor
+    double delta_max = 1e-3; // maximum perturbation scaling factor
+    double delta_min = 1e-4; // minimum perturbation scaling factor
+    int order = 2; // Order of finite difference method
     bool verbose = false; // Show values of S, dE, SdE and dPsi
 
     // Add the test object
@@ -109,10 +112,20 @@ TEST_F(STRUCT_NeoHookeanTest, TestPK2StressRandomF) {
     // Compute reference PK2 stress with finite difference for random F
     create_random_F(F);
     double S_ref[3][3]; // PK2 stress
-    TestNH->calcPK2StressFiniteDifference(F, delta, S_ref);
+    TestNH->calcPK2StressFiniteDifference(F, delta, order, S_ref);
 
     // Check PK2 stress against reference value
     TestNH->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for random F
+TEST_F(STRUCT_NeoHookeanTest, TestPK2StressConvergenceOrderRandomF) {
+    verbose = true; // Show values of S, dE, SdE and dPsi
+
+    // Check order of convergence between finite difference and get_pk2cc() PK2 stress
+    // for random F
+    create_random_F(F);
+    TestNH->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
 }
 
 // Test PK2 stress consistent with strain energy for random F
@@ -168,10 +181,20 @@ TEST_F(USTRUCT_NeoHookeanTest, TestPK2StressRandomF) {
     // Compute reference PK2 stress with finite difference for random F
     create_random_F(F);
     double S_ref[3][3]; // PK2 stress
-    TestNH->calcPK2StressFiniteDifference(F, delta, S_ref);
+    TestNH->calcPK2StressFiniteDifference(F, delta, order, S_ref);
 
     // Check PK2 stress against reference value
     TestNH->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for random F
+TEST_F(USTRUCT_NeoHookeanTest, TestPK2StressConvergenceOrderRandomF) {
+    verbose = true; // Show values of S, dE, SdE and dPsi
+
+    // Check order of convergence between finite difference and get_pk2cc() PK2 stress
+    // for random F
+    create_random_F(F);
+    TestNH->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
 }
 
 // Test PK2 stress consistent with strain energy for random F
@@ -211,6 +234,9 @@ protected:
     double rel_tol = 1e-3; // relative tolerance for comparing dPsi and dS with values from svFSI
     double abs_tol = 1e-11; // absolute tolerance for comparing values
     double delta = 1e-7; // perturbation scaling factor
+    double delta_max = 1e-3; // maximum perturbation scaling factor
+    double delta_min = 1e-4; // minimum perturbation scaling factor
+    int order = 2; // Order of finite difference method
     bool verbose = false; // Show values of S, dE, SdE and dPsi
 
 
@@ -271,10 +297,20 @@ TEST_F(STRUCT_MooneyRivlinTest, TestPK2StressRandomF) {
     // Compute reference PK2 stress with finite difference for random F
     create_random_F(F);
     double S_ref[3][3]; // PK2 stress
-    TestMR->calcPK2StressFiniteDifference(F, delta, S_ref);
+    TestMR->calcPK2StressFiniteDifference(F, delta, order, S_ref);
 
     // Check PK2 stress against reference value
     TestMR->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for random F
+TEST_F(STRUCT_MooneyRivlinTest, TestPK2StressConvergenceOrderRandomF) {
+    verbose = true; // Show values of S, dE, SdE and dPsi
+
+    // Check order of convergence between finite difference and get_pk2cc() PK2 stress
+    // for random F
+    create_random_F(F);
+    TestMR->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
 }
 
 // Test PK2 stress consistent with strain energy for random F
@@ -330,10 +366,20 @@ TEST_F(USTRUCT_MooneyRivlinTest, TestPK2StressRandomF) {
     // Compute reference PK2 stress with finite difference for random F
     create_random_F(F);
     double S_ref[3][3]; // PK2 stress
-    TestMR->calcPK2StressFiniteDifference(F, delta, S_ref);
+    TestMR->calcPK2StressFiniteDifference(F, delta, order, S_ref);
 
     // Check PK2 stress against reference value
     TestMR->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for random F
+TEST_F(USTRUCT_MooneyRivlinTest, TestPK2StressConvergenceOrderRandomF) {
+    verbose = true; // Show values of S, dE, SdE and dPsi
+
+    // Check order of convergence between finite difference and get_pk2cc() PK2 stress
+    // for random F
+    create_random_F(F);
+    TestMR->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
 }
 
 // Test PK2 stress consistent with strain energy for random F
@@ -375,9 +421,12 @@ protected:
     HolzapfelOgdenParams params;
     double F[3][3] = {}; // Deformation gradient
     int n_iter = 10;       // Number of random perturbations to test
-    double rel_tol = 1e-3; // relative tolerance for comparing dPsi and dS with values from svFSI
+    double rel_tol = 1e-5; // relative tolerance for comparing dPsi and dS with values from svFSI
     double abs_tol = 1e-11; // absolute tolerance for comparing values
-    double delta = 1e-7; // perturbation scaling factor
+    double delta = 1e-9; // perturbation scaling factor
+    double delta_max = 1e-3; // maximum perturbation scaling factor
+    double delta_min = 1e-4; // minimum perturbation scaling factor
+    int order = 2; // Order of finite difference method
     bool verbose = false; // Show values of S, dE, SdE and dPsi
 
     // Add the test object
@@ -480,10 +529,22 @@ TEST_F(STRUCT_HolzapfelOgdenTest, TestPK2StressTriaxialStretch) {
     
     // Compute reference PK2 stress with finite difference for triaxial stretch
     double S_ref[3][3]; // PK2 stress
-    TestHO->calcPK2StressFiniteDifference(F, delta, S_ref);
+    TestHO->calcPK2StressFiniteDifference(F, delta, order, S_ref);
     
     // Check PK2 stress against reference value
     TestHO->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for triaxial stretch
+TEST_F(STRUCT_HolzapfelOgdenTest, TestPK2StressConvergenceOrderTriaxialStretch) {
+    verbose = true; // Show values of S, dE, SdE and dPsi
+
+    // Check order of convergence between finite difference and get_pk2cc() PK2 stress
+    // for triaxial stretch
+    double F[3][3] = {{1.1, 0.0, 0.0},
+                       {0.0, 1.2, 0.0},
+                       {0.0, 0.0, 1.3}};
+    TestHO->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
 }
 
 // Test PK2 stress for triaxial compression
@@ -497,10 +558,51 @@ TEST_F(STRUCT_HolzapfelOgdenTest, TestPK2StressTriaxialCompression) {
     
     // Compute reference PK2 stress with finite difference for triaxial compression
     double S_ref[3][3]; // PK2 stress
-    TestHO->calcPK2StressFiniteDifference(F, delta, S_ref);
+    TestHO->calcPK2StressFiniteDifference(F, delta, order, S_ref);
     
     // Check PK2 stress against reference value
     TestHO->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for triaxial compression
+TEST_F(STRUCT_HolzapfelOgdenTest, TestPK2StressConvergenceOrderTriaxialCompression) {
+    verbose = true; // Show values of S, dE, SdE and dPsi
+
+    // Check order of convergence between finite difference and get_pk2cc() PK2 stress
+    // for triaxial compression
+    double F[3][3] = {{0.9, 0.0, 0.0},
+                       {0.0, 0.8, 0.0},
+                       {0.0, 0.0, 0.7}};
+    TestHO->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
+}
+
+// Test PK2 stress for biaxial stretch/compression
+TEST_F(STRUCT_HolzapfelOgdenTest, TestPK2StressBiaxialStretchCompression) {
+    //verbose = true; // Show values of S and S_ref
+
+    // Check biaxial stretch/compression produces PK2 stress consistent with svFSI
+    double F[3][3] = {{1.2, 0.0, 0.0},
+                       {0.0, 0.8, 0.0},
+                       {0.0, 0.0, 1.0}};
+    
+    // Compute reference PK2 stress with finite difference for biaxial stretch
+    double S_ref[3][3]; // PK2 stress
+    TestHO->calcPK2StressFiniteDifference(F, delta, order, S_ref);
+    
+    // Check PK2 stress against reference value
+    TestHO->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for biaxial stretch/compression
+TEST_F(STRUCT_HolzapfelOgdenTest, TestPK2StressConvergenceOrderBiaxialStretchCompression) {
+    verbose = true; // Show values of S, dE, SdE and dPsi
+
+    // Check order of convergence between finite difference and get_pk2cc() PK2 stress
+    // for biaxial stretch/compression
+    double F[3][3] = {{1.2, 0.0, 0.0},
+                       {0.0, 0.8, 0.0},
+                       {0.0, 0.0, 1.0}};
+    TestHO->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
 }
 
 // Test PK2 stress with finite difference for random F
@@ -510,10 +612,20 @@ TEST_F(STRUCT_HolzapfelOgdenTest, TestPK2StressRandomF) {
     // Compute reference PK2 stress with finite difference for F = I + random perturbations
     create_random_perturbed_identity_F(F, 0.5);
     double S_ref[3][3]; // PK2 stress
-    TestHO->calcPK2StressFiniteDifference(F, delta, S_ref);
+    TestHO->calcPK2StressFiniteDifference(F, delta, order, S_ref);
 
     // Check PK2 stress against reference value
     TestHO->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for random F
+TEST_F(STRUCT_HolzapfelOgdenTest, TestPK2StressConvergenceOrderRandomF) {
+    verbose = true; // Show values of S, dE, SdE and dPsi
+
+    // Check order of convergence between finite difference and get_pk2cc() PK2 stress
+    // for F = I + random perturbations
+    create_random_perturbed_identity_F(F, 0.5);
+    TestHO->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
 }
 
 // Test PK2 stress consistent with strain energy for random F
@@ -573,10 +685,22 @@ TEST_F(USTRUCT_HolzapfelOgdenTest, TestPK2StressTriaxialStretch) {
     
     // Compute reference PK2 stress with finite difference for triaxial stretch
     double S_ref[3][3]; // PK2 stress
-    TestHO->calcPK2StressFiniteDifference(F, delta, S_ref);
+    TestHO->calcPK2StressFiniteDifference(F, delta, order, S_ref);
     
     // Check PK2 stress against reference value
     TestHO->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for triaxial stretch
+TEST_F(USTRUCT_HolzapfelOgdenTest, TestPK2StressConvergenceOrderTriaxialStretch) {
+    verbose = true; // Show values of S, dE, SdE and dPsi
+
+    // Check order of convergence between finite difference and get_pk2cc() PK2 stress
+    // for triaxial stretch
+    double F[3][3] = {{1.1, 0.0, 0.0},
+                       {0.0, 1.2, 0.0},
+                       {0.0, 0.0, 1.3}};
+    TestHO->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
 }
 
 // Test PK2 stress for triaxial compression
@@ -590,10 +714,51 @@ TEST_F(USTRUCT_HolzapfelOgdenTest, TestPK2StressTriaxialCompression) {
     
     // Compute reference PK2 stress with finite difference for triaxial compression
     double S_ref[3][3]; // PK2 stress
-    TestHO->calcPK2StressFiniteDifference(F, delta, S_ref);
+    TestHO->calcPK2StressFiniteDifference(F, delta, order, S_ref);
     
     // Check PK2 stress against reference value
     TestHO->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for triaxial compression
+TEST_F(USTRUCT_HolzapfelOgdenTest, TestPK2StressConvergenceOrderTriaxialCompression) {
+    verbose = true; // Show values of S, dE, SdE and dPsi
+
+    // Check order of convergence between finite difference and get_pk2cc() PK2 stress
+    // for triaxial compression
+    double F[3][3] = {{0.9, 0.0, 0.0},
+                       {0.0, 0.8, 0.0},
+                       {0.0, 0.0, 0.7}};
+    TestHO->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
+}
+
+// Test PK2 stress for biaxial stretch/compression
+TEST_F(USTRUCT_HolzapfelOgdenTest, TestPK2StressBiaxialStretchCompression) {
+    //verbose = true; // Show values of S and S_ref
+
+    // Check biaxial stretch/compression produces PK2 stress consistent with svFSI
+    double F[3][3] = {{1.2, 0.0, 0.0},
+                       {0.0, 0.8, 0.0},
+                       {0.0, 0.0, 1.0}};
+    
+    // Compute reference PK2 stress with finite difference for biaxial stretch
+    double S_ref[3][3]; // PK2 stress
+    TestHO->calcPK2StressFiniteDifference(F, delta, order, S_ref);
+    
+    // Check PK2 stress against reference value
+    TestHO->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for biaxial stretch/compression
+TEST_F(USTRUCT_HolzapfelOgdenTest, TestPK2StressConvergenceOrderBiaxialStretchCompression) {
+    verbose = true; // Show values of S, dE, SdE and dPsi
+
+    // Check order of convergence between finite difference and get_pk2cc() PK2 stress
+    // for biaxial stretch/compression
+    double F[3][3] = {{1.2, 0.0, 0.0},
+                       {0.0, 0.8, 0.0},
+                       {0.0, 0.0, 1.0}};
+    TestHO->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
 }
 
 // Test PK2 stress with finite difference for random F
@@ -603,10 +768,20 @@ TEST_F(USTRUCT_HolzapfelOgdenTest, TestPK2StressRandomF) {
     // Compute reference PK2 stress with finite difference for F = I + random perturbations
     create_random_perturbed_identity_F(F, 0.5);
     double S_ref[3][3]; // PK2 stress
-    TestHO->calcPK2StressFiniteDifference(F, delta, S_ref);
+    TestHO->calcPK2StressFiniteDifference(F, delta, order, S_ref);
 
     // Check PK2 stress against reference value
     TestHO->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for random F
+TEST_F(USTRUCT_HolzapfelOgdenTest, TestPK2StressConvergenceOrderRandomF) {
+    verbose = true; // Show values of S, dE, SdE and dPsi
+
+    // Check order of convergence between finite difference and get_pk2cc() PK2 stress
+    // for F = I + random perturbations
+    create_random_perturbed_identity_F(F, 0.5);
+    TestHO->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
 }
 
 // Test PK2 stress consistent with strain energy for random F
@@ -646,6 +821,9 @@ protected:
     double rel_tol = 1e-3; // relative tolerance for comparing dPsi and dS with values from svFSI
     double abs_tol = 1e-11; // absolute tolerance for comparing values
     double delta = 1e-7; // perturbation scaling factor
+    double delta_max = 1e-3; // maximum perturbation scaling factor
+    double delta_min = 1e-4; // minimum perturbation scaling factor
+    int order = 2; // Order of finite difference method
     bool verbose = false; // Show values of S, dE, SdE and dPsi
 
     // Add the test object
@@ -748,10 +926,22 @@ TEST_F(STRUCT_HolzapfelOgdenMATest, TestPK2StressTriaxialStretch) {
     
     // Compute reference PK2 stress with finite difference for triaxial stretch
     double S_ref[3][3]; // PK2 stress
-    TestHO_ma->calcPK2StressFiniteDifference(F, delta, S_ref);
+    TestHO_ma->calcPK2StressFiniteDifference(F, delta, order, S_ref);
     
     // Check PK2 stress against reference value
     TestHO_ma->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for triaxial stretch
+TEST_F(STRUCT_HolzapfelOgdenMATest, TestPK2StressConvergenceOrderTriaxialStretch) {
+    verbose = true; // Show values of S, dE, SdE and dPsi
+
+    // Check order of convergence between finite difference and get_pk2cc() PK2 stress
+    // for triaxial stretch
+    double F[3][3] = {{1.1, 0.0, 0.0},
+                       {0.0, 1.2, 0.0},
+                       {0.0, 0.0, 1.3}};
+    TestHO_ma->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
 }
 
 // Test PK2 stress for triaxial compression
@@ -765,10 +955,51 @@ TEST_F(STRUCT_HolzapfelOgdenMATest, TestPK2StressTriaxialCompression) {
     
     // Compute reference PK2 stress with finite difference for triaxial compression
     double S_ref[3][3]; // PK2 stress
-    TestHO_ma->calcPK2StressFiniteDifference(F, delta, S_ref);
+    TestHO_ma->calcPK2StressFiniteDifference(F, delta, order, S_ref);
     
     // Check PK2 stress against reference value
     TestHO_ma->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for triaxial compression
+TEST_F(STRUCT_HolzapfelOgdenMATest, TestPK2StressConvergenceOrderTriaxialCompression) {
+    verbose = true; // Show values of S, dE, SdE and dPsi
+
+    // Check order of convergence between finite difference and get_pk2cc() PK2 stress
+    // for triaxial compression
+    double F[3][3] = {{0.9, 0.0, 0.0},
+                       {0.0, 0.8, 0.0},
+                       {0.0, 0.0, 0.7}};
+    TestHO_ma->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
+}
+
+// Test PK2 stress for biaxial stretch/compression
+TEST_F(STRUCT_HolzapfelOgdenMATest, TestPK2StressBiaxialStretchCompression) {
+    //verbose = true; // Show values of S and S_ref
+
+    // Check biaxial stretch/compression produces PK2 stress consistent with svFSI
+    double F[3][3] = {{1.2, 0.0, 0.0},
+                       {0.0, 0.8, 0.0},
+                       {0.0, 0.0, 1.0}};
+    
+    // Compute reference PK2 stress with finite difference for biaxial stretch
+    double S_ref[3][3]; // PK2 stress
+    TestHO_ma->calcPK2StressFiniteDifference(F, delta, order, S_ref);
+    
+    // Check PK2 stress against reference value
+    TestHO_ma->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for biaxial stretch/compression
+TEST_F(STRUCT_HolzapfelOgdenMATest, TestPK2StressConvergenceOrderBiaxialStretchCompression) {
+    verbose = true; // Show values of S, dE, SdE and dPsi
+
+    // Check order of convergence between finite difference and get_pk2cc() PK2 stress
+    // for biaxial stretch/compression
+    double F[3][3] = {{1.2, 0.0, 0.0},
+                       {0.0, 0.8, 0.0},
+                       {0.0, 0.0, 1.0}};
+    TestHO_ma->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
 }
 
 // Test PK2 stress with finite difference for random F
@@ -778,10 +1009,20 @@ TEST_F(STRUCT_HolzapfelOgdenMATest, TestPK2StressRandomF) {
     // Compute reference PK2 stress with finite difference for F = I + random perturbations
     create_random_perturbed_identity_F(F, 0.5);
     double S_ref[3][3]; // PK2 stress
-    TestHO_ma->calcPK2StressFiniteDifference(F, delta, S_ref);
+    TestHO_ma->calcPK2StressFiniteDifference(F, delta, order, S_ref);
 
     // Check PK2 stress against reference value
     TestHO_ma->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for random F
+TEST_F(STRUCT_HolzapfelOgdenMATest, TestPK2StressConvergenceOrderRandomF) {
+    verbose = true; // Show values of S, dE, SdE and dPsi
+
+    // Check order of convergence between finite difference and get_pk2cc() PK2 stress
+    // for F = I + random perturbations
+    create_random_perturbed_identity_F(F, 0.5);
+    TestHO_ma->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
 }
 
 // Test PK2 stress consistent with strain energy for random F
@@ -841,10 +1082,22 @@ TEST_F(USTRUCT_HolzapfelOgdenMATest, TestPK2StressTriaxialStretch) {
     
     // Compute reference PK2 stress with finite difference for triaxial stretch
     double S_ref[3][3]; // PK2 stress
-    TestHO_ma->calcPK2StressFiniteDifference(F, delta, S_ref);
+    TestHO_ma->calcPK2StressFiniteDifference(F, delta, order, S_ref);
     
     // Check PK2 stress against reference value
     TestHO_ma->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for triaxial stretch
+TEST_F(USTRUCT_HolzapfelOgdenMATest, TestPK2StressConvergenceOrderTriaxialStretch) {
+    verbose = true; // Show values of S, dE, SdE and dPsi
+
+    // Check order of convergence between finite difference and get_pk2cc() PK2 stress
+    // for triaxial stretch
+    double F[3][3] = {{1.1, 0.0, 0.0},
+                       {0.0, 1.2, 0.0},
+                       {0.0, 0.0, 1.3}};
+    TestHO_ma->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
 }
 
 // Test PK2 stress for triaxial compression
@@ -858,10 +1111,51 @@ TEST_F(USTRUCT_HolzapfelOgdenMATest, TestPK2StressTriaxialCompression) {
     
     // Compute reference PK2 stress with finite difference for triaxial compression
     double S_ref[3][3]; // PK2 stress
-    TestHO_ma->calcPK2StressFiniteDifference(F, delta, S_ref);
+    TestHO_ma->calcPK2StressFiniteDifference(F, delta, order, S_ref);
     
     // Check PK2 stress against reference value
     TestHO_ma->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for triaxial compression
+TEST_F(USTRUCT_HolzapfelOgdenMATest, TestPK2StressConvergenceOrderTriaxialCompression) {
+    verbose = true; // Show values of S, dE, SdE and dPsi
+
+    // Check order of convergence between finite difference and get_pk2cc() PK2 stress
+    // for triaxial compression
+    double F[3][3] = {{0.9, 0.0, 0.0},
+                       {0.0, 0.8, 0.0},
+                       {0.0, 0.0, 0.7}};
+    TestHO_ma->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
+}
+
+// Test PK2 stress for biaxial stretch/compression
+TEST_F(USTRUCT_HolzapfelOgdenMATest, TestPK2StressBiaxialStretchCompression) {
+    //verbose = true; // Show values of S and S_ref
+
+    // Check biaxial stretch/compression produces PK2 stress consistent with svFSI
+    double F[3][3] = {{1.2, 0.0, 0.0},
+                       {0.0, 0.8, 0.0},
+                       {0.0, 0.0, 1.0}};
+    
+    // Compute reference PK2 stress with finite difference for biaxial stretch
+    double S_ref[3][3]; // PK2 stress
+    TestHO_ma->calcPK2StressFiniteDifference(F, delta, order, S_ref);
+    
+    // Check PK2 stress against reference value
+    TestHO_ma->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for biaxial stretch/compression
+TEST_F(USTRUCT_HolzapfelOgdenMATest, TestPK2StressConvergenceOrderBiaxialStretchCompression) {
+    verbose = true; // Show values of S, dE, SdE and dPsi
+
+    // Check order of convergence between finite difference and get_pk2cc() PK2 stress
+    // for biaxial stretch/compression
+    double F[3][3] = {{1.2, 0.0, 0.0},
+                       {0.0, 0.8, 0.0},
+                       {0.0, 0.0, 1.0}};
+    TestHO_ma->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
 }
 
 // Test PK2 stress with finite difference for random F
@@ -871,10 +1165,20 @@ TEST_F(USTRUCT_HolzapfelOgdenMATest, TestPK2StressRandomF) {
     // Compute reference PK2 stress with finite difference for F = I + random perturbations
     create_random_perturbed_identity_F(F, 0.5);
     double S_ref[3][3]; // PK2 stress
-    TestHO_ma->calcPK2StressFiniteDifference(F, delta, S_ref);
+    TestHO_ma->calcPK2StressFiniteDifference(F, delta, order, S_ref);
 
     // Check PK2 stress against reference value
     TestHO_ma->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for random F
+TEST_F(USTRUCT_HolzapfelOgdenMATest, TestPK2StressConvergenceOrderRandomF) {
+    verbose = true; // Show values of S, dE, SdE and dPsi
+
+    // Check order of convergence between finite difference and get_pk2cc() PK2 stress
+    // for F = I + random perturbations
+    create_random_perturbed_identity_F(F, 0.5);
+    TestHO_ma->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
 }
 
 // Test PK2 stress consistent with strain energy for random F
@@ -919,6 +1223,9 @@ protected:
     double rel_tol = 1e-3; // relative tolerance for comparing dPsi and dS with values from svFSI
     double abs_tol = 1e-9; // absolute tolerance for comparing values
     double delta = 1e-7; // perturbation scaling factor
+    double delta_max = 1e0; // maximum perturbation scaling factor
+    double delta_min = 1e-1; // minimum perturbation scaling factor
+    int order = 2; // Order of finite difference method
     bool verbose = false; // Show values of S, dE, SdE and dPsi
 
     // Add the test object
@@ -1010,10 +1317,20 @@ TEST_F(STRUCT_QuadraticVolumetricPenaltyTest, TestPK2StressRandomF) {
     // Compute reference PK2 stress with finite difference for random F
     create_random_F(F);
     double S_ref[3][3]; // PK2 stress
-    TestQVP->calcPK2StressFiniteDifference(F, delta, S_ref);
+    TestQVP->calcPK2StressFiniteDifference(F, delta, order, S_ref);
 
     // Check PK2 stress against reference value
     TestQVP->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for random F
+TEST_F(STRUCT_QuadraticVolumetricPenaltyTest, TestPK2StressConvergenceOrderRandomF) {
+    verbose = true; // Show values of S, dE, SdE and dPsi
+
+    // Check order of convergence between finite difference and get_pk2cc() PK2 stress
+    // for random F
+    create_random_F(F);
+    TestQVP->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
 }
 
 // Test PK2 stress consistent with strain energy for random F
@@ -1090,6 +1407,9 @@ protected:
     double rel_tol = 1e-3; // relative tolerance for comparing dPsi and dS with values from svFSI
     double abs_tol = 1e-9; // absolute tolerance for comparing values
     double delta = 1e-7; // perturbation scaling factor
+    double delta_max = 1e-2; // maximum perturbation scaling factor
+    double delta_min = 1e-3; // minimum perturbation scaling factor
+    int order = 2; // Order of finite difference method
     bool verbose = false; // Show values of S, dE, SdE and dPsi
 
     // Add the test object
@@ -1181,10 +1501,20 @@ TEST_F(STRUCT_SimoTaylor91VolumetricPenaltyTest, TestPK2StressRandomF) {
     // Compute reference PK2 stress with finite difference for random F
     create_random_F(F);
     double S_ref[3][3]; // PK2 stress
-    TestST91->calcPK2StressFiniteDifference(F, delta, S_ref);
+    TestST91->calcPK2StressFiniteDifference(F, delta, order, S_ref);
 
     // Check PK2 stress against reference value
     TestST91->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for random F
+TEST_F(STRUCT_SimoTaylor91VolumetricPenaltyTest, TestPK2StressConvergenceOrderRandomF) {
+    verbose = true; // Show values of S, dE, SdE and dPsi
+
+    // Check order of convergence between finite difference and get_pk2cc() PK2 stress
+    // for random F
+    create_random_F(F);
+    TestST91->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
 }
 
 // Test PK2 stress consistent with strain energy for random F
@@ -1260,6 +1590,9 @@ protected:
     double rel_tol = 1e-3; // relative tolerance for comparing dPsi and dS with values from svFSI
     double abs_tol = 1e-9; // absolute tolerance for comparing values
     double delta = 1e-7; // perturbation scaling factor
+    double delta_max = 1e-2; // maximum perturbation scaling factor
+    double delta_min = 1e-3; // minimum perturbation scaling factor
+    int order = 2; // Order of finite difference method
     bool verbose = false; // Show values of S, dE, SdE and dPsi
 
     // Add the test object
@@ -1351,10 +1684,20 @@ TEST_F(STRUCT_Miehe94VolumetricPenaltyTest, TestPK2StressRandomF) {
     // Compute reference PK2 stress with finite difference for random F
     create_random_F(F);
     double S_ref[3][3]; // PK2 stress
-    TestM94->calcPK2StressFiniteDifference(F, delta, S_ref);
+    TestM94->calcPK2StressFiniteDifference(F, delta, order, S_ref);
 
     // Check PK2 stress against reference value
     TestM94->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for random F
+TEST_F(STRUCT_Miehe94VolumetricPenaltyTest, TestPK2StressConvergenceOrderRandomF) {
+    verbose = true; // Show values of S, dE, SdE and dPsi
+
+    // Check order of convergence between finite difference and get_pk2cc() PK2 stress
+    // for random F
+    create_random_F(F);
+    TestM94->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
 }
 
 // Test PK2 stress consistent with strain energy for random F

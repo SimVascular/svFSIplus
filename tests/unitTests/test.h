@@ -403,6 +403,25 @@ solidMechanicsTerms<N> calcSolidMechanicsTerms(const double F[N][N]) {
     return out;
 }
 
+/**
+ * @brief Computes a linear regression line y = mx + b for given x and y data.
+ * 
+ * @param x x data points.
+ * @param y y data points.
+ * @return std::pair<double, double> A pair containing the slope (m) and the y-intercept (b).
+ */
+std::pair<double, double> computeLinearRegression(const std::vector<double>& x, const std::vector<double>& y) {
+    int n = x.size();
+    double sum_x = std::accumulate(x.begin(), x.end(), 0.0);
+    double sum_y = std::accumulate(y.begin(), y.end(), 0.0);
+    double sum_xx = std::inner_product(x.begin(), x.end(), x.begin(), 0.0);
+    double sum_xy = std::inner_product(x.begin(), x.end(), y.begin(), 0.0);
+
+    double m = (n * sum_xy - sum_x * sum_y) / (n * sum_xx - sum_x * sum_x);
+    double b = (sum_y - m * sum_x) / n;
+
+    return std::make_pair(m, b);
+}
 
 // --------------------------------------------------------------
 // -------------------- Mock svFSIplus object -------------------
@@ -569,7 +588,7 @@ public:
      * Analytically, we should have S = dPsi/dE. Since we have Psi(F), we cannot directly compute S. 
      * Instead, we compute S = F^-1 * P, where P = dPsi/dF is computed using finite differences in each component of F.
      *
-     * Pseudocode:
+     * Pseudocode (for first order finite difference):
      * - Compute strain energy density Psi(F)
      * - For each component of F, F[i][J]
      *      - Perturb F[i][J] by delta to get F_tilde
@@ -581,42 +600,169 @@ public:
      * @tparam N The size of the deformation gradient tensor (NxN).
      * @param[in] F The deformation gradient tensor.
      * @param[in] delta The perturbation scaling factor.
+     * @param[in] order The order of the finite difference scheme (1 for first order, 2 for second order, etc.).
      * @param[out] S The computed PK2 stress tensor.
      * @return None, but fills S with the computed values.
      */
     template<int N>
-    void calcPK2StressFiniteDifference(const double F[N][N], double delta, double (&S)[N][N]) {
+    void calcPK2StressFiniteDifference(const double F[N][N], const double delta, const int order, double (&S)[N][N]) {
         // Compute strain energy density given F
         double Psi = computeStrainEnergy(F);
 
         // Compute 1st PK stress P_iJ = dPsi / dF[i][J] using finite difference, component by component
         double P[3][3] = {};
-        double F_tilde[N][N]; // perturbed deformation gradient
-        for (int i = 0; i < N; i++) {
-            for (int J = 0; J < N; J++) {
-                // Perturb the iJ-th component of F by delta
-                for (int k = 0; k < N; k++) {
-                    for (int l = 0; l < N; l++) {
-                        F_tilde[k][l] = F[k][l];
+        if (order == 1){
+            double F_tilde[N][N]; // perturbed deformation gradient
+            for (int i = 0; i < N; i++) {
+                for (int J = 0; J < N; J++) {
+                    // Perturb the iJ-th component of F by delta
+                    for (int k = 0; k < N; k++) {
+                        for (int l = 0; l < N; l++) {
+                            F_tilde[k][l] = F[k][l];
+                        }
                     }
+                    F_tilde[i][J] += delta;
+
+                    // Compute Psi_MR for perturbed deformation gradient
+                    double Psi_tilde = computeStrainEnergy(F_tilde);
+
+                    // Compute differences in Psi
+                    double dPsi = Psi_tilde - Psi;
+
+                    // Compute P[i][J] = dPsi / dF[i][J]
+                    P[i][J] = dPsi / delta;
                 }
-                F_tilde[i][J] += delta;
-
-                // Compute Psi_MR for perturbed deformation gradient
-                double Psi_tilde = computeStrainEnergy(F_tilde);
-
-                // Compute differences in Psi
-                double dPsi = Psi_tilde - Psi;
-
-                // Compute P[i][J] = dPsi / dF[i][J]
-                P[i][J] = dPsi / delta;
             }
         }
+        else if (order == 2){
+            double F_plus[N][N]; // positive perturbed deformation gradient
+            double F_minus[N][N]; // negative perturbed deformation gradient
+            for (int i = 0; i < N; i++) {
+                for (int J = 0; J < N; J++) {
+                    // Perturb the iJ-th component of F by +-delta
+                    for (int k = 0; k < N; k++) {
+                        for (int l = 0; l < N; l++) {
+                            F_plus[k][l] = F[k][l];
+                            F_minus[k][l] = F[k][l];
+                        }
+                    }
+                    F_plus[i][J] += delta;
+                    F_minus[i][J] -= delta;
+
+                    // Compute Psi_MR for perturbed deformation gradient
+                    double Psi_plus = computeStrainEnergy(F_plus);
+                    double Psi_minus = computeStrainEnergy(F_minus);
+
+                    // Compute differences in Psi
+                    double dPsi = Psi_plus - Psi_minus;
+
+                    // Compute P[i][J] = dPsi / dF[i][J]
+                    P[i][J] = dPsi / (2.0 * delta);
+                }
+            }
+        }
+        
 
         // Compute S_ref = F^-1 * P_ref
         double F_inv[N][N];
         mat_fun_carray::mat_inv<N>(F, F_inv);
         mat_fun_carray::mat_mul<N>(F_inv, P, S);
+    }
+
+    /**
+     * @brief Checks that order of convergence of the PK2 stress tensor S(F) from calcPK2StressFiniteDifference() is 1.
+     * 
+     * @param[in] F Deformation gradient.
+     * @param[in] delta_min Minimum perturbation scaling factor.
+     * @param[in] delta_max Maximum perturbation scaling factor.
+     * @param[in] verbose Show values error and order of convergence if true.
+     */
+    template<int N>
+    void testPK2StressConvergenceOrder(const double F[N][N], const double delta_max, const double delta_min, const int order, const bool verbose = false) {
+        // Check delta_max > delta_min
+        if (delta_max <= delta_min) {
+            std::cerr << "Error: delta_max must be greater than delta_min." << std::endl;
+            return;
+        }
+
+        // Check order is 1 or 2
+        if (order != 1 && order != 2) {
+            std::cerr << "Error: order must be 1 or 2." << std::endl;
+            return;
+        }
+
+        // Create list of deltas for convergence test (delta = delta_max, delta_max/2, delta_max/4, ...)
+        std::vector<double> deltas;
+        double delta = delta_max;
+        while (delta >= delta_min) {
+            deltas.push_back(delta);
+            delta /= 2.0;
+        }
+
+        // Compute S(F) from get_pk2cc()
+        double S[3][3], Dm[6][6];
+        get_pk2cc(F, S, Dm);
+
+        // Compute finite difference S for each delta and store error in list
+        std::vector<double> errors;
+        double S_fd[3][3];
+        for (int i = 0; i < deltas.size(); i++) {
+            calcPK2StressFiniteDifference(F, deltas[i], order, S_fd);
+
+            // Compute Frobenius norm of error between S and S_fd
+            double error = 0.0;
+            for (int I = 0; I < 3; I++) {
+                for (int J = 0; J < 3; J++) {
+                    error += pow(S[I][J] - S_fd[I][J], 2);
+                }
+            }
+            error = sqrt(error);
+
+            // Store error in list
+            errors.push_back(error);
+        }
+
+        // Compute order of convergence by fitting a line to log(delta) vs log(error)
+        std::vector<double> log_deltas, log_errors;
+        for (int i = 0; i < deltas.size(); i++) {
+            log_deltas.push_back(log(deltas[i]));
+            log_errors.push_back(log(errors[i]));
+        }
+
+        // Fit a line to log(delta) vs log(error)
+        // m is the slope (order of convergence), b is the intercept
+        auto [m, b] = computeLinearRegression(log_deltas, log_errors);
+
+        // Check that order of convergence is order
+        EXPECT_NEAR(m, order, 0.1);
+
+        // Print results if verbose
+        if (verbose) {
+            std::cout << "Slope (order of convergence): " << m << std::endl;
+            std::cout << "Intercept: " << b << std::endl;
+            std::cout << "Errors: ";
+            for (int i = 0; i < errors.size(); i++) {
+                std::cout << errors[i] << " ";
+            }
+            std::cout << std::endl;
+            std::cout << std::endl;
+            
+            std::cout << "F = " << std::endl;
+            for (int i = 0; i < 3; i++) {
+                for (int J = 0; J < 3; J++) {
+                    std::cout << F[i][J] << " ";
+                }
+                std::cout << std::endl;
+            }
+
+            std::cout << "S = " << std::endl;
+            for (int i = 0; i < 3; i++) {
+                for (int J = 0; J < 3; J++) {
+                    std::cout << S[i][J] << " ";
+                }
+                std::cout << std::endl;
+            }
+        }
     }
 
     /**
