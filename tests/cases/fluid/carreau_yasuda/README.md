@@ -21,12 +21,6 @@ where
 
 ![iamge6](https://latex.codecogs.com/png.image?\inline&space;\dpi{120}\bg{white}n:&space;&space;\text{Power-law&space;index})
 
-Casson model is defined as
-
-![ca_model](https://latex.codecogs.com/png.image?\inline&space;\dpi{120}\bg{white}\eta&space;=&space;\frac{1}{\dot{\gamma}}\left[&space;k_0(c)&space;&plus;&space;k_1(c)\sqrt{\dot{\gamma}}&space;\right]^2)
-
-$k_0(c)$ and $k_1(c)$ are functions of the hematocrit $c$. For more information, please refer to Ref. [1].
-
 
 The model parameters are specified in the `Viscosity` sub-section
 
