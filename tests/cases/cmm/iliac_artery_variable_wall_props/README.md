@@ -4,7 +4,7 @@
 Simulate the fluid-structure interaction in an anatomic model of the abdominal aorta and common iliac arteries using the coupled momentum method (CMM).
 
 ## Material properties
-The arterial wall material properties are defined using spatially varying values for elasticity modulus and wall thickness. These values are read in from a VTK-format **svFSI_var_wall_props.vtp** file containing the two *PointData DataArray*s named **Thickness** and **Elasticity modulus**.
+The arterial wall material properties are defined using spatially varying values for elasticity modulus and wall thickness. These values are read in from the VTK-format **svFSI_var_wall_props.vtp** file containing the two *PointData DataArray*s named **Thickness** and **Elasticity modulus**.
 
 The **svFSI_var_wall_props.vtp** file is specified in using the `Wall_properties_file_path` keyword
 ```
