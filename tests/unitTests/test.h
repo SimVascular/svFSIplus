@@ -192,6 +192,19 @@ void create_identity_F(double F[N][N]) {
 }
 
 /**
+ * @brief Create a ones matrix.
+ * 
+ */
+template<int N>
+void create_ones_matrix(double A[N][N]) {
+    for (int i = 0; i < N; i++) {
+        for (int J = 0; J < N; J++) {
+            A[i][J] = 1.0;
+        }
+    }
+}
+
+/**
  * @brief Generates a random double value.
  *
  * This function generates a random double value within a specified range.
@@ -775,7 +788,7 @@ public:
      * - Compute S(F) from get_pk2cc()
      * - For many random dF
      *      - Compute dPsi = Psi(F + dF) - Psi(F)
-     *      - Compute dE from dF
+     *      - Compute dE = E(F + dF) - E(F)
      *      - Check that S:dE = dPsi
      * 
      * @param[in] F Deformation gradient.
@@ -788,43 +801,21 @@ public:
      *
      */
     void testPK2StressConsistentWithStrainEnergy(double F[3][3], int n_iter, double rel_tol, double abs_tol, double delta, bool verbose = false) {
-        // Compute E from F
-        double J, C[3][3], E[3][3];
-        calc_JCE(F, J, C, E);
-
-        // Compute Psi(F)
-        double Psi = computeStrainEnergy(F);
-
-        // Compute S(F) from svFSIplus
-        double S[3][3], Dm[6][6];
-        get_pk2cc(F, S, Dm);
+        int order = 2;
 
         // Generate many random dF and check that S:dE = dPsi
         // S was obtained from get_pk2cc(), and dPsi = Psi(F + dF) - Psi(F)
-        double dPsi, dE[3][3], SdE;
-        double F_tilde[3][3], J_tilde, C_tilde[3][3], E_tilde[3][3];
+        double dPsi, SdE;
         for (int i = 0; i < n_iter; i++) {
-            // Perturb the deformation gradient
-            perturb_random_F(F, delta, F_tilde);
+            // Generate random dF
+            double dF[3][3];
+            create_random_F(dF, 0.0, 1.0);
 
-            // Compute perturbed E_tilde from F_tilde
-            calc_JCE(F_tilde, J_tilde, C_tilde, E_tilde);
+            // Compute dPsi
+            calcdPsiFiniteDifference(F, dF, delta, order, dPsi);
 
-            // Compute Psi(F_tilde)
-            double Psi_tilde = computeStrainEnergy(F_tilde);
-
-            // Compute dPsi = Psi(F_tilde) - Psi(F)
-            dPsi = Psi_tilde - Psi;
-
-            // Compute dE = E(F_tilde) - E(F)
-            for (int i = 0; i < 3; i++) {
-                for (int j = 0; j < 3; j++) {
-                    dE[i][j] = E_tilde[i][j] - E[i][j];
-                }
-            }
-
-            // Compute S:dE
-            double SdE = mat_fun_carray::mat_ddot<3>(S, dE);
+            // Compute SdE
+            calcSdEFiniteDifference(F, dF, delta, order, SdE);
 
             // Check that S:dE = dPsi
             EXPECT_NEAR(SdE, dPsi, fmax(abs_tol, rel_tol * fabs(dPsi)));
@@ -843,23 +834,225 @@ public:
                     std::cout << std::endl;
                 }
 
-                std::cout << "S =" << std::endl;
-                for (int i = 0; i < 3; i++) {
-                    for (int j = 0; j < 3; j++) {
-                        std::cout << S[i][j] << " ";
-                    }
-                    std::cout << std::endl;
-                }
-
-                std::cout << "dE =" << std::endl;
-                for (int i = 0; i < 3; i++) {
-                    for (int j = 0; j < 3; j++) {
-                        std::cout << dE[i][j] << " ";
-                    }
-                    std::cout << std::endl;
-                }
-
                 std::cout << "SdE = " << SdE << ", dPsi = " << dPsi << std::endl;
+                std::cout << std::endl;
+            }
+        }
+    }
+
+    /**
+     * @brief Compute dPsi = Psi * dF using finite differences
+     * 
+     * @param F Deformation gradient
+     * @param dF Deformation gradient perturbation shape
+     * @param delta Deformation gradient perturbation scaling factor
+     * @param order Order of the finite difference scheme (1 for first order, 2 for second order, etc.)
+     * @param dPsi Strain energy density perturbation
+     */
+    void calcdPsiFiniteDifference(const double F[3][3], const double dF[3][3], const double delta, const int order, double &dPsi) {
+
+        // Compute strain energy density given F
+        double Psi = computeStrainEnergy(F);
+
+        // Compute dPsi using finite difference, given dF
+        if (order == 1){
+            double F_tilde[3][3]; // perturbed deformation gradient
+            for (int i = 0; i < 3; i++) {
+                for (int J = 0; J < 3; J++) {
+                    // Perturb the iJ-th component of F by delta * dF[i][J]
+                    for (int k = 0; k < 3; k++) {
+                        for (int l = 0; l < 3; l++) {
+                            F_tilde[k][l] = F[k][l] + delta * dF[k][l];
+                        }
+                    }
+                }
+            }
+
+            // Compute Psi_tilde for perturbed deformation gradient
+            double Psi_tilde = computeStrainEnergy(F_tilde);
+
+            // Compute differences in Psi
+            dPsi = Psi_tilde - Psi;
+        }
+        else if (order == 2){
+            double F_plus[3][3]; // positive perturbed deformation gradient
+            double F_minus[3][3]; // negative perturbed deformation gradient
+            for (int i = 0; i < 3; i++) {
+                for (int J = 0; J < 3; J++) {
+                    // Perturb the iJ-th component of F by +-delta * dF[i][J]
+                    for (int k = 0; k < 3; k++) {
+                        for (int l = 0; l < 3; l++) {
+                            F_plus[k][l] = F[k][l] + delta * dF[k][l];
+                            F_minus[k][l] = F[k][l] - delta * dF[k][l];
+                        }
+                    }
+                }
+            }
+
+            // Compute Psi_plus and Psi_minus for perturbed deformation gradient
+            double Psi_plus = computeStrainEnergy(F_plus);
+            double Psi_minus = computeStrainEnergy(F_minus);
+
+            // Compute differences in Psi
+            dPsi = Psi_plus - Psi_minus;
+        }
+    }
+
+    /**
+     * @brief Compute S:dE using finite differences
+     * 
+     * @param F Deformation gradient
+     * @param dF Deformation gradient perturbation shape
+     * @param delta Deformation gradient perturbation scaling factor
+     * @param order Order of the finite difference scheme (1 for first order, 2 for second order, etc.)
+     * @param SdE PK2 stress tensor times the perturbation in the Green-Lagrange strain tensor
+     */
+    void calcSdEFiniteDifference(const double F[3][3], const double dF[3][3], const double delta, const int order, double &SdE) {
+        // Compute S(F) from get_pk2cc()
+        double S[3][3], Dm[6][6];
+        get_pk2cc(F, S, Dm);
+
+        // Compute E from F
+        double J, C[3][3], E[3][3];
+        calc_JCE(F, J, C, E);
+
+        // Compute dE using finite difference, given dF
+        double dE[3][3];
+        if (order == 1){
+            double F_tilde[3][3]; // perturbed deformation gradient
+            for (int i = 0; i < 3; i++) {
+                for (int J = 0; J < 3; J++) {
+                    // Perturb the iJ-th component of F by delta * dF[i][J]
+                    for (int k = 0; k < 3; k++) {
+                        for (int l = 0; l < 3; l++) {
+                            F_tilde[k][l] = F[k][l] + delta * dF[k][l];
+                        }
+                    }
+                }
+            }
+
+            // Compute perturbed E_tilde from F_tilde
+            double J_tilde, C_tilde[3][3], E_tilde[3][3];
+            calc_JCE(F_tilde, J_tilde, C_tilde, E_tilde);
+
+            // Compute differences in E
+            for (int i = 0; i < 3; i++) {
+                for (int j = 0; j < 3; j++) {
+                    dE[i][j] = E_tilde[i][j] - E[i][j];
+                }
+            }
+        }
+        else if (order == 2){
+            double F_plus[3][3]; // positive perturbed deformation gradient
+            double F_minus[3][3]; // negative perturbed deformation gradient
+            for (int i = 0; i < 3; i++) {
+                for (int J = 0; J < 3; J++) {
+                    // Perturb the iJ-th component of F by +-delta * dF[i][J]
+                    for (int k = 0; k < 3; k++) {
+                        for (int l = 0; l < 3; l++) {
+                            F_plus[k][l] = F[k][l] + delta * dF[k][l];
+                            F_minus[k][l] = F[k][l] - delta * dF[k][l];
+                        }
+                    }
+                }
+            }
+
+            // Compute perturbed E_plus and E_minus from F_plus and F_minus
+            double J_plus, C_plus[3][3], E_plus[3][3];
+            double J_minus, C_minus[3][3], E_minus[3][3];
+            calc_JCE(F_plus, J_plus, C_plus, E_plus);
+            calc_JCE(F_minus, J_minus, C_minus, E_minus);
+
+            // Compute differences in E
+            for (int i = 0; i < 3; i++) {
+                for (int j = 0; j < 3; j++) {
+                    dE[i][j] = E_plus[i][j] - E_minus[i][j];
+                }
+            }
+        }
+
+        // Compute S:dE
+        SdE = mat_fun_carray::mat_ddot<3>(S, dE);
+    }
+
+
+    /**
+     * @brief Tests the order of convergence of the consistency between dPsi and S:dE using finite differences.
+     * Note that the order of convergence should be order + 1, because we are comparing differences (dPsi and S:dE)
+     * instead of derivatives (e.g. dPsi/dF and S:dE/dF).
+     * @param F Deformation gradient.
+     * @param dF Deformation gradient perturbation shape.
+     * @param delta_max Maximum perturbation scaling factor.
+     * @param delta_min Minimum perturbation scaling factor.
+     * @param order Order of the finite difference scheme (1 for first order, 2 for second order, etc.).
+     * @param verbose Show values of errors and order of convergence if true.
+     */
+    void testPK2StressConsistencyConvergenceOrder(double F[3][3], double dF[3][3], double delta_max, double delta_min, int order, bool verbose = false) {
+        // Check that delta_max > delta_min
+        if (delta_max <= delta_min) {
+            std::cerr << "Error: delta_max must be greater than delta_min." << std::endl;
+            return;
+        }
+
+        // Check that order is 1 or 2
+        if (order != 1 && order != 2) {
+            std::cerr << "Error: order must be 1 or 2." << std::endl;
+            return;
+        }
+
+        // Create list of deltas for convergence test (delta = delta_max, delta_max/2, delta_max/4, ...)
+        std::vector<double> deltas;
+        double delta = delta_max;
+        while (delta >= delta_min) {
+            deltas.push_back(delta);
+            delta /= 2.0;
+        }
+
+        // Compute dPsi and S:dE for each delta and store error in list
+        std::vector<double> errors;
+        double dPsi, SdE;
+
+        for (int i = 0; i < deltas.size(); i++) {
+            calcdPsiFiniteDifference(F, dF, deltas[i], order, dPsi);
+            calcSdEFiniteDifference(F, dF, deltas[i], order, SdE);
+
+            // Compute error between dPsi and S:dE
+            double error = fabs(dPsi - SdE);
+
+            // Store error in list
+            errors.push_back(error);
+        }
+
+        // Compute order of convergence by fitting a line to log(delta) vs log(error)
+        std::vector<double> log_deltas, log_errors;
+        for (int i = 0; i < deltas.size(); i++) {
+            log_deltas.push_back(log(deltas[i]));
+            log_errors.push_back(log(errors[i]));
+        }
+
+        // Fit a line to log(delta) vs log(error)
+        // m is the slope (order of convergence), b is the intercept
+        auto [m, b] = computeLinearRegression(log_deltas, log_errors);
+
+        // Check that order of convergence is order + 1
+        EXPECT_NEAR(m, order + 1, 0.1);
+
+        // Print results if verbose
+        if (verbose) {
+            std::cout << "Slope (order of convergence): " << m << std::endl;
+            std::cout << "Intercept: " << b << std::endl;
+            std::cout << "Errors: ";
+            for (int i = 0; i < errors.size(); i++) {
+                std::cout << errors[i] << " ";
+            }
+            std::cout << std::endl;
+            std::cout << std::endl;
+            
+            std::cout << "F = " << std::endl;
+            for (int i = 0; i < 3; i++) {
+                for (int J = 0; J < 3; J++) {
+                    std::cout << F[i][J] << " ";
+                }
                 std::cout << std::endl;
             }
         }

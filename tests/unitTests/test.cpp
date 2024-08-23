@@ -137,6 +137,20 @@ TEST_F(STRUCT_NeoHookeanTest, TestPK2StressConsistentRandomF) {
     TestNH->testPK2StressConsistentWithStrainEnergy(F, n_iter, rel_tol, abs_tol, delta, verbose);
 }
 
+// Test order of convergence of consistency of PK2 stress for random F
+TEST_F(STRUCT_NeoHookeanTest, TestPK2StressConsistencyConvergenceOrderRandomF) {
+    verbose = true; // Show order of convergence, errors, F, S
+
+    // Check order of convergence of consistency of PK2 stress for random F
+    create_random_F(F);
+    double dF[3][3]; // Deformation gradient perturbation shape
+    create_ones_matrix(dF); // Perturbation shape is ones matrix
+    double delta_max = 1e-2; // Maximum perturbation scaling factor
+    double delta_min = 1e-3; // Minimum perturbation scaling factor
+    //int order = 1; // Order of finite difference method
+    TestNH->testPK2StressConsistencyConvergenceOrder(F, dF, delta_max, delta_min, order, verbose);
+}
+
 // Test material elasticity consistent with PK2 stress
 TEST_F(STRUCT_NeoHookeanTest, TestMaterialElasticityConsistentRandomF) {
     //verbose = true; // Show values of CC, dE, CCdE and dS
@@ -204,6 +218,20 @@ TEST_F(USTRUCT_NeoHookeanTest, TestPK2StressConsistentRandomF) {
     // Check random F produces consistent PK2 stress
     create_random_F(F);
     TestNH->testPK2StressConsistentWithStrainEnergy(F, n_iter, rel_tol, abs_tol, delta, verbose);
+}
+
+// Test order of convergence of consistency of PK2 stress for random F
+TEST_F(USTRUCT_NeoHookeanTest, TestPK2StressConsistencyConvergenceOrderRandomF) {
+    verbose = true; // Show order of convergence, errors, F, S
+
+    // Check order of convergence of consistency of PK2 stress for random F
+    create_random_F(F);
+    double dF[3][3]; // Deformation gradient perturbation shape
+    create_ones_matrix(dF); // Perturbation shape is ones matrix
+    double delta_max = 1e-2; // Maximum perturbation scaling factor
+    double delta_min = 1e-3; // Minimum perturbation scaling factor
+    //int order = 1; // Order of finite difference method
+    TestNH->testPK2StressConsistencyConvergenceOrder(F, dF, delta_max, delta_min, order, verbose);
 }
 
 // Test material elasticity consistent with PK2 stress
