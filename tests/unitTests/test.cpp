@@ -33,19 +33,13 @@
 using namespace mat_fun;
 using namespace std;
 
-// ----------------------------------------------------------------------------
-// --------------------------- Neo-Hookean Material ---------------------------
-// ----------------------------------------------------------------------------
-
 /**
- * @brief Test fixture class for the Neo-Hookean material model.
- *
- * This class sets up the necessary parameters and objects for testing the Neo-Hookean material model.
+ * @brief Test fixture class containing common setup for all material model tests in this file
+ * 
  */
-class NeoHookeanTest : public ::testing::Test {
+class MaterialModelTest : public ::testing::Test {
 protected:
     // Variables common across tests
-    NeoHookeanParams params;
     double F[3][3] = {}; // Deformation gradient
     int n_iter = 10;       // Number of random perturbations to test
     double rel_tol = 1e-3; // relative tolerance for comparing values
@@ -55,6 +49,25 @@ protected:
     double delta_min = 1e-4; // minimum perturbation scaling factor
     int order = 2; // Order of finite difference method
     bool verbose = false; // Show values of S, dE, SdE and dPsi
+
+    void SetUp() override {}
+
+    void TearDown() override {}
+};
+
+// ----------------------------------------------------------------------------
+// --------------------------- Neo-Hookean Material ---------------------------
+// ----------------------------------------------------------------------------
+
+/**
+ * @brief Test fixture class for the Neo-Hookean material model.
+ *
+ * This class sets up the necessary parameters and objects for testing the Neo-Hookean material model.
+ */
+class NeoHookeanTest : public MaterialModelTest {
+protected:
+    // Material parameters object
+    NeoHookeanParams params;
 
     // Add the test object
     TestNeoHookean* TestNH;
@@ -199,20 +212,10 @@ TEST_F(USTRUCT_NeoHookeanTest, TestMaterialElasticityConsistencyConvergenceOrder
  * 
  * This class sets up the necessary parameters and objects for testing the Mooney-Rivlin material model.
  */
-class MooneyRivlinTest : public ::testing::Test {
+class MooneyRivlinTest : public MaterialModelTest {
 protected:
-    // Variables common across tests
+    // Material parameters object
     MooneyRivlinParams params;
-    double F[3][3] = {}; // Deformation gradient
-    int n_iter = 10;       // Number of random perturbations to test
-    double rel_tol = 1e-3; // relative tolerance for comparing dPsi and dS with values from svFSI
-    double abs_tol = 1e-11; // absolute tolerance for comparing values
-    double delta = 1e-7; // perturbation scaling factor
-    double delta_max = 1e-3; // maximum perturbation scaling factor
-    double delta_min = 1e-4; // minimum perturbation scaling factor
-    int order = 2; // Order of finite difference method
-    bool verbose = false; // Show values of S, dE, SdE and dPsi
-
 
     // Add the test object
     TestMooneyRivlin* TestMR;
@@ -330,19 +333,10 @@ TEST_F(USTRUCT_MooneyRivlinTest, TestPK2StressConvergenceOrderRandomF) {
  * 
  * This class sets up the necessary parameters and objects for testing the Holzapfel-Ogden material model.
 */
-class HolzapfelOgdenTest : public ::testing::Test {
+class HolzapfelOgdenTest : public :: MaterialModelTest {
 protected:
-    // Variables common across tests
+    // Material parameters object
     HolzapfelOgdenParams params;
-    double F[3][3] = {}; // Deformation gradient
-    int n_iter = 10;       // Number of random perturbations to test
-    double rel_tol = 1e-5; // relative tolerance for comparing dPsi and dS with values from svFSI
-    double abs_tol = 1e-11; // absolute tolerance for comparing values
-    double delta = 1e-9; // perturbation scaling factor
-    double delta_max = 1e-3; // maximum perturbation scaling factor
-    double delta_min = 1e-4; // minimum perturbation scaling factor
-    int order = 2; // Order of finite difference method
-    bool verbose = false; // Show values of S, dE, SdE and dPsi
 
     // Add the test object
     TestHolzapfelOgden* TestHO;
@@ -694,19 +688,10 @@ TEST_F(USTRUCT_HolzapfelOgdenTest, TestMaterialElasticityConsistencyConvergenceO
  * 
  * This class sets up the necessary parameters and objects for testing the Holzapfel-Ogden (Modified Anisotropy) material model.
 */
-class HolzapfelOgdenMATest : public ::testing::Test {
+class HolzapfelOgdenMATest : public MaterialModelTest {
 protected:
-    // Variables common across tests
+    // Material parameters object
     HolzapfelOgdenMAParams params;
-    double F[3][3] = {}; // Deformation gradient
-    int n_iter = 10;       // Number of random perturbations to test
-    double rel_tol = 1e-3; // relative tolerance for comparing dPsi and dS with values from svFSI
-    double abs_tol = 1e-11; // absolute tolerance for comparing values
-    double delta = 1e-7; // perturbation scaling factor
-    double delta_max = 1e-3; // maximum perturbation scaling factor
-    double delta_min = 1e-4; // minimum perturbation scaling factor
-    int order = 2; // Order of finite difference method
-    bool verbose = false; // Show values of S, dE, SdE and dPsi
 
     // Add the test object
     TestHolzapfelOgdenMA* TestHO_ma;
@@ -1063,19 +1048,10 @@ TEST_F(USTRUCT_HolzapfelOgdenMATest, TestMaterialElasticityConsistencyConvergenc
  * 
  * This class sets up the necessary parameters and objects for testing the Quadratic Volumetric penalty model.
  */
-class QuadraticVolumetricPenaltyTest : public ::testing::Test {
+class QuadraticVolumetricPenaltyTest : public MaterialModelTest {
 protected:
-    // Variables common across tests
+    // Material parameters object
     VolumetricPenaltyParams params;
-    double F[3][3] = {}; // Deformation gradient
-    int n_iter = 10;       // Number of random perturbations to test
-    double rel_tol = 1e-3; // relative tolerance for comparing dPsi and dS with values from svFSI
-    double abs_tol = 1e-9; // absolute tolerance for comparing values
-    double delta = 1e-7; // perturbation scaling factor
-    double delta_max = 1e-2; // maximum perturbation scaling factor
-    double delta_min = 1e-6; // minimum perturbation scaling factor
-    int order = 2; // Order of finite difference method
-    bool verbose = false; // Show values of S, dE, SdE and dPsi
 
     // Add the test object
     TestQuadraticVolumetricPenalty* TestQVP;
@@ -1217,19 +1193,10 @@ TEST_F(USTRUCT_QuadraticVolumetricPenaltyTest, TestRhoBeta) {
  * 
  * This class sets up the necessary parameters and objects for testing the Simo-Taylor91 Volumetric penalty model.
  */
-class SimoTaylor91VolumetricPenaltyTest : public ::testing::Test {
+class SimoTaylor91VolumetricPenaltyTest : public MaterialModelTest {
 protected:
-    // Variables common across tests
+    // Material parameters object
     VolumetricPenaltyParams params;
-    double F[3][3] = {}; // Deformation gradient
-    int n_iter = 10;       // Number of random perturbations to test
-    double rel_tol = 1e-3; // relative tolerance for comparing dPsi and dS with values from svFSI
-    double abs_tol = 1e-9; // absolute tolerance for comparing values
-    double delta = 1e-7; // perturbation scaling factor
-    double delta_max = 1e-2; // maximum perturbation scaling factor
-    double delta_min = 1e-3; // minimum perturbation scaling factor
-    int order = 2; // Order of finite difference method
-    bool verbose = false; // Show values of S, dE, SdE and dPsi
 
     // Add the test object
     TestSimoTaylor91VolumetricPenalty* TestST91;
@@ -1370,19 +1337,10 @@ TEST_F(USTRUCT_SimoTaylor91VolumetricPenaltyTest, TestRhoBeta) {
  * 
  * This class sets up the necessary parameters and objects for testing the Miehe94 Volumetric penalty model.
  */
-class Miehe94VolumetricPenaltyTest : public ::testing::Test {
+class Miehe94VolumetricPenaltyTest : public MaterialModelTest {
 protected:
-    // Variables common across tests
+    // Material parameters object
     VolumetricPenaltyParams params;
-    double F[3][3] = {}; // Deformation gradient
-    int n_iter = 10;       // Number of random perturbations to test
-    double rel_tol = 1e-3; // relative tolerance for comparing dPsi and dS with values from svFSI
-    double abs_tol = 1e-9; // absolute tolerance for comparing values
-    double delta = 1e-7; // perturbation scaling factor
-    double delta_max = 1e-2; // maximum perturbation scaling factor
-    double delta_min = 1e-3; // minimum perturbation scaling factor
-    int order = 2; // Order of finite difference method
-    bool verbose = false; // Show values of S, dE, SdE and dPsi
 
     // Add the test object
     TestMiehe94VolumetricPenalty* TestM94;
