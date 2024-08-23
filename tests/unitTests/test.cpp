@@ -33,6 +33,12 @@
 using namespace mat_fun;
 using namespace std;
 
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// --------------------------- Test fixture classes ---------------------------
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+
 /**
  * @brief Test fixture class containing common setup for all material model tests in this file
  * 
@@ -90,11 +96,8 @@ protected:
     }
 };
 
-// ------------------------------ STRUCT TESTS --------------------------------
 /**
  * @brief Test fixture class for STRUCT Neo-Hookean material model.
- * 
- * This class sets up the necessary parameters and objects for testing the STRUCT Neo-Hookean material model.
  */
 class STRUCT_NeoHookeanTest : public NeoHookeanTest {
 protected:
@@ -106,54 +109,8 @@ protected:
     }
 };
 
-// Test PK2 stress zero for F = I
-TEST_F(STRUCT_NeoHookeanTest, TestPK2StressIdentityF) {
-    //verbose = true; // Show values of S and S_ref
-
-    // Check identity F produces zero PK2 stress
-    double F[3][3] = {{1.0, 0.0, 0.0},
-                       {0.0, 1.0, 0.0},
-                       {0.0, 0.0, 1.0}};
-    double S_ref[3][3] = {}; // PK2 stress initialized to zero
-    TestNH->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
-}
-
-// Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for random F
-TEST_F(STRUCT_NeoHookeanTest, TestPK2StressConvergenceOrderRandomF) {
-    verbose = true; // Show order of convergence, errors, F, S
-
-    // Check order of convergence between finite difference and get_pk2cc() PK2 stress
-    // for random F
-    create_random_F(F);
-    TestNH->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
-}
-
-// Test order of convergence of consistency of material elasticity for random F
-TEST_F(STRUCT_NeoHookeanTest, TestMaterialElasticityConsistencyConvergenceOrderRandomF) {
-    verbose = true; // Show order of convergence, errors, F, S
-    
-    double delta_max = 1e-2; // Maximum perturbation scaling factor
-    double delta_min = 1e-3; // Minimum perturbation scaling factor
-    //int order = 1; // Order of finite difference method
-
-    // Generate a random deformation gradient F
-    create_random_F(F);
-
-    for (int i = 0; i < n_iter; i++) {
-        // Generate a random perturbation matrix dF
-        double dF[3][3];
-        create_random_F(dF, 0.0, 1.0);
-
-        // Check order of convergence of consistency of material elasticity for random F
-        TestNH->testMaterialElasticityConsistencyConvergenceOrder(F, dF, delta_max, delta_min, order, verbose);
-    }
-}
-
-// ------------------------------ USTRUCT TESTS --------------------------------
 /**
  * @brief Test fixture class for USTRUCT Neo-Hookean material model.
- * 
- * This class sets up the necessary parameters and objects for testing the USTRUCT Neo-Hookean material model.
  */
 class USTRUCT_NeoHookeanTest : public NeoHookeanTest {
 protected:
@@ -164,44 +121,6 @@ protected:
         TestNH->ustruct = true;
     }
 };
-
-// Test PK2 stress zero for F = I
-TEST_F(USTRUCT_NeoHookeanTest, TestPK2StressIdentityF) {
-    //verbose = true; // Show values of S and S_ref
-
-    // Check identity F produces zero PK2 stress
-    double F[3][3] = {{1.0, 0.0, 0.0},
-                       {0.0, 1.0, 0.0},
-                       {0.0, 0.0, 1.0}};
-    double S_ref[3][3] = {}; // PK2 stress initialized to zero
-    TestNH->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
-}
-
-
-// Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for random F
-TEST_F(USTRUCT_NeoHookeanTest, TestPK2StressConvergenceOrderRandomF) {
-    //verbose = true; // Show order of convergence, errors, F, S
-
-    // Check order of convergence between finite difference and get_pk2cc() PK2 stress
-    // for random F
-    create_random_F(F);
-    TestNH->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
-}
-
-// Test order of convergence of consistency of material elasticity for random F
-TEST_F(USTRUCT_NeoHookeanTest, TestMaterialElasticityConsistencyConvergenceOrderRandomF) {
-    verbose = true; // Show order of convergence, errors, F, S
-
-    // Check order of convergence of consistency of material elasticity for random F
-    create_random_F(F);
-    double dF[3][3]; // Deformation gradient perturbation shape
-    create_ones_matrix(dF); // Perturbation shape is ones matrix
-    double delta_max = 1e-2; // Maximum perturbation scaling factor
-    double delta_min = 1e-3; // Minimum perturbation scaling factor
-    //int order = 1; // Order of finite difference method
-    TestNH->testMaterialElasticityConsistencyConvergenceOrder(F, dF, delta_max, delta_min, order, verbose);
-}
-
 
 // ----------------------------------------------------------------------------
 // --------------------------- Mooney-Rivlin Material -------------------------
@@ -239,11 +158,8 @@ protected:
     }
 };
 
-// ------------------------------ STRUCT TESTS --------------------------------
 /**
  * @brief Test fixture class for STRUCT Mooney-Rivlin material model.
- * 
- * This class sets up the necessary parameters and objects for testing the STRUCT Mooney-Rivlin material model.
  */
 class STRUCT_MooneyRivlinTest : public MooneyRivlinTest {
 protected:
@@ -255,35 +171,8 @@ protected:
     }
 };
 
-// Test PK2 stress zero for F = I
-TEST_F(STRUCT_MooneyRivlinTest, TestPK2StressIdentityF) {
-    //verbose = true; // Show values of S and S_ref
-
-    // Check identity F produces zero PK2 stress
-    double F[3][3] = {1.0, 0.0, 0.0,
-                      0.0, 1.0, 0.0,
-                      0.0, 0.0, 1.0};
-    double S_ref[3][3] = {}; // PK2 stress initialized to zero
-    TestMR->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
-}
-
-
-// Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for random F
-TEST_F(STRUCT_MooneyRivlinTest, TestPK2StressConvergenceOrderRandomF) {
-    //verbose = true; // Show order of convergence, errors, F, S
-
-    // Check order of convergence between finite difference and get_pk2cc() PK2 stress
-    // for random F
-    create_random_F(F);
-    TestMR->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
-}
-
-
-// ------------------------------ USTRUCT TESTS --------------------------------
 /**
  * @brief Test fixture class for USTRUCT Mooney-Rivlin material model.
- * 
- * This class sets up the necessary parameters and objects for testing the USTRUCT Mooney-Rivlin material model.
  */
 class USTRUCT_MooneyRivlinTest : public MooneyRivlinTest {
 protected:
@@ -294,34 +183,6 @@ protected:
         TestMR->ustruct = true;
     }
 };
-
-// Test PK2 stress zero for F = I
-TEST_F(USTRUCT_MooneyRivlinTest, TestPK2StressIdentityF) {
-    //verbose = true; // Show values of S and S_ref
-
-    // Check identity F produces zero PK2 stress
-    double F[3][3] = {1.0, 0.0, 0.0,
-                      0.0, 1.0, 0.0,
-                      0.0, 0.0, 1.0};
-    double S_ref[3][3] = {}; // PK2 stress initialized to zero
-    TestMR->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
-}
-
-
-// Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for random F
-TEST_F(USTRUCT_MooneyRivlinTest, TestPK2StressConvergenceOrderRandomF) {
-    //verbose = true; // Show order of convergence, errors, F, S
-
-    // Check order of convergence between finite difference and get_pk2cc() PK2 stress
-    // for random F
-    create_random_F(F);
-    TestMR->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
-}
-
-
-// ----------------------------------------------------------------------------
-// ------------------- Holzapfel-Gasser-Ogden Material -------------------------
-// ----------------------------------------------------------------------------
 
 
 // ----------------------------------------------------------------------------
@@ -399,11 +260,8 @@ protected:
     }
 };
 
-// ------------------------------ STRUCT TESTS --------------------------------
 /**
  * @brief Test fixture class for STRUCT Holzapfel-Ogden material model.
- * 
- * This class sets up the necessary parameters and objects for testing the STRUCT Holzapfel-Ogden material model.
  */
 class STRUCT_HolzapfelOgdenTest : public HolzapfelOgdenTest {
 protected:
@@ -414,6 +272,450 @@ protected:
         TestHO->ustruct = false;
     }
 };
+
+/**
+ * @brief Test fixture class for USTRUCT Holzapfel-Ogden material model.
+ */
+class USTRUCT_HolzapfelOgdenTest : public HolzapfelOgdenTest {
+protected:
+    void SetUp() override {
+        HolzapfelOgdenTest::SetUp();
+
+        // Use ustruct
+        TestHO->ustruct = true;
+    }
+};
+
+// ----------------------------------------------------------------------------
+// ------------- Holzapfel-Ogden (Modified Anisotropy) Material  --------------
+// ----------------------------------------------------------------------------
+
+/**
+ * @brief Test fixture class for the Holzapfel-Ogden (Modified Anisotropy) material model.
+ * 
+ * This class sets up the necessary parameters and objects for testing the Holzapfel-Ogden (Modified Anisotropy) material model.
+*/
+class HolzapfelOgdenMATest : public MaterialModelTest {
+protected:
+    // Material parameters object
+    HolzapfelOgdenMAParams params;
+
+    // Add the test object
+    TestHolzapfelOgdenMA* TestHO_ma;
+
+    // Setup method to initialize variables before each test
+    void SetUp() override {
+
+        // Set Holzapfel-Ogden parameters from cardiac benchmark paper
+        params.a = 59.0; // Pa
+        params.a_f = 18472.0; // Pa
+        params.a_s = 2481.0; // Pa
+        params.a_fs = 216.0; // Pa
+        params.b = 8.023; // Pa
+        params.b_f = 16.026; // Pa
+        params.b_s = 11.12; // Pa
+        params.b_fs = 11.436; // Pa
+        params.k = 100000.0; // Pa 
+
+        // Set random values for f between 0 and 1 and normalize
+        params.f[0] = getRandomDouble(0.0, 1.0);
+        params.f[1] = getRandomDouble(0.0, 1.0);
+        params.f[2] = getRandomDouble(0.0, 1.0);
+        double norm_f = sqrt(params.f[0]*params.f[0] + params.f[1]*params.f[1] + params.f[2]*params.f[2]);
+        params.f[0] /= norm_f; params.f[1] /= norm_f; params.f[2] /= norm_f;
+
+        // Create s orthogonal to f
+        if (fabs(params.f[0]) < 0.9) { // Check if f[0] is not the dominant component
+            params.s[0] = 0;
+            params.s[1] = params.f[2];
+            params.s[2] = -params.f[1];
+        } else { // If f[0] is the dominant component, use another approach
+            params.s[0] = -params.f[2];
+            params.s[1] = 0;
+            params.s[2] = params.f[0];
+        }
+
+        // Normalize s
+        double norm_s = sqrt(params.s[0]*params.s[0] + params.s[1]*params.s[1] + params.s[2]*params.s[2]);
+        params.s[0] /= norm_s; params.s[1] /= norm_s; params.s[2] /= norm_s;
+
+        // Check f.s = 0
+        double dot_fs = params.f[0]*params.s[0] + params.f[1]*params.s[1] + params.f[2]*params.s[2];
+        if (fabs(dot_fs) > 1e-6) {
+            cout << "f.s = " << dot_fs << endl;
+            cout << "f = [" << params.f[0] << ", " << params.f[1] << ", " << params.f[2] << "]" << endl;
+            cout << "s = [" << params.s[0] << ", " << params.s[1] << ", " << params.s[2] << "]" << endl;
+            throw runtime_error("f and s are not orthogonal");
+        }
+
+
+        // Initialize the test object
+        TestHO_ma = new TestHolzapfelOgdenMA(params);
+    }
+
+    // TearDown method to clean up after each test, if needed
+    void TearDown() override {
+        // Clean up the test object
+        delete TestHO_ma;
+        TestHO_ma = nullptr;
+    }
+};
+
+/**
+ * @brief Test fixture class for STRUCT Holzapfel-Ogden material model.
+ */
+class STRUCT_HolzapfelOgdenMATest : public HolzapfelOgdenMATest {
+protected:
+    void SetUp() override {
+        HolzapfelOgdenMATest::SetUp();
+
+        // Use struct
+        TestHO_ma->ustruct = false;
+    }
+};
+
+/**
+ * @brief Test fixture class for USTRUCT Holzapfel-Ogden material model.
+ */
+class USTRUCT_HolzapfelOgdenMATest : public HolzapfelOgdenMATest {
+protected:
+    void SetUp() override {
+        HolzapfelOgdenMATest::SetUp();
+
+        // Use ustruct
+        TestHO_ma->ustruct = true;
+    }
+};
+
+
+// ----------------------------------------------------------------------------
+// ---------------- Quadratic Volumetric Penalty Model ------------------------
+// ----------------------------------------------------------------------------
+/**
+ * @brief Test fixture class for the Quadratic Volumetric penalty model.
+ * 
+ * This class sets up the necessary parameters and objects for testing the Quadratic Volumetric penalty model.
+ */
+class QuadraticVolumetricPenaltyTest : public MaterialModelTest {
+protected:
+    // Material parameters object
+    VolumetricPenaltyParams params;
+
+    // Add the test object
+    TestQuadraticVolumetricPenalty* TestQVP;
+
+    // Setup method to initialize variables before each test
+    void SetUp() override {
+
+        // Set random values for the Quadratic penalty parameters between 1000 and 10000
+        params.kappa = getRandomDouble(1000.0, 10000.0);
+
+        // Initialize the test object
+        TestQVP = new TestQuadraticVolumetricPenalty(params);
+    }
+
+    // TearDown method to clean up after each test, if needed
+    void TearDown() override {
+        // Clean up the test object
+        delete TestQVP;
+        TestQVP = nullptr;
+    }
+};
+
+/**
+ * @brief Test fixture class for STRUCT Quadratic penalty model.
+ */
+class STRUCT_QuadraticVolumetricPenaltyTest : public QuadraticVolumetricPenaltyTest {
+protected:
+    void SetUp() override {
+        QuadraticVolumetricPenaltyTest::SetUp();
+
+        // Use struct
+        //TestQVP->ustruct = false;
+    }
+};
+
+/**
+ * @brief Test fixture class for USTRUCT Quadratic penalty model.
+ */
+class USTRUCT_QuadraticVolumetricPenaltyTest : public QuadraticVolumetricPenaltyTest {
+protected:
+    void SetUp() override {
+        QuadraticVolumetricPenaltyTest::SetUp();
+
+        // Use ustruct
+        //TestQVP->ustruct = true;
+    }
+};
+
+
+// ----------------------------------------------------------------------------
+// --------------------------- Simo-Taylor91 Volumetric Penalty Model ---------
+// ----------------------------------------------------------------------------
+
+/**
+ * @brief Test fixture class for the Simo-Taylor91 Volumetric penalty model.
+ * 
+ * This class sets up the necessary parameters and objects for testing the Simo-Taylor91 Volumetric penalty model.
+ */
+class SimoTaylor91VolumetricPenaltyTest : public MaterialModelTest {
+protected:
+    // Material parameters object
+    VolumetricPenaltyParams params;
+
+    // Add the test object
+    TestSimoTaylor91VolumetricPenalty* TestST91;
+
+    // Setup method to initialize variables before each test
+    void SetUp() override {
+
+        // Set random values for the Simo-Taylor91 penalty parameters between 1000 and 10000
+        params.kappa = getRandomDouble(1000.0, 10000.0);
+
+        // Initialize the test object
+        TestST91 = new TestSimoTaylor91VolumetricPenalty(params);
+    }
+
+    // TearDown method to clean up after each test, if needed
+    void TearDown() override {
+        // Clean up the test object
+        delete TestST91;
+        TestST91 = nullptr;
+    }
+};
+
+/**
+ * @brief Test fixture class for STRUCT Simo-Taylor91 penalty model.
+ */
+class STRUCT_SimoTaylor91VolumetricPenaltyTest : public SimoTaylor91VolumetricPenaltyTest {
+protected:
+    void SetUp() override {
+        SimoTaylor91VolumetricPenaltyTest::SetUp();
+
+        // Use struct
+        //TestST91->ustruct = false;
+    }
+};
+
+/**
+ * @brief Test fixture class for USTRUCT Simo-Taylor91 penalty model.
+ */
+class USTRUCT_SimoTaylor91VolumetricPenaltyTest : public SimoTaylor91VolumetricPenaltyTest {
+protected:
+    void SetUp() override {
+        SimoTaylor91VolumetricPenaltyTest::SetUp();
+
+        // Use ustruct
+        //TestST91->ustruct = true;
+    }
+};
+
+// ----------------------------------------------------------------------------
+// --------------------------- Miehe94 Volumetric Penalty Model ---------------
+// ----------------------------------------------------------------------------
+/**
+ * @brief Test fixture class for the Miehe94 Volumetric penalty model.
+ * 
+ * This class sets up the necessary parameters and objects for testing the Miehe94 Volumetric penalty model.
+ */
+class Miehe94VolumetricPenaltyTest : public MaterialModelTest {
+protected:
+    // Material parameters object
+    VolumetricPenaltyParams params;
+
+    // Add the test object
+    TestMiehe94VolumetricPenalty* TestM94;
+
+    // Setup method to initialize variables before each test
+    void SetUp() override {
+
+        // Set random values for the Miehe94 penalty parameters between 1000 and 10000
+        params.kappa = getRandomDouble(1000.0, 10000.0);
+
+        // Initialize the test object
+        TestM94 = new TestMiehe94VolumetricPenalty(params);
+    }
+
+    // TearDown method to clean up after each test, if needed
+    void TearDown() override {
+        // Clean up the test object
+        delete TestM94;
+        TestM94 = nullptr;
+    }
+};
+
+/**
+ * @brief Test fixture class for STRUCT Miehe94 penalty model.
+ */
+class STRUCT_Miehe94VolumetricPenaltyTest : public Miehe94VolumetricPenaltyTest {
+protected:
+    void SetUp() override {
+        Miehe94VolumetricPenaltyTest::SetUp();
+
+        // Use struct
+        //TestM94->ustruct = false;
+    }
+};
+
+/**
+ * @brief Test fixture class for USTRUCT Miehe94 penalty model.
+ */
+class USTRUCT_Miehe94VolumetricPenaltyTest : public Miehe94VolumetricPenaltyTest {
+protected:
+    void SetUp() override {
+        Miehe94VolumetricPenaltyTest::SetUp();
+
+        // Use ustruct
+        //TestM94->ustruct = true;
+    }
+};
+
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// ------------------------------- TESTS --------------------------------------
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+
+
+// ------------------------------ STRUCT TESTS --------------------------------
+
+// Test PK2 stress zero for F = I
+TEST_F(STRUCT_NeoHookeanTest, TestPK2StressIdentityF) {
+    //verbose = true; // Show values of S and S_ref
+
+    // Check identity F produces zero PK2 stress
+    double F[3][3] = {{1.0, 0.0, 0.0},
+                       {0.0, 1.0, 0.0},
+                       {0.0, 0.0, 1.0}};
+    double S_ref[3][3] = {}; // PK2 stress initialized to zero
+    TestNH->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+// Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for random F
+TEST_F(STRUCT_NeoHookeanTest, TestPK2StressConvergenceOrderRandomF) {
+    verbose = true; // Show order of convergence, errors, F, S
+
+    // Check order of convergence between finite difference and get_pk2cc() PK2 stress
+    // for random F
+    create_random_F(F);
+    TestNH->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
+}
+
+// Test order of convergence of consistency of material elasticity for random F
+TEST_F(STRUCT_NeoHookeanTest, TestMaterialElasticityConsistencyConvergenceOrderRandomF) {
+    verbose = true; // Show order of convergence, errors, F, S
+    
+    double delta_max = 1e-2; // Maximum perturbation scaling factor
+    double delta_min = 1e-3; // Minimum perturbation scaling factor
+    //int order = 1; // Order of finite difference method
+
+    // Generate a random deformation gradient F
+    create_random_F(F);
+
+    for (int i = 0; i < n_iter; i++) {
+        // Generate a random perturbation matrix dF
+        double dF[3][3];
+        create_random_F(dF, 0.0, 1.0);
+
+        // Check order of convergence of consistency of material elasticity for random F
+        TestNH->testMaterialElasticityConsistencyConvergenceOrder(F, dF, delta_max, delta_min, order, verbose);
+    }
+}
+
+// ------------------------------ USTRUCT TESTS --------------------------------
+
+// Test PK2 stress zero for F = I
+TEST_F(USTRUCT_NeoHookeanTest, TestPK2StressIdentityF) {
+    //verbose = true; // Show values of S and S_ref
+
+    // Check identity F produces zero PK2 stress
+    double F[3][3] = {{1.0, 0.0, 0.0},
+                       {0.0, 1.0, 0.0},
+                       {0.0, 0.0, 1.0}};
+    double S_ref[3][3] = {}; // PK2 stress initialized to zero
+    TestNH->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+
+// Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for random F
+TEST_F(USTRUCT_NeoHookeanTest, TestPK2StressConvergenceOrderRandomF) {
+    //verbose = true; // Show order of convergence, errors, F, S
+
+    // Check order of convergence between finite difference and get_pk2cc() PK2 stress
+    // for random F
+    create_random_F(F);
+    TestNH->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
+}
+
+// Test order of convergence of consistency of material elasticity for random F
+TEST_F(USTRUCT_NeoHookeanTest, TestMaterialElasticityConsistencyConvergenceOrderRandomF) {
+    verbose = true; // Show order of convergence, errors, F, S
+
+    // Check order of convergence of consistency of material elasticity for random F
+    create_random_F(F);
+    double dF[3][3]; // Deformation gradient perturbation shape
+    create_ones_matrix(dF); // Perturbation shape is ones matrix
+    double delta_max = 1e-2; // Maximum perturbation scaling factor
+    double delta_min = 1e-3; // Minimum perturbation scaling factor
+    //int order = 1; // Order of finite difference method
+    TestNH->testMaterialElasticityConsistencyConvergenceOrder(F, dF, delta_max, delta_min, order, verbose);
+}
+
+
+
+
+// ------------------------------ STRUCT TESTS --------------------------------
+
+// Test PK2 stress zero for F = I
+TEST_F(STRUCT_MooneyRivlinTest, TestPK2StressIdentityF) {
+    //verbose = true; // Show values of S and S_ref
+
+    // Check identity F produces zero PK2 stress
+    double F[3][3] = {1.0, 0.0, 0.0,
+                      0.0, 1.0, 0.0,
+                      0.0, 0.0, 1.0};
+    double S_ref[3][3] = {}; // PK2 stress initialized to zero
+    TestMR->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+
+// Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for random F
+TEST_F(STRUCT_MooneyRivlinTest, TestPK2StressConvergenceOrderRandomF) {
+    //verbose = true; // Show order of convergence, errors, F, S
+
+    // Check order of convergence between finite difference and get_pk2cc() PK2 stress
+    // for random F
+    create_random_F(F);
+    TestMR->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
+}
+
+
+// ------------------------------ USTRUCT TESTS --------------------------------
+
+// Test PK2 stress zero for F = I
+TEST_F(USTRUCT_MooneyRivlinTest, TestPK2StressIdentityF) {
+    //verbose = true; // Show values of S and S_ref
+
+    // Check identity F produces zero PK2 stress
+    double F[3][3] = {1.0, 0.0, 0.0,
+                      0.0, 1.0, 0.0,
+                      0.0, 0.0, 1.0};
+    double S_ref[3][3] = {}; // PK2 stress initialized to zero
+    TestMR->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
+}
+
+
+// Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for random F
+TEST_F(USTRUCT_MooneyRivlinTest, TestPK2StressConvergenceOrderRandomF) {
+    //verbose = true; // Show order of convergence, errors, F, S
+
+    // Check order of convergence between finite difference and get_pk2cc() PK2 stress
+    // for random F
+    create_random_F(F);
+    TestMR->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
+}
+
+// ------------------------------ STRUCT TESTS --------------------------------
 
 // Test PK2 stress zero for F = I
 TEST_F(STRUCT_HolzapfelOgdenTest, TestPK2StressIdentityF) {
@@ -539,20 +841,6 @@ TEST_F(STRUCT_HolzapfelOgdenTest, TestMaterialElasticityConsistencyConvergenceOr
 }
 
 // ------------------------------ USTRUCT TESTS --------------------------------
-/**
- * @brief Test fixture class for USTRUCT Holzapfel-Ogden material model.
- * 
- * This class sets up the necessary parameters and objects for testing the USTRUCT Holzapfel-Ogden material model.
- */
-class USTRUCT_HolzapfelOgdenTest : public HolzapfelOgdenTest {
-protected:
-    void SetUp() override {
-        HolzapfelOgdenTest::SetUp();
-
-        // Use ustruct
-        TestHO->ustruct = true;
-    }
-};
 
 // Test PK2 stress zero for F = I
 TEST_F(USTRUCT_HolzapfelOgdenTest, TestPK2StressIdentityF) {
@@ -679,96 +967,10 @@ TEST_F(USTRUCT_HolzapfelOgdenTest, TestMaterialElasticityConsistencyConvergenceO
 }
 
 
-// ----------------------------------------------------------------------------
-// ------------- Holzapfel-Ogden (Modified Anisotropy) Material  --------------
-// ----------------------------------------------------------------------------
 
-/**
- * @brief Test fixture class for the Holzapfel-Ogden (Modified Anisotropy) material model.
- * 
- * This class sets up the necessary parameters and objects for testing the Holzapfel-Ogden (Modified Anisotropy) material model.
-*/
-class HolzapfelOgdenMATest : public MaterialModelTest {
-protected:
-    // Material parameters object
-    HolzapfelOgdenMAParams params;
-
-    // Add the test object
-    TestHolzapfelOgdenMA* TestHO_ma;
-
-    // Setup method to initialize variables before each test
-    void SetUp() override {
-
-        // Set Holzapfel-Ogden parameters from cardiac benchmark paper
-        params.a = 59.0; // Pa
-        params.a_f = 18472.0; // Pa
-        params.a_s = 2481.0; // Pa
-        params.a_fs = 216.0; // Pa
-        params.b = 8.023; // Pa
-        params.b_f = 16.026; // Pa
-        params.b_s = 11.12; // Pa
-        params.b_fs = 11.436; // Pa
-        params.k = 100000.0; // Pa 
-
-        // Set random values for f between 0 and 1 and normalize
-        params.f[0] = getRandomDouble(0.0, 1.0);
-        params.f[1] = getRandomDouble(0.0, 1.0);
-        params.f[2] = getRandomDouble(0.0, 1.0);
-        double norm_f = sqrt(params.f[0]*params.f[0] + params.f[1]*params.f[1] + params.f[2]*params.f[2]);
-        params.f[0] /= norm_f; params.f[1] /= norm_f; params.f[2] /= norm_f;
-
-        // Create s orthogonal to f
-        if (fabs(params.f[0]) < 0.9) { // Check if f[0] is not the dominant component
-            params.s[0] = 0;
-            params.s[1] = params.f[2];
-            params.s[2] = -params.f[1];
-        } else { // If f[0] is the dominant component, use another approach
-            params.s[0] = -params.f[2];
-            params.s[1] = 0;
-            params.s[2] = params.f[0];
-        }
-
-        // Normalize s
-        double norm_s = sqrt(params.s[0]*params.s[0] + params.s[1]*params.s[1] + params.s[2]*params.s[2]);
-        params.s[0] /= norm_s; params.s[1] /= norm_s; params.s[2] /= norm_s;
-
-        // Check f.s = 0
-        double dot_fs = params.f[0]*params.s[0] + params.f[1]*params.s[1] + params.f[2]*params.s[2];
-        if (fabs(dot_fs) > 1e-6) {
-            cout << "f.s = " << dot_fs << endl;
-            cout << "f = [" << params.f[0] << ", " << params.f[1] << ", " << params.f[2] << "]" << endl;
-            cout << "s = [" << params.s[0] << ", " << params.s[1] << ", " << params.s[2] << "]" << endl;
-            throw runtime_error("f and s are not orthogonal");
-        }
-
-
-        // Initialize the test object
-        TestHO_ma = new TestHolzapfelOgdenMA(params);
-    }
-
-    // TearDown method to clean up after each test, if needed
-    void TearDown() override {
-        // Clean up the test object
-        delete TestHO_ma;
-        TestHO_ma = nullptr;
-    }
-};
 
 // ------------------------------ STRUCT TESTS --------------------------------
-/**
- * @brief Test fixture class for STRUCT Holzapfel-Ogden material model.
- * 
- * This class sets up the necessary parameters and objects for testing the STRUCT Holzapfel-Ogden material model.
- */
-class STRUCT_HolzapfelOgdenMATest : public HolzapfelOgdenMATest {
-protected:
-    void SetUp() override {
-        HolzapfelOgdenMATest::SetUp();
 
-        // Use struct
-        TestHO_ma->ustruct = false;
-    }
-};
 
 // Test PK2 stress zero for F = I
 TEST_F(STRUCT_HolzapfelOgdenMATest, TestPK2StressIdentityF) {
@@ -894,20 +1096,6 @@ TEST_F(STRUCT_HolzapfelOgdenMATest, TestMaterialElasticityConsistencyConvergence
 }
 
 // ------------------------------ USTRUCT TESTS --------------------------------
-/**
- * @brief Test fixture class for USTRUCT Holzapfel-Ogden material model.
- * 
- * This class sets up the necessary parameters and objects for testing the USTRUCT Holzapfel-Ogden material model.
- */
-class USTRUCT_HolzapfelOgdenMATest : public HolzapfelOgdenMATest {
-protected:
-    void SetUp() override {
-        HolzapfelOgdenMATest::SetUp();
-
-        // Use ustruct
-        TestHO_ma->ustruct = true;
-    }
-};
 
 // Test PK2 stress zero for F = I
 TEST_F(USTRUCT_HolzapfelOgdenMATest, TestPK2StressIdentityF) {
@@ -1040,55 +1228,8 @@ TEST_F(USTRUCT_HolzapfelOgdenMATest, TestMaterialElasticityConsistencyConvergenc
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
-// ----------------------------------------------------------------------------
-// ---------------- Quadratic Volumetric Penalty Model ------------------------
-// ----------------------------------------------------------------------------
-/**
- * @brief Test fixture class for the Quadratic Volumetric penalty model.
- * 
- * This class sets up the necessary parameters and objects for testing the Quadratic Volumetric penalty model.
- */
-class QuadraticVolumetricPenaltyTest : public MaterialModelTest {
-protected:
-    // Material parameters object
-    VolumetricPenaltyParams params;
-
-    // Add the test object
-    TestQuadraticVolumetricPenalty* TestQVP;
-
-    // Setup method to initialize variables before each test
-    void SetUp() override {
-
-        // Set random values for the Quadratic penalty parameters between 1000 and 10000
-        params.kappa = getRandomDouble(1000.0, 10000.0);
-
-        // Initialize the test object
-        TestQVP = new TestQuadraticVolumetricPenalty(params);
-    }
-
-    // TearDown method to clean up after each test, if needed
-    void TearDown() override {
-        // Clean up the test object
-        delete TestQVP;
-        TestQVP = nullptr;
-    }
-};
 
 // ------------------------------ STRUCT TESTS --------------------------------
-/**
- * @brief Test fixture class for STRUCT Quadratic penalty model.
- * 
- * This class sets up the necessary parameters and objects for testing the STRUCT Quadratic penalty model.
- */
-class STRUCT_QuadraticVolumetricPenaltyTest : public QuadraticVolumetricPenaltyTest {
-protected:
-    void SetUp() override {
-        QuadraticVolumetricPenaltyTest::SetUp();
-
-        // Use struct
-        //TestQVP->ustruct = false;
-    }
-};
 
 // Test PK2 stress zero for F = I
 TEST_F(STRUCT_QuadraticVolumetricPenaltyTest, TestPK2StressIdentityF) {
@@ -1147,20 +1288,6 @@ TEST_F(STRUCT_QuadraticVolumetricPenaltyTest, TestPK2StressConvergenceOrderRando
 }
 
 // ------------------------------ USTRUCT TESTS --------------------------------
-/**
- * @brief Test fixture class for USTRUCT Quadratic penalty model.
- * 
- * This class sets up the necessary parameters and objects for testing the USTRUCT Quadratic penalty model.
- */
-class USTRUCT_QuadraticVolumetricPenaltyTest : public QuadraticVolumetricPenaltyTest {
-protected:
-    void SetUp() override {
-        QuadraticVolumetricPenaltyTest::SetUp();
-
-        // Use ustruct
-        //TestQVP->ustruct = true;
-    }
-};
 
 // Test rho, beta, drho/dp and dbeta/dp for random pressure
 TEST_F(USTRUCT_QuadraticVolumetricPenaltyTest, TestRhoBeta) {
@@ -1184,56 +1311,10 @@ TEST_F(USTRUCT_QuadraticVolumetricPenaltyTest, TestRhoBeta) {
     TestQVP->testRhoBetaAgainstReference(p, rho0, rho_ref, beta_ref, drhodp_ref, dbetadp_ref, rel_tol, abs_tol, verbose);
 }
 
-// ----------------------------------------------------------------------------
-// --------------------------- Simo-Taylor91 Volumetric Penalty Model ---------
-// ----------------------------------------------------------------------------
 
-/**
- * @brief Test fixture class for the Simo-Taylor91 Volumetric penalty model.
- * 
- * This class sets up the necessary parameters and objects for testing the Simo-Taylor91 Volumetric penalty model.
- */
-class SimoTaylor91VolumetricPenaltyTest : public MaterialModelTest {
-protected:
-    // Material parameters object
-    VolumetricPenaltyParams params;
-
-    // Add the test object
-    TestSimoTaylor91VolumetricPenalty* TestST91;
-
-    // Setup method to initialize variables before each test
-    void SetUp() override {
-
-        // Set random values for the Simo-Taylor91 penalty parameters between 1000 and 10000
-        params.kappa = getRandomDouble(1000.0, 10000.0);
-
-        // Initialize the test object
-        TestST91 = new TestSimoTaylor91VolumetricPenalty(params);
-    }
-
-    // TearDown method to clean up after each test, if needed
-    void TearDown() override {
-        // Clean up the test object
-        delete TestST91;
-        TestST91 = nullptr;
-    }
-};
 
 // ------------------------------ STRUCT TESTS --------------------------------
-/**
- * @brief Test fixture class for STRUCT Simo-Taylor91 penalty model.
- * 
- * This class sets up the necessary parameters and objects for testing the STRUCT Simo-Taylor91 penalty model.
- */
-class STRUCT_SimoTaylor91VolumetricPenaltyTest : public SimoTaylor91VolumetricPenaltyTest {
-protected:
-    void SetUp() override {
-        SimoTaylor91VolumetricPenaltyTest::SetUp();
 
-        // Use struct
-        //TestST91->ustruct = false;
-    }
-};
 
 // Test PK2 stress zero for F = I
 TEST_F(STRUCT_SimoTaylor91VolumetricPenaltyTest, TestPK2StressIdentityF) {
@@ -1292,20 +1373,6 @@ TEST_F(STRUCT_SimoTaylor91VolumetricPenaltyTest, TestPK2StressConvergenceOrderRa
 }
 
 // ------------------------------ USTRUCT TESTS --------------------------------
-/**
- * @brief Test fixture class for USTRUCT Simo-Taylor91 penalty model.
- * 
- * This class sets up the necessary parameters and objects for testing the USTRUCT Simo-Taylor91 penalty model.
- */
-class USTRUCT_SimoTaylor91VolumetricPenaltyTest : public SimoTaylor91VolumetricPenaltyTest {
-protected:
-    void SetUp() override {
-        SimoTaylor91VolumetricPenaltyTest::SetUp();
-
-        // Use ustruct
-        //TestST91->ustruct = true;
-    }
-};
 
 // Test rho and beta values for random p
 TEST_F(USTRUCT_SimoTaylor91VolumetricPenaltyTest, TestRhoBeta) {
@@ -1329,55 +1396,9 @@ TEST_F(USTRUCT_SimoTaylor91VolumetricPenaltyTest, TestRhoBeta) {
     TestST91->testRhoBetaAgainstReference(p, rho0, rho_ref, beta_ref, drhodp_ref, dbetadp_ref, rel_tol, abs_tol, verbose);
 }
 
-// ----------------------------------------------------------------------------
-// --------------------------- Miehe94 Volumetric Penalty Model ---------------
-// ----------------------------------------------------------------------------
-/**
- * @brief Test fixture class for the Miehe94 Volumetric penalty model.
- * 
- * This class sets up the necessary parameters and objects for testing the Miehe94 Volumetric penalty model.
- */
-class Miehe94VolumetricPenaltyTest : public MaterialModelTest {
-protected:
-    // Material parameters object
-    VolumetricPenaltyParams params;
 
-    // Add the test object
-    TestMiehe94VolumetricPenalty* TestM94;
-
-    // Setup method to initialize variables before each test
-    void SetUp() override {
-
-        // Set random values for the Miehe94 penalty parameters between 1000 and 10000
-        params.kappa = getRandomDouble(1000.0, 10000.0);
-
-        // Initialize the test object
-        TestM94 = new TestMiehe94VolumetricPenalty(params);
-    }
-
-    // TearDown method to clean up after each test, if needed
-    void TearDown() override {
-        // Clean up the test object
-        delete TestM94;
-        TestM94 = nullptr;
-    }
-};
 
 // ------------------------------ STRUCT TESTS --------------------------------
-/**
- * @brief Test fixture class for STRUCT Miehe94 penalty model.
- * 
- * This class sets up the necessary parameters and objects for testing the STRUCT Miehe94 penalty model.
- */
-class STRUCT_Miehe94VolumetricPenaltyTest : public Miehe94VolumetricPenaltyTest {
-protected:
-    void SetUp() override {
-        Miehe94VolumetricPenaltyTest::SetUp();
-
-        // Use struct
-        //TestM94->ustruct = false;
-    }
-};
 
 // Test PK2 stress zero for F = I
 TEST_F(STRUCT_Miehe94VolumetricPenaltyTest, TestPK2StressIdentityF) {
@@ -1436,20 +1457,6 @@ TEST_F(STRUCT_Miehe94VolumetricPenaltyTest, TestPK2StressConvergenceOrderRandomF
 }
 
 // ------------------------------ USTRUCT TESTS --------------------------------
-/**
- * @brief Test fixture class for USTRUCT Miehe94 penalty model.
- * 
- * This class sets up the necessary parameters and objects for testing the USTRUCT Miehe94 penalty model.
- */
-class USTRUCT_Miehe94VolumetricPenaltyTest : public Miehe94VolumetricPenaltyTest {
-protected:
-    void SetUp() override {
-        Miehe94VolumetricPenaltyTest::SetUp();
-
-        // Use ustruct
-        //TestM94->ustruct = true;
-    }
-};
 
 // Test rho and beta values for random p
 TEST_F(USTRUCT_Miehe94VolumetricPenaltyTest, TestRhoBeta) {
