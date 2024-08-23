@@ -8,7 +8,7 @@ Simulate heat transfer in a 2D plate. A steady, uniform temperature value is spe
 </p>
 
 
-## Steady Dirichlet BC
+## Steady Dirichlet boundary condition
 
 Specify a line source with constant temperature is specified on the left boundary.
 
