@@ -746,8 +746,8 @@ public:
         // m is the slope (order of convergence), b is the intercept
         auto [m, b] = computeLinearRegression(log_deltas, log_errors);
 
-        // Check that order of convergence is > order - 0.1
-        EXPECT_GT(m, order - 0.1);
+        // Check that order of convergence is > order - 0.02
+        EXPECT_GT(m, order - 0.02);
 
         // Print results if verbose
         if (verbose) {
@@ -1041,8 +1041,8 @@ public:
         // m is the slope (order of convergence), b is the intercept
         auto [m, b] = computeLinearRegression(log_deltas, log_errors);
 
-        // Check that order of convergence is > (order + 1) - 0.1
-        EXPECT_GT(m, order + 1 - 0.1);
+        // Check that order of convergence is > (order + 1) - 0.02
+        EXPECT_GT(m, order + 1 - 0.02);
 
         // Print results if verbose
         if (verbose) {
@@ -1334,8 +1334,8 @@ public:
             // m is the slope (order of convergence), b is the intercept
             auto [m, b] = computeLinearRegression(log_deltas, log_errors);
 
-            // Check that order of convergence is > (order + 1) - 0.1
-            EXPECT_GT(m, order + 1 - 0.1);
+            // Check that order of convergence is > (order + 1) - 0.02
+            EXPECT_GT(m, order + 1 - 0.02);
 
             // Print results if verbose
             if (verbose) {

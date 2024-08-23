@@ -914,8 +914,8 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
       mat_fun_carray::mat_mul(C, fl.rcol(1), C_fl);
       double Inv6 = J2d * mat_fun_carray::norm<N>(fl.rcol(1), C_fl);
 
-      mat_fun_carray::mat_mul(C, fl.rcol(0), C_fl);
-      double Inv8 = J2d * mat_fun_carray::norm<N>(fl.rcol(1), C_fl);
+      mat_fun_carray::mat_mul(C, fl.rcol(1), C_fl);
+      double Inv8 = J2d * mat_fun_carray::norm<N>(fl.rcol(0), C_fl);
 
       double Eff = Inv4 - 1.0;
       double Ess = Inv6 - 1.0;
@@ -944,8 +944,8 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
       }
 
       // Isotropic + fiber-sheet interaction stiffness
-      g1 = g1 * 2.0*J4d*stM.b;
-      g2 = g2 * 2.0 * (1.0 + 2.0*stM.bfs*Efs*Efs);
+      g1 = g1 * 2.0 * J4d * stM.b;
+      g2 = g2 * 2.0 * J4d * (1.0 + 2.0*stM.bfs*Efs*Efs);
 
       CArray4 Idm_prod;
       mat_fun_carray::ten_dyad_prod<N>(Idm, Idm, Idm_prod);
@@ -1133,8 +1133,8 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
       mat_fun_carray::mat_mul(C, fl.rcol(1), C_fl);
       double Inv6 = mat_fun_carray::norm<N>(fl.rcol(1), C_fl);
 
-      mat_fun_carray::mat_mul(C, fl.rcol(0), C_fl);
-      double Inv8 = mat_fun_carray::norm<N>(fl.rcol(1), C_fl);
+      mat_fun_carray::mat_mul(C, fl.rcol(1), C_fl);
+      double Inv8 = mat_fun_carray::norm<N>(fl.rcol(0), C_fl);
 
       double Eff = Inv4 - 1.0;
       double Ess = Inv6 - 1.0;
@@ -1225,9 +1225,9 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
         }
     
       CArray4 Ci_Ci_prod;
-      mat_fun_carray::ten_dyad_prod(Ci,Ci,Ci_Ci_prod);
+      mat_fun_carray::ten_dyad_prod(Ci, Ci, Ci_Ci_prod);
       CArray4 Ci_Ci_symprod;
-      mat_fun_carray::ten_symm_prod(Ci,Ci,Ci_Ci_symprod);
+      mat_fun_carray::ten_symm_prod(Ci, Ci, Ci_Ci_symprod);
       for (int i = 0; i < N; i++) {
           for (int j = 0; j < N; j++) {
             for (int k = 0; k < N; k++) {
@@ -1237,6 +1237,7 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
             }
           }
         }
+
       // Now that both isochoric and volumetric components were added, anisotropic components need to be added
 
       // Fiber-sheet interaction terms
@@ -1248,10 +1249,11 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
             S[i][j] += g1*Efs*Hfs[i][j];
           }
         }
+
       g1   = g1 * 2.0*(1.0 + 2.0*stM.bfs*Efs*Efs);
 
       CArray4 Hfs_Hfs_prod;
-      mat_fun_carray::ten_dyad_prod(Hfs,Hfs,Hfs_Hfs_prod);
+      mat_fun_carray::ten_dyad_prod(Hfs, Hfs, Hfs_Hfs_prod);
       for (int i = 0; i < N; i++) {
           for (int j = 0; j < N; j++) {
             for (int k = 0; k < N; k++) {
@@ -1280,7 +1282,7 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
       g1   = (g1 + (2.0*dc4f*Eff))*rexp;
       g1   = 4.0*stM.aff*g1;
       CArray4 Hff_Hff_prod;
-      mat_fun_carray::ten_dyad_prod(Hff,Hff,Hff_Hff_prod);
+      mat_fun_carray::ten_dyad_prod(Hff, Hff, Hff_Hff_prod);
       for (int i = 0; i < N; i++) {
           for (int j = 0; j < N; j++) {
             for (int k = 0; k < N; k++) {
