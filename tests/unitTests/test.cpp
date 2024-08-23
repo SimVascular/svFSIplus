@@ -33,11 +33,9 @@
 using namespace mat_fun;
 using namespace std;
 
-// ----------------------------------------------------------------------------
-// ----------------------------------------------------------------------------
+// ============================================================================
 // --------------------------- Test fixture classes ---------------------------
-// ----------------------------------------------------------------------------
-// ----------------------------------------------------------------------------
+// ============================================================================
 
 /**
  * @brief Test fixture class containing common setup for all material model tests in this file
@@ -388,6 +386,9 @@ protected:
 };
 
 
+
+
+
 // ----------------------------------------------------------------------------
 // ---------------- Quadratic Volumetric Penalty Model ------------------------
 // ----------------------------------------------------------------------------
@@ -511,7 +512,7 @@ protected:
 };
 
 // ----------------------------------------------------------------------------
-// --------------------------- Miehe94 Volumetric Penalty Model ---------------
+// ---------------------- Miehe94 Volumetric Penalty Model --------------------
 // ----------------------------------------------------------------------------
 /**
  * @brief Test fixture class for the Miehe94 Volumetric penalty model.
@@ -570,14 +571,25 @@ protected:
     }
 };
 
-// ----------------------------------------------------------------------------
-// ----------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+// ============================================================================
 // ------------------------------- TESTS --------------------------------------
-// ----------------------------------------------------------------------------
-// ----------------------------------------------------------------------------
+// ============================================================================
 
 
-// ------------------------------ STRUCT TESTS --------------------------------
+
+// ----------------------------------------------------------------------------
+// --------------------------- Neo-Hookean Material ---------------------------
+// ----------------------------------------------------------------------------
+
+// ------------------------------ STRUCT Tests --------------------------------
 
 // Test PK2 stress zero for F = I
 TEST_F(STRUCT_NeoHookeanTest, TestPK2StressIdentityF) {
@@ -622,7 +634,7 @@ TEST_F(STRUCT_NeoHookeanTest, TestMaterialElasticityConsistencyConvergenceOrderR
     }
 }
 
-// ------------------------------ USTRUCT TESTS --------------------------------
+// ------------------------------ USTRUCT Tests --------------------------------
 
 // Test PK2 stress zero for F = I
 TEST_F(USTRUCT_NeoHookeanTest, TestPK2StressIdentityF) {
@@ -663,8 +675,11 @@ TEST_F(USTRUCT_NeoHookeanTest, TestMaterialElasticityConsistencyConvergenceOrder
 
 
 
+// ----------------------------------------------------------------------------
+// --------------------------- Mooney-Rivlin Material -------------------------
+// ----------------------------------------------------------------------------
 
-// ------------------------------ STRUCT TESTS --------------------------------
+// ------------------------------ STRUCT Tests --------------------------------
 
 // Test PK2 stress zero for F = I
 TEST_F(STRUCT_MooneyRivlinTest, TestPK2StressIdentityF) {
@@ -690,7 +705,7 @@ TEST_F(STRUCT_MooneyRivlinTest, TestPK2StressConvergenceOrderRandomF) {
 }
 
 
-// ------------------------------ USTRUCT TESTS --------------------------------
+// ------------------------------ USTRUCT Tests --------------------------------
 
 // Test PK2 stress zero for F = I
 TEST_F(USTRUCT_MooneyRivlinTest, TestPK2StressIdentityF) {
@@ -715,7 +730,13 @@ TEST_F(USTRUCT_MooneyRivlinTest, TestPK2StressConvergenceOrderRandomF) {
     TestMR->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
 }
 
-// ------------------------------ STRUCT TESTS --------------------------------
+
+
+// ----------------------------------------------------------------------------
+// ----------------------- Holzapfel-Ogden Material ---------------------------
+// ----------------------------------------------------------------------------
+
+// ------------------------------ STRUCT Tests --------------------------------
 
 // Test PK2 stress zero for F = I
 TEST_F(STRUCT_HolzapfelOgdenTest, TestPK2StressIdentityF) {
@@ -840,7 +861,7 @@ TEST_F(STRUCT_HolzapfelOgdenTest, TestMaterialElasticityConsistencyConvergenceOr
     TestHO->testMaterialElasticityConsistencyConvergenceOrder(F, dF, delta_max, delta_min, order, verbose);
 }
 
-// ------------------------------ USTRUCT TESTS --------------------------------
+// ------------------------------ USTRUCT Tests --------------------------------
 
 // Test PK2 stress zero for F = I
 TEST_F(USTRUCT_HolzapfelOgdenTest, TestPK2StressIdentityF) {
@@ -968,9 +989,11 @@ TEST_F(USTRUCT_HolzapfelOgdenTest, TestMaterialElasticityConsistencyConvergenceO
 
 
 
+// ----------------------------------------------------------------------------
+// --------------- Holzapfel-Ogden (Modified Anisotropy) Material -------------
+// ----------------------------------------------------------------------------
 
-// ------------------------------ STRUCT TESTS --------------------------------
-
+// ------------------------------ STRUCT Tests --------------------------------
 
 // Test PK2 stress zero for F = I
 TEST_F(STRUCT_HolzapfelOgdenMATest, TestPK2StressIdentityF) {
@@ -1095,7 +1118,8 @@ TEST_F(STRUCT_HolzapfelOgdenMATest, TestMaterialElasticityConsistencyConvergence
     TestHO_ma->testMaterialElasticityConsistencyConvergenceOrder(F, dF, delta_max, delta_min, order, verbose);
 }
 
-// ------------------------------ USTRUCT TESTS --------------------------------
+
+// ------------------------------ USTRUCT Tests --------------------------------
 
 // Test PK2 stress zero for F = I
 TEST_F(USTRUCT_HolzapfelOgdenMATest, TestPK2StressIdentityF) {
@@ -1222,14 +1246,14 @@ TEST_F(USTRUCT_HolzapfelOgdenMATest, TestMaterialElasticityConsistencyConvergenc
 }
 
 
-// ----------------------------------------------------------------------------
-// ----------------------------------------------------------------------------
-// ----------------------- Volumetric penalty models -------------------------
-// ----------------------------------------------------------------------------
-// ----------------------------------------------------------------------------
 
 
-// ------------------------------ STRUCT TESTS --------------------------------
+
+// ----------------------------------------------------------------------------
+// ---------------------- Quadratic Volumetric Penalty Material ----------------
+// ----------------------------------------------------------------------------
+
+// ------------------------------ STRUCT Tests --------------------------------
 
 // Test PK2 stress zero for F = I
 TEST_F(STRUCT_QuadraticVolumetricPenaltyTest, TestPK2StressIdentityF) {
@@ -1287,7 +1311,7 @@ TEST_F(STRUCT_QuadraticVolumetricPenaltyTest, TestPK2StressConvergenceOrderRando
     TestQVP->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
 }
 
-// ------------------------------ USTRUCT TESTS --------------------------------
+// ------------------------------ USTRUCT Tests --------------------------------
 
 // Test rho, beta, drho/dp and dbeta/dp for random pressure
 TEST_F(USTRUCT_QuadraticVolumetricPenaltyTest, TestRhoBeta) {
@@ -1312,8 +1336,11 @@ TEST_F(USTRUCT_QuadraticVolumetricPenaltyTest, TestRhoBeta) {
 }
 
 
+// ----------------------------------------------------------------------------
+// ---------------------- Simo-Taylor 91 Volumetric Penalty Material ------------
+// ----------------------------------------------------------------------------
 
-// ------------------------------ STRUCT TESTS --------------------------------
+// ------------------------------ STRUCT Tests --------------------------------
 
 
 // Test PK2 stress zero for F = I
@@ -1372,7 +1399,7 @@ TEST_F(STRUCT_SimoTaylor91VolumetricPenaltyTest, TestPK2StressConvergenceOrderRa
     TestST91->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
 }
 
-// ------------------------------ USTRUCT TESTS --------------------------------
+// ------------------------------ USTRUCT Tests --------------------------------
 
 // Test rho and beta values for random p
 TEST_F(USTRUCT_SimoTaylor91VolumetricPenaltyTest, TestRhoBeta) {
@@ -1397,8 +1424,11 @@ TEST_F(USTRUCT_SimoTaylor91VolumetricPenaltyTest, TestRhoBeta) {
 }
 
 
+// ----------------------------------------------------------------------------
+// ---------------------- Miehe 94 Volumetric Penalty Material -----------------
+// ----------------------------------------------------------------------------
 
-// ------------------------------ STRUCT TESTS --------------------------------
+// ------------------------------ STRUCT Tests --------------------------------
 
 // Test PK2 stress zero for F = I
 TEST_F(STRUCT_Miehe94VolumetricPenaltyTest, TestPK2StressIdentityF) {
@@ -1456,7 +1486,7 @@ TEST_F(STRUCT_Miehe94VolumetricPenaltyTest, TestPK2StressConvergenceOrderRandomF
     TestM94->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
 }
 
-// ------------------------------ USTRUCT TESTS --------------------------------
+// ------------------------------ USTRUCT Tests --------------------------------
 
 // Test rho and beta values for random p
 TEST_F(USTRUCT_Miehe94VolumetricPenaltyTest, TestRhoBeta) {
@@ -1480,7 +1510,8 @@ TEST_F(USTRUCT_Miehe94VolumetricPenaltyTest, TestRhoBeta) {
     TestM94->testRhoBetaAgainstReference(p, rho0, rho_ref, beta_ref, drhodp_ref, dbetadp_ref, rel_tol, abs_tol, verbose);
 }
 
-// ----------------------------------------------------------------------------
-// ----------------------------------------------------------------------------
+// ============================================================================
+// ========================== END OF TESTS ====================================
+// ============================================================================
 
 
