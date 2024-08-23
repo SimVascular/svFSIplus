@@ -775,6 +775,8 @@ public:
                 }
                 std::cout << std::endl;
             }
+
+            std::cout << std::endl;
         }
     }
 
@@ -1267,12 +1269,13 @@ public:
      * instead of derivatives (e.g. dS/dF and CC:dE/dF).
      * @param F Deformation gradient.
      * @param dF Deformation gradient perturbation shape.
+     * @param n_iter Number of random perturbations in F to test.
      * @param delta_max Maximum perturbation scaling factor.
      * @param delta_min Minimum perturbation scaling factor.
      * @param order Order of the finite difference scheme (1 for first order, 2 for second order, etc.).
      * @param verbose Show values of errors and order of convergence if true.
      */
-    void testMaterialElasticityConsistencyConvergenceOrder(double F[3][3], double dF[3][3], double delta_max, double delta_min, int order, bool verbose = false) {
+    void testMaterialElasticityConsistencyConvergenceOrder(double F[3][3], int n_iter, double delta_max, double delta_min, int order, bool verbose = false) {
         // Check that delta_max > delta_min
         if (delta_max <= delta_min) {
             std::cerr << "Error: delta_max must be greater than delta_min." << std::endl;
@@ -1293,60 +1296,75 @@ public:
             delta /= 2.0;
         }
 
-        // Compute dS and CC:dE for each delta and store error in list
-        std::vector<double> errors;
-        double dS[3][3], CCdE[3][3];
+        // Loop over many random perturbations to the deformation gradient, dF
+        for (int i = 0; i < n_iter; i++) {
+            // Generate random dF with values between 0 and 1
+            double dF[3][3];
+            create_random_F(dF, 0.0, 1.0);
+        
+            // Compute dS and CC:dE for each delta and store error in list
+            std::vector<double> errors;
+            double dS[3][3], CCdE[3][3];
+            for (int i = 0; i < deltas.size(); i++) {
+                calcdSFiniteDifference(F, dF, deltas[i], order, dS);
+                calcCCdEFiniteDifference(F, dF, deltas[i], order, CCdE);
 
-        for (int i = 0; i < deltas.size(); i++) {
-            calcdSFiniteDifference(F, dF, deltas[i], order, dS);
-            calcCCdEFiniteDifference(F, dF, deltas[i], order, CCdE);
-
-            // Compute Frobenius norm of error between dS and CC:dE
-            double error = 0.0;
-            for (int i = 0; i < 3; i++) {
-                for (int j = 0; j < 3; j++) {
-                    error += pow(dS[i][j] - CCdE[i][j], 2);
+                // Compute Frobenius norm of error between dS and CC:dE
+                double error = 0.0;
+                for (int i = 0; i < 3; i++) {
+                    for (int j = 0; j < 3; j++) {
+                        error += pow(dS[i][j] - CCdE[i][j], 2);
+                    }
                 }
+                error = sqrt(error);
+
+                // Store error in list
+                errors.push_back(error);
             }
-            error = sqrt(error);
 
-            // Store error in list
-            errors.push_back(error);
-        }
-
-        // Compute order of convergence by fitting a line to log(delta) vs log(error)
-        std::vector<double> log_deltas, log_errors;
-        for (int i = 0; i < deltas.size(); i++) {
-            log_deltas.push_back(log(deltas[i]));
-            log_errors.push_back(log(errors[i]));
-        }
-
-        // Fit a line to log(delta) vs log(error)
-        // m is the slope (order of convergence), b is the intercept
-        auto [m, b] = computeLinearRegression(log_deltas, log_errors);
-
-        // Check that order of convergence is order + 1
-        EXPECT_NEAR(m, order + 1, 0.1);
-
-        // Print results if verbose
-        if (verbose) {
-            std::cout << "Slope (order of convergence): " << m << std::endl;
-            std::cout << "Intercept: " << b << std::endl;
-            std::cout << "Errors: ";
-            for (int i = 0; i < errors.size(); i++) {
-                std::cout << errors[i] << " ";
+            // Compute order of convergence by fitting a line to log(delta) vs log(error)
+            std::vector<double> log_deltas, log_errors;
+            for (int i = 0; i < deltas.size(); i++) {
+                log_deltas.push_back(log(deltas[i]));
+                log_errors.push_back(log(errors[i]));
             }
-            std::cout << std::endl;
-            std::cout << std::endl;
-            
-            std::cout << "F = " << std::endl;
-            for (int i = 0; i < 3; i++) {
-                for (int J = 0; J < 3; J++) {
-                    std::cout << F[i][J] << " ";
+
+            // Fit a line to log(delta) vs log(error)
+            // m is the slope (order of convergence), b is the intercept
+            auto [m, b] = computeLinearRegression(log_deltas, log_errors);
+
+            // Check that order of convergence is order + 1
+            EXPECT_NEAR(m, order + 1, 0.1);
+
+            // Print results if verbose
+            if (verbose) {
+                std::cout << "Iteration " << i << ":" << std::endl;
+                std::cout << "Slope (order of convergence): " << m << std::endl;
+                std::cout << "Intercept: " << b << std::endl;
+                std::cout << "Errors: ";
+                for (int i = 0; i < errors.size(); i++) {
+                    std::cout << errors[i] << " ";
+                }
+                std::cout << std::endl;
+                std::cout << std::endl;
+                
+                std::cout << "F = " << std::endl;
+                for (int i = 0; i < 3; i++) {
+                    for (int J = 0; J < 3; J++) {
+                        std::cout << F[i][J] << " ";
+                    }
+                    std::cout << std::endl;
+                }
+
+                std::cout << "dF = " << std::endl;
+                for (int i = 0; i < 3; i++) {
+                    for (int J = 0; J < 3; J++) {
+                        std::cout << dF[i][J] << " ";
+                    }
+                    std::cout << std::endl;
                 }
                 std::cout << std::endl;
             }
-            std::cout << std::endl;
         }
     }
 
