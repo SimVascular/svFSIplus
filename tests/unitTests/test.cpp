@@ -105,19 +105,6 @@ TEST_F(STRUCT_NeoHookeanTest, TestPK2StressIdentityF) {
     TestNH->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
 }
 
-// Test PK2 stress with finite difference for random F
-TEST_F(STRUCT_NeoHookeanTest, TestPK2StressRandomF) {
-    //verbose = true; // Show values of S, dE, SdE and dPsi
-
-    // Compute reference PK2 stress with finite difference for random F
-    create_random_F(F);
-    double S_ref[3][3]; // PK2 stress
-    TestNH->calcPK2StressFiniteDifference(F, delta, order, S_ref);
-
-    // Check PK2 stress against reference value
-    TestNH->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
-}
-
 // Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for random F
 TEST_F(STRUCT_NeoHookeanTest, TestPK2StressConvergenceOrderRandomF) {
     verbose = true; // Show order of convergence, errors, F, S
@@ -126,38 +113,6 @@ TEST_F(STRUCT_NeoHookeanTest, TestPK2StressConvergenceOrderRandomF) {
     // for random F
     create_random_F(F);
     TestNH->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
-}
-
-// Test PK2 stress consistent with strain energy for random F
-TEST_F(STRUCT_NeoHookeanTest, TestPK2StressConsistentRandomF) {
-    //verbose = true; // Show values of S, dE, SdE and dPsi
-
-    // Check random F produces consistent PK2 stress
-    create_random_F(F);
-    TestNH->testPK2StressConsistentWithStrainEnergy(F, n_iter, rel_tol, abs_tol, delta, verbose);
-}
-
-// Test order of convergence of consistency of PK2 stress for random F
-TEST_F(STRUCT_NeoHookeanTest, TestPK2StressConsistencyConvergenceOrderRandomF) {
-    //verbose = true; // Show order of convergence, errors, F, S
-
-    // Check order of convergence of consistency of PK2 stress for random F
-    create_random_F(F);
-    double dF[3][3]; // Deformation gradient perturbation shape
-    create_ones_matrix(dF); // Perturbation shape is ones matrix
-    double delta_max = 1e-2; // Maximum perturbation scaling factor
-    double delta_min = 1e-3; // Minimum perturbation scaling factor
-    //int order = 1; // Order of finite difference method
-    TestNH->testPK2StressConsistencyConvergenceOrder(F, dF, delta_max, delta_min, order, verbose);
-}
-
-// Test material elasticity consistent with PK2 stress
-TEST_F(STRUCT_NeoHookeanTest, TestMaterialElasticityConsistentRandomF) {
-    //verbose = true; // Show values of CC, dE, CCdE and dS
-
-    // Check with random F
-    create_random_F(F);
-    TestNH->testMaterialElasticityConsistentWithPK2Stress(F, n_iter, rel_tol, abs_tol, delta, verbose);
 }
 
 // Test order of convergence of consistency of material elasticity for random F
@@ -209,18 +164,6 @@ TEST_F(USTRUCT_NeoHookeanTest, TestPK2StressIdentityF) {
     TestNH->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
 }
 
-// Test PK2 stress with finite difference for random F
-TEST_F(USTRUCT_NeoHookeanTest, TestPK2StressRandomF) {
-    //verbose = true; // Show values of S, dE, SdE and dPsi
-
-    // Compute reference PK2 stress with finite difference for random F
-    create_random_F(F);
-    double S_ref[3][3]; // PK2 stress
-    TestNH->calcPK2StressFiniteDifference(F, delta, order, S_ref);
-
-    // Check PK2 stress against reference value
-    TestNH->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
-}
 
 // Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for random F
 TEST_F(USTRUCT_NeoHookeanTest, TestPK2StressConvergenceOrderRandomF) {
@@ -230,38 +173,6 @@ TEST_F(USTRUCT_NeoHookeanTest, TestPK2StressConvergenceOrderRandomF) {
     // for random F
     create_random_F(F);
     TestNH->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
-}
-
-// Test PK2 stress consistent with strain energy for random F
-TEST_F(USTRUCT_NeoHookeanTest, TestPK2StressConsistentRandomF) {
-    //verbose = true; // Show values of S, dE, SdE and dPsi
-
-    // Check random F produces consistent PK2 stress
-    create_random_F(F);
-    TestNH->testPK2StressConsistentWithStrainEnergy(F, n_iter, rel_tol, abs_tol, delta, verbose);
-}
-
-// Test order of convergence of consistency of PK2 stress for random F
-TEST_F(USTRUCT_NeoHookeanTest, TestPK2StressConsistencyConvergenceOrderRandomF) {
-    verbose = true; // Show order of convergence, errors, F, S
-
-    // Check order of convergence of consistency of PK2 stress for random F
-    create_random_F(F);
-    double dF[3][3]; // Deformation gradient perturbation shape
-    create_ones_matrix(dF); // Perturbation shape is ones matrix
-    double delta_max = 1e-2; // Maximum perturbation scaling factor
-    double delta_min = 1e-3; // Minimum perturbation scaling factor
-    //int order = 1; // Order of finite difference method
-    TestNH->testPK2StressConsistencyConvergenceOrder(F, dF, delta_max, delta_min, order, verbose);
-}
-
-// Test material elasticity consistent with PK2 stress
-TEST_F(USTRUCT_NeoHookeanTest, TestMaterialElasticityConsistentRandomF) {
-    //verbose = true; // Show values of CC, dE, CCdE and dS
-
-    // Check with random F
-    create_random_F(F);
-    TestNH->testMaterialElasticityConsistentWithPK2Stress(F, n_iter, rel_tol, abs_tol, delta, verbose);
 }
 
 // Test order of convergence of consistency of material elasticity for random F
@@ -353,18 +264,6 @@ TEST_F(STRUCT_MooneyRivlinTest, TestPK2StressIdentityF) {
     TestMR->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
 }
 
-// Test PK2 stress with finite difference for random F
-TEST_F(STRUCT_MooneyRivlinTest, TestPK2StressRandomF) {
-    //verbose = true; // Show values of S, dE, SdE and dPsi
-
-    // Compute reference PK2 stress with finite difference for random F
-    create_random_F(F);
-    double S_ref[3][3]; // PK2 stress
-    TestMR->calcPK2StressFiniteDifference(F, delta, order, S_ref);
-
-    // Check PK2 stress against reference value
-    TestMR->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
-}
 
 // Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for random F
 TEST_F(STRUCT_MooneyRivlinTest, TestPK2StressConvergenceOrderRandomF) {
@@ -376,23 +275,6 @@ TEST_F(STRUCT_MooneyRivlinTest, TestPK2StressConvergenceOrderRandomF) {
     TestMR->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
 }
 
-// Test PK2 stress consistent with strain energy for random F
-TEST_F(STRUCT_MooneyRivlinTest, TestPK2StressConsistentRandomF) {
-    //verbose = true; // Show values of S, dE, SdE and dPsi
-
-    // Check random F produces consistent PK2 stress
-    create_random_F(F);
-    TestMR->testPK2StressConsistentWithStrainEnergy(F, n_iter, rel_tol, abs_tol, delta, verbose);
-}
-
-// Test material elasticity consistent with PK2 stress
-TEST_F(STRUCT_MooneyRivlinTest, TestMaterialElasticityConsistentRandomF) {
-    //verbose = true; // Show values of CC, dE, CCdE and dS
-
-    // Check with random F
-    create_random_F(F);
-    TestMR->testMaterialElasticityConsistentWithPK2Stress(F, n_iter, rel_tol, abs_tol, delta, verbose);
-}
 
 // ------------------------------ USTRUCT TESTS --------------------------------
 /**
@@ -422,18 +304,6 @@ TEST_F(USTRUCT_MooneyRivlinTest, TestPK2StressIdentityF) {
     TestMR->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
 }
 
-// Test PK2 stress with finite difference for random F
-TEST_F(USTRUCT_MooneyRivlinTest, TestPK2StressRandomF) {
-    //verbose = true; // Show values of S, dE, SdE and dPsi
-
-    // Compute reference PK2 stress with finite difference for random F
-    create_random_F(F);
-    double S_ref[3][3]; // PK2 stress
-    TestMR->calcPK2StressFiniteDifference(F, delta, order, S_ref);
-
-    // Check PK2 stress against reference value
-    TestMR->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
-}
 
 // Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for random F
 TEST_F(USTRUCT_MooneyRivlinTest, TestPK2StressConvergenceOrderRandomF) {
@@ -443,24 +313,6 @@ TEST_F(USTRUCT_MooneyRivlinTest, TestPK2StressConvergenceOrderRandomF) {
     // for random F
     create_random_F(F);
     TestMR->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
-}
-
-// Test PK2 stress consistent with strain energy for random F
-TEST_F(USTRUCT_MooneyRivlinTest, TestPK2StressConsistentRandomF) {
-    //verbose = true; // Show values of S, dE, SdE and dPsi
-
-    // Check random F produces consistent PK2 stress
-    create_random_F(F);
-    TestMR->testPK2StressConsistentWithStrainEnergy(F, n_iter, rel_tol, abs_tol, delta, verbose);
-}
-
-// Test material elasticity consistent with PK2 stress
-TEST_F(USTRUCT_MooneyRivlinTest, TestMaterialElasticityConsistentRandomF) {
-    //verbose = true; // Show values of CC, dE, CCdE and dS
-
-    // Check with random F
-    create_random_F(F);
-    TestMR->testMaterialElasticityConsistentWithPK2Stress(F, n_iter, rel_tol, abs_tol, delta, verbose);
 }
 
 
@@ -668,19 +520,6 @@ TEST_F(STRUCT_HolzapfelOgdenTest, TestPK2StressConvergenceOrderBiaxialStretchCom
     TestHO->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
 }
 
-// Test PK2 stress with finite difference for random F
-TEST_F(STRUCT_HolzapfelOgdenTest, TestPK2StressRandomF) {
-    //verbose = true; // Show values of S, dE, SdE and dPsi
-
-    // Compute reference PK2 stress with finite difference for F = I + random perturbations
-    create_random_perturbed_identity_F(F, 0.5);
-    double S_ref[3][3]; // PK2 stress
-    TestHO->calcPK2StressFiniteDifference(F, delta, order, S_ref);
-
-    // Check PK2 stress against reference value
-    TestHO->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
-}
-
 // Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for random F
 TEST_F(STRUCT_HolzapfelOgdenTest, TestPK2StressConvergenceOrderRandomF) {
     verbose = true; // Show order of convergence, errors, F, S
@@ -689,38 +528,6 @@ TEST_F(STRUCT_HolzapfelOgdenTest, TestPK2StressConvergenceOrderRandomF) {
     // for F = I + random perturbations
     create_random_perturbed_identity_F(F, 0.5);
     TestHO->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
-}
-
-// Test PK2 stress consistent with strain energy for random F
-TEST_F(STRUCT_HolzapfelOgdenTest, TestPK2StressConsistentRandomF) {
-    //verbose = true; // Show values of S, dE, SdE and dPsi
-
-    // Check F = I + random perturbations produces consistent PK2 stress
-    create_random_perturbed_identity_F(F, 0.5);
-    TestHO->testPK2StressConsistentWithStrainEnergy(F, n_iter, rel_tol, abs_tol, delta, verbose);
-}
-
-// Test order of convergence of consistency of PK2 stress for random F
-TEST_F(STRUCT_HolzapfelOgdenTest, TestPK2StressConsistencyConvergenceOrderRandomF) {
-    verbose = true; // Show order of convergence, errors, F, S
-
-    // Check order of convergence of consistency of PK2 stress for F = I + random perturbations
-    create_random_perturbed_identity_F(F, 0.5);
-    double dF[3][3]; // Deformation gradient perturbation shape
-    create_ones_matrix(dF); // Perturbation shape is ones matrix
-    double delta_max = 1e-2; // Maximum perturbation scaling factor
-    double delta_min = 1e-3; // Minimum perturbation scaling factor
-    //int order = 1; // Order of finite difference method
-    TestHO->testPK2StressConsistencyConvergenceOrder(F, dF, delta_max, delta_min, order, verbose);
-}
-
-// Test material elasticity consistent with PK2 stress
-TEST_F(STRUCT_HolzapfelOgdenTest, TestMaterialElasticityConsistentRandomF) {
-    //verbose = true; // Show values of CC, dE, CCdE and dS
-
-    // Check F = I + random perturbations produces consistent PK2 stress
-    create_random_perturbed_identity_F(F, 0.5);
-    TestHO->testMaterialElasticityConsistentWithPK2Stress(F, n_iter, rel_tol, abs_tol, delta, verbose);
 }
 
 // Test order of convergence of consistency of material elasticity for random F
@@ -852,18 +659,6 @@ TEST_F(USTRUCT_HolzapfelOgdenTest, TestPK2StressConvergenceOrderBiaxialStretchCo
     TestHO->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
 }
 
-// Test PK2 stress with finite difference for random F
-TEST_F(USTRUCT_HolzapfelOgdenTest, TestPK2StressRandomF) {
-    //verbose = true; // Show values of S, dE, SdE and dPsi
-
-    // Compute reference PK2 stress with finite difference for F = I + random perturbations
-    create_random_perturbed_identity_F(F, 0.5);
-    double S_ref[3][3]; // PK2 stress
-    TestHO->calcPK2StressFiniteDifference(F, delta, order, S_ref);
-
-    // Check PK2 stress against reference value
-    TestHO->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
-}
 
 // Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for random F
 TEST_F(USTRUCT_HolzapfelOgdenTest, TestPK2StressConvergenceOrderRandomF) {
@@ -873,24 +668,6 @@ TEST_F(USTRUCT_HolzapfelOgdenTest, TestPK2StressConvergenceOrderRandomF) {
     // for F = I + random perturbations
     create_random_perturbed_identity_F(F, 0.5);
     TestHO->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
-}
-
-// Test PK2 stress consistent with strain energy for random F
-TEST_F(USTRUCT_HolzapfelOgdenTest, TestPK2StressConsistentRandomF) {
-    //verbose = true; // Show values of S, dE, SdE and dPsi
-
-    // Check F = I + random perturbations produces consistent PK2 stress
-    create_random_perturbed_identity_F(F, 0.5);
-    TestHO->testPK2StressConsistentWithStrainEnergy(F, n_iter, rel_tol, abs_tol, delta, verbose);
-}
-
-// Test material elasticity consistent with PK2 stress
-TEST_F(USTRUCT_HolzapfelOgdenTest, TestMaterialElasticityConsistentRandomF) {
-    //verbose = true; // Show values of CC, dE, CCdE and dS
-
-    // Check F = I + random perturbations produces consistent PK2 stress
-    create_random_perturbed_identity_F(F, 0.5);
-    TestHO->testMaterialElasticityConsistentWithPK2Stress(F, n_iter, rel_tol, abs_tol, delta, verbose);
 }
 
 // Test order of convergence of consistency of material elasticity for random F
@@ -1107,19 +884,6 @@ TEST_F(STRUCT_HolzapfelOgdenMATest, TestPK2StressConvergenceOrderBiaxialStretchC
     TestHO_ma->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
 }
 
-// Test PK2 stress with finite difference for random F
-TEST_F(STRUCT_HolzapfelOgdenMATest, TestPK2StressRandomF) {
-    //verbose = true; // Show values of S, dE, SdE and dPsi
-
-    // Compute reference PK2 stress with finite difference for F = I + random perturbations
-    create_random_perturbed_identity_F(F, 0.5);
-    double S_ref[3][3]; // PK2 stress
-    TestHO_ma->calcPK2StressFiniteDifference(F, delta, order, S_ref);
-
-    // Check PK2 stress against reference value
-    TestHO_ma->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
-}
-
 // Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for random F
 TEST_F(STRUCT_HolzapfelOgdenMATest, TestPK2StressConvergenceOrderRandomF) {
     //verbose = true; // Show order of convergence, errors, F, S
@@ -1128,38 +892,6 @@ TEST_F(STRUCT_HolzapfelOgdenMATest, TestPK2StressConvergenceOrderRandomF) {
     // for F = I + random perturbations
     create_random_perturbed_identity_F(F, 0.5);
     TestHO_ma->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
-}
-
-// Test PK2 stress consistent with strain energy for random F
-TEST_F(STRUCT_HolzapfelOgdenMATest, TestPK2StressConsistentRandomF) {
-    //verbose = true; // Show values of S, dE, SdE and dPsi
-
-    // Check F = I + random perturbations produces consistent PK2 stress
-    create_random_perturbed_identity_F(F, 0.5);
-    TestHO_ma->testPK2StressConsistentWithStrainEnergy(F, n_iter, rel_tol, abs_tol, delta, verbose);
-}
-
-// Test order of convergence of PK2 stress consistency for random F
-TEST_F(STRUCT_HolzapfelOgdenMATest, TestPK2StressConsistencyConvergenceOrderRandomF) {
-    verbose = true; // Show order of convergence, errors, F, S
-
-    // Check order of convergence of consistency of PK2 stress for F = I + random perturbations
-    create_random_perturbed_identity_F(F, 0.5);
-    double dF[3][3]; // Deformation gradient perturbation shape
-    create_ones_matrix(dF); // Perturbation shape is ones matrix
-    double delta_max = 1e-2; // Maximum perturbation scaling factor
-    double delta_min = 1e-3; // Minimum perturbation scaling factor
-    //int order = 1; // Order of finite difference method
-    TestHO_ma->testPK2StressConsistencyConvergenceOrder(F, dF, delta_max, delta_min, order, verbose);
-}
-
-// Test material elasticity consistent with PK2 stress
-TEST_F(STRUCT_HolzapfelOgdenMATest, TestMaterialElasticityConsistentRandomF) {
-    //verbose = true; // Show values of CC, dE, CCdE and dS
-
-    // Check F = I + random perturbations produces consistent PK2 stress
-    create_random_perturbed_identity_F(F, 0.5);
-    TestHO_ma->testMaterialElasticityConsistentWithPK2Stress(F, n_iter, rel_tol, abs_tol, delta, verbose);
 }
 
 // Test order of convergence of consistency of material elasticity for random F
@@ -1291,18 +1023,6 @@ TEST_F(USTRUCT_HolzapfelOgdenMATest, TestPK2StressConvergenceOrderBiaxialStretch
     TestHO_ma->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
 }
 
-// Test PK2 stress with finite difference for random F
-TEST_F(USTRUCT_HolzapfelOgdenMATest, TestPK2StressRandomF) {
-    //verbose = true; // Show values of S, dE, SdE and dPsi
-
-    // Compute reference PK2 stress with finite difference for F = I + random perturbations
-    create_random_perturbed_identity_F(F, 0.5);
-    double S_ref[3][3]; // PK2 stress
-    TestHO_ma->calcPK2StressFiniteDifference(F, delta, order, S_ref);
-
-    // Check PK2 stress against reference value
-    TestHO_ma->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
-}
 
 // Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for random F
 TEST_F(USTRUCT_HolzapfelOgdenMATest, TestPK2StressConvergenceOrderRandomF) {
@@ -1312,24 +1032,6 @@ TEST_F(USTRUCT_HolzapfelOgdenMATest, TestPK2StressConvergenceOrderRandomF) {
     // for F = I + random perturbations
     create_random_perturbed_identity_F(F, 0.5);
     TestHO_ma->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
-}
-
-// Test PK2 stress consistent with strain energy for random F
-TEST_F(USTRUCT_HolzapfelOgdenMATest, TestPK2StressConsistentRandomF) {
-    //verbose = true; // Show values of S, dE, SdE and dPsi
-
-    // Check F = I + random perturbations produces consistent PK2 stress
-    create_random_perturbed_identity_F(F, 0.5);
-    TestHO_ma->testPK2StressConsistentWithStrainEnergy(F, n_iter, rel_tol, abs_tol, delta, verbose);
-}
-
-// Test material elasticity consistent with PK2 stress
-TEST_F(USTRUCT_HolzapfelOgdenMATest, TestMaterialElasticityConsistentRandomF) {
-    //verbose = true; // Show values of CC, dE, CCdE and dS
-
-    // Check F = I + random perturbations produces consistent PK2 stress
-    create_random_perturbed_identity_F(F, 0.5);
-    TestHO_ma->testMaterialElasticityConsistentWithPK2Stress(F, n_iter, rel_tol, abs_tol, delta, verbose);
 }
 
 // Test order of convergence of consistency of material elasticity for random F
@@ -1457,18 +1159,6 @@ TEST_F(STRUCT_QuadraticVolumetricPenaltyTest, TestPK2StressRandomIsochoricDeform
     TestQVP->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
 }
 
-// Test PK2 stress with finite difference for random F
-TEST_F(STRUCT_QuadraticVolumetricPenaltyTest, TestPK2StressRandomF) {
-    //verbose = true; // Show values of S, dE, SdE and dPsi
-
-    // Compute reference PK2 stress with finite difference for random F
-    create_random_F(F);
-    double S_ref[3][3]; // PK2 stress
-    TestQVP->calcPK2StressFiniteDifference(F, delta, order, S_ref);
-
-    // Check PK2 stress against reference value
-    TestQVP->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
-}
 
 // Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for random F
 TEST_F(STRUCT_QuadraticVolumetricPenaltyTest, TestPK2StressConvergenceOrderRandomF) {
@@ -1478,24 +1168,6 @@ TEST_F(STRUCT_QuadraticVolumetricPenaltyTest, TestPK2StressConvergenceOrderRando
     // for random F
     create_random_F(F);
     TestQVP->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
-}
-
-// Test PK2 stress consistent with strain energy for random F
-TEST_F(STRUCT_QuadraticVolumetricPenaltyTest, TestPK2StressConsistentRandomF) {
-    //verbose = true; // Show values of S, dE, SdE and dPsi
-
-    // Check random F produces consistent PK2 stress
-    create_random_F(F);
-    TestQVP->testPK2StressConsistentWithStrainEnergy(F, n_iter, rel_tol, abs_tol, delta, verbose);
-}
-
-// Test material elasticity consistent with PK2 stress
-TEST_F(STRUCT_QuadraticVolumetricPenaltyTest, TestMaterialElasticityConsistentRandomF) {
-    //verbose = true; // Show values of CC, dE, CCdE and dS
-
-    // Check with random F
-    create_random_F(F);
-    TestQVP->testMaterialElasticityConsistentWithPK2Stress(F, n_iter, rel_tol, abs_tol, delta, verbose);
 }
 
 // ------------------------------ USTRUCT TESTS --------------------------------
@@ -1641,18 +1313,6 @@ TEST_F(STRUCT_SimoTaylor91VolumetricPenaltyTest, TestPK2StressRandomIsochoricDef
     TestST91->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
 }
 
-// Test PK2 stress with finite difference for random F
-TEST_F(STRUCT_SimoTaylor91VolumetricPenaltyTest, TestPK2StressRandomF) {
-    //verbose = true; // Show values of S, dE, SdE and dPsi
-
-    // Compute reference PK2 stress with finite difference for random F
-    create_random_F(F);
-    double S_ref[3][3]; // PK2 stress
-    TestST91->calcPK2StressFiniteDifference(F, delta, order, S_ref);
-
-    // Check PK2 stress against reference value
-    TestST91->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
-}
 
 // Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for random F
 TEST_F(STRUCT_SimoTaylor91VolumetricPenaltyTest, TestPK2StressConvergenceOrderRandomF) {
@@ -1662,24 +1322,6 @@ TEST_F(STRUCT_SimoTaylor91VolumetricPenaltyTest, TestPK2StressConvergenceOrderRa
     // for random F
     create_random_F(F);
     TestST91->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
-}
-
-// Test PK2 stress consistent with strain energy for random F
-TEST_F(STRUCT_SimoTaylor91VolumetricPenaltyTest, TestPK2StressConsistentRandomF) {
-    //verbose = true; // Show values of S, dE, SdE and dPsi
-
-    // Check random F produces consistent PK2 stress
-    create_random_F(F);
-    TestST91->testPK2StressConsistentWithStrainEnergy(F, n_iter, rel_tol, abs_tol, delta, verbose);
-}
-
-// Test material elasticity consistent with PK2 stress
-TEST_F(STRUCT_SimoTaylor91VolumetricPenaltyTest, TestMaterialElasticityConsistentRandomF) {
-    //verbose = true; // Show values of CC, dE, CCdE and dS
-
-    // Check with random F
-    create_random_F(F);
-    TestST91->testMaterialElasticityConsistentWithPK2Stress(F, n_iter, rel_tol, abs_tol, delta, verbose);
 }
 
 // ------------------------------ USTRUCT TESTS --------------------------------
@@ -1824,18 +1466,6 @@ TEST_F(STRUCT_Miehe94VolumetricPenaltyTest, TestPK2StressRandomIsochoricDeformat
     TestM94->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
 }
 
-// Test PK2 stress with finite difference for random F
-TEST_F(STRUCT_Miehe94VolumetricPenaltyTest, TestPK2StressRandomF) {
-    //verbose = true; // Show values of S, dE, SdE and dPsi
-
-    // Compute reference PK2 stress with finite difference for random F
-    create_random_F(F);
-    double S_ref[3][3]; // PK2 stress
-    TestM94->calcPK2StressFiniteDifference(F, delta, order, S_ref);
-
-    // Check PK2 stress against reference value
-    TestM94->testPK2StressAgainstReference(F, S_ref, rel_tol, abs_tol, verbose);
-}
 
 // Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for random F
 TEST_F(STRUCT_Miehe94VolumetricPenaltyTest, TestPK2StressConvergenceOrderRandomF) {
@@ -1845,24 +1475,6 @@ TEST_F(STRUCT_Miehe94VolumetricPenaltyTest, TestPK2StressConvergenceOrderRandomF
     // for random F
     create_random_F(F);
     TestM94->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
-}
-
-// Test PK2 stress consistent with strain energy for random F
-TEST_F(STRUCT_Miehe94VolumetricPenaltyTest, TestPK2StressConsistentRandomF) {
-    //verbose = true; // Show values of S, dE, SdE and dPsi
-
-    // Check random F produces consistent PK2 stress
-    create_random_F(F);
-    TestM94->testPK2StressConsistentWithStrainEnergy(F, n_iter, rel_tol, abs_tol, delta, verbose);
-}
-
-// Test material elasticity consistent with PK2 stress
-TEST_F(STRUCT_Miehe94VolumetricPenaltyTest, TestMaterialElasticityConsistentRandomF) {
-    //verbose = true; // Show values of CC, dE, CCdE and dS
-
-    // Check with random F
-    create_random_F(F);
-    TestM94->testMaterialElasticityConsistentWithPK2Stress(F, n_iter, rel_tol, abs_tol, delta, verbose);
 }
 
 // ------------------------------ USTRUCT TESTS --------------------------------
