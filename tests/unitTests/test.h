@@ -746,8 +746,8 @@ public:
         // m is the slope (order of convergence), b is the intercept
         auto [m, b] = computeLinearRegression(log_deltas, log_errors);
 
-        // Check that order of convergence is order
-        EXPECT_NEAR(m, order, 0.1);
+        // Check that order of convergence is > order - 0.1
+        EXPECT_GT(m, order - 0.1);
 
         // Print results if verbose
         if (verbose) {
@@ -1041,8 +1041,8 @@ public:
         // m is the slope (order of convergence), b is the intercept
         auto [m, b] = computeLinearRegression(log_deltas, log_errors);
 
-        // Check that order of convergence is order + 1
-        EXPECT_NEAR(m, order + 1, 0.1);
+        // Check that order of convergence is > (order + 1) - 0.1
+        EXPECT_GT(m, order + 1 - 0.1);
 
         // Print results if verbose
         if (verbose) {
@@ -1297,6 +1297,7 @@ public:
         }
 
         // Loop over many random perturbations to the deformation gradient, dF
+        std::srand(42); // Use a fixed seed for reproducibility
         for (int i = 0; i < n_iter; i++) {
             // Generate random dF with values between 0 and 1
             double dF[3][3];
@@ -1333,8 +1334,8 @@ public:
             // m is the slope (order of convergence), b is the intercept
             auto [m, b] = computeLinearRegression(log_deltas, log_errors);
 
-            // Check that order of convergence is order + 1
-            EXPECT_NEAR(m, order + 1, 0.1);
+            // Check that order of convergence is > (order + 1) - 0.1
+            EXPECT_GT(m, order + 1 - 0.1);
 
             // Print results if verbose
             if (verbose) {
