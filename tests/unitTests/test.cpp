@@ -120,7 +120,7 @@ TEST_F(STRUCT_NeoHookeanTest, TestPK2StressRandomF) {
 
 // Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for random F
 TEST_F(STRUCT_NeoHookeanTest, TestPK2StressConvergenceOrderRandomF) {
-    //verbose = true; // Show order of convergence, errors, F, S
+    verbose = true; // Show order of convergence, errors, F, S
 
     // Check order of convergence between finite difference and get_pk2cc() PK2 stress
     // for random F
@@ -139,7 +139,7 @@ TEST_F(STRUCT_NeoHookeanTest, TestPK2StressConsistentRandomF) {
 
 // Test order of convergence of consistency of PK2 stress for random F
 TEST_F(STRUCT_NeoHookeanTest, TestPK2StressConsistencyConvergenceOrderRandomF) {
-    verbose = true; // Show order of convergence, errors, F, S
+    //verbose = true; // Show order of convergence, errors, F, S
 
     // Check order of convergence of consistency of PK2 stress for random F
     create_random_F(F);
@@ -158,6 +158,27 @@ TEST_F(STRUCT_NeoHookeanTest, TestMaterialElasticityConsistentRandomF) {
     // Check with random F
     create_random_F(F);
     TestNH->testMaterialElasticityConsistentWithPK2Stress(F, n_iter, rel_tol, abs_tol, delta, verbose);
+}
+
+// Test order of convergence of consistency of material elasticity for random F
+TEST_F(STRUCT_NeoHookeanTest, TestMaterialElasticityConsistencyConvergenceOrderRandomF) {
+    verbose = true; // Show order of convergence, errors, F, S
+    
+    double delta_max = 1e-2; // Maximum perturbation scaling factor
+    double delta_min = 1e-3; // Minimum perturbation scaling factor
+    //int order = 1; // Order of finite difference method
+
+    // Generate a random deformation gradient F
+    create_random_F(F);
+
+    for (int i = 0; i < n_iter; i++) {
+        // Generate a random perturbation matrix dF
+        double dF[3][3];
+        create_random_F(dF, 0.0, 1.0);
+
+        // Check order of convergence of consistency of material elasticity for random F
+        TestNH->testMaterialElasticityConsistencyConvergenceOrder(F, dF, delta_max, delta_min, order, verbose);
+    }
 }
 
 // ------------------------------ USTRUCT TESTS --------------------------------
@@ -241,6 +262,20 @@ TEST_F(USTRUCT_NeoHookeanTest, TestMaterialElasticityConsistentRandomF) {
     // Check with random F
     create_random_F(F);
     TestNH->testMaterialElasticityConsistentWithPK2Stress(F, n_iter, rel_tol, abs_tol, delta, verbose);
+}
+
+// Test order of convergence of consistency of material elasticity for random F
+TEST_F(USTRUCT_NeoHookeanTest, TestMaterialElasticityConsistencyConvergenceOrderRandomF) {
+    verbose = true; // Show order of convergence, errors, F, S
+
+    // Check order of convergence of consistency of material elasticity for random F
+    create_random_F(F);
+    double dF[3][3]; // Deformation gradient perturbation shape
+    create_ones_matrix(dF); // Perturbation shape is ones matrix
+    double delta_max = 1e-2; // Maximum perturbation scaling factor
+    double delta_min = 1e-3; // Minimum perturbation scaling factor
+    //int order = 1; // Order of finite difference method
+    TestNH->testMaterialElasticityConsistencyConvergenceOrder(F, dF, delta_max, delta_min, order, verbose);
 }
 
 
@@ -648,7 +683,7 @@ TEST_F(STRUCT_HolzapfelOgdenTest, TestPK2StressRandomF) {
 
 // Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for random F
 TEST_F(STRUCT_HolzapfelOgdenTest, TestPK2StressConvergenceOrderRandomF) {
-    //verbose = true; // Show order of convergence, errors, F, S
+    verbose = true; // Show order of convergence, errors, F, S
 
     // Check order of convergence between finite difference and get_pk2cc() PK2 stress
     // for F = I + random perturbations
@@ -665,6 +700,20 @@ TEST_F(STRUCT_HolzapfelOgdenTest, TestPK2StressConsistentRandomF) {
     TestHO->testPK2StressConsistentWithStrainEnergy(F, n_iter, rel_tol, abs_tol, delta, verbose);
 }
 
+// Test order of convergence of consistency of PK2 stress for random F
+TEST_F(STRUCT_HolzapfelOgdenTest, TestPK2StressConsistencyConvergenceOrderRandomF) {
+    verbose = true; // Show order of convergence, errors, F, S
+
+    // Check order of convergence of consistency of PK2 stress for F = I + random perturbations
+    create_random_perturbed_identity_F(F, 0.5);
+    double dF[3][3]; // Deformation gradient perturbation shape
+    create_ones_matrix(dF); // Perturbation shape is ones matrix
+    double delta_max = 1e-2; // Maximum perturbation scaling factor
+    double delta_min = 1e-3; // Minimum perturbation scaling factor
+    //int order = 1; // Order of finite difference method
+    TestHO->testPK2StressConsistencyConvergenceOrder(F, dF, delta_max, delta_min, order, verbose);
+}
+
 // Test material elasticity consistent with PK2 stress
 TEST_F(STRUCT_HolzapfelOgdenTest, TestMaterialElasticityConsistentRandomF) {
     //verbose = true; // Show values of CC, dE, CCdE and dS
@@ -672,6 +721,20 @@ TEST_F(STRUCT_HolzapfelOgdenTest, TestMaterialElasticityConsistentRandomF) {
     // Check F = I + random perturbations produces consistent PK2 stress
     create_random_perturbed_identity_F(F, 0.5);
     TestHO->testMaterialElasticityConsistentWithPK2Stress(F, n_iter, rel_tol, abs_tol, delta, verbose);
+}
+
+// Test order of convergence of consistency of material elasticity for random F
+TEST_F(STRUCT_HolzapfelOgdenTest, TestMaterialElasticityConsistencyConvergenceOrderRandomF) {
+    verbose = true; // Show order of convergence, errors, F, S
+
+    // Check order of convergence of consistency of material elasticity for F = I + random perturbations
+    create_random_perturbed_identity_F(F, 0.5);
+    double dF[3][3]; // Deformation gradient perturbation shape
+    create_ones_matrix(dF); // Perturbation shape is ones matrix
+    double delta_max = 1e-2; // Maximum perturbation scaling factor
+    double delta_min = 1e-3; // Minimum perturbation scaling factor
+    //int order = 1; // Order of finite difference method
+    TestHO->testMaterialElasticityConsistencyConvergenceOrder(F, dF, delta_max, delta_min, order, verbose);
 }
 
 // ------------------------------ USTRUCT TESTS --------------------------------
@@ -828,6 +891,20 @@ TEST_F(USTRUCT_HolzapfelOgdenTest, TestMaterialElasticityConsistentRandomF) {
     // Check F = I + random perturbations produces consistent PK2 stress
     create_random_perturbed_identity_F(F, 0.5);
     TestHO->testMaterialElasticityConsistentWithPK2Stress(F, n_iter, rel_tol, abs_tol, delta, verbose);
+}
+
+// Test order of convergence of consistency of material elasticity for random F
+TEST_F(USTRUCT_HolzapfelOgdenTest, TestMaterialElasticityConsistencyConvergenceOrderRandomF) {
+    verbose = true; // Show order of convergence, errors, F, S
+
+    // Check order of convergence of consistency of material elasticity for F = I + random perturbations
+    create_random_perturbed_identity_F(F, 0.5);
+    double dF[3][3]; // Deformation gradient perturbation shape
+    create_ones_matrix(dF); // Perturbation shape is ones matrix
+    double delta_max = 1e-2; // Maximum perturbation scaling factor
+    double delta_min = 1e-3; // Minimum perturbation scaling factor
+    //int order = 1; // Order of finite difference method
+    TestHO->testMaterialElasticityConsistencyConvergenceOrder(F, dF, delta_max, delta_min, order, verbose);
 }
 
 
@@ -1062,6 +1139,20 @@ TEST_F(STRUCT_HolzapfelOgdenMATest, TestPK2StressConsistentRandomF) {
     TestHO_ma->testPK2StressConsistentWithStrainEnergy(F, n_iter, rel_tol, abs_tol, delta, verbose);
 }
 
+// Test order of convergence of PK2 stress consistency for random F
+TEST_F(STRUCT_HolzapfelOgdenMATest, TestPK2StressConsistencyConvergenceOrderRandomF) {
+    verbose = true; // Show order of convergence, errors, F, S
+
+    // Check order of convergence of consistency of PK2 stress for F = I + random perturbations
+    create_random_perturbed_identity_F(F, 0.5);
+    double dF[3][3]; // Deformation gradient perturbation shape
+    create_ones_matrix(dF); // Perturbation shape is ones matrix
+    double delta_max = 1e-2; // Maximum perturbation scaling factor
+    double delta_min = 1e-3; // Minimum perturbation scaling factor
+    //int order = 1; // Order of finite difference method
+    TestHO_ma->testPK2StressConsistencyConvergenceOrder(F, dF, delta_max, delta_min, order, verbose);
+}
+
 // Test material elasticity consistent with PK2 stress
 TEST_F(STRUCT_HolzapfelOgdenMATest, TestMaterialElasticityConsistentRandomF) {
     //verbose = true; // Show values of CC, dE, CCdE and dS
@@ -1069,6 +1160,20 @@ TEST_F(STRUCT_HolzapfelOgdenMATest, TestMaterialElasticityConsistentRandomF) {
     // Check F = I + random perturbations produces consistent PK2 stress
     create_random_perturbed_identity_F(F, 0.5);
     TestHO_ma->testMaterialElasticityConsistentWithPK2Stress(F, n_iter, rel_tol, abs_tol, delta, verbose);
+}
+
+// Test order of convergence of consistency of material elasticity for random F
+TEST_F(STRUCT_HolzapfelOgdenMATest, TestMaterialElasticityConsistencyConvergenceOrderRandomF) {
+    verbose = true; // Show order of convergence, errors, F, S
+
+    // Check order of convergence of consistency of material elasticity for F = I + random perturbations
+    create_random_perturbed_identity_F(F, 0.5);
+    double dF[3][3]; // Deformation gradient perturbation shape
+    create_ones_matrix(dF); // Perturbation shape is ones matrix
+    double delta_max = 1e-2; // Maximum perturbation scaling factor
+    double delta_min = 1e-3; // Minimum perturbation scaling factor
+    //int order = 1; // Order of finite difference method
+    TestHO_ma->testMaterialElasticityConsistencyConvergenceOrder(F, dF, delta_max, delta_min, order, verbose);
 }
 
 // ------------------------------ USTRUCT TESTS --------------------------------
@@ -1227,6 +1332,20 @@ TEST_F(USTRUCT_HolzapfelOgdenMATest, TestMaterialElasticityConsistentRandomF) {
     TestHO_ma->testMaterialElasticityConsistentWithPK2Stress(F, n_iter, rel_tol, abs_tol, delta, verbose);
 }
 
+// Test order of convergence of consistency of material elasticity for random F
+TEST_F(USTRUCT_HolzapfelOgdenMATest, TestMaterialElasticityConsistencyConvergenceOrderRandomF) {
+    verbose = true; // Show order of convergence, errors, F, S
+
+    // Check order of convergence of consistency of material elasticity for F = I + random perturbations
+    create_random_perturbed_identity_F(F, 0.5);
+    double dF[3][3]; // Deformation gradient perturbation shape
+    create_ones_matrix(dF); // Perturbation shape is ones matrix
+    double delta_max = 1e-2; // Maximum perturbation scaling factor
+    double delta_min = 1e-3; // Minimum perturbation scaling factor
+    //int order = 1; // Order of finite difference method
+    TestHO_ma->testMaterialElasticityConsistencyConvergenceOrder(F, dF, delta_max, delta_min, order, verbose);
+}
+
 
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
@@ -1235,7 +1354,7 @@ TEST_F(USTRUCT_HolzapfelOgdenMATest, TestMaterialElasticityConsistentRandomF) {
 // ----------------------------------------------------------------------------
 
 // ----------------------------------------------------------------------------
-// --------------------------- Quadratic Volumetric Penalty Model ------------------------
+// ---------------- Quadratic Volumetric Penalty Model ------------------------
 // ----------------------------------------------------------------------------
 /**
  * @brief Test fixture class for the Quadratic Volumetric penalty model.
