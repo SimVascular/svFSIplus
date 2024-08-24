@@ -560,8 +560,12 @@ void read_bc(Simulation* simulation, EquationParameters* eq_params, eqType& lEq,
         int iFa = lBc.iFa;
         auto& face = com_mod.msh[iM].fa[iFa];
 
-         // [NOTE] What's this all about? 
-         //
+        if (!VtkData::check_file_extension(cTmp, VtkData::vtp)) {
+          throw std::runtime_error("The prestess data file '" + cTmp + "' is not a VTK VTP file.");
+        } 
+
+        // [NOTE] What's this all about? 
+        //
         if (face.x.size() == 0) {
           //face.x.resize(com_mod.nsymd, face.nNo);
           //ALLOCATE(msh(iM).fa(iFa).x(nsymd,msh(iM).fa(iFa).nNo))
@@ -595,6 +599,10 @@ void read_bc(Simulation* simulation, EquationParameters* eq_params, eqType& lEq,
       int iFa = lBc.iFa;
       auto& face = com_mod.msh[iM].fa[iFa];
       face.x.resize(com_mod.nsd, face.nNo);
+
+      if (!VtkData::check_file_extension(cTmp, VtkData::vtp)) {
+        throw std::runtime_error("The displacements data file '" + cTmp + "' is not a VTK VTP file.");
+      } 
 
       int data_series = 0;
       vtk_xml::read_vtp_pdata(cTmp, "Displacement", com_mod.nsd, com_mod.nsd, data_series, face);
@@ -645,6 +653,10 @@ void read_bct(ComMod& com_mod, MBType& lMB, faceType& lFa, const std::string& fN
   } else {
     throw std::runtime_error("The " + file_desc + " can't be read.");
   }
+
+  if (!VtkData::check_file_extension(fName, VtkData::vtp)) {
+    throw std::runtime_error("The general velocity data file '" + fName + "' is not a VTK VTP file.");
+  } 
 
   // Read the vtp file.
   //
@@ -858,21 +870,24 @@ void read_bf(ComMod& com_mod, BodyForceParameters* bf_params, bfType& lBf)
     com_mod.msh[iM].x.resize(lBf.dof, com_mod.msh[iM].gnNo);
     int data_comp = lBf.dof;
     int data_series = 0;
-
-    bool is_vtu_file;
-    if (cTmp.substr(cTmp.find_last_of(".") + 1) == "vtu") {
-      is_vtu_file = true;
-    } else {
-      is_vtu_file = false;
-    }
+    bool is_vtu_file = VtkData::check_file_extension(cTmp, VtkData::vtu);
 
     if (utils::btest(lBf.bType, enum_int(BodyForceType::bfType_vol))) { 
+      if (!is_vtu_file) { 
+        throw std::runtime_error("The body force data file '" + cTmp + "' is not a VTK VTU file.");
+      } 
       vtk_xml::read_vtu_pdata(cTmp, "Body_force", com_mod.nsd, data_comp, data_series, com_mod.msh[iM]);
 
     } else if (utils::btest(lBf.bType, enum_int(BodyForceType::bfType_trac))) { 
+      if (!is_vtu_file) { 
+        throw std::runtime_error("The traction data file '" + cTmp + "' is not a VTK VTU file.");
+      } 
       vtk_xml::read_vtu_pdata(cTmp, "Traction", com_mod.nsd, data_comp, data_series, com_mod.msh[iM]);
 
     } else if (utils::btest(lBf.bType, enum_int(BodyForceType::bfType_Neu))) { 
+      if (!is_vtu_file) { 
+        throw std::runtime_error("The pressure data file '" + cTmp + "' is not a VTK VTU file.");
+      } 
       vtk_xml::read_vtu_pdata(cTmp, "Pressure", com_mod.nsd, data_comp, data_series, com_mod.msh[iM]);
     }
 
@@ -2683,6 +2698,10 @@ void read_trac_bcff(ComMod& com_mod, MBType& lMB, faceType& lFa, const std::stri
     throw std::runtime_error("The VTK VTP traction data file '" + fName + "' can't be read.");
   }
 
+  if (!VtkData::check_file_extension(fName, VtkData::vtp)) {
+    throw std::runtime_error("The traction data file '" + fName + "' is not a VTK VTP file.");
+  }
+
   // Read the vtp file.
   //
   VtkVtpData vtp_data(fName);
@@ -2891,6 +2910,11 @@ void read_wall_props_ff(ComMod& com_mod, const std::string& file_name, const int
   #endif
 
   if (com_mod.cmmInit) {
+
+    if (!VtkData::check_file_extension(file_name, VtkData::vtu)) {
+      throw std::runtime_error("The CMM wall properties data file '" + file_name + "' is not a VTK VTU file.");
+    }
+
     auto& mesh = com_mod.msh[iM];
     mesh.x.resize(1, mesh.gnNo);
 
@@ -2922,6 +2946,11 @@ void read_wall_props_ff(ComMod& com_mod, const std::string& file_name, const int
     }
 
   } else { 
+
+    if (!VtkData::check_file_extension(file_name, VtkData::vtp)) {
+      throw std::runtime_error("The wall properties data file '" + file_name + "' is not a VTK VTP file.");
+    }
+
     auto& mesh = com_mod.msh[iM];
     auto& face = mesh.fa[iFa];
     face.x.resize(1, face.nNo);

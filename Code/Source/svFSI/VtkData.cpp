@@ -47,6 +47,9 @@
 #include <string>
 #include <map>
 
+std::string VtkData::vtp = "vtp";
+std::string VtkData::vtu = "vtu";
+
 /////////////////////////////////////////////////////////////////
 //        I n t e r n a l   I m p l e m e n t a t i o n        //
 /////////////////////////////////////////////////////////////////
@@ -540,6 +543,19 @@ VtkData* VtkData::create_writer(const std::string& file_name)
 //void VtkData::write(const std::string& file_name)
 //{
 //}
+
+// Check the file extension.
+//
+bool VtkData::check_file_extension(const std::string& file_name, const std::string& valid_ext)
+{
+  auto file_ext = file_name.substr(file_name.find_last_of(".") + 1);
+
+  if (file_ext != valid_ext) {
+    return false;
+  }
+  return true;
+}
+
 
 /////////////////////////////////////////////////////////////////
 //      V t k V t p D a t a     I m p l e m e n t a t i o n    //

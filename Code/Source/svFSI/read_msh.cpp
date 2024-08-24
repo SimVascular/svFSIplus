@@ -33,6 +33,7 @@
 #include "Array.h"
 #include "ComMod.h"
 #include "Vector.h"
+#include "VtkData.h"
 
 #include "all_fun.h"
 #include "consts.h"
@@ -792,6 +793,11 @@ void load_var_ini(Simulation* simulation, ComMod& com_mod)
       flag = true;
       com_mod.msh[iM].x.resize(1, com_mod.msh[iM].gnNo);
       auto cTmp = mesh_param->initial_pressures_file_path.value();
+
+      if (!VtkData::check_file_extension(cTmp, VtkData::vtu)) {
+        throw std::runtime_error("The pressure data file '" + cTmp + "' is not a VTK VTU file.");
+      } 
+
       int data_comp = 1; 
       int data_series = 0; 
       vtk_xml::read_vtu_pdata(cTmp, "Pressure", com_mod.nsd, data_comp, data_series, com_mod.msh[iM]);
@@ -822,6 +828,11 @@ void load_var_ini(Simulation* simulation, ComMod& com_mod)
       flag = true;
       com_mod.msh[iM].x.resize(com_mod.nsd, com_mod.msh[iM].gnNo);
       auto cTmp = mesh_param->initial_velocities_file_path.value();
+
+      if (!VtkData::check_file_extension(cTmp, VtkData::vtu)) {
+        throw std::runtime_error("The velocity data file '" + cTmp + "' is not a VTK VTU file.");
+      } 
+
       int data_comp = com_mod.nsd; 
       int data_series = 0; 
       vtk_xml::read_vtu_pdata(cTmp, "Velocity", com_mod.nsd, data_comp, data_series, com_mod.msh[iM]);
@@ -854,6 +865,11 @@ void load_var_ini(Simulation* simulation, ComMod& com_mod)
       flag = true;
       com_mod.msh[iM].x.resize(com_mod.nsd, com_mod.msh[iM].gnNo);
       auto cTmp = mesh_param->initial_displacements_file_path.value();
+
+      if (!VtkData::check_file_extension(cTmp, VtkData::vtu)) {
+        throw std::runtime_error("The displacemet data file '" + cTmp + "' is not a VTK VTU file.");
+      }  
+
       int data_comp = com_mod.nsd; 
       int data_series = 0; 
       vtk_xml::read_vtu_pdata(cTmp, "Displacement", com_mod.nsd, data_comp, data_series, com_mod.msh[iM]);
@@ -1067,6 +1083,10 @@ void match_faces(const ComMod& com_mod, const faceType& lFa, const faceType& pFa
 //
 void read_fib_nff(Simulation* simulation, mshType& mesh, const std::string& fName, const std::string& kwrd, const int idx)
 {
+  if (!VtkData::check_file_extension(fName, VtkData::vtu)) {
+    throw std::runtime_error("The fiber direction data file '" + fName + "' is not a VTK VTU file.");
+  }  
+
   vtk_xml_parser::load_fiber_direction_vtu(fName, kwrd, idx, simulation->com_mod.nsd, mesh);
 }
 
@@ -1611,6 +1631,11 @@ void read_msh(Simulation* simulation)
       }
       */
       auto cTmp = mesh_param->prestress_file_path.value(); 
+
+      if (!VtkData::check_file_extension(cTmp, VtkData::vtu)) {
+        throw std::runtime_error("The prestress data file '" + cTmp + "' is not a VTK VTU file.");
+      }  
+
       flag = true;
       com_mod.msh[iM].x = Array<double>(com_mod.nsymd, com_mod.msh[iM].gnNo);
       vtk_xml::read_vtu_pdata(cTmp, "Stress", com_mod.nsd, com_mod.nsymd, 0, com_mod.msh[iM]);

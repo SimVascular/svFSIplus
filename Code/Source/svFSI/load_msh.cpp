@@ -32,6 +32,7 @@
 
 #include "load_msh.h"
 
+#include "VtkData.h"
 #include "consts.h"
 #include "nn.h"
 #include "read_msh.h"
@@ -241,6 +242,9 @@ void read_sv(Simulation* simulation, mshType& mesh, const MeshParameters* mesh_p
 
             } else {
                 auto face_path = face_param->face_file_path();
+                if (!VtkData::check_file_extension(face_path, VtkData::vtp)) {
+                  throw std::runtime_error("The face mesh data file '" + face_path + "' is not a VTK VTP file.");
+                } 
                 vtk_xml::read_vtp(face_path, face);
 
                 // If node IDs were not read then create them.

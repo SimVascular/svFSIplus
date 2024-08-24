@@ -64,8 +64,12 @@ class VtkData {
     virtual void copy_point_data(const std::string& data_name, Vector<double>& mesh_data) = 0;
     virtual void write() = 0;
 
+    static bool check_file_extension(const std::string& file_name, const std::string& valid_ext);
     static VtkData* create_reader(const std::string& file_name);
     static VtkData* create_writer(const std::string& file_name);
+
+    static std::string vtp;
+    static std::string vtu;
 
     std::string file_name;
 };
