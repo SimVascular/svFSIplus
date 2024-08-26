@@ -544,7 +544,7 @@ VtkData* VtkData::create_writer(const std::string& file_name)
 //{
 //}
 
-// Check the file extension.
+// Check the 'file_name' file extension against 'valid_ext'.
 //
 bool VtkData::check_file_extension(const std::string& file_name, const std::string& valid_ext)
 {
