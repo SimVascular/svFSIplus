@@ -4,5 +4,5 @@ digraph "Graphical Class Hierarchy"
   edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
   node [fontname="Helvetica",fontsize="10",shape=record];
   rankdir="LR";
-  Node0 [label="solidMechanicsTerms\< N \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$structsolid_mechanics_terms.html",tooltip="Structure to store solid mechanics terms used to compute strain energy density functions."];
+  Node0 [label="Tensor4\< T \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tensor4.html",tooltip="The Tensor4 template class implements a simple interface to 4th order tensors."];
 }
