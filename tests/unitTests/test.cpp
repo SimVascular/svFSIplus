@@ -1154,6 +1154,45 @@ TEST_F(STRUCT_HolzapfelOgdenTest, TestPK2StressConvergenceOrderRandomFLarge) {
         TestHO->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
     }
 }
+//triaxial extension, compression and biaxial extension - 3 new tests; struct and ustruct HO and HO-ma.
+// Test order of convergence of consistency of material elasticity for triaxial stretch
+TEST_F(STRUCT_HolzapfelOgdenTest, TestMaterialElasticityConsistencyConvergenceOrderTriaxialStretch) {
+    //verbose = true; // Show order of convergence, errors, F, S
+
+    // Create a deformation gradient F for triaxial stretch
+    double F[3][3] = {{1.1, 0.0, 0.0},
+                       {0.0, 1.2, 0.0},
+                       {0.0, 0.0, 1.3}};
+
+    // Check order of convergence of consistency of material elasticity
+    TestHO->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+}
+
+// Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for triaxial compression
+TEST_F(STRUCT_HolzapfelOgdenTest, TestMaterialElasticityConsistencyConvergenceOrderTriaxialCompression) {
+    //verbose = true; // Show order of convergence, errors, F, S
+
+    // Create a deformation gradient F for triaxial compression
+    double F[3][3] = {{0.9, 0.0, 0.0},
+                    {0.0, 0.8, 0.0},
+                    {0.0, 0.0, 0.7}};
+
+    // Check order of convergence of consistency of material elasticity
+    TestHO->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+}
+
+// Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for biaxial stretch/compression
+TEST_F(STRUCT_HolzapfelOgdenTest, TestMaterialElasticityConsistencyConvergenceOrderBiaxialStretchCompression) {
+    //verbose = true; // Show order of convergence, errors, F, S
+
+    // Create a deformation gradient F for biaxial stretch/compression
+    double F[3][3] = {{1.2, 0.0, 0.0},
+                    {0.0, 0.8, 0.0},
+                    {0.0, 0.0, 1.0}};
+
+    // Check order of convergence of consistency of material elasticity
+    TestHO->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+}
 
 // Test order of convergence of consistency of material elasticity for random F (small)
 TEST_F(STRUCT_HolzapfelOgdenTest, TestMaterialElasticityConsistencyConvergenceOrderRandomFSmall) {
@@ -1290,6 +1329,45 @@ TEST_F(USTRUCT_HolzapfelOgdenTest, TestPK2StressConvergenceOrderRandomFLarge) {
         // Check order of convergence between finite difference and get_pk2cc() PK2 stress
         TestHO->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
     }
+}
+
+// Test order of convergence of consistency of material elasticity for triaxial stretch
+TEST_F(USTRUCT_HolzapfelOgdenTest, TestMaterialElasticityConsistencyConvergenceOrderTriaxialStretch) {
+    //verbose = true; // Show order of convergence, errors, F, S
+
+    // Create a deformation gradient F for triaxial stretch
+    double F[3][3] = {{1.1, 0.0, 0.0},
+                       {0.0, 1.2, 0.0},
+                       {0.0, 0.0, 1.3}};
+
+    // Check order of convergence of consistency of material elasticity
+    TestHO->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+}
+
+// Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for triaxial compression
+TEST_F(USTRUCT_HolzapfelOgdenTest, TestMaterialElasticityConsistencyConvergenceOrderTriaxialCompression) {
+    //verbose = true; // Show order of convergence, errors, F, S
+
+    // Create a deformation gradient F for triaxial compression
+    double F[3][3] = {{0.9, 0.0, 0.0},
+                    {0.0, 0.8, 0.0},
+                    {0.0, 0.0, 0.7}};
+
+    // Check order of convergence of consistency of material elasticity
+    TestHO->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+}
+
+// Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for biaxial stretch/compression
+TEST_F(USTRUCT_HolzapfelOgdenTest, TestMaterialElasticityConsistencyConvergenceOrderBiaxialStretchCompression) {
+    //verbose = true; // Show order of convergence, errors, F, S
+
+    // Create a deformation gradient F for biaxial stretch/compression
+    double F[3][3] = {{1.2, 0.0, 0.0},
+                    {0.0, 0.8, 0.0},
+                    {0.0, 0.0, 1.0}};
+
+    // Check order of convergence of consistency of material elasticity
+    TestHO->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
 }
 
 // Test order of convergence of consistency of material elasticity for random F (small)
@@ -1435,6 +1513,45 @@ TEST_F(STRUCT_HolzapfelOgdenMATest, TestPK2StressConvergenceOrderRandomFLarge) {
     }
 }
 
+// Test order of convergence of consistency of material elasticity for triaxial stretch
+TEST_F(STRUCT_HolzapfelOgdenMATest, TestMaterialElasticityConsistencyConvergenceOrderTriaxialStretch) {
+    //verbose = true; // Show order of convergence, errors, F, S
+
+    // Create a deformation gradient F for triaxial stretch
+    double F[3][3] = {{1.1, 0.0, 0.0},
+                       {0.0, 1.2, 0.0},
+                       {0.0, 0.0, 1.3}};
+
+    // Check order of convergence of consistency of material elasticity
+    TestHO_ma->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+}
+
+// Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for triaxial compression
+TEST_F(STRUCT_HolzapfelOgdenMATest, TestMaterialElasticityConsistencyConvergenceOrderTriaxialCompression) {
+    //verbose = true; // Show order of convergence, errors, F, S
+
+    // Create a deformation gradient F for triaxial compression
+    double F[3][3] = {{0.9, 0.0, 0.0},
+                    {0.0, 0.8, 0.0},
+                    {0.0, 0.0, 0.7}};
+
+    // Check order of convergence of consistency of material elasticity
+    TestHO_ma->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+}
+
+// Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for biaxial stretch/compression
+TEST_F(STRUCT_HolzapfelOgdenMATest, TestMaterialElasticityConsistencyConvergenceOrderBiaxialStretchCompression) {
+    //verbose = true; // Show order of convergence, errors, F, S
+
+    // Create a deformation gradient F for biaxial stretch/compression
+    double F[3][3] = {{1.2, 0.0, 0.0},
+                    {0.0, 0.8, 0.0},
+                    {0.0, 0.0, 1.0}};
+
+    // Check order of convergence of consistency of material elasticity
+    TestHO_ma->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+}
+
 // Test order of convergence of consistency of material elasticity for random F (small)
 TEST_F(STRUCT_HolzapfelOgdenMATest, TestMaterialElasticityConsistencyConvergenceOrderRandomFSmall) {
     //verbose = true; // Show order of convergence, errors, F, S
@@ -1572,6 +1689,45 @@ TEST_F(USTRUCT_HolzapfelOgdenMATest, TestPK2StressConvergenceOrderRandomFLarge) 
         // Check order of convergence between finite difference and get_pk2cc() PK2 stress
         TestHO_ma->testPK2StressConvergenceOrder(F, delta_max, delta_min, order, verbose);
     }
+}
+
+// Test order of convergence of consistency of material elasticity for triaxial stretch
+TEST_F(USTRUCT_HolzapfelOgdenMATest, TestMaterialElasticityConsistencyConvergenceOrderTriaxialStretch) {
+    //verbose = true; // Show order of convergence, errors, F, S
+
+    // Create a deformation gradient F for triaxial stretch
+    double F[3][3] = {{1.1, 0.0, 0.0},
+                       {0.0, 1.2, 0.0},
+                       {0.0, 0.0, 1.3}};
+
+    // Check order of convergence of consistency of material elasticity
+    TestHO_ma->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+}
+
+// Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for triaxial compression
+TEST_F(USTRUCT_HolzapfelOgdenMATest, TestMaterialElasticityConsistencyConvergenceOrderTriaxialCompression) {
+    //verbose = true; // Show order of convergence, errors, F, S
+
+    // Create a deformation gradient F for triaxial compression
+    double F[3][3] = {{0.9, 0.0, 0.0},
+                    {0.0, 0.8, 0.0},
+                    {0.0, 0.0, 0.7}};
+
+    // Check order of convergence of consistency of material elasticity
+    TestHO_ma->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+}
+
+// Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for biaxial stretch/compression
+TEST_F(USTRUCT_HolzapfelOgdenMATest, TestMaterialElasticityConsistencyConvergenceOrderBiaxialStretchCompression) {
+    //verbose = true; // Show order of convergence, errors, F, S
+
+    // Create a deformation gradient F for biaxial stretch/compression
+    double F[3][3] = {{1.2, 0.0, 0.0},
+                    {0.0, 0.8, 0.0},
+                    {0.0, 0.0, 1.0}};
+
+    // Check order of convergence of consistency of material elasticity
+    TestHO_ma->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
 }
 
 // Test order of convergence of consistency of material elasticity for random F (small)

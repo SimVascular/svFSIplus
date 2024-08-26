@@ -917,7 +917,6 @@ public:
             return;
         }
         // Loop over many random perturbations to the deformation gradient, dF
-        std::srand(42); // Use a fixed seed for reproducibility
         for (int i = 0; i < n_iter; i++) {
             // Generate random dF with values between 0 and 1
             double dF[3][3];
@@ -1243,7 +1242,6 @@ public:
         }
 
         // Loop over many random perturbations to the deformation gradient, dF
-        std::srand(42); // Use a fixed seed for reproducibility
         for (int i = 0; i < n_iter; i++) {
             // Generate random dF with values between 0 and 1
             double dF[3][3];
