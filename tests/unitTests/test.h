@@ -61,117 +61,6 @@
 #include "mat_models.h"
 #include "mat_models_carray.h"
 
-// Class to contain material parameters
-class MatParams {
-public:
-    virtual ~MatParams() {} // Virtual destructor for proper cleanup
-};
-
-// Class to contain Neo-Hookean material parameters
-class NeoHookeanParams : public MatParams {
-public:
-    double C10;
-
-    // Default constructor
-    NeoHookeanParams() : C10(0.0) {}
-
-    // Constructor with parameters
-    NeoHookeanParams(double c10) : C10(c10) {}
-
-};
-
-// Class to contain Mooney-Rivlin material parameters
-class MooneyRivlinParams : public MatParams {
-public:
-    double C01;
-    double C10;
-
-    // Default constructor
-    MooneyRivlinParams() : C01(0.0), C10(0.0) {}
-
-    // Constructor with parameters
-    MooneyRivlinParams(double c01, double c10) : C01(c01), C10(c10) {}
-
-};
-
-// Class to contain Holzapfel-Ogden material parameters
-class HolzapfelOgdenParams : public MatParams {
-public:
-    double a;    
-    double b;
-    double a_f;
-    double b_f;
-    double a_s;
-    double b_s;
-    double a_fs;
-    double b_fs;
-    double f[3];    // Fiber direction
-    double s[3];    // Sheet direction
-
-    double k; // Smoothed Heaviside function parameter
-
-    // Default constructor
-    HolzapfelOgdenParams() : a(0.0), b(0.0), a_f(0.0), b_f(0.0), a_s(0.0), b_s(0.0), a_fs(0.0), b_fs(0.0), k(0.0) {
-        for (int i = 0; i < 3; i++) {
-            f[i] = 0.0;
-            s[i] = 0.0;
-        }
-    }
-
-    // Constructor with parameters
-    HolzapfelOgdenParams(double a, double b, double a_f, double b_f, double a_s, double b_s, double a_fs, double b_fs, double k, double f[3], double s[3]) : a(a), b(b), a_f(a_f), b_f(b_f), a_s(a_s), b_s(b_s), a_fs(a_fs), b_fs(b_fs), k(k) {
-        for (int i = 0; i < 3; i++) {
-            this->f[i] = f[i];
-            this->s[i] = s[i];
-        }
-    }
-};
-
-// Class to contain Holzapfel-Ogden (Modified Anisortopy) material parameters
-class HolzapfelOgdenMAParams : public MatParams {
-public:
-    double a;    
-    double b;
-    double a_f;
-    double b_f;
-    double a_s;
-    double b_s;
-    double a_fs;
-    double b_fs;
-    double f[3];    // Fiber direction
-    double s[3];    // Sheet direction
-
-    double k; // Smoothed Heaviside function parameter
-
-    // Default constructor
-    HolzapfelOgdenMAParams() : a(0.0), b(0.0), a_f(0.0), b_f(0.0), a_s(0.0), b_s(0.0), a_fs(0.0), b_fs(0.0), k(0.0) {
-        for (int i = 0; i < 3; i++) {
-            f[i] = 0.0;
-            s[i] = 0.0;
-        }
-    }
-
-    // Constructor with parameters
-    HolzapfelOgdenMAParams(double a, double b, double a_f, double b_f, double a_s, double b_s, double a_fs, double b_fs, double k, double f[3], double s[3]) : a(a), b(b), a_f(a_f), b_f(b_f), a_s(a_s), b_s(b_s), a_fs(a_fs), b_fs(b_fs), k(k) {
-        for (int i = 0; i < 3; i++) {
-            this->f[i] = f[i];
-            this->s[i] = s[i];
-        }
-    }
-};
-
-// Class to contain volumetric penalty parameters (just the penalty parameter)
-class VolumetricPenaltyParams : public MatParams {
-public:
-    double kappa;
-
-    // Default constructor
-    VolumetricPenaltyParams() : kappa(0.0) {}
-
-    // Constructor with parameters
-    VolumetricPenaltyParams(double kappa) : kappa(kappa) {}
-};
-
 // --------------------------------------------------------------
 // ---------------------- Helper functions ----------------------
 // --------------------------------------------------------------
@@ -187,6 +76,19 @@ void create_identity_F(double F[N][N]) {
     for (int i = 0; i < N; i++) {
         for (int J = 0; J < N; J++) {
             F[i][J] = (i == J);
+        }
+    }
+}
+
+/**
+ * @brief Create a ones matrix.
+ * 
+ */
+template<int N>
+void create_ones_matrix(double A[N][N]) {
+    for (int i = 0; i < N; i++) {
+        for (int J = 0; J < N; J++) {
+            A[i][J] = 1.0;
         }
     }
 }
@@ -670,11 +572,12 @@ public:
     }
 
     /**
-     * @brief Checks that order of convergence of the PK2 stress tensor S(F) from calcPK2StressFiniteDifference() is 1.
+     * @brief Computes the PK2 stress tensor S(F) from the strain energy density Psi(F) using finite differences and checks the order of convergence.
      * 
      * @param[in] F Deformation gradient.
      * @param[in] delta_min Minimum perturbation scaling factor.
      * @param[in] delta_max Maximum perturbation scaling factor.
+     * @param[in] order Order of the finite difference scheme (1 for first order, 2 for second order, etc.).
      * @param[in] verbose Show values error and order of convergence if true.
      */
     template<int N>
@@ -733,8 +636,8 @@ public:
         // m is the slope (order of convergence), b is the intercept
         auto [m, b] = computeLinearRegression(log_deltas, log_errors);
 
-        // Check that order of convergence is order
-        EXPECT_NEAR(m, order, 0.1);
+        // Check that order of convergence is > order - 0.02
+        EXPECT_GT(m, order - 0.02);
 
         // Print results if verbose
         if (verbose) {
@@ -762,7 +665,158 @@ public:
                 }
                 std::cout << std::endl;
             }
+
+            std::cout << std::endl;
         }
+    }
+
+    /**
+     * @brief Compute perturbation in strain energy density (dPsi) given perturbation in the deformation gradient (dF).
+     * 
+     * @param F Deformation gradient
+     * @param dF Deformation gradient perturbation shape
+     * @param delta Deformation gradient perturbation scaling factor
+     * @param order Order of the finite difference scheme (1 for first order, 2 for second order, etc.)
+     * @param dPsi Strain energy density perturbation
+     */
+    void calcdPsiFiniteDifference(const double F[3][3], const double dF[3][3], const double delta, const int order, double &dPsi) {
+
+        // Compute strain energy density given F
+        double Psi = computeStrainEnergy(F);
+
+        // Compute dPsi using finite difference, given dF
+        if (order == 1){
+            double F_tilde[3][3]; // perturbed deformation gradient
+            for (int i = 0; i < 3; i++) {
+                for (int J = 0; J < 3; J++) {
+                    // Perturb the iJ-th component of F by delta * dF[i][J]
+                    for (int k = 0; k < 3; k++) {
+                        for (int l = 0; l < 3; l++) {
+                            F_tilde[k][l] = F[k][l] + delta * dF[k][l];
+                        }
+                    }
+                }
+            }
+
+            // Compute Psi_tilde for perturbed deformation gradient
+            double Psi_tilde = computeStrainEnergy(F_tilde);
+
+            // Compute differences in Psi
+            dPsi = Psi_tilde - Psi;
+        }
+        else if (order == 2){
+            double F_plus[3][3]; // positive perturbed deformation gradient
+            double F_minus[3][3]; // negative perturbed deformation gradient
+            for (int i = 0; i < 3; i++) {
+                for (int J = 0; J < 3; J++) {
+                    // Perturb the iJ-th component of F by +-delta * dF[i][J]
+                    for (int k = 0; k < 3; k++) {
+                        for (int l = 0; l < 3; l++) {
+                            F_plus[k][l] = F[k][l] + delta * dF[k][l];
+                            F_minus[k][l] = F[k][l] - delta * dF[k][l];
+                        }
+                    }
+                }
+            }
+
+            // Compute Psi_plus and Psi_minus for perturbed deformation gradient
+            double Psi_plus = computeStrainEnergy(F_plus);
+            double Psi_minus = computeStrainEnergy(F_minus);
+
+            // Compute differences in Psi
+            dPsi = Psi_plus - Psi_minus;
+        }
+    }
+
+    /**
+     * @brief Compute perturbed Green-Lagrange strain tensor (dE) given perturbed deformation gradient (dF) using finite differences
+     * 
+     * @param F Deformation gradient
+     * @param dF Deformation gradient perturbation shape
+     * @param delta  Deformation gradient perturbation scaling factor
+     * @param order Order of the finite difference scheme (1 for first order, 2 for second order, etc.)
+     * @param dE  Green-Lagrange strain tensor perturbation
+     */
+    void calcdEFiniteDifference(const double F[3][3], const double dF[3][3], const double delta, const int order, double (&dE)[3][3]) {
+        // Compute E from F
+        double J, C[3][3], E[3][3];
+        calc_JCE(F, J, C, E);
+
+        // Compute dE using finite difference, given dF
+        if (order == 1){
+            double F_tilde[3][3]; // perturbed deformation gradient
+            for (int i = 0; i < 3; i++) {
+                for (int J = 0; J < 3; J++) {
+                    // Perturb the iJ-th component of F by delta * dF[i][J]
+                    for (int k = 0; k < 3; k++) {
+                        for (int l = 0; l < 3; l++) {
+                            F_tilde[k][l] = F[k][l] + delta * dF[k][l];
+                        }
+                    }
+                }
+            }
+
+            // Compute perturbed E_tilde from F_tilde
+            double J_tilde, C_tilde[3][3], E_tilde[3][3];
+            calc_JCE(F_tilde, J_tilde, C_tilde, E_tilde);
+
+            // Compute differences in E
+            for (int i = 0; i < 3; i++) {
+                for (int j = 0; j < 3; j++) {
+                    dE[i][j] = E_tilde[i][j] - E[i][j];
+                }
+            }
+        }
+        else if (order == 2){
+            double F_plus[3][3]; // positive perturbed deformation gradient
+            double F_minus[3][3]; // negative perturbed deformation gradient
+            for (int i = 0; i < 3; i++) {
+                for (int J = 0; J < 3; J++) {
+                    // Perturb the iJ-th component of F by +-delta * dF[i][J]
+                    for (int k = 0; k < 3; k++) {
+                        for (int l = 0; l < 3; l++) {
+                            F_plus[k][l] = F[k][l] + delta * dF[k][l];
+                            F_minus[k][l] = F[k][l] - delta * dF[k][l];
+                        }
+                    }
+                }
+            }
+
+            // Compute perturbed E_plus and E_minus from F_plus and F_minus
+            double J_plus, C_plus[3][3], E_plus[3][3];
+            double J_minus, C_minus[3][3], E_minus[3][3];
+            calc_JCE(F_plus, J_plus, C_plus, E_plus);
+            calc_JCE(F_minus, J_minus, C_minus, E_minus);
+
+            // Compute differences in E
+            for (int i = 0; i < 3; i++) {
+                for (int j = 0; j < 3; j++) {
+                    dE[i][j] = E_plus[i][j] - E_minus[i][j];
+                }
+            }
+        }
+    }
+
+    /**
+     * @brief Compute contraction of PK2 stress with perturbation in Green-Lagrange strain tensor (S:dE) given perturbation in deformation gradient (dF) using finite differences.
+     * 
+     * @param F Deformation gradient
+     * @param dF Deformation gradient perturbation shape
+     * @param delta Deformation gradient perturbation scaling factor
+     * @param order Order of the finite difference scheme (1 for first order, 2 for second order, etc.)
+     * @param SdE PK2 stress tensor times the perturbation in the Green-Lagrange strain tensor
+     */
+    void calcSdEFiniteDifference(const double F[3][3], const double dF[3][3], const double delta, const int order, double &SdE) {
+        // Compute S(F) from get_pk2cc()
+        double S[3][3], Dm[6][6];
+        get_pk2cc(F, S, Dm);
+
+        // Compute dE using finite difference, given dF
+        double dE[3][3];
+        calcdEFiniteDifference(F, dF, delta, order, dE);
+
+        // Compute S:dE
+        SdE = mat_fun_carray::mat_ddot<3>(S, dE);
     }
 
     /**
@@ -775,7 +829,7 @@ public:
      * - Compute S(F) from get_pk2cc()
      * - For many random dF
      *      - Compute dPsi = Psi(F + dF) - Psi(F)
-     *      - Compute dE from dF
+     *      - Compute dE = E(F + dF) - E(F)
      *      - Check that S:dE = dPsi
      * 
      * @param[in] F Deformation gradient.
@@ -788,43 +842,21 @@ public:
      *
      */
     void testPK2StressConsistentWithStrainEnergy(double F[3][3], int n_iter, double rel_tol, double abs_tol, double delta, bool verbose = false) {
-        // Compute E from F
-        double J, C[3][3], E[3][3];
-        calc_JCE(F, J, C, E);
-
-        // Compute Psi(F)
-        double Psi = computeStrainEnergy(F);
-
-        // Compute S(F) from svFSIplus
-        double S[3][3], Dm[6][6];
-        get_pk2cc(F, S, Dm);
+        int order = 2;
 
         // Generate many random dF and check that S:dE = dPsi
         // S was obtained from get_pk2cc(), and dPsi = Psi(F + dF) - Psi(F)
-        double dPsi, dE[3][3], SdE;
-        double F_tilde[3][3], J_tilde, C_tilde[3][3], E_tilde[3][3];
+        double dPsi, SdE;
         for (int i = 0; i < n_iter; i++) {
-            // Perturb the deformation gradient
-            perturb_random_F(F, delta, F_tilde);
+            // Generate random dF
+            double dF[3][3];
+            create_random_F(dF, 0.0, 1.0);
 
-            // Compute perturbed E_tilde from F_tilde
-            calc_JCE(F_tilde, J_tilde, C_tilde, E_tilde);
+            // Compute dPsi
+            calcdPsiFiniteDifference(F, dF, delta, order, dPsi);
 
-            // Compute Psi(F_tilde)
-            double Psi_tilde = computeStrainEnergy(F_tilde);
-
-            // Compute dPsi = Psi(F_tilde) - Psi(F)
-            dPsi = Psi_tilde - Psi;
-
-            // Compute dE = E(F_tilde) - E(F)
-            for (int i = 0; i < 3; i++) {
-                for (int j = 0; j < 3; j++) {
-                    dE[i][j] = E_tilde[i][j] - E[i][j];
-                }
-            }
-
-            // Compute S:dE
-            double SdE = mat_fun_carray::mat_ddot<3>(S, dE);
+            // Compute SdE
+            calcSdEFiniteDifference(F, dF, delta, order, SdE);
 
             // Check that S:dE = dPsi
             EXPECT_NEAR(SdE, dPsi, fmax(abs_tol, rel_tol * fabs(dPsi)));
@@ -843,27 +875,206 @@ public:
                     std::cout << std::endl;
                 }
 
-                std::cout << "S =" << std::endl;
-                for (int i = 0; i < 3; i++) {
-                    for (int j = 0; j < 3; j++) {
-                        std::cout << S[i][j] << " ";
-                    }
-                    std::cout << std::endl;
-                }
-
-                std::cout << "dE =" << std::endl;
-                for (int i = 0; i < 3; i++) {
-                    for (int j = 0; j < 3; j++) {
-                        std::cout << dE[i][j] << " ";
-                    }
-                    std::cout << std::endl;
-                }
-
                 std::cout << "SdE = " << SdE << ", dPsi = " << dPsi << std::endl;
                 std::cout << std::endl;
             }
         }
     }
+
+    /**
+     * @brief Tests the order of convergence of the consistency between dPsi and S:dE using finite differences.
+     * 
+     * Analytically, we should have S = dPsi/dE. This function determines the order of convergence of S:dE = dPsi, where dE and dPsi are computed using finite differences in F.
+     *
+     * Pseudocode:
+     * - Compute Psi(F)
+     * - Compute S(F) from get_pk2cc()
+     * - For many random dF
+     *      - Compute dPsi
+     *      - Compute dE
+     *      - Compute error S:dE - dPsi
+     * - Compute order of convergence by fitting a line to log(delta) vs log(error)
+     * 
+     * Note that the order of convergence should be order + 1, because we are comparing differences (dPsi and S:dE)
+     * instead of derivatives (e.g. dPsi/dF and S:dE/dF).
+     * @param F Deformation gradient.
+     * @param n_iter Number of random perturbations to test.
+     * @param delta_max Maximum perturbation scaling factor.
+     * @param delta_min Minimum perturbation scaling factor.
+     * @param order Order of the finite difference scheme (1 for first order, 2 for second order, etc.).
+     * @param verbose Show values of errors and order of convergence if true.
+     */
+    void testPK2StressConsistencyConvergenceOrder(double F[3][3], int n_iter, double delta_max, double delta_min, int order, bool verbose = false) {
+        // Check that delta_max > delta_min
+        if (delta_max <= delta_min) {
+            std::cerr << "Error: delta_max must be greater than delta_min." << std::endl;
+            return;
+        }
+
+        // Check that order is 1 or 2
+        if (order != 1 && order != 2) {
+            std::cerr << "Error: order must be 1 or 2." << std::endl;
+            return;
+        }
+        // Loop over many random perturbations to the deformation gradient, dF
+        std::srand(42); // Use a fixed seed for reproducibility
+        for (int i = 0; i < n_iter; i++) {
+            // Generate random dF with values between 0 and 1
+            double dF[3][3];
+            create_random_F(dF, 0.0, 1.0);
+
+            // Create list of deltas for convergence test (delta = delta_max, delta_max/2, delta_max/4, ...)
+            std::vector<double> deltas;
+            double delta = delta_max;
+            while (delta >= delta_min) {
+                deltas.push_back(delta);
+                delta /= 2.0;
+            }
+
+            // Compute dPsi and S:dE for each delta and store error in list
+            std::vector<double> errors;
+            double dPsi, SdE;
+
+            for (int i = 0; i < deltas.size(); i++) {
+                calcdPsiFiniteDifference(F, dF, deltas[i], order, dPsi);
+                calcSdEFiniteDifference(F, dF, deltas[i], order, SdE);
+
+                // Compute error between dPsi and S:dE
+                double error = fabs(dPsi - SdE);
+
+                // Store error in list
+                errors.push_back(error);
+            }
+
+            // Compute order of convergence by fitting a line to log(delta) vs log(error)
+            std::vector<double> log_deltas, log_errors;
+            for (int i = 0; i < deltas.size(); i++) {
+                log_deltas.push_back(log(deltas[i]));
+                log_errors.push_back(log(errors[i]));
+            }
+
+            // Fit a line to log(delta) vs log(error)
+            // m is the slope (order of convergence), b is the intercept
+            auto [m, b] = computeLinearRegression(log_deltas, log_errors);
+
+            // Check that order of convergence is > (order + 1) - 0.02
+            EXPECT_GT(m, order + 1 - 0.02);
+
+            // Print results if verbose
+            if (verbose) {
+                std::cout << "Slope (order of convergence): " << m << std::endl;
+                std::cout << "Intercept: " << b << std::endl;
+                std::cout << "Errors: ";
+                for (int i = 0; i < errors.size(); i++) {
+                    std::cout << errors[i] << " ";
+                }
+                std::cout << std::endl;
+                std::cout << std::endl;
+                
+                std::cout << "F = " << std::endl;
+                for (int i = 0; i < 3; i++) {
+                    for (int J = 0; J < 3; J++) {
+                        std::cout << F[i][J] << " ";
+                    }
+                    std::cout << std::endl;
+                }
+            }
+        }
+    }
+
+    /**
+     * @brief Compute perturbation in PK2 stress (dS) given perturbation in deformation gradient (dF) using finite differences
+     * 
+     * @param F Deformation gradient
+     * @param dF Deformation gradient perturbation shape
+     * @param delta Deformation gradient perturbation scaling factor
+     * @param order Order of the finite difference scheme (1 for first order, 2 for second order, etc.)
+     * @param dS PK2 stress tensor perturbation
+     */
+    void calcdSFiniteDifference(const double F[3][3], const double dF[3][3], const double delta, const int order, double (&dS)[3][3]) {
+        // Compute S(F) from get_pk2cc()
+        double S[3][3], Dm[6][6];
+        get_pk2cc(F, S, Dm);
+
+        // Compute dS using finite difference, given dF
+        if (order == 1){
+            double F_tilde[3][3]; // perturbed deformation gradient
+            for (int i = 0; i < 3; i++) {
+                for (int J = 0; J < 3; J++) {
+                    // Perturb the iJ-th component of F by delta * dF[i][J]
+                    for (int k = 0; k < 3; k++) {
+                        for (int l = 0; l < 3; l++) {
+                            F_tilde[k][l] = F[k][l] + delta * dF[k][l];
+                        }
+                    }
+                }
+            }
+
+            // Compute perturbed S_tilde from F_tilde
+            double S_tilde[3][3], Dm_tilde[6][6];
+            get_pk2cc(F_tilde, S_tilde, Dm_tilde);
+
+            // Compute differences in S
+            for (int i = 0; i < 3; i++) {
+                for (int j = 0; j < 3; j++) {
+                    dS[i][j] = S_tilde[i][j] - S[i][j];
+                }
+            }
+        }
+        else if (order == 2){
+            double F_plus[3][3]; // positive perturbed deformation gradient
+            double F_minus[3][3]; // negative perturbed deformation gradient
+            for (int i = 0; i < 3; i++) {
+                for (int J = 0; J < 3; J++) {
+                    // Perturb the iJ-th component of F by +-delta * dF[i][J]
+                    for (int k = 0; k < 3; k++) {
+                        for (int l = 0; l < 3; l++) {
+                            F_plus[k][l] = F[k][l] + delta * dF[k][l];
+                            F_minus[k][l] = F[k][l] - delta * dF[k][l];
+                        }
+                    }
+                }
+            }
+
+            // Compute perturbed S_plus and S_minus from F_plus and F_minus
+            double S_plus[3][3], Dm_plus[6][6];
+            double S_minus[3][3], Dm_minus[6][6];
+            get_pk2cc(F_plus, S_plus, Dm_plus);
+            get_pk2cc(F_minus, S_minus, Dm_minus);
+
+            // Compute differences in S
+            for (int i = 0; i < 3; i++) {
+                for (int j = 0; j < 3; j++) {
+                    dS[i][j] = S_plus[i][j] - S_minus[i][j];
+                }
+            }
+        }
+    }
+
+    /**
+     * @brief Compute material elasticity tensor contracted with perturbation in Green-Lagrange strain tensor (CC:dE) given perturbation in deformation gradient (dF) using finite differences
+     * 
+     * @param F Deformation gradient
+     * @param dF Deformation gradient perturbation shape
+     * @param delta Deformation gradient perturbation scaling factor
+     * @param order Order of the finite difference scheme (1 for first order, 2 for second order, etc.)
+     * @param CCdE Material elasticity tensor times the perturbation in the Green-Lagrange strain tensor
+     */
+    void calcCCdEFiniteDifference(const double F[3][3], const double dF[3][3], const double delta, const int order, double (&CCdE)[3][3]) {
+        // Compute CC(F) from get_pk2cc()
+        double S[3][3], Dm[6][6];
+        get_pk2cc(F, S, Dm);
+        double CC[3][3][3][3];
+        mat_models_carray::voigt_to_cc_carray<3>(Dm, CC);
+
+        // Compute dE using finite difference, given dF
+        double dE[3][3];
+        calcdEFiniteDifference(F, dF, delta, order, dE);
+
+        // Compute CC:dE
+        mat_fun_carray::ten_mat_ddot<3>(CC, dE, CCdE);
+    }
+
 
     /**
      * @brief Tests the consistency of the material elasticity tensor CC(F) from get_pk2cc() with the PK2 stress tensor S(F) from get_pk2cc().
@@ -887,7 +1098,8 @@ public:
      * @return None.
      */
     void testMaterialElasticityConsistentWithPK2Stress(double F[3][3], int n_iter, double rel_tol, double abs_tol, double delta, bool verbose = false) {
-    
+        int order = 2;
+
         // Compute E from F
         double J, C[3][3], E[3][3];
         calc_JCE(F, J, C, E);
@@ -918,38 +1130,21 @@ public:
         // Generate many random dF and check that CC:dE = dS
         // CC was obtained from get_pk2cc(), and dS = S(F + dF) - S(F), 
         // where S is also obtained from get_pk2cc()
-        double dS[3][3], dE[3][3], CCdE[3][3];
-        double F_tilde[3][3], J_tilde, C_tilde[3][3], E_tilde[3][3];
-        double S_tilde[3][3], Dm_tilde[6][6];
+        double dS[3][3], CCdE[3][3];
         
         // Loop over many random perturbations to the deformation gradient
         for (int i = 0; i < n_iter; i++) {
-            // Perturb the deformation gradient
-            perturb_random_F<3>(F, delta, F_tilde);
-    
-            // Compute perturbed E_tilde from F_tilde
-            calc_JCE(F_tilde, J_tilde, C_tilde, E_tilde);
-    
-            // Compute dE
-            for (int i = 0; i < 3; i++) {
-                for (int J = 0; J < 3; J++) {
-                    dE[i][J] = E_tilde[i][J] - E[i][J];
-                }
-            }
-    
-            // Compute perturbed S_tilde with perturbed deformation gradient
-            get_pk2cc(F_tilde, S_tilde, Dm_tilde);
+            // Generate random dF
+            double dF[3][3];
+            create_random_F(dF, 0.0, 1.0);
     
             // Compute dS
-            double dS[3][3];
-            for (int i = 0; i < 3; i++) {
-                for (int j = 0; j < 3; j++) {
-                    dS[i][j] = S_tilde[i][j] - S[i][j];
-                }
-            }
+            calcdSFiniteDifference(F, dF, delta, order, dS);
+
+            // Compute CC:dE
+            calcCCdEFiniteDifference(F, dF, delta, order, CCdE);
     
             // Check that CC_ijkl dE_kl = dS_ij
-            mat_fun_carray::ten_mat_ddot<3>(CC, dE, CCdE);
             for (int i = 0; i < 3; i++) {
                 for (int j = 0; j < 3; j++) {
                     EXPECT_NEAR(CCdE[i][j], dS[i][j], fmax(abs_tol, rel_tol * fabs(dS[i][j])));
@@ -983,14 +1178,6 @@ public:
                     std::cout << std::endl;
                 }
     
-                std::cout << "dE =" << std::endl;
-                for (int i = 0; i < 3; i++) {
-                    for (int j = 0; j < 3; j++) {
-                        std::cout << dE[i][j] << " ";
-                    }
-                    std::cout << std::endl;
-                }
-    
                 std::cout << "dS =" << std::endl;
                 for (int i = 0; i < 3; i++) {
                     for (int j = 0; j < 3; j++) {
@@ -1003,6 +1190,123 @@ public:
                 for (int i = 0; i < 3; i++) {
                     for (int j = 0; j < 3; j++) {
                         std::cout << CCdE[i][j] << " ";
+                    }
+                    std::cout << std::endl;
+                }
+                std::cout << std::endl;
+            }
+        }
+    }
+
+    /**
+     * @brief Tests the order of convergence of the consistency between CC:dE and dS using finite differences.
+     * 
+     * Analytically, we should have CC:dE = dS. This function determines the order of convergence of CC:dE = dS, where dE and dS are computed using finite differences in F.
+     *
+     * Pseudocode:
+     * - For many random dF
+     *     - For decreasing delta
+     *       - Compute dS
+     *       - Compute CC:dE 
+     *       - Compute error CC:dE - dS
+     * - Compute order of convergence by fitting a line to log(delta) vs log(error)
+     * 
+     * Note that the order of convergence should be order + 1, because we are comparing differences (dS and CC:dE)
+     * instead of derivatives (e.g. dS/dF and CC:dE/dF).
+     * @param F Deformation gradient.
+     * @param dF Deformation gradient perturbation shape.
+     * @param n_iter Number of random perturbations in F to test.
+     * @param delta_max Maximum perturbation scaling factor.
+     * @param delta_min Minimum perturbation scaling factor.
+     * @param order Order of the finite difference scheme (1 for first order, 2 for second order, etc.).
+     * @param verbose Show values of errors and order of convergence if true.
+     */
+    void testMaterialElasticityConsistencyConvergenceOrder(double F[3][3], int n_iter, double delta_max, double delta_min, int order, bool verbose = false) {
+        // Check that delta_max > delta_min
+        if (delta_max <= delta_min) {
+            std::cerr << "Error: delta_max must be greater than delta_min." << std::endl;
+            return;
+        }
+
+        // Check that order is 1 or 2
+        if (order != 1 && order != 2) {
+            std::cerr << "Error: order must be 1 or 2." << std::endl;
+            return;
+        }
+
+        // Create list of deltas for convergence test (delta = delta_max, delta_max/2, delta_max/4, ...)
+        std::vector<double> deltas;
+        double delta = delta_max;
+        while (delta >= delta_min) {
+            deltas.push_back(delta);
+            delta /= 2.0;
+        }
+
+        // Loop over many random perturbations to the deformation gradient, dF
+        std::srand(42); // Use a fixed seed for reproducibility
+        for (int i = 0; i < n_iter; i++) {
+            // Generate random dF with values between 0 and 1
+            double dF[3][3];
+            create_random_F(dF, 0.0, 1.0);
+        
+            // Compute dS and CC:dE for each delta and store error in list
+            std::vector<double> errors;
+            double dS[3][3], CCdE[3][3];
+            for (int i = 0; i < deltas.size(); i++) {
+                calcdSFiniteDifference(F, dF, deltas[i], order, dS);
+                calcCCdEFiniteDifference(F, dF, deltas[i], order, CCdE);
+
+                // Compute Frobenius norm of error between dS and CC:dE
+                double error = 0.0;
+                for (int i = 0; i < 3; i++) {
+                    for (int j = 0; j < 3; j++) {
+                        error += pow(dS[i][j] - CCdE[i][j], 2);
+                    }
+                }
+                error = sqrt(error);
+
+                // Store error in list
+                errors.push_back(error);
+            }
+
+            // Compute order of convergence by fitting a line to log(delta) vs log(error)
+            std::vector<double> log_deltas, log_errors;
+            for (int i = 0; i < deltas.size(); i++) {
+                log_deltas.push_back(log(deltas[i]));
+                log_errors.push_back(log(errors[i]));
+            }
+
+            // Fit a line to log(delta) vs log(error)
+            // m is the slope (order of convergence), b is the intercept
+            auto [m, b] = computeLinearRegression(log_deltas, log_errors);
+
+            // Check that order of convergence is > (order + 1) - 0.02
+            EXPECT_GT(m, order + 1 - 0.02);
+
+            // Print results if verbose
+            if (verbose) {
+                std::cout << "Iteration " << i << ":" << std::endl;
+                std::cout << "Slope (order of convergence): " << m << std::endl;
+                std::cout << "Intercept: " << b << std::endl;
+                std::cout << "Errors: ";
+                for (int i = 0; i < errors.size(); i++) {
+                    std::cout << errors[i] << " ";
+                }
+                std::cout << std::endl;
+                std::cout << std::endl;
+                
+                std::cout << "F = " << std::endl;
+                for (int i = 0; i < 3; i++) {
+                    for (int J = 0; J < 3; J++) {
+                        std::cout << F[i][J] << " ";
+                    }
+                    std::cout << std::endl;
+                }
+
+                std::cout << "dF = " << std::endl;
+                for (int i = 0; i < 3; i++) {
+                    for (int J = 0; J < 3; J++) {
+                        std::cout << dF[i][J] << " ";
                     }
                     std::cout << std::endl;
                 }
@@ -1187,6 +1491,124 @@ public:
         }
     }
 };
+
+
+
+// --------------------------------------------------------------
+// --------------------- Material Parameters Classes ------------
+// --------------------------------------------------------------
+
+// Class to contain material parameters
+class MatParams {
+public:
+    virtual ~MatParams() {} // Virtual destructor for proper cleanup
+};
+
+// Class to contain Neo-Hookean material parameters
+class NeoHookeanParams : public MatParams {
+public:
+    double C10;
+
+    // Default constructor
+    NeoHookeanParams() : C10(0.0) {}
+
+    // Constructor with parameters
+    NeoHookeanParams(double c10) : C10(c10) {}
+
+};
+
+// Class to contain Mooney-Rivlin material parameters
+class MooneyRivlinParams : public MatParams {
+public:
+    double C01;
+    double C10;
+
+    // Default constructor
+    MooneyRivlinParams() : C01(0.0), C10(0.0) {}
+
+    // Constructor with parameters
+    MooneyRivlinParams(double c01, double c10) : C01(c01), C10(c10) {}
+
+};
+
+// Class to contain Holzapfel-Ogden material parameters
+class HolzapfelOgdenParams : public MatParams {
+public:
+    double a;    
+    double b;
+    double a_f;
+    double b_f;
+    double a_s;
+    double b_s;
+    double a_fs;
+    double b_fs;
+    double f[3];    // Fiber direction
+    double s[3];    // Sheet direction
+
+    double k; // Smoothed Heaviside function parameter
+
+    // Default constructor
+    HolzapfelOgdenParams() : a(0.0), b(0.0), a_f(0.0), b_f(0.0), a_s(0.0), b_s(0.0), a_fs(0.0), b_fs(0.0), k(0.0) {
+        for (int i = 0; i < 3; i++) {
+            f[i] = 0.0;
+            s[i] = 0.0;
+        }
+    }
+
+    // Constructor with parameters
+    HolzapfelOgdenParams(double a, double b, double a_f, double b_f, double a_s, double b_s, double a_fs, double b_fs, double k, double f[3], double s[3]) : a(a), b(b), a_f(a_f), b_f(b_f), a_s(a_s), b_s(b_s), a_fs(a_fs), b_fs(b_fs), k(k) {
+        for (int i = 0; i < 3; i++) {
+            this->f[i] = f[i];
+            this->s[i] = s[i];
+        }
+    }
+};
+
+// Class to contain Holzapfel-Ogden (Modified Anisortopy) material parameters
+class HolzapfelOgdenMAParams : public MatParams {
+public:
+    double a;    
+    double b;
+    double a_f;
+    double b_f;
+    double a_s;
+    double b_s;
+    double a_fs;
+    double b_fs;
+    double f[3];    // Fiber direction
+    double s[3];    // Sheet direction
+
+    double k; // Smoothed Heaviside function parameter
+
+    // Default constructor
+    HolzapfelOgdenMAParams() : a(0.0), b(0.0), a_f(0.0), b_f(0.0), a_s(0.0), b_s(0.0), a_fs(0.0), b_fs(0.0), k(0.0) {
+        for (int i = 0; i < 3; i++) {
+            f[i] = 0.0;
+            s[i] = 0.0;
+        }
+    }
+
+    // Constructor with parameters
+    HolzapfelOgdenMAParams(double a, double b, double a_f, double b_f, double a_s, double b_s, double a_fs, double b_fs, double k, double f[3], double s[3]) : a(a), b(b), a_f(a_f), b_f(b_f), a_s(a_s), b_s(b_s), a_fs(a_fs), b_fs(b_fs), k(k) {
+        for (int i = 0; i < 3; i++) {
+            this->f[i] = f[i];
+            this->s[i] = s[i];
+        }
+    }
+};
+
+// Class to contain volumetric penalty parameters (just the penalty parameter)
+class VolumetricPenaltyParams : public MatParams {
+public:
+    double kappa;
+
+    // Default constructor
+    VolumetricPenaltyParams() : kappa(0.0) {}
+
+    // Constructor with parameters
+    VolumetricPenaltyParams(double kappa) : kappa(kappa) {}
+};
+
 
 // --------------------------------------------------------------
 // --------------------- Material Model Classes -----------------

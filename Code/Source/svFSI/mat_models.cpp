@@ -768,9 +768,9 @@ void get_pk2cc_dev(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& 
 
       // Isotropic + fiber-sheet interaction stress
       double g1 = stM.a * exp(stM.b*(Inv1-3.0));
-      double g2 = 2.0 * stM.afs * Efs * exp(stM.bfs*Efs*Efs);
+      double g2 = 2.0 * stM.afs * exp(stM.bfs*Efs*Efs);
       auto Hfs = mat_symm_prod(fl.col(0), fl.col(1), nsd);
-      auto Sb = g1*IDm + g2*Hfs;
+      auto Sb = g1*IDm + g2*Efs*Hfs;
 
       // Isotropic + fiber-sheet interaction stiffness
       g1 = g1 * 2.0 * J4d * stM.b;
@@ -802,7 +802,7 @@ void get_pk2cc_dev(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& 
 
       // Sheet-sheet interaction stiffness
       g2 = c4s * (1.0 + 2.0*stM.bss*Ess*Ess);
-      g2 = (g2 + 2.8*dc4s*Ess) * rexp;
+      g2 = (g2 + 2.0*dc4s*Ess) * rexp;
       g2 = 4.0 * J4d * stM.ass * g2;
       CCb = CCb + g2*ten_dyad_prod(Hss, Hss, nsd);
       
@@ -853,7 +853,7 @@ void get_pk2cc_dev(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& 
       // Isochoric stress and stiffness
       double g1 = stM.a * exp(stM.b*(Inv1-3.0));
       auto Sb = g1*IDm;
-      double r1 = J2d/nd*mat_fun::mat_ddot(C,Sb,nsd);
+      double r1 = J2d/nd*mat_fun::mat_ddot(C, Sb, nsd);
 
       g1 = g1*2.0*J4d*stM.b;
       auto CCb = g1 * ten_dyad_prod(IDm, IDm, nsd);
