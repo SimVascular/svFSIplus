@@ -1,7 +1,7 @@
 
 # **Problem Description**
 
-Solve 2D Stokes flow problem. In this example, the method of manufactured solution is used to demonstrate the accuracy of the software.
+Simulate a 2D Stokes flow problem. A manufactured solution is used to demonstrate the accuracy of the simulation.
 
 <p align="center">
    <img src="./P1P1/l2norm/error_L2_P1P1_bfC0.png" width="600">
@@ -10,24 +10,22 @@ Solve 2D Stokes flow problem. In this example, the method of manufactured soluti
    <img src="./P2P1/l2norm/error_L2_P2P1.png" width="600">
 </p>
 
-The input file `svFSI.inp` follows the master input file [`svFSI_master.inp`](./svFSI_master.inp) as a template. Some specific input options are discussed below:
-
 ## User Supplied Body Force and Boundary Values
 
-The method of manufactured solution requires body force and boundary values calculated from the analytic solution. This is done with the custom [python scripts](./P1P1/bforce). They are specified in the input files using the following directives:
+The method of manufactured solution requires body force and boundary values calculated from the analytic solution. This is done with the custom [python scripts](./P1P1/bforce). They are specified in the input files using 
 
 ```
-   Add BF: msh {
-      Type: vol
-      Time dependence: general
-      Temporal and spatial values file path: ../bforce/N004/bforce.dat
-   }
+<Add_BF mesh="msh" >
+  <Type> volumetric </Type>
+  <Time_dependence> general </Time_dependence> 
+  <Temporal_and_spatial_values_file_path> ../bforce/N004/bforce.dat </Temporal_and_spatial_values_file_path> 
+</Add_BF> 
 
-   Add BC: left {
-      Type: Dir
-      Time dependence: General
-      Temporal and spatial values file path: ../bforce/N004/left_vbc.dat
-   }
+<Add_BC name="left" > 
+  <Type> Dir </Type> 
+  <Time_dependence> General </Time_dependence> 
+  <Temporal_and_spatial_values_file_path> ../bforce/N004/left_vbc.dat </Temporal_and_spatial_values_file_path> 
+</Add_BC>
 ```
 
-For body force, its type is `volumetric` or `vol`. Time dependence is set to `general` since it has both temporal and spatial variations. For boundary condition, its type is `Dirichlet` or `Dir`.
+Time dependence is set to **general** because it has both temporal and spatial variations. 
