@@ -67,7 +67,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><p>This test case simulates an idealized left ventricle (LV) with a NeoHookean material model coupled to a lumped-parameter network (LPN), implemented in sv0DSolver. The LPN consists of a large pressure source and large resistor, which together produce an approximately constant flowrate into the LV. This inflates the LV at an approximately constant rate of change of volume.</p>
-<h3><a class="anchor" id="autotoc_md150"></a>
+<h3><a class="anchor" id="autotoc_md131"></a>
 Build svZeroDSolver</h3>
 <p>Importantly, to automatically run test cases with <code>pytest</code> (see below), you need to build <code>svZeroDSolver</code> in the folder </p><div class="fragment"><div class="line">./svZeroDSolver/build</div>
 </div><!-- fragment --><p> in the repository root.</p>
@@ -77,10 +77,10 @@ Build svZeroDSolver</h3>
 <div class="line">cd build</div>
 <div class="line">cmake ..</div>
 <div class="line">make -j2</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md151"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md132"></a>
 Configuration of sv0DSolver</h2>
 <p>The following files require user's attention: <a href="./svFSI.xml">svFSI.xml</a>, <a href="./svzerod_3Dcoupling.json">svzerod_3Dcoupling.json</a> and <a href="./svZeroD_interface.dat">svZeroD_interface.dat</a>.</p>
-<h3><a class="anchor" id="autotoc_md152"></a>
+<h3><a class="anchor" id="autotoc_md133"></a>
 svFSI.xml</h3>
 <p>The input file <a href="./svFSI.xml">svFSI_genBC.xml</a> follows the master input file as a template, but with coupling to sv0DSolver specified in the options:</p>
 <div class="fragment"><div class="line">&lt;Couple_to_svZeroD type=&quot;SI&quot;&gt;</div>
@@ -97,7 +97,7 @@ svFSI.xml</h3>
 <div class="line">   &lt;Follower_pressure_load&gt; true &lt;/Follower_pressure_load&gt; </div>
 <div class="line">&lt;/Add_BC&gt; </div>
 </div><!-- fragment --><p>In this example, we use the LPN for the flow into the endocardial surface.</p>
-<h3><a class="anchor" id="autotoc_md153"></a>
+<h3><a class="anchor" id="autotoc_md134"></a>
 svzerod_3Dcoupling.json</h3>
 <p>This is the configuration file for sv0DSolver and contains the elements of the 0D model being coupled to the 3D simulation.</p>
 <p>For more information on the available parameters and elements, documentation is available here: <a href="https://github.com/SimVascular/svZeroDSolver">svZeroDSolver</a></p>
@@ -151,7 +151,7 @@ svzerod_3Dcoupling.json</h3>
 <div class="line">        }</div>
 <div class="line">    ]</div>
 <div class="line">}</div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md154"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md135"></a>
 svZeroD_interface.dat</h3>
 <p>This file sets up the interface between svFSIplus and sv0DSolver. It requires the path of the dynamic library for svZeroDSolver and the input file (svzerod_3Dcoupling.json) discussed above.</p>
 <p>This file also matches the external coupling blocks in the 0D model to the coupled surfaces in svFSIplus: The first element in each line should be the name of the block from the json file and the second element should be the index of the coupled surface in svFSIplus. In this case, there is only one coupled surface with index 0.</p>

@@ -66,32 +66,19 @@ $(function() {
 <div class="title"><b>Problem Description</b> </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>Solve the 3D pipe flow problem with different viscosity models. Currently, <code>svFSI</code> supports three viscosity model: Newtonian, Carreau-Yasuda and Casson[1].</p>
-<p align="center"></p>
-<p><img src="./Compare_nonNewtonian_models.png" alt="" width="600" class="inline"/> </p>
-<p>Carreau-Yasuda model is defined as</p>
+<div class="textblock"><p><a class="el" href="class_simulation.html">Simulation</a> of a 3D pipe flow problem using a Carreau-Yasuda viscosity model</p>
+<p>Carreau-Yasuda viscosity model is defined by the following equation</p>
 <p><img src="https://latex.codecogs.com/png.image?\inline&space;\dpi{120}\bg{white}\eta=\eta_\infty&plus;(\eta_0-\eta_\infty)\left[&space;1&plus;\left(&space;\lambda&space;\dot{\gamma}&space;\right)^a&space;\right]^{\frac{n-1}{a}}&space;" alt="cy_model" class="inline"/></p>
-<p>Here</p>
+<p>where</p>
 <p><img src="https://latex.codecogs.com/png.image?\inline&space;\dpi{120}\bg{white}\eta_\infty:&space;\text{Limiting&space;high&space;shear-rate&space;viscosity}" alt="iamge1" class="inline"/></p>
 <p><img src="https://latex.codecogs.com/png.image?\inline&space;\dpi{120}\bg{white}\eta_0:&space;\text{Limiting&space;low&space;shear-rate&space;viscosity}&space;" alt="iamge2" class="inline"/></p>
 <p><img src="https://latex.codecogs.com/png.image?\inline&space;\dpi{120}\bg{white}\lambda:&space;\text{Shear-rate&space;tensor&space;multiplier}&space;" alt="iamge3" class="inline"/></p>
 <p><img src="https://latex.codecogs.com/png.image?\inline&space;\dpi{120}\bg{white}\dot{\gamma}:&space;\text{Shear&space;rate}&space;" alt="iamge4" class="inline"/></p>
 <p><img src="https://latex.codecogs.com/png.image?\inline&space;\dpi{120}\bg{white}a:&space;\text{Shear-rate&space;tensor&space;exponent}&space;" alt="iamge5" class="inline"/></p>
 <p><img src="https://latex.codecogs.com/png.image?\inline&space;\dpi{120}\bg{white}n:&space;&space;\text{Power-law&space;index}" alt="iamge6" class="inline"/></p>
-<p>Casson model is defined as</p>
-<p><img src="https://latex.codecogs.com/png.image?\inline&space;\dpi{120}\bg{white}\eta&space;=&space;\frac{1}{\dot{\gamma}}\left[&space;k_0(c)&space;&plus;&space;k_1(c)\sqrt{\dot{\gamma}}&space;\right]^2" alt="ca_model" class="inline"/></p>
-<p>Here, $k_0(c)$ and $k_1(c)$ are functions of the hematocrit $c$. For more information, please refer to Ref. [1].</p>
-<p>The input file <code>svFSI.inp</code> follows the master input file <a href="./svFSI_master.inp"><code>svFSI_master.inp</code></a> as a template. Some specific input options are discussed below:</p>
-<p>For Newtonian fluid:</p>
-<p>``` Viscosity: Constant { Vsalue: 0.04 } ```</p>
-<p>For Casson fluid</p>
-<p>``` Viscosity: Cassons { Asymptotic viscosity parameter: 0.3953 Yield stress parameter: 0.22803 Low shear-rate threshold: 0.5 } ```</p>
-<p>For Carreau-Yasuda fluid</p>
-<p>``` Viscosity: Carreau-Yasuda { Limiting high shear-rate viscosity: 0.022 Limiting low shear-rate viscosity: 0.22 Shear-rate tensor multiplier (lamda): 0.11 Shear-rate tensor exponent (a): 0.644 Power-law index (n): 0.392 } ```</p>
-<p>## Reference</p>
-<ol type="1">
-<li>Boyd, Joshua, James M. Buick, and Simon Green. Analysis of the Casson and Carreau-Yasuda Non-Newtonian Blood Models in Steady and Oscillatory Flows Using the Lattice Boltzmann Method. <em>Physics of Fluids</em> 19, no. 9 (September 2007): 093103. <a href="https://doi.org/10.1063/1.2772250">https://doi.org/10.1063/1.2772250</a>. </li>
-</ol>
+<p>The model parameters are specified in the <code>Viscosity</code> sub-section</p>
+<p>``` &lt;Viscosity model="Carreau-Yasuda" &gt; &lt;Limiting_high_shear_rate_viscosity&gt; 0.022 &lt;/Limiting_high_shear_rate_viscosity&gt; &lt;Limiting_low_shear_rate_viscosity&gt; 0.22 &lt;/Limiting_low_shear_rate_viscosity&gt; &lt;Shear_rate_tensor_multiplier&gt; 0.11 &lt;/Shear_rate_tensor_multiplier&gt; &lt;Shear_rate_tensor_exponent&gt; 0.644 &lt;/Shear_rate_tensor_exponent&gt; &lt;Power_law_index&gt; 0.392 &lt;/Power_law_index&gt; &lt;/Viscosity&gt; ```</p>
+<p>## Reference Boyd, Joshua, James M. Buick, and Simon Green. Analysis of the Casson and Carreau-Yasuda Non-Newtonian Blood Models in Steady and Oscillatory Flows Using the Lattice Boltzmann Method. <em>Physics of Fluids</em> 19, no. 9 (September 2007): 093103. <a href="https://doi.org/10.1063/1.2772250">https://doi.org/10.1063/1.2772250</a>. </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 <!-- start footer part -->

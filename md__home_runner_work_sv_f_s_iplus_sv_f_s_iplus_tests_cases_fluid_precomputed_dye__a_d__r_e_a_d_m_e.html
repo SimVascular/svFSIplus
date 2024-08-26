@@ -66,27 +66,21 @@ $(function() {
 <div class="title"><b>Problem Description</b> </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>Solve dye transportation with fluid flow in a cylindrical tube with zero neumann boundary condition at the outlet and steady flow at the inlet. The dye is passively transported by the flow through advection and diffusion.</p>
-<p>The input file <code>svFSI.inp</code> follows the master input file <a href="./svFSI_master.inp"><code>svFSI_master.inp</code></a> as a template. Some specific input options are discussed below:</p>
-<h1><a class="anchor" id="autotoc_md129"></a>
+<div class="textblock"><p>Simulate dye transport in a cylinder govered by a given velocity field. The dye is passively transported by the velocity field through advection and diffusion.</p>
+<h1><a class="anchor" id="autotoc_md115"></a>
 Scalar transport equation</h1>
-<p>Unlike the test case in <code>04-fluid/02-dye_AD</code>, the advection-diffusion equation that governs the dye transportation is added to the input file without a proceeding fluid equation. Here we assume that we already have a velocity field that has been precomputed by some prior physics simulation (denoted <code>precomputed_velocity.vtu</code>). The specified velocity field solution is then taken to advect a scalar field. This equation is built on top of the heat transfer equation, so some of the terminology in the input file follows those in the heat equation, e.g. "Conductivity", "Temperature".</p>
-<p>Some noticeable setting in the input file are:</p>
+<p>The advection-diffusion equation that governs dye transport uses a known velocity field read in from a VTK-format file named <b>precomputed_velocity.vtu</b> containing a <em>PointData DataArray</em> named <b>Velocity</b>.</p>
 <div class="fragment"><div class="line">&lt;Use_precomputed_solution&gt; true &lt;/Use_precomputed_solution&gt;</div>
 <div class="line">&lt;Precomputed_solution_file_path&gt; precomputed_velocity.vtu &lt;/Precomputed_solution_file_path&gt;</div>
 <div class="line">&lt;Precomputed_solution_field_name&gt; Velocity &lt;/Precomputed_solution_field_name&gt;</div>
-</div><!-- fragment --><p>This tell the solver that this is a one-way coupling study, and the dye is passively transported by the flow.</p>
-<div class="fragment"><div class="line">&lt;Output type=&quot;Alias&quot; &gt;</div>
-<div class="line">  &lt;Temperature&gt; Concentration &lt;/Temperature&gt;</div>
-<div class="line">&lt;/Output&gt;</div>
-</div><!-- fragment --><p>This renames "Temperature" to "Concentration" for ease of interpretation.</p>
-<div class="fragment"><div class="line">&lt;Add_BC name=&quot;lumen_inlet&quot; &gt;</div>
-<div class="line">   &lt;Type&gt; Dirichlet &lt;/Type&gt;</div>
-<div class="line">   &lt;Time_dependence&gt; Steady &lt;/Time_dependence&gt;</div>
-<div class="line">   &lt;Value&gt; 1.0 &lt;/Value&gt;</div>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md116"></a>
+Inflow boundary condition</h1>
+<p>The inflow boundary condition for a constant release of dye at the <b>lumen_inlet</b> inlet face. </p><div class="fragment"><div class="line">&lt;Add_BC name=&quot;lumen_inlet&quot; &gt;</div>
+<div class="line">  &lt;Type&gt; Dirichlet &lt;/Type&gt;</div>
+<div class="line">  &lt;Time_dependence&gt; Steady &lt;/Time_dependence&gt;</div>
+<div class="line">  &lt;Value&gt; 1.0 &lt;/Value&gt;</div>
 <div class="line">&lt;/Add_BC&gt;</div>
-</div><!-- fragment --><p>The dye is constantly released at the inlet. </p>
-</div></div><!-- contents -->
+</div><!-- fragment --> </div></div><!-- contents -->
 </div><!-- PageDoc -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

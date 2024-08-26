@@ -66,57 +66,73 @@ $(function() {
 <div class="title"><b>Problem Description</b> </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>This example simulates pulsatile flow in a pipe with a deformable wall using coupled momentum method (CMM) for continuous testing. Only a few time steps are tested and compared. Pusaltile inflow and RCR are used as the inflow and outflow boundary conditions (BCs), respectively.</p>
-<h1><a class="anchor" id="autotoc_md70"></a>
+<div class="textblock"><p>Simulate the fluid-structure interaction of a pipe with a deformable wall using the coupled momentum method (CMM). Only a few time steps are tested and compared. Pusaltile inflow and RCR are used as the inflow and outflow boundary conditions (BCs), respectively.</p>
+<h1><a class="anchor" id="autotoc_md78"></a>
 Solution workflow</h1>
-<p>This problem is solved in three major steps:</p>
+<p>This problem is solved in three major steps</p>
 <ol type="1">
 <li>Solve for fluid flow with a rigid wall and using the same inflow and outflow BCs.</li>
 <li>a) Inflate the wall under a diastolic pressure loading. or b) Prestress the wall under a distolic pressure loading.</li>
 <li>Start CMM simulation with the intial pressure and velocity fields from the rigid wall simulation and the intial displacement field given by 2a or the presstress field by 2b.</li>
 </ol>
-<h1><a class="anchor" id="autotoc_md71"></a>
-Rigid Wall Simulation (Step 1)</h1>
+<h1><a class="anchor" id="autotoc_md79"></a>
+Step 1: Rigid Wall Simulation</h1>
 <p>A python script (calcMeanPressTrac.py) is available in the rigid wall solution folder to obtain a mean pressure/traction on the wall used for <b>Setp 2</b>.</p>
-<h1><a class="anchor" id="autotoc_md72"></a>
-Inflation (Step 2)</h1>
-<p>Four settings in the input file need closer attention when performing inflation step for CMM:</p>
-<h2><a class="anchor" id="autotoc_md73"></a>
+<h1><a class="anchor" id="autotoc_md80"></a>
+Step2: Inflation</h1>
+<p>Four settings in the input file need closer attention when performing inflation step for CMM</p>
+<h2><a class="anchor" id="autotoc_md81"></a>
 (I) Load mesh as shell surface</h2>
-<p>The inflation step is performed on the wall set as a shell,</p>
-<p>&lt;Add_mesh name="wall"&gt; &lt;Set_mesh_as_shell&gt; true &lt;/Set_mesh_as_shell&gt; &lt;Mesh_file_path&gt; ../../../fluid/pipe_RCR_3d/mesh/mesh-surfaces/lumen_wall.vtp &lt;/Mesh_file_path&gt; &lt;/Add_mesh&gt;</p>
-<h2><a class="anchor" id="autotoc_md74"></a>
+<p>The inflation step is performed on the wall set as a shell</p>
+<div class="fragment"><div class="line">&lt;Add_mesh name=&quot;wall&quot;&gt; </div>
+<div class="line">  &lt;Set_mesh_as_shell&gt; true &lt;/Set_mesh_as_shell&gt;</div>
+<div class="line">  &lt;Mesh_file_path&gt; ../../../fluid/pipe_RCR_3d/mesh/mesh-surfaces/lumen_wall.vtp &lt;/Mesh_file_path&gt;</div>
+<div class="line">&lt;/Add_mesh&gt;</div>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md82"></a>
 (II) Set Initialize keyword</h2>
-<p>Within &lt;Add_equation type="CMM"&gt;, the keyword &lt;Initialize&gt; needs to be set to "inflate":</p>
-<p>&lt;Initialize&gt; inflate &lt;/Initialize&gt;</p>
-<p>Alternately, one could also prestress the vessel wall by using the prestress option:</p>
-<p>&lt;Prestress&gt; true &lt;/Prestress&gt; &lt;Initialize&gt; prestress &lt;/Initialize&gt;</p>
-<p>and output the stress field as well:</p>
-<p>&lt;Output type="Spatial"&gt; &lt;Displacement&gt; true &lt;/Displacement&gt; &lt;Stress&gt; true &lt;/Stress&gt; &lt;/Output&gt;</p>
-<h2><a class="anchor" id="autotoc_md75"></a>
+<p>The CMM equation can be initialized in two ways</p>
+<p>1) Inflate the pipe wall </p><div class="fragment"><div class="line">&lt;Initialize&gt; inflate &lt;/Initialize&gt;</div>
+</div><!-- fragment --><p>2) Prestress the pipe wall </p><div class="fragment"><div class="line">&lt;Prestress&gt; true &lt;/Prestress&gt;</div>
+<div class="line">&lt;Initialize&gt; prestress &lt;/Initialize&gt;</div>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md83"></a>
 (III) Diastolic loading</h2>
-<p>CMM is initialized via inflation or prestress approaches by applying a diastolic load on the wall. This is performed either using a constant pressure or traction, or from a spatially-varying pressure or traction computed from the rigid wall flow simulation. Examples are provided below for constant pressure,</p>
-<p>&lt;Add_BF mesh="wall"&gt; &lt;Type&gt; Neumann &lt;/Type&gt; </p>
-<p>8000.0 </p>
-<p>&lt;/Add_BF&gt;</p>
-<p>and, spatially-varying traction field as,</p>
-<p>&lt;Add_BF mesh="wall"&gt; &lt;Type&gt; Trac &lt;/Type&gt; &lt;Time_dependence&gt; Spatial &lt;/Time_dependence&gt; &lt;Temporal_and_spatial_values_file_path&gt; rigid_wall_mean_traction.vtp &lt;/Temporal_and_spatial_values_file_path&gt; &lt;/Add_BF&gt;</p>
-<p>Note that because the wall is modeled as a shell surface, the above setting applies pressure/traction as a <em>body force</em> on the shell surface using <code>Add BF</code> keyword and <b>not</b> as a <em>surface traction</em> using the <code>Add BC</code> keyword.</p>
-<h1><a class="anchor" id="autotoc_md76"></a>
-FSI using CMM (Step 3)</h1>
-<p>To run a CMM simulation, complete mesh files (instead of a wall surface mesh) are added into the solver input file. The parameters including &lt;Prestress&gt; and &lt;Initialize&gt; for <b>Step 2</b> need to be removed.</p>
-<h2><a class="anchor" id="autotoc_md77"></a>
+<p>CMM is initialized via inflation or prestress approaches by applying a diastolic load on the wall. This is performed either using a constant pressure or traction, or from a spatially-varying pressure or traction computed from the rigid wall flow simulation. Examples are provided below for constant pressure</p>
+<div class="fragment"><div class="line">&lt;Add_BF mesh=&quot;wall&quot;&gt;</div>
+<div class="line">  &lt;Type&gt; Neumann &lt;/Type&gt;</div>
+<div class="line">  &lt;Value&gt; 8000.0 &lt;/Value&gt;</div>
+<div class="line">&lt;/Add_BF&gt;</div>
+</div><!-- fragment --><p>and spatially-varying traction field </p><div class="fragment"><div class="line">&lt;Add_BF mesh=&quot;wall&quot;&gt;</div>
+<div class="line">  &lt;Type&gt; Trac &lt;/Type&gt;</div>
+<div class="line">  &lt;Time_dependence&gt; Spatial &lt;/Time_dependence&gt;</div>
+<div class="line">  &lt;Temporal_and_spatial_values_file_path&gt; rigid_wall_mean_traction.vtp &lt;/Temporal_and_spatial_values_file_path&gt;</div>
+<div class="line">&lt;/Add_BF&gt;</div>
+</div><!-- fragment --><p>Note that because the wall is modeled as a shell surface the above setting applies pressure/traction as a <em>body force</em> on the shell surface using <code>Add BF</code> keyword and not as a <em>surface traction</em> using the <code>Add BC</code> keyword.</p>
+<h1><a class="anchor" id="autotoc_md84"></a>
+Step 3: Perform the CMM simulation</h1>
+<p>To run a CMM simulation the complete mesh files (instead of a wall surface mesh) are added into the solver input file. The parameters including &lt;Prestress&gt; and &lt;Initialize&gt; for <b>Step 2</b> need to be removed.</p>
+<h2><a class="anchor" id="autotoc_md85"></a>
 (I) Initialize flow field</h2>
 <p>For faster convergence, we initialize the flow for the FSI simulation using data from <b>Step 1</b> within <code>Add mesh</code> keyword as,</p>
-<p>&lt;Add_mesh name="msh" &gt; ... &lt;Initial_velocities_file_path&gt; ../1-rigid-solution/result_800.vtu &lt;/Initial_velocities_file_path&gt; &lt;Initial_pressures_file_path&gt; ../1-rigid-solution/result_800.vtu &lt;/Initial_pressures_file_path&gt; ... &lt;/Add_mesh&gt;</p>
-<p>In this case, the solution from the rigid wall simulation at time step 800 is used to initialize the velocity and pressure fields.</p>
-<h2><a class="anchor" id="autotoc_md78"></a>
+<div class="fragment"><div class="line">&lt;Add_mesh name=&quot;msh&quot; &gt;</div>
+<div class="line">...</div>
+<div class="line">  &lt;Initial_velocities_file_path&gt; ../1-rigid-solution/result_800.vtu &lt;/Initial_velocities_file_path&gt;</div>
+<div class="line">  &lt;Initial_pressures_file_path&gt; ../1-rigid-solution/result_800.vtu &lt;/Initial_pressures_file_path&gt;</div>
+<div class="line">...</div>
+<div class="line">&lt;/Add_mesh&gt;</div>
+</div><!-- fragment --><p>In this case, the solution from the rigid wall simulation at time step 800 is used to initialize the velocity and pressure fields.</p>
+<h2><a class="anchor" id="autotoc_md86"></a>
 (II) CMM loading initial displacement/prestress fields</h2>
 <p>Results from <b>Step 2</b> will be used for the wall BC. If an inflation procedure is used in <b>Step 2</b>, the following BC setting is used:</p>
-<p>&lt;Add_BC name="lumen_wall" &gt; &lt;Type&gt; CMM &lt;/Type&gt; &lt;Initial_displacements_file_path&gt; ../2a-inflate/result_003.vtu &lt;/Initial_displacements_file_path&gt; &lt;/Add_BC&gt;</p>
-<p>If the prestress procedure is employed in <b>Step 2</b>, replace &lt;Initial_displacements_file_path&gt; with &lt;Prestress_file_path&gt;:</p>
-<p>&lt;Add_BC name="lumen_wall" &gt; &lt;Type&gt; CMM &lt;/Type&gt; &lt;Prestress_file_path&gt; ../2b-prestress/result_003.vtu &lt;/Prestress_file_path&gt; &lt;/Add_BC&gt; </p>
-</div></div><!-- contents -->
+<div class="fragment"><div class="line">&lt;Add_BC name=&quot;lumen_wall&quot; &gt; </div>
+<div class="line">  &lt;Type&gt; CMM &lt;/Type&gt; </div>
+<div class="line">  &lt;Initial_displacements_file_path&gt; ../2a-inflate/result_003.vtu &lt;/Initial_displacements_file_path&gt;</div>
+<div class="line">&lt;/Add_BC&gt;</div>
+</div><!-- fragment --><p>If the prestress procedure is employed in <b>Step 2</b>, replace <code>&lt;Initial_displacements_file_path&gt;</code> with <code>&lt;Prestress_file_path&gt;</code></p>
+<div class="fragment"><div class="line">&lt;Add_BC name=&quot;lumen_wall&quot; &gt; </div>
+<div class="line">  &lt;Type&gt; CMM &lt;/Type&gt; </div>
+<div class="line">  &lt;Prestress_file_path&gt; ../2b-prestress/result_003.vtu &lt;/Prestress_file_path&gt;</div>
+<div class="line">&lt;/Add_BC&gt; </div>
+</div><!-- fragment --> </div></div><!-- contents -->
 </div><!-- PageDoc -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

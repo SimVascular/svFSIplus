@@ -66,14 +66,54 @@ $(function() {
 <div class="title"><b>Problem Description</b> </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>This is an example of using the coupled momentum method (CMM) with variable wall properties and a user-defined Dirichlet inflow condition. For continuous testing, march through 3 time steps only. Pulsatile inflow and resistance are used as the inflow and outflow boundary conditions (BCs), respectively.</p>
-<h1><a class="anchor" id="autotoc_md68"></a>
-Solution workflow</h1>
-<p>The 3-step procedure is similar to the 3D pipe CMM example. To use variable wall properties, thickness and Young's modulus need to be prescribed for the deformable wall by providing a VTP file (e.g., svFSI_var_wall_props.vtp). In the solver input file, we define:</p>
-<p>&lt;Variable_wall_properties mesh_name="wall"&gt; &lt;Wall_properties_file_path&gt; ../svFSI_var_wall_props.vtp &lt;/Wall_properties_file_path&gt; &lt;/Variable_wall_properties&gt;</p>
-<p>The wall property file can be prepared by adding two point arrays, "Thickness" and "Elasticity modulus," to the walls_combined.vtp in the mesh-complete.</p>
-<p>Similarly, a user-defined inflow velocity profile could be achieved by providing a bct.vtp file that prescribes time-velocity data for each inlet node.</p>
-<p>&lt;Add_BC name="inlet_aorta" &gt; &lt;Type&gt; Dir &lt;/Type&gt; &lt;Time_dependence&gt; General &lt;/Time_dependence&gt; &lt;Bct_file_path&gt; ../bct.vtp &lt;/Bct_file_path&gt; &lt;/Add_BC&gt; </p>
+<div class="textblock"><p>Simulate the fluid-structure interaction in an anatomic model of the abdominal aorta and common iliac arteries using the coupled momentum method (CMM).</p>
+<h1><a class="anchor" id="autotoc_md72"></a>
+Material properties</h1>
+<p>The arterial wall material properties are defined using spatially varying values for elasticity modulus and wall thickness. These values are read in from the VTK-format <b>svFSI_var_wall_props.vtp</b> file containing the two *PointData DataArray*s named <b>Thickness</b> and <b>Elasticity modulus</b>.</p>
+<p>The <b>svFSI_var_wall_props.vtp</b> file is specified in using the <code>Wall_properties_file_path</code> keyword </p><div class="fragment"><div class="line">&lt;Variable_wall_properties mesh_name=&quot;wall&quot;&gt;</div>
+<div class="line">    &lt;Wall_properties_file_path&gt; ../svFSI_var_wall_props.vtp &lt;/Wall_properties_file_path&gt;</div>
+<div class="line">&lt;/Variable_wall_properties&gt;</div>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md73"></a>
+Boundary conditions</h1>
+<h2><a class="anchor" id="autotoc_md74"></a>
+Inflow boundary condition</h2>
+<p>The aorta inlet boundary condition uses user-defined pulsatile flow data read in from a VTK-format <b>bct.vtp</b> file containing a time-series of nodal velocities *PointData DataArray*s named <b>velocity_</b> suffixed by a time value</p>
+<p><b>bct.vtp</b> </p><div class="fragment"><div class="line">&lt;VTKFile type=&quot;PolyData&quot; version=&quot;0.1&quot; byte_order=&quot;LittleEndian&quot; header_type=&quot;UInt32&quot; compressor=&quot;vtkZLibDataCompressor&quot;&gt;</div>
+<div class="line">  &lt;PolyData&gt;</div>
+<div class="line">    &lt;Piece NumberOfPoints=&quot;108&quot;                  NumberOfVerts=&quot;0&quot;                    NumberOfLines=&quot;0&quot;                    NumberOfStrips=&quot;0&quot;                    NumberOfPolys=&quot;181&quot;                 &gt;</div>
+<div class="line">      &lt;PointData Scalars=&quot;GlobalNodeID&quot;&gt;</div>
+<div class="line">        &lt;DataArray type=&quot;Int32&quot; Name=&quot;GlobalNodeID&quot; format=&quot;appended&quot; RangeMin=&quot;95&quot;                   RangeMax=&quot;6293&quot;                 offset=&quot;0&quot;                   /&gt;</div>
+<div class="line">        &lt;DataArray type=&quot;Float64&quot; Name=&quot;velocity_0.0000&quot; NumberOfComponents=&quot;3&quot; format=&quot;appended&quot; RangeMin=&quot;0&quot;                    RangeMax=&quot;2.1367791043&quot;         offset=&quot;228&quot;                 /&gt;</div>
+<div class="line">        &lt;DataArray type=&quot;Float64&quot; Name=&quot;velocity_0.0101&quot; NumberOfComponents=&quot;3&quot; format=&quot;appended&quot; RangeMin=&quot;0&quot;                    RangeMax=&quot;2.3399017892&quot;         offset=&quot;1392&quot;                /&gt;</div>
+<div class="line">        &lt;DataArray type=&quot;Float64&quot; Name=&quot;velocity_0.0202&quot; NumberOfComponents=&quot;3&quot; format=&quot;appended&quot; RangeMin=&quot;0&quot;                    RangeMax=&quot;2.5857762197&quot;         offset=&quot;2564&quot;                /&gt;</div>
+<div class="line">.</div>
+<div class="line">.</div>
+<div class="line">.</div>
+</div><!-- fragment --><p> The <b>bct.vtp</b> file is specified using the `<code>Bct_file_path</code> keyword </p><div class="fragment"><div class="line">&lt;Add_BC name=&quot;inlet_aorta&quot; &gt; </div>
+<div class="line">   &lt;Type&gt; Dir &lt;/Type&gt;</div>
+<div class="line">   &lt;Time_dependence&gt; General &lt;/Time_dependence&gt;</div>
+<div class="line">   &lt;Bct_file_path&gt; ../bct.vtp &lt;/Bct_file_path&gt;</div>
+<div class="line">&lt;/Add_BC&gt; </div>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md75"></a>
+Outflow boundary condition</h2>
+<p>Resistance outflow boundary conditions are used for the common iliac arteries. </p><div class="fragment"><div class="line"> &lt;Add_BC name=&quot;outlet_aorta&quot; &gt;</div>
+<div class="line">    &lt;Type&gt; Neu &lt;/Type&gt;</div>
+<div class="line">    &lt;Time_dependence&gt; Resistance &lt;/Time_dependence&gt;</div>
+<div class="line">    &lt;Value&gt; 12000 &lt;/Value&gt;</div>
+<div class="line"> &lt;/Add_BC&gt;</div>
+<div class="line"> </div>
+<div class="line"> </div>
+<div class="line">&lt;Add_BC name=&quot;outlet_iliac&quot; &gt;</div>
+<div class="line">    &lt;Type&gt; Neu &lt;/Type&gt;</div>
+<div class="line">    &lt;Time_dependence&gt; Resistance &lt;/Time_dependence&gt;</div>
+<div class="line">    &lt;Value&gt; 12000 &lt;/Value&gt;</div>
+<div class="line"> &lt;/Add_BC&gt;</div>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md76"></a>
+Simulation Workflow</h1>
+<p>The simulation workflow is similar to the workflow used in the <a href="https://github.com/SimVascular/svFSIplus/tree/main/tests/cases/cmm/pipe_3d">3D pipe CMM example</a></p>
+<p>1) Solve for fluid flow with a rigid wall and using the same inflow and outflow BCs</p>
+<p>2) a) Inflate the wall under a diastolic pressure loading or b) Prestress the wall under a distolic pressure loading</p>
+<p>3) Start CMM simulation with the intial pressure and velocity fields from the rigid wall simulation and the intial displacement field given by 2a or the presstress field by 2b </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 <!-- start footer part -->

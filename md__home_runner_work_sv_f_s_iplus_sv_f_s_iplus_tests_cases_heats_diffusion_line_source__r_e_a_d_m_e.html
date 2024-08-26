@@ -66,33 +66,18 @@ $(function() {
 <div class="title"><b>Problem Description</b> </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>Solve heat transfer problem inside a 2D plate. A steady, uniform temperature value is specified on the left boundary, and zero temperature is prescribed on the right boundary. An option to provide unsteady temperature profile on the left boundary is also available. Adiabatic boundary conditions (zero heat flux) are employed on top and bottom boundaries. The result shows a linear distribution of temperature.</p>
+<div class="textblock"><p>Simulate heat transfer in a 2D plate. A steady, uniform temperature value is specified on the left boundary and zero temperature is prescribed on the right boundary.</p>
 <p align="center"></p>
 <p><img src="./plot-temp-flux.png" alt="" width="1000" class="inline"/> </p>
-<p>The input file <code>svFSI.inp</code> follows the master input file <a href="./svFSI_master.inp"><code>svFSI_master.inp</code></a> as a template. Some specific input options are discussed below:</p>
-<h1><a class="anchor" id="autotoc_md143"></a>
-Steady Dirichlet BC</h1>
-<p>If a line source with constant temperature is specified on the left boundary, the following directives are used</p>
-<div class="fragment"><div class="line">Add BC: left {</div>
-<div class="line">   Type: Dir</div>
-<div class="line">   Time dependence: Steady</div>
-<div class="line">   Value: 10.0</div>
-<div class="line">   Zero out perimeter: f</div>
-<div class="line">}</div>
-</div><!-- fragment --><p>Here, <code>Zero out perimeter</code> is only effective when used alongside Dirichlet BC. When set to <code>true</code>, this setting will enforce the temperature on top-left and bottom-left corners to be zero.</p>
-<h1><a class="anchor" id="autotoc_md144"></a>
-Unsteady Dirichlet BC</h1>
-<p>In some scenarios, apply a large Dirichlet BC value at first time step with cause stability or convergence issues in the software. It is sometimes recommended to gradually ramp up the BC value to the desired quantity over a short period of time. To achieve this, the following directives are used in the input file:</p>
-<div class="fragment"><div class="line">Add BC: left {</div>
-<div class="line">   Type: Dir</div>
-<div class="line">   Time dependence: Unsteady</div>
-<div class="line">   Temporal values file path: bc_left.dat</div>
-<div class="line">   Ramp function: t</div>
-<div class="line">}</div>
-</div><!-- fragment --><p>Once the ramp function is activated, the software will look for a user-specified file through <code>Temporal values file path</code> setting. In this case, <code>bc_left.dat</code> has only three lines: </p><div class="fragment"><div class="line">&lt;Line 1&gt; 2    1      # Never change for Ramp function</div>
-<div class="line">&lt;Line 2&gt; 0.0  0.0    # time_point_1     data_value_1</div>
-<div class="line">&lt;Line 3&gt; 1.0  10.0   # time_point_2     data_value_2</div>
-</div><!-- fragment --><p>When ramp function is used, the software will linearly increase the boundary value from <code>data_value_1</code> to <code>data_value_2</code> between <code>time_point_1</code> and <code>time_point_2</code>. After <code>time_point_2</code>, the boundary value will remain constant at <code>data_value_2</code>. </p>
+<h1><a class="anchor" id="autotoc_md125"></a>
+Steady Dirichlet boundary condition</h1>
+<p>Specify a line source with constant temperature is specified on the left boundary.</p>
+<div class="fragment"><div class="line">&lt;Add_BC name=&quot;left&quot; &gt; </div>
+<div class="line">  &lt;Type&gt; Dir &lt;/Type&gt; </div>
+<div class="line">  &lt;Value&gt; 10.0 &lt;/Value&gt; </div>
+<div class="line">  &lt;Zero_out_perimeter&gt; false &lt;/Zero_out_perimeter&gt; </div>
+<div class="line">&lt;/Add_BC&gt;  </div>
+</div><!-- fragment --><p>The <code>Zero out perimeter</code> is set to <code>true</code> to enforce the temperature on top-left and bottom-left corners to be zero. </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 <!-- start footer part -->

@@ -67,11 +67,11 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><p>Solve the same problem as in <a href="../pipe_RCR_3D">fluid/pipe_RCR_3d</a>. Instead of using the RCR within the <code>svFSIplus</code> solver, this example demonstrates how to set up RCR boundary condition in a more generalized framework using sv0DSolver.</p>
-<h1><a class="anchor" id="autotoc_md115"></a>
+<h1><a class="anchor" id="autotoc_md101"></a>
 Introduction</h1>
 <p>Both sv0DSolver and genBC (see <a href="../pipe_RCR_genBC">pipe_RCR_genBC</a>) provide a framework to programmatically define custom inflow and outflow boundary conditions for a CFD simulation. The framework allows users to create an arbitrary lumped parameter network (LPN, or 0D model) layout suitable for their application. Some common examples include a lumped parameter heart model that models contraction of the heart chambers to use as an inlet boundary condition, sophisticated models of the downstream circulation for various areas of the body such as the legs and upper body, or a closed-loop formulation where all outflow of the SimVascular model returns back to the inflow after passing through the veins, heart, and pulmonary arteries.</p>
 <p><b>Essentially, sv0D and genBC are two different implementations of the same functionality, and sv0D is the preferred choice.</b> genBC is a legacy code developed for <a href="https://github.com/SimVascular/svSolver">svSolver</a> and requires direct input of a system of equations. sv0DSolver has pre-defined blocks with associated equations and is more user-friendly. Still, <code>svFSIplus</code> provides backward compatibility for genBC so that svSolver users can migrate to the new solver easily.</p>
-<h1><a class="anchor" id="autotoc_md116"></a>
+<h1><a class="anchor" id="autotoc_md102"></a>
 Configuration of genBC</h1>
 <p>There are excellent tutorials online that show the users how to set up genBC step-by-step. SimVascular website: <a href="https://simvascular.github.io/docsGenBC.html">https://simvascular.github.io/docsGenBC.html</a> Youtube tutorial: <a href="https://www.youtube.com/watch?v=znfV0XLV79s&ab_channel=SimVascular">https://www.youtube.com/watch?v=znfV0XLV79s&amp;ab_channel=SimVascular</a></p>
 <p><b>We strongly encourage users to go through these tutorials first to become familiar with the concept and the workflow.</b></p>
@@ -93,10 +93,10 @@ Configuration of genBC</h1>
 <div class="line">   &lt;Time_dependence&gt; Coupled &lt;/Time_dependence&gt; </div>
 <div class="line">&lt;/Add_BC&gt; </div>
 </div><!-- fragment --><p>In this example, we use the LPN for just the outlet RCR boundary condition and use a file to specify the inlet flow conditions.</p>
-<h2><a class="anchor" id="autotoc_md117"></a>
+<h2><a class="anchor" id="autotoc_md103"></a>
 Matching faces between 3D and 0D</h2>
 <p>In genBC, user has to provide face tags in the USER.f file and make sure that these tags match the ones in solver.inp file for svSolver. In essence, when using genBC, it is the user's responsibility to match both the bcs provided in the svPresolver and svSolver files, and also in the USER.f file.</p>
-<h2><a class="anchor" id="autotoc_md118"></a>
+<h2><a class="anchor" id="autotoc_md104"></a>
 Implementation of 0D model</h2>
 <p>The 0D model or LPN is defined in USER.f. Here are the boundary conditions implemented in genBC:</p>
 <div class="fragment"><div class="line"><span class="comment">!     BC</span></div>
@@ -113,12 +113,12 @@ Implementation of 0D model</h2>
 <div class="line">      xprint(3) = offset(1)</div>
 </div><!-- fragment --><p>Here, we specify the RCR boundary used at the outlet, with the corresponding formulation defined in <code>f(1)</code>.</p>
 <p>In genBC, <code>Q(:)</code> and <code>P(:)</code> are defined as flow rates of Neumann faces and pressure of Dirichlet faces, respectively. It is the user's responsibility to carefully match the component <code>Q(i)</code> to the corresponding face, which can be error-prone when the number of faces are large. On the other hand, in cplBC, <code>Q(i)</code> simply represents the flow rate on the ith face.</p>
-<h2><a class="anchor" id="autotoc_md119"></a>
+<h2><a class="anchor" id="autotoc_md105"></a>
 Outputs from 0D model</h2>
 <p>genBC writes out the results in <code>AllData</code> in the current folder, and it includes all the unknowns and the user-specified outputs. In this case, the order will be</p>
 <div class="fragment"><div class="line">outlet_pressure  time  outlet_flux  offset(1)</div>
 </div><!-- fragment --><p>Here, the last three are user-defined outputs.</p>
-<h2><a class="anchor" id="autotoc_md120"></a>
+<h2><a class="anchor" id="autotoc_md106"></a>
 Initial conditions</h2>
 <p>In genBC, the initial conditions are specified in USER.f through variable <code>tZeroX</code>. Hence, user needs to recompile genBC every time it changes. </p>
 </div></div><!-- contents -->

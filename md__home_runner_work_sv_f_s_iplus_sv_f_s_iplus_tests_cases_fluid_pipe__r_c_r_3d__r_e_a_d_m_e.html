@@ -66,33 +66,31 @@ $(function() {
 <div class="title"><b>Problem Description</b> </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>Solve fluid flow in a cylindrical tube with resistance or RCR boundary conditions at the outlet and unsteady flow at inlet.</p>
-<p>The input file <code>svFSI.inp</code> follows the master input file <a href="./svFSI_master.inp"><code>svFSI_master.inp</code></a> as a template. Some specific input options are discussed below:</p>
-<h1><a class="anchor" id="autotoc_md85"></a>
-Resistance and RCR values</h1>
-<p>If the problem is solved using resistance BC at the outlet, the following keywords are expected in <code>Add BC</code>:</p>
-<p>`Type: Neu Time dependence: Resistance Value: &lt;&lt; resistance_value &gt;&gt;`</p>
-<p>Note that when providing resistance_value, &lt;&lt; &gt;&gt; are not required.</p>
-<p>If the problem is solved using an RCR BC at the outlet, the following keywords are expected in <code>Add BC</code>:</p>
-<p>`Type: Neu Time dependence: RCR # or Windkessel RCR values: &lt;&lt; (proximal_resistance, capacitance, distal_resistance) &gt;&gt; Distal pressure: &lt;&lt; distal_pressure_value &gt;&gt;`</p>
-<p>For prescribing the RCR BC, the order of the values is fixed i.e., proximal resistance followed by capacitance and the distal resistance. These values can be separated by comma or space, and should be enclosed within parentheses (), double quotes "", or &lt;&gt;.</p>
-<h1><a class="anchor" id="autotoc_md86"></a>
-Options for providing unsteady BCs</h1>
-<p>This example provides two ways of specifying unsteady boundary conditions:</p>
-<p>(a) Providing time-dependent data as input using the keyword,</p>
-<p><code>Temporal values file path: lumen_inlet.flow</code></p>
-<p>(b) Providing interpolated Fourier coefficients as input using the keyword,</p>
-<p><code>Fourier coefficients file path: lumen_inlet.fcs</code></p>
-<h2><a class="anchor" id="autotoc_md87"></a>
-File format for time-dependent data</h2>
-<p>The format for providing time-dependent data in an ASCII formatted file is:</p>
-<p>`&lt;Line 1&gt; number_of_time_points number_of_Fourier_modes &lt;Line 2&gt; time_point_1 data_value_1 &lt;Line 3&gt; time_point_2 data_value_2 &lt;Line n&gt; time_point_n data_value_n`</p>
-<h2><a class="anchor" id="autotoc_md88"></a>
-File format for Fourier coefficients</h2>
-<p>The format for providing Fourier coefficients in an ASCII formatted file is:</p>
-<p>`&lt;Line 1&gt; first_time_point &lt;Line 2&gt; last_time_point &lt;Line 3&gt; first_data_value &lt;Line 4&gt; first_Fourier_mode &lt;Line 5&gt; number_of_Fourier_modes &lt;Line 6&gt; real_Fourier_mode_1 imag_Fourier_mode_1 &lt;Line 7&gt; real_Fourier_mode_2 imag_Fourier_mode_2 &lt;Line N+5&gt; real_Fourier_mode_N imag_Fourier_mode_N`</p>
-<p>In the above format, the first_Fourier_mode on Line 4 is to be computed as,</p>
-<div class="fragment"><div class="line">first_Fourier_mode = (last_data_value - first_data_value) / (last_time_point - first_time_point)</div>
+<div class="textblock"><p>Simulate unsteady fluid flow in a pipe.</p>
+<h1><a class="anchor" id="autotoc_md93"></a>
+Inlet flow boundary condition</h1>
+<p>Time-dependent volumetric flow data is read in from the <b>lumen_inlet.flow</b> text file for the <b>lumen_inlet</b> face. The flow is converted into a <b>Parabolic</b> spatial profile.</p>
+<div class="fragment"><div class="line">&lt;Add_BC name=&quot;lumen_inlet&quot; &gt; </div>
+<div class="line">  &lt;Type&gt; Dir &lt;/Type&gt; </div>
+<div class="line">  &lt;Time_dependence&gt; Unsteady &lt;/Time_dependence&gt; </div>
+<div class="line">  &lt;Temporal_values_file_path&gt; lumen_inlet.flow&lt;/Temporal_values_file_path&gt; </div>
+<div class="line">  &lt;Profile&gt; Parabolic &lt;/Profile&gt; </div>
+<div class="line">  &lt;Impose_flux&gt; true &lt;/Impose_flux&gt; </div>
+<div class="line">&lt;/Add_BC&gt;</div>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md94"></a>
+Outlet RCR boundary condition</h1>
+<p>An RCR boundary condition is defined for the <b>lumen_outlet</b> outlet face.</p>
+<div class="fragment"><div class="line">&lt;Add_BC name=&quot;lumen_outlet&quot; &gt; </div>
+<div class="line">  &lt;Type&gt; Neu &lt;/Type&gt; </div>
+<div class="line">  &lt;Time_dependence&gt; RCR &lt;/Time_dependence&gt; </div>
+<div class="line">  &lt;RCR_values&gt; </div>
+<div class="line">    &lt;Capacitance&gt; 1.5e-5 &lt;/Capacitance&gt; </div>
+<div class="line">    &lt;Distal_resistance&gt; 1212 &lt;/Distal_resistance&gt; </div>
+<div class="line">    &lt;Proximal_resistance&gt; 121 &lt;/Proximal_resistance&gt; </div>
+<div class="line">     &lt;Distal_pressure&gt; 0 &lt;/Distal_pressure&gt; </div>
+<div class="line">    &lt;Initial_pressure&gt; 0 &lt;/Initial_pressure&gt; </div>
+<div class="line">  &lt;/RCR_values&gt; </div>
+<div class="line">&lt;/Add_BC&gt;</div>
 </div><!-- fragment --> </div></div><!-- contents -->
 </div><!-- PageDoc -->
 <!-- start footer part -->

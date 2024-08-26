@@ -66,33 +66,36 @@ $(function() {
 <div class="title"><b>Problem Description</b> </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>Solve electrophysiology inside a 2D plane. The Aliev-Panfilov model is used to describe the cell activation. For more information regarding the model please refer to the following publication:</p>
-<blockquote class="doxtable">
-<p>S. Göktepe and E. Kuhl. Computational modeling of cardiac electrophysiology: A novel finite element approach. International Journal for Numerical Methods in Engineering, 79(2):156– 178, jul 2009. </p>
-</blockquote>
-<p>The input file <code>svFSI.inp</code> follows the master input file <a href="./svFSI_master.inp"><code>svFSI_master.inp</code></a> as a template. Some specific input options are discussed below:</p>
-<h1><a class="anchor" id="autotoc_md66"></a>
+<div class="textblock"><p>Simulate the propagation of an electrical signal inside a 2D plane using the ten-Tusscher-Panfilov cell activation model.</p>
+<h1><a class="anchor" id="autotoc_md69"></a>
 Pacemaker and Non-Pacemaker Cells</h1>
-<p>The Aliev-Panfilov model is developed to model the non-pacemaker myocytes, which need to receive stimulus from neighboring cells to start the depolarization. In this example, instead of using a different electrophysiological model for the pacemaker cells, we add external stimulus to the Aliev-Panfilov model in a small group of cells so that they can behave like pacemaker cells and initiate the wave propagation. This is achieved through <code>Domain</code> object.</p>
-<div class="fragment"><div class="line">Domain file path: mesh/h0.25/domain_info.dat</div>
-</div><!-- fragment --><p>Here, a list of integers is provided for each element to serve as its domain ID. Elements with ID 1 are non-pacemaker cells and those with ID 2 will act as pacemaker cells.</p>
-<div class="fragment"><div class="line">Domain: 1 {</div>
-<div class="line">   Electrophysiology model: AP</div>
-<div class="line">   Conductivity (iso): 1.0</div>
-<div class="line">   ODE solver: Euler</div>
-<div class="line">}</div>
-<div class="line"> </div>
-<div class="line">Domain: 2 {</div>
-<div class="line">   Electrophysiology model: AP</div>
-<div class="line">   Conductivity (iso): 1.0</div>
-<div class="line">   Stimulus: Istim {</div>
-<div class="line">      Amplitude: 10.0</div>
-<div class="line">      Start time: 0.0</div>
-<div class="line">      Duration: 10.0</div>
-<div class="line">   }</div>
-<div class="line">   ODE solver: Euler</div>
-<div class="line">}</div>
-</div><!-- fragment --><p>To define an external stimulus, users need to provide amplitude, start time and duration. The signal is essentially a square wave. </p>
+<p>The Aliev-Panfilov cell activation model is used to represent non-pacemaker myocytes, cells which need to receive stimulus from neighboring cells in order to start the depolarization (action potential begins with the voltage becoming more positive).</p>
+<p>The pacemaker cells initiating a cardiac action potential are simulated by applying an external stimulus to a region representing a group of cells using an Aliev-Panfilov cell activation model.</p>
+<p>This pacemaker and non-pacemaker myocytes are defined for the simulation using two svFSIplus <code>domain</code>s. The <code>domain</code>s comprise separate sets of elements in the finite element mesh identified using integer values (1 or 2) read in from the <code>domain_info.dat</code> file using the solver input XML file <code>Domain_file_path</code> parameter</p>
+<div class="fragment"><div class="line">&lt;Domain_file_path&gt; mesh/domain_info.dat &lt;/Domain_file_path&gt; </div>
+</div><!-- fragment --><p>The integer values are used to identify <code>domain</code>s using</p><ul>
+<li>1 - non-pacemaker cells</li>
+<li>2 - pacemaker cells.</li>
+</ul>
+<p>A domain-specific electrophysiology model is then defined for the non-pacemaker cells </p><div class="fragment"><div class="line">&lt;Domain id=&quot;1&quot; &gt;</div>
+<div class="line">  &lt;Electrophysiology_model&gt; AP &lt;/Electrophysiology_model&gt;</div>
+<div class="line">  &lt;Isotropic_conductivity&gt; 1.0 &lt;/Isotropic_conductivity&gt;</div>
+<div class="line">  &lt;ODE_solver&gt; Euler &lt;/ODE_solver&gt;</div>
+<div class="line"> &lt;/Domain&gt;</div>
+</div><!-- fragment --><p> and the pacemaker cells </p><div class="fragment"><div class="line">&lt;Domain id=&quot;2&quot; &gt;</div>
+<div class="line">  &lt;Electrophysiology_model&gt; AP &lt;/Electrophysiology_model&gt;</div>
+<div class="line">  &lt;Isotropic_conductivity&gt; 1.0 &lt;/Isotropic_conductivity&gt;</div>
+<div class="line">  &lt;ODE_solver&gt; Euler &lt;/ODE_solver&gt;</div>
+<div class="line">  &lt;Stimulus type=&quot;Istim&quot; &gt;</div>
+<div class="line">    &lt;Amplitude&gt; 10.0 &lt;/Amplitude&gt;</div>
+<div class="line">    &lt;Start_time&gt; 0.0 &lt;/Start_time&gt;</div>
+<div class="line">    &lt;Duration&gt; 10.0 &lt;/Duration&gt;</div>
+<div class="line">  &lt;/Stimulus&gt;</div>
+<div class="line">&lt;/Domain&gt;</div>
+</div><!-- fragment --><p>The <code>Stimulus</code> parameter used in the pacemaker cells <code>domain 2</code> defines an external stimulus as a square wave.</p>
+<h1><a class="anchor" id="autotoc_md70"></a>
+References</h1>
+<p>S. Göktepe and E. Kuhl. Computational modeling of cardiac electrophysiology: A novel finite element approach. International Journal for Numerical Methods in Engineering, 79(2):156–178, Jul 2009. </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 <!-- start footer part -->
