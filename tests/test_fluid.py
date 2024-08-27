@@ -20,12 +20,12 @@ def test_pipe_RCR_3d_petsc(n_proc):
     run_with_reference(base_folder, test_folder, fields, n_proc, t_max)
 
 def test_pipe_RCR_3d_trilinos_ilut(n_proc):
-    test_folder = "pipe_RCR_3d_ilut_trilinos"
+    test_folder = "pipe_RCR_3d_trilinos_ilut"
     t_max = 2
     run_with_reference(base_folder, test_folder, fields, n_proc, t_max)
 
 def test_pipe_RCR_3d_trilinos_bj(n_proc):
-    test_folder = "pipe_RCR_3d_bj_trilinos"
+    test_folder = "pipe_RCR_3d_trilinos_bj"
     t_max = 2
     run_with_reference(base_folder, test_folder, fields, n_proc, t_max)
 def test_pipe_RCR_genBC(n_proc):
