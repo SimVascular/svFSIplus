@@ -672,7 +672,7 @@ void read_vtu_pdata(const std::string& fName, const std::string& kwrd, const int
     throw std::runtime_error("The VTK VTU pressure data file '" + fName + "' can't be read.");
   }
 
-  // Read the vtu file.
+  // Read the vtk file.
   //
   auto vtk_data = VtkData::create_reader(fName);
   int num_elems = vtk_data->num_elems();
