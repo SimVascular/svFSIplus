@@ -48,8 +48,8 @@ protected:
     double deformation_perturbation_small = 0.005; // Small perturbation factor
     double deformation_perturbation_medium = 0.05; // Medium perturbation factor
     double deformation_perturbation_large = 0.5; // Large perturbation factor
-    int n_F = 10; // Number of deformation gradients F to test for each small, medium, and large perturbation
-    int n_iter = 50;       // Number of random perturbations dF to test for material elasticity consistency
+    int n_F = 20; // Number of deformation gradients F to test for each small, medium, and large perturbation
+    int n_iter = 20;       // Number of random perturbations dF to test for material elasticity consistency
     double rel_tol = 1e-3; // relative tolerance for comparing values
     double abs_tol = 1e-11; // absolute tolerance for comparing values
     double delta = 1e-7; // perturbation scaling factor
