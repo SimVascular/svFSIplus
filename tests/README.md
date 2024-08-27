@@ -1,57 +1,37 @@
-@page testing Testing Guide
+# Testing Guide
 
-[TOC]
+[Integration testing](https://en.wikipedia.org/wiki/Integration_testing) is an essential part of software development. It is performed when integrating code changes into the main development branch to verify that the code works as expected. The following sections describe how to run and add integration tests used to the svFSIplus program.
 
-[Integration testing](https://en.wikipedia.org/wiki/Integration_testing) is an essential part of software development. It is performed when integrating code changes into the main development branch to verify that the code works as expected. Below is a quick guide on how to run and add integration tests for `svFSI`.
+Running a test case requires 
+- Build svFSIplus
+- Install Git LFS used to download test data
+- Build svZeroDSolver (only required from certain tests)
 
+# Build svFSIplus
+svFSIplus can be built follow these [instructions](../README.md).
 
-## Prerequisites
-There are two things you need to do before you can run a test case: Build `svFSI` and install `Git LFS` to download the test cases. To run certain test cases, you also need `svZeroDSolver` (see below).
+To automatically run test cases using `pytest` you must build svFSIplus in a folder named `build` located at the svFSIplus repository  root directory (i.e. the svFSIplus directory created when doing a git clone of the svFSIplus repository).
 
-### Build svFSI
-Follow the build instructions outlined [here](https://simvascular.github.io/svFSIplus/index.html#autotoc_md52). Importantly, to automatically run test cases with `pytest` (see below), you need to build `svFSI` in the folder
+# Install Git LFS
+The svFSIplus tests require finite element mesh data stored in VTK-format VTP and VTU files. These large files are managed using the [Git Large File Storage (LFS)](https://git-lfs.com/) extension. *Git LFS* stores files as text pointers inside git until the file contents are explicitly pulled from a remote server.  
+
+The file extensions currently tracked with *Git LFS* are stored [in this file](../.gitattributes).
+
+*Git LFS* is install following [this guide](https://docs.github.com/en/repositories/working-with-files/managing-large-files/installing-git-large-file-storage).
+
+To set up *Git LFS* for the svFSIplus repository run the following commands to activate *Git lfs*
 ```
-./build
-``` 
-in the repository root.
-
-
-### Install Git LFS
-You need to install `Git LFS` ([*Large File Storage*](https://git-lfs.com/)) to run any test, which we use to track large files. Tracking large files with `Git` can significantly add to the repository size. These large files include meshes and boundary conditions for all test cases. They are stored on `GitHub`, but the files themselves just contain a hash or Object ID that is tracked with `Git`. All file extensions currently tracked with `Git LFS` are listed under [in this file](../.gitattributes).
-
-When using `Git LFS` for the first time, you need to follow these simple steps:
-1. Install on your platform by following [this guide](https://docs.github.com/en/repositories/working-with-files/managing-large-files/installing-git-large-file-storage).
-2. Initialize in your `svFSIplus` repository with
-    ```
-    git lfs install
-    ```
-3. Download all large files with
-    ```
-    git lfs pull
-    ```
-After performing these steps once, you never need to worry about Git LFS again. All large files are handled automatically during all Git operations, like `push`, `pull`, or `commit`.
-
-
-### Build svZeroDSolver
-Some test cases require svZeroDSolver built in the svFSIplus directory.
-Importantly, to automatically run test cases with `pytest` (see below), you need to build `svZeroDSolver` in the folder
+git lfs install
 ```
-./svZeroDSolver/build
-``` 
-in the repository root.
-
-To do so, you can run the following in the svFSIplus repository root:
+    
+and download file data
 ```
-git clone https://github.com/SimVascular/svZeroDSolver.git
-cd svZeroDSolver
-mkdir build
-cd build
-cmake ..
-make -j2
-``` 
+git lfs pull
+```
+    
+These steps need to be performed only once. All large files are handled automatically during all Git operations, like `push`, `pull`, or `commit`.
 
-
-## Running tests with pytest
+# Running tests using pytest
 You can run an individual test by navigating to the `./tests/cases/<physics>/<test>` folder you want to run and execute `svFSIplus` with the `svFSI.xml` input file as an argument. A more elegant way, e.g., to run a whole group of tests, is using [`pytest`](https://docs.pytest.org/). By default, it will run all tests defined in the `test_*.py` files in the [./tests](https://github.com/SimVascular/svFSIplus/tree/main/tests) folder. Tests and input files in [./tests/cases](https://github.com/SimVascular/svFSIplus/tree/main/tests/cases) are grouped by physics type, e.g., [struct](https://github.com/SimVascular/svFSIplus/tree/main/tests/cases/struct), [fluid](https://github.com/SimVascular/svFSIplus/tree/main/tests/cases/fluid), or [fsi](https://github.com/SimVascular/svFSIplus/tree/main/tests/cases/fsi) (using the naming convention from `EquationType`). Here are a couple of useful `Pytest` commands:
 
 - Run only tests matching a pattern (can be physics or test case name):
@@ -71,10 +51,10 @@ You can run an individual test by navigating to the `./tests/cases/<physics>/<te
 For more options, simply call `pytest -h`.
 
 ## Code coverage
-We expect that new code is fully covered with at least one integration test. We also strive to increase our coverage of existing code. You can have a look at our current code coverage [with Codecov](https://codecov.io/github/SimVascular/svFSIplus). It analyzes every pull request and checks the change of coverage (ideally increasing) and if any non-covered lines have been modified. We avoid modifying untested lines of codeas there is no guarante that the code will still do the same thing as before.
+We expect that new code is fully covered with at least one integration test. We also strive to increase our coverage of existing code. You can have a look at our current code coverage [with Codecov](https://codecov.io/github/SimVascular/svFSIplus). It analyzes every pull request and checks the change of coverage (ideally increasing) and if any non-covered lines have been modified. We avoid modifying untested lines of codeas there is no guarantee that the code will still do the same thing as before.
 
 ## Create a new test
-Here are some steps you can follow to create a new test for the code you implemented. This will satisfy the coverage requirement (see above) and help other people who want to run your code. A test case is a great way to show what your code can do! Ideally, you do this early in your development. Then you can keep running your test case as you are refractoring and optimizing your code.
+Here are some steps you can follow to create a new test for the code you implemented. This will satisfy the coverage requirement (see above) and help other people who want to run your code. A test case is a great way to show what your code can do! Ideally, you do this early in your development. Then you can keep running your test case as you are refactoring and optimizing your code.
 
 1. Create an **example** (mesh and input file) that showcases what your code can do. If it doesn't cover everything, consider adding other tests.
 2. **Verify** the results: Since an analytical solution would be ideal but is rarely available, find other ways to ensure that your code is doing the right thing (reference solutions from other codes, manufactured solutions, convergence analysis, ...).
