@@ -266,11 +266,11 @@ protected:
         params.a_f = 18472.0; // Pa
         params.a_s = 2481.0; // Pa
         params.a_fs = 216.0; // Pa
-        params.b = 8.023; // Pa
-        params.b_f = 16.026; // Pa
-        params.b_s = 11.12; // Pa
-        params.b_fs = 11.436; // Pa
-        params.k = 100000.0; // Pa 
+        params.b = 8.023; // no units
+        params.b_f = 16.026; // no units
+        params.b_s = 11.12; // no units
+        params.b_fs = 11.436; // no units
+        params.k = 100.0; // no units
 
         // Set random values for f between 0 and 1 and normalize
         params.f[0] = getRandomDouble(0.0, 1.0);
@@ -369,11 +369,11 @@ protected:
         params.a_f = 18472.0; // Pa
         params.a_s = 2481.0; // Pa
         params.a_fs = 216.0; // Pa
-        params.b = 8.023; // Pa
-        params.b_f = 16.026; // Pa
-        params.b_s = 11.12; // Pa
-        params.b_fs = 11.436; // Pa
-        params.k = 100000.0; // Pa 
+        params.b = 8.023; // no units
+        params.b_f = 16.026; // no units
+        params.b_s = 11.12; // no units
+        params.b_fs = 11.436; // no units
+        params.k = 100.0; // no units
 
         // Set random values for f between 0 and 1 and normalize
         params.f[0] = getRandomDouble(0.0, 1.0);
