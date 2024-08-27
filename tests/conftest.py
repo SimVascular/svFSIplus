@@ -119,7 +119,7 @@ def run_with_reference(
     n_proc=1,
     t_max=1,
     name_ref=None,
-    name_inp="svFSI.xml",
+    name_inp="svFSIplus.xml",
 ):
     """
     Run a test case and compare it to a stored reference solution
