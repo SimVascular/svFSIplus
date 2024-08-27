@@ -1255,7 +1255,7 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
       // Now that both isochoric and volumetric components were added, anisotropic components need to be added
 
       // Fiber-sheet interaction terms
-      g1   = stM.afs * exp(stM.bfs*Efs*Efs);
+      g1   = 2.0 * stM.afs * exp(stM.bfs*Efs*Efs);
       double Hfs[N][N];
       mat_fun_carray::mat_symm_prod<N>(fl.rcol(0), fl.rcol(1), Hfs);
       for (int i = 0; i < N; i++) {
