@@ -1220,7 +1220,7 @@ void dist_mat_consts(const ComMod& com_mod, const CmMod& cm_mod, const cmType& c
    cm.bcast(cm_mod, lStM.Tf.gt.r, "lStM.Tf.gt.r");
    cm.bcast(cm_mod, lStM.Tf.gt.i, "lStM.Tf.gt.i");
   }
-
+  cm.bcast(cm_mod, &lStM.Tf.eta_s);
 }
 
 

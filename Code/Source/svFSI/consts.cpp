@@ -88,6 +88,9 @@ const std::map<std::string,ConstitutiveModelType> constitutive_model_name_to_typ
   {"HO", ConstitutiveModelType::stIso_HO}, 
   {"Holzapfel", ConstitutiveModelType::stIso_HO},
 
+  {"HO_ma", ConstitutiveModelType::stIso_HO_ma}, 
+  {"ModifiedAnisotropy", ConstitutiveModelType::stIso_HO_ma},
+
   {"quad", ConstitutiveModelType::stVol_Quad},
   {"Quad", ConstitutiveModelType::stVol_Quad},
   {"quadratic", ConstitutiveModelType::stVol_Quad},

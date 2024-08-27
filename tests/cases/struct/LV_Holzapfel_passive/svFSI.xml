@@ -52,7 +52,7 @@
 
    <Coupled> true </Coupled>
    <Min_iterations> 3 </Min_iterations>  
-   <Max_iterations> 4 </Max_iterations> 
+   <Max_iterations> 20 </Max_iterations> 
    <Tolerance> 1e-10 </Tolerance> 
 
    <Density> 1.0 </Density>                           <!-- g/cm^3 -->
@@ -75,6 +75,7 @@
    </Constitutive_model>
 
    <Dilational_penalty_model> ST91 </Dilational_penalty_model>
+   <Penalty_parameter>1.0e7</Penalty_parameter>
 
     <Output type="Spatial" >
      <Displacement> true </Displacement>
