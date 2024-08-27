@@ -759,12 +759,16 @@ void get_pk2cc_dev(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& 
       double Efs = Inv8;
 
       // Smoothed Heaviside function
-      double c4f  = 1.0 / (1.0 + exp(-stM.khs*Eff));
-      double c4s  = 1.0 / (1.0 + exp(-stM.khs*Ess));
+      double c4f  = 1.0 / (1.0 + exp(-stM.khs * Eff));
+      double c4s  = 1.0 / (1.0 + exp(-stM.khs * Ess));
       
       // Approx. derivative of smoothed heaviside function
-      double dc4f = 0.25*stM.khs*exp(-stM.khs*abs(Eff));
-      double dc4s = 0.25*stM.khs*exp(-stM.khs*abs(Ess));
+      //double dc4f = 0.25*stM.khs*exp(-stM.khs*abs(Eff));
+      //double dc4s = 0.25*stM.khs*exp(-stM.khs*abs(Ess));
+
+      // Exact first derivative of smoothed heaviside function
+      double dc4f = stM.khs * exp(-stM.khs * Eff) * pow(c4f, 2);
+      double dc4s = stM.khs * exp(-stM.khs * Ess) * pow(c4s, 2);
 
       // Isotropic + fiber-sheet interaction stress
       double g1 = stM.a * exp(stM.b*(Inv1-3.0));
@@ -843,12 +847,16 @@ void get_pk2cc_dev(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& 
       double Efs = Inv8;
 
       // Smoothed Heaviside function
-      double c4f  = 1.0 / (1.0 + exp(-stM.khs*Eff));
-      double c4s  = 1.0 / (1.0 + exp(-stM.khs*Ess));
+      double c4f  = 1.0 / (1.0 + exp(-stM.khs * Eff));
+      double c4s  = 1.0 / (1.0 + exp(-stM.khs * Ess));
       
       // Approx. derivative of smoothed heaviside function
-      double dc4f = 0.25*stM.khs*exp(-stM.khs*abs(Eff));
-      double dc4s = 0.25*stM.khs*exp(-stM.khs*abs(Ess));
+      //double dc4f = 0.25*stM.khs*exp(-stM.khs*abs(Eff));
+      //double dc4s = 0.25*stM.khs*exp(-stM.khs*abs(Ess));
+
+      // Exact first derivative of smoothed heaviside function
+      double dc4f = stM.khs * exp(-stM.khs * Eff) * pow(c4f, 2);
+      double dc4s = stM.khs * exp(-stM.khs * Ess) * pow(c4s, 2);
 
       // Isochoric stress and stiffness
       double g1 = stM.a * exp(stM.b*(Inv1-3.0));
