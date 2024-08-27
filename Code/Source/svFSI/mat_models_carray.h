@@ -1294,7 +1294,7 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
       g1   = g1 + (0.5*dc4f/stM.bff)*(rexp - 1.0);
       g1   = (2.0*stM.aff*g1) + Tfa;
       double Hff[N][N];
-      mat_fun_carray::mat_symm_prod<N>(fl.rcol(0), fl.rcol(0), Hff);
+      mat_fun_carray::mat_dyad_prod<N>(fl.rcol(0), fl.rcol(0), Hff);
       for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
           S[i][j] += g1*Hff[i][j];
@@ -1324,7 +1324,7 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
       g2   = g2 + (0.5*dc4s/stM.bss)*(rexp - 1.0);
       g2   = 2.0*stM.ass*g2 + Tsa;
       double Hss[N][N];
-      mat_fun_carray::mat_symm_prod<N>(fl.rcol(1), fl.rcol(1), Hss);
+      mat_fun_carray::mat_dyad_prod<N>(fl.rcol(1), fl.rcol(1), Hss);
       for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
           S[i][j] += g2*Hss[i][j];
