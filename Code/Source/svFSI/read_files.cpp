@@ -2671,7 +2671,7 @@ void read_temporal_values(const std::string& file_name, bfType& lBf)
 //----------------
 // read_trac_bcff
 //----------------
-// Reads pressure/traction data from a vtp file and stores in moving BC data structure.
+// Reads pressure/traction data from a vtk vtp or vtu file and stores in moving BC data structure.
 //
 // Reproduces 'SUBROUTINE READTRACBCFF(lMB, lFa, fName)' defined in READFILES.f.
 //
@@ -2683,9 +2683,8 @@ void read_trac_bcff(ComMod& com_mod, MBType& lMB, faceType& lFa, const std::stri
     throw std::runtime_error("The VTK VTP traction data file '" + fName + "' can't be read.");
   }
 
-  // Read the vtp file.
+  // Read the vtk file.
   //
-  //VtkVtpData vtp_data(fName);
   auto vtk_data = VtkData::create_reader(fName);
   int num_points = vtk_data->num_points();
   if (num_points == 0) {
