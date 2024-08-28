@@ -45,16 +45,15 @@ class MaterialModelTest : public ::testing::Test {
 protected:
     // Variables common across tests
     double F[3][3] = {}; // Deformation gradient
-    double deformation_perturbation_small = 0.005; // Small perturbation factor
-    double deformation_perturbation_medium = 0.05; // Medium perturbation factor
-    double deformation_perturbation_large = 0.5; // Large perturbation factor
-    int n_F = 20; // Number of deformation gradients F to test for each small, medium, and large perturbation
-    int n_iter = 20;       // Number of random perturbations dF to test for material elasticity consistency
+    double deformation_perturbation_small = 0.003; // Small perturbation factor
+    double deformation_perturbation_medium = 0.03; // Medium perturbation factor
+    double deformation_perturbation_large = 0.3; // Large perturbation factor
+    int n_F = 50; // Number of deformation gradients F to test for each small, medium, and large perturbation
     double rel_tol = 1e-3; // relative tolerance for comparing values
     double abs_tol = 1e-11; // absolute tolerance for comparing values
-    double delta = 1e-7; // perturbation scaling factor
+    //double delta = 1e-7; // perturbation scaling factor
     double delta_max = 1e-4; // maximum perturbation scaling factor
-    double delta_min = 1e-6; // minimum perturbation scaling factor
+    double delta_min = 1e-7; // minimum perturbation scaling factor
     int order = 1; // Order of finite difference method
     bool verbose = false; // Show values of S, dE, SdE and dPsi
 
@@ -90,19 +89,19 @@ protected:
         double F[3][3]; // Declare the C array
 
         // Create random deformation gradients for small perturbations
-        for (int i = 0; i < n_iter; i++) {
+        for (int i = 0; i < n_F; i++) {
             create_random_perturbed_identity_F(F, deformation_perturbation_small);
             F_small_list.push_back(convertToStdArray(F));
         }
 
         // Create random deformation gradients for medium perturbations
-        for (int i = 0; i < n_iter; i++) {
+        for (int i = 0; i < n_F; i++) {
             create_random_perturbed_identity_F(F, deformation_perturbation_medium);
             F_medium_list.push_back(convertToStdArray(F));
         }
 
         // Create random deformation gradients for large perturbations
-        for (int i = 0; i < n_iter; i++) {
+        for (int i = 0; i < n_F; i++) {
             create_random_perturbed_identity_F(F, deformation_perturbation_large);
             F_large_list.push_back(convertToStdArray(F));
         }
@@ -721,7 +720,7 @@ TEST_F(STRUCT_NeoHookeanTest, TestMaterialElasticityConsistencyConvergenceOrderR
         convertToCArray(F_std, F);
 
         // Check order of convergence of consistency of material elasticity
-        TestNH->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+        TestNH->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
     }
 }
 
@@ -735,7 +734,7 @@ TEST_F(STRUCT_NeoHookeanTest, TestMaterialElasticityConsistencyConvergenceOrderR
         convertToCArray(F_std, F);
 
         // Check order of convergence of consistency of material elasticity
-        TestNH->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+        TestNH->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
     }
 }
 
@@ -749,7 +748,7 @@ TEST_F(STRUCT_NeoHookeanTest, TestMaterialElasticityConsistencyConvergenceOrderR
         convertToCArray(F_std, F);
 
         // Check order of convergence of consistency of material elasticity
-        TestNH->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+        TestNH->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
     }
 }
 
@@ -819,7 +818,7 @@ TEST_F(USTRUCT_NeoHookeanTest, TestMaterialElasticityConsistencyConvergenceOrder
         convertToCArray(F_std, F);
 
         // Check order of convergence of consistency of material elasticity
-        TestNH->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+        TestNH->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
     }
 }
 
@@ -833,7 +832,7 @@ TEST_F(USTRUCT_NeoHookeanTest, TestMaterialElasticityConsistencyConvergenceOrder
         convertToCArray(F_std, F);
 
         // Check order of convergence of consistency of material elasticity
-        TestNH->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+        TestNH->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
     }
 }
 
@@ -847,7 +846,7 @@ TEST_F(USTRUCT_NeoHookeanTest, TestMaterialElasticityConsistencyConvergenceOrder
         convertToCArray(F_std, F);
 
         // Check order of convergence of consistency of material elasticity
-        TestNH->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+        TestNH->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
     }
 }
 
@@ -923,7 +922,7 @@ TEST_F(STRUCT_MooneyRivlinTest, TestMaterialElasticityConsistencyConvergenceOrde
         convertToCArray(F_std, F);
 
         // Check order of convergence of consistency of material elasticity
-        TestMR->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+        TestMR->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
     }
 }
 
@@ -937,7 +936,7 @@ TEST_F(STRUCT_MooneyRivlinTest, TestMaterialElasticityConsistencyConvergenceOrde
         convertToCArray(F_std, F);
 
         // Check order of convergence of consistency of material elasticity
-        TestMR->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+        TestMR->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
     }
 }
 
@@ -951,7 +950,7 @@ TEST_F(STRUCT_MooneyRivlinTest, TestMaterialElasticityConsistencyConvergenceOrde
         convertToCArray(F_std, F);
 
         // Check order of convergence of consistency of material elasticity
-        TestMR->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+        TestMR->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
     }
 }
 
@@ -1022,7 +1021,7 @@ TEST_F(USTRUCT_MooneyRivlinTest, TestMaterialElasticityConsistencyConvergenceOrd
         convertToCArray(F_std, F);
 
         // Check order of convergence of consistency of material elasticity
-        TestMR->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+        TestMR->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
     }
 }
 
@@ -1036,7 +1035,7 @@ TEST_F(USTRUCT_MooneyRivlinTest, TestMaterialElasticityConsistencyConvergenceOrd
         convertToCArray(F_std, F);
 
         // Check order of convergence of consistency of material elasticity
-        TestMR->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+        TestMR->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
     }
 }
 
@@ -1050,7 +1049,7 @@ TEST_F(USTRUCT_MooneyRivlinTest, TestMaterialElasticityConsistencyConvergenceOrd
         convertToCArray(F_std, F);
 
         // Check order of convergence of consistency of material elasticity
-        TestMR->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+        TestMR->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
     }
 }
 
@@ -1165,7 +1164,7 @@ TEST_F(STRUCT_HolzapfelOgdenTest, TestMaterialElasticityConsistencyConvergenceOr
                        {0.0, 0.0, 1.3}};
 
     // Check order of convergence of consistency of material elasticity
-    TestHO->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+    TestHO->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
 }
 
 // Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for triaxial compression
@@ -1178,7 +1177,7 @@ TEST_F(STRUCT_HolzapfelOgdenTest, TestMaterialElasticityConsistencyConvergenceOr
                     {0.0, 0.0, 0.7}};
 
     // Check order of convergence of consistency of material elasticity
-    TestHO->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+    TestHO->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
 }
 
 // Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for biaxial stretch/compression
@@ -1191,7 +1190,7 @@ TEST_F(STRUCT_HolzapfelOgdenTest, TestMaterialElasticityConsistencyConvergenceOr
                     {0.0, 0.0, 1.0}};
 
     // Check order of convergence of consistency of material elasticity
-    TestHO->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+    TestHO->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
 }
 
 // Test order of convergence of consistency of material elasticity for random F (small)
@@ -1204,7 +1203,7 @@ TEST_F(STRUCT_HolzapfelOgdenTest, TestMaterialElasticityConsistencyConvergenceOr
         convertToCArray(F_std, F);
 
         // Check order of convergence of consistency of material elasticity
-        TestHO->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+        TestHO->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
     }
 }
 
@@ -1218,7 +1217,7 @@ TEST_F(STRUCT_HolzapfelOgdenTest, TestMaterialElasticityConsistencyConvergenceOr
         convertToCArray(F_std, F);
 
         // Check order of convergence of consistency of material elasticity
-        TestHO->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+        TestHO->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
     }
 }
 
@@ -1232,7 +1231,7 @@ TEST_F(STRUCT_HolzapfelOgdenTest, TestMaterialElasticityConsistencyConvergenceOr
         convertToCArray(F_std, F);
 
         // Check order of convergence of consistency of material elasticity
-        TestHO->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+        TestHO->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
     }
 }
 
@@ -1341,7 +1340,7 @@ TEST_F(USTRUCT_HolzapfelOgdenTest, TestMaterialElasticityConsistencyConvergenceO
                        {0.0, 0.0, 1.3}};
 
     // Check order of convergence of consistency of material elasticity
-    TestHO->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+    TestHO->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
 }
 
 // Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for triaxial compression
@@ -1354,7 +1353,7 @@ TEST_F(USTRUCT_HolzapfelOgdenTest, TestMaterialElasticityConsistencyConvergenceO
                     {0.0, 0.0, 0.7}};
 
     // Check order of convergence of consistency of material elasticity
-    TestHO->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+    TestHO->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
 }
 
 // Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for biaxial stretch/compression
@@ -1367,7 +1366,7 @@ TEST_F(USTRUCT_HolzapfelOgdenTest, TestMaterialElasticityConsistencyConvergenceO
                     {0.0, 0.0, 1.0}};
 
     // Check order of convergence of consistency of material elasticity
-    TestHO->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+    TestHO->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
 }
 
 // Test order of convergence of consistency of material elasticity for random F (small)
@@ -1380,7 +1379,7 @@ TEST_F(USTRUCT_HolzapfelOgdenTest, TestMaterialElasticityConsistencyConvergenceO
         convertToCArray(F_std, F);
 
         // Check order of convergence of consistency of material elasticity
-        TestHO->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+        TestHO->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
     }
 }
 
@@ -1394,7 +1393,7 @@ TEST_F(USTRUCT_HolzapfelOgdenTest, TestMaterialElasticityConsistencyConvergenceO
         convertToCArray(F_std, F);
 
         // Check order of convergence of consistency of material elasticity
-        TestHO->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+        TestHO->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
     }
 }
 
@@ -1408,7 +1407,7 @@ TEST_F(USTRUCT_HolzapfelOgdenTest, TestMaterialElasticityConsistencyConvergenceO
         convertToCArray(F_std, F);
 
         // Check order of convergence of consistency of material elasticity
-        TestHO->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+        TestHO->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
     }
 }
 
@@ -1523,7 +1522,7 @@ TEST_F(STRUCT_HolzapfelOgdenMATest, TestMaterialElasticityConsistencyConvergence
                        {0.0, 0.0, 1.3}};
 
     // Check order of convergence of consistency of material elasticity
-    TestHO_ma->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+    TestHO_ma->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
 }
 
 // Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for triaxial compression
@@ -1536,7 +1535,7 @@ TEST_F(STRUCT_HolzapfelOgdenMATest, TestMaterialElasticityConsistencyConvergence
                     {0.0, 0.0, 0.7}};
 
     // Check order of convergence of consistency of material elasticity
-    TestHO_ma->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+    TestHO_ma->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
 }
 
 // Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for biaxial stretch/compression
@@ -1549,7 +1548,7 @@ TEST_F(STRUCT_HolzapfelOgdenMATest, TestMaterialElasticityConsistencyConvergence
                     {0.0, 0.0, 1.0}};
 
     // Check order of convergence of consistency of material elasticity
-    TestHO_ma->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+    TestHO_ma->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
 }
 
 // Test order of convergence of consistency of material elasticity for random F (small)
@@ -1562,7 +1561,7 @@ TEST_F(STRUCT_HolzapfelOgdenMATest, TestMaterialElasticityConsistencyConvergence
         convertToCArray(F_std, F);
 
         // Check order of convergence of consistency of material elasticity
-        TestHO_ma->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+        TestHO_ma->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
     }
 }
 
@@ -1576,7 +1575,7 @@ TEST_F(STRUCT_HolzapfelOgdenMATest, TestMaterialElasticityConsistencyConvergence
         convertToCArray(F_std, F);
 
         // Check order of convergence of consistency of material elasticity
-        TestHO_ma->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+        TestHO_ma->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
     }
 }
 
@@ -1590,7 +1589,7 @@ TEST_F(STRUCT_HolzapfelOgdenMATest, TestMaterialElasticityConsistencyConvergence
         convertToCArray(F_std, F);
 
         // Check order of convergence of consistency of material elasticity
-        TestHO_ma->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+        TestHO_ma->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
     }
 }
 
@@ -1701,7 +1700,7 @@ TEST_F(USTRUCT_HolzapfelOgdenMATest, TestMaterialElasticityConsistencyConvergenc
                        {0.0, 0.0, 1.3}};
 
     // Check order of convergence of consistency of material elasticity
-    TestHO_ma->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+    TestHO_ma->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
 }
 
 // Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for triaxial compression
@@ -1714,7 +1713,7 @@ TEST_F(USTRUCT_HolzapfelOgdenMATest, TestMaterialElasticityConsistencyConvergenc
                     {0.0, 0.0, 0.7}};
 
     // Check order of convergence of consistency of material elasticity
-    TestHO_ma->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+    TestHO_ma->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
 }
 
 // Test order of convergence between finite difference PK2 stress and get_pk2cc() PK2 stress for biaxial stretch/compression
@@ -1727,7 +1726,7 @@ TEST_F(USTRUCT_HolzapfelOgdenMATest, TestMaterialElasticityConsistencyConvergenc
                     {0.0, 0.0, 1.0}};
 
     // Check order of convergence of consistency of material elasticity
-    TestHO_ma->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+    TestHO_ma->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
 }
 
 // Test order of convergence of consistency of material elasticity for random F (small)
@@ -1740,7 +1739,7 @@ TEST_F(USTRUCT_HolzapfelOgdenMATest, TestMaterialElasticityConsistencyConvergenc
         convertToCArray(F_std, F);
 
         // Check order of convergence of consistency of material elasticity
-        TestHO_ma->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+        TestHO_ma->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
     }
 }
 
@@ -1754,7 +1753,7 @@ TEST_F(USTRUCT_HolzapfelOgdenMATest, TestMaterialElasticityConsistencyConvergenc
         convertToCArray(F_std, F);
 
         // Check order of convergence of consistency of material elasticity
-        TestHO_ma->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+        TestHO_ma->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
     }
 }
 
@@ -1768,7 +1767,7 @@ TEST_F(USTRUCT_HolzapfelOgdenMATest, TestMaterialElasticityConsistencyConvergenc
         convertToCArray(F_std, F);
 
         // Check order of convergence of consistency of material elasticity
-        TestHO_ma->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+        TestHO_ma->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
     }
 }
 
@@ -1859,7 +1858,7 @@ TEST_F(STRUCT_QuadraticVolumetricPenaltyTest, TestMaterialElasticityConsistencyC
         convertToCArray(F_std, F);
 
         // Check order of convergence of consistency of material elasticity
-        TestQVP->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+        TestQVP->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
     }
 }
 
@@ -1873,7 +1872,7 @@ TEST_F(STRUCT_QuadraticVolumetricPenaltyTest, TestMaterialElasticityConsistencyC
         convertToCArray(F_std, F);
 
         // Check order of convergence of consistency of material elasticity
-        TestQVP->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+        TestQVP->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
     }
 }
 
@@ -1887,7 +1886,7 @@ TEST_F(STRUCT_QuadraticVolumetricPenaltyTest, TestMaterialElasticityConsistencyC
         convertToCArray(F_std, F);
 
         // Check order of convergence of consistency of material elasticity
-        TestQVP->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+        TestQVP->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
     }
 }
 
@@ -2001,7 +2000,7 @@ TEST_F(STRUCT_SimoTaylor91VolumetricPenaltyTest, TestMaterialElasticityConsisten
         convertToCArray(F_std, F);
 
         // Check order of convergence of consistency of material elasticity
-        TestST91->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+        TestST91->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
     }
 }
 
@@ -2015,7 +2014,7 @@ TEST_F(STRUCT_SimoTaylor91VolumetricPenaltyTest, TestMaterialElasticityConsisten
         convertToCArray(F_std, F);
 
         // Check order of convergence of consistency of material elasticity
-        TestST91->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+        TestST91->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
     }
 }
 
@@ -2029,7 +2028,7 @@ TEST_F(STRUCT_SimoTaylor91VolumetricPenaltyTest, TestMaterialElasticityConsisten
         convertToCArray(F_std, F);
 
         // Check order of convergence of consistency of material elasticity
-        TestST91->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+        TestST91->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
     }
 }
 
@@ -2140,7 +2139,7 @@ TEST_F(STRUCT_Miehe94VolumetricPenaltyTest, TestMaterialElasticityConsistencyCon
         convertToCArray(F_std, F);
 
         // Check order of convergence of consistency of material elasticity
-        TestM94->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+        TestM94->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
     }
 }
 
@@ -2154,7 +2153,7 @@ TEST_F(STRUCT_Miehe94VolumetricPenaltyTest, TestMaterialElasticityConsistencyCon
         convertToCArray(F_std, F);
 
         // Check order of convergence of consistency of material elasticity
-        TestM94->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+        TestM94->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
     }
 }
 
@@ -2168,7 +2167,7 @@ TEST_F(STRUCT_Miehe94VolumetricPenaltyTest, TestMaterialElasticityConsistencyCon
         convertToCArray(F_std, F);
 
         // Check order of convergence of consistency of material elasticity
-        TestM94->testMaterialElasticityConsistencyConvergenceOrder(F, n_iter, delta_max, delta_min, order, verbose);
+        TestM94->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
     }
 }
 
