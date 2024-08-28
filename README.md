@@ -58,7 +58,7 @@ These software packages are installed using a package-management system
 - high-performance computing (HPC) cluster - [module system](https://hpc-wiki.info/hpc/Modules#:~:text=From%20HPC%20Wiki,average%20user%20will%20ever%20use)
 
 
-Installing VTK on a high-performance computing (HPC) cluster is typically not supported and may require building it from source. See [Building Visual Toolkit (VTK) Libraries](#building_vtk).
+Installing VTK on a high-performance computing (HPC) cluster is typically not supported and may require building it from source. See [Building Visualization Toolkit (VTK) Libraries](#building_vtk).
 
 
 ## Building svFSIplus
@@ -90,7 +90,7 @@ svFSIplus is built using the following steps
    ```
 
 
-<h2 id="building_vtk"> Building Visual Toolkit (VTK) Libraries </h2>
+<h2 id="building_vtk"> Building Visualization Toolkit (VTK) Libraries </h2>
 
 svFSIplus uses VTK to read finite element mesh data (created by the SimVascular mesh generation software), fiber geometry, initial conditions and write simulation results. Building the complete VTK library requires certain graphics libraries to be installed (e.g. OpenGL, X11) which make it difficult to build on an HPC cluster. 
 

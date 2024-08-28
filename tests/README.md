@@ -8,7 +8,7 @@ Running a test case requires
 - Build svZeroDSolver (only required from certain tests)
 
 # Build svFSIplus
-svFSIplus can be built follow these [instructions](../README.md).
+svFSIplus can be built following these [instructions](../README.md).
 
 To automatically run test cases using `pytest` you must build svFSIplus in a folder named `build` located at the svFSIplus repository  root directory (i.e. the svFSIplus directory created when doing a git clone of the svFSIplus repository).
 
