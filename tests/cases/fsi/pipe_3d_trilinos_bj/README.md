@@ -11,4 +11,3 @@ The simulation uses the Trilinos linear algebra package with the **trilinos-bloc
   <Preconditioner> trilinos-blockjacobi </Preconditioner>
 </Linear_algebra>
 ```
-
