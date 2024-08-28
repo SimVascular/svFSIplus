@@ -1575,6 +1575,8 @@ TEST_F(STRUCT_HolzapfelOgdenMATest, TestMaterialElasticityConsistencyConvergence
         convertToCArray(F_std, F);
 
         // Check order of convergence of consistency of material elasticity
+        delta_max = 1e-5;
+        delta_min = 1e-6;
         TestHO_ma->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
     }
 }
@@ -1739,6 +1741,8 @@ TEST_F(USTRUCT_HolzapfelOgdenMATest, TestMaterialElasticityConsistencyConvergenc
         convertToCArray(F_std, F);
 
         // Check order of convergence of consistency of material elasticity
+        delta_max = 1e-4;
+        delta_min = 1e-5;
         TestHO_ma->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
     }
 }
@@ -1753,6 +1757,8 @@ TEST_F(USTRUCT_HolzapfelOgdenMATest, TestMaterialElasticityConsistencyConvergenc
         convertToCArray(F_std, F);
 
         // Check order of convergence of consistency of material elasticity
+        delta_max = 1e-5;
+        delta_min = 1e-6;
         TestHO_ma->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
     }
 }
@@ -1767,6 +1773,8 @@ TEST_F(USTRUCT_HolzapfelOgdenMATest, TestMaterialElasticityConsistencyConvergenc
         convertToCArray(F_std, F);
 
         // Check order of convergence of consistency of material elasticity
+        delta_max = 1e-4;
+        delta_min = 1e-5;
         TestHO_ma->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, verbose);
     }
 }
