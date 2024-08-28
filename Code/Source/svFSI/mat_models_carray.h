@@ -921,19 +921,24 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
       double Ess = Inv6 - 1.0;
       double Efs = Inv8;
 
-      // Smoothed Heaviside function
-      double c4f  = 1.0 / (1.0 + exp(-stM.khs*Eff));
-      double c4s  = 1.0 / (1.0 + exp(-stM.khs*Ess));
+      // Smoothed Heaviside function: 1 / (1 + exp(-kx)) = 1 - 1 / (1 + exp(kx))
+      double k = stM.khs;
+      double one_over_exp_plus_one_f = 1.0 / (exp(k * Eff) + 1.0);
+      double one_over_exp_plus_one_s = 1.0 / (exp(k * Ess) + 1.0);
+      double c4f  = 1.0 - one_over_exp_plus_one_f;
+      double c4s  = 1.0 - one_over_exp_plus_one_s;
       
       // Approx. derivative of smoothed heaviside function
       // double dc4f = 0.25*stM.khs*exp(-stM.khs*abs(Eff));
       // double dc4s = 0.25*stM.khs*exp(-stM.khs*abs(Ess));
 
-      // Exact first derivative of smoothed heaviside function
-      double exp_val = exp(-stM.khs*(Eff));
-      double dc4f = stM.khs*exp_val / pow((1.0 + exp_val),2);
-      exp_val = exp(-stM.khs*(Ess));
-      double dc4s = stM.khs*exp_val / pow((1.0 + exp_val),2);
+      // Exact first derivative of smoothed heaviside function (from Wolfram Alpha)
+      double dc4f = k * (one_over_exp_plus_one_f - pow(one_over_exp_plus_one_f,2));
+      double dc4s = k * (one_over_exp_plus_one_s - pow(one_over_exp_plus_one_s,2));
+
+      // Exact second derivative of smoothed heaviside function (from Wolfram Alpha)
+      double ddc4f = pow(k,2) * (-one_over_exp_plus_one_f + 3.0*pow(one_over_exp_plus_one_f,2) - 2.0*pow(one_over_exp_plus_one_f,3));
+      double ddc4s = pow(k,2) * (-one_over_exp_plus_one_s + 3.0*pow(one_over_exp_plus_one_s,2) - 2.0*pow(one_over_exp_plus_one_s,3));
       
       // Isotropic + fiber-sheet interaction stress
       double g1 = stM.a * exp(stM.b*(Inv1-3.0));
@@ -987,6 +992,7 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
       // Fiber-fiber interaction stiffness
       g1 = c4f * (1.0 + 2.0*stM.bff*Eff*Eff);
       g1 = (g1 + 2.0*dc4f*Eff) * rexp;
+      g1 = g1 + (0.5*ddc4f/stM.bff)*(rexp - 1.0);
       g1 = 4.0 * J4d * stM.aff * g1;
       CArray4 Hff_prod;
       mat_fun_carray::ten_dyad_prod<N>(Hff, Hff, Hff_prod);
@@ -1018,6 +1024,7 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
       // Sheet-sheet interaction stiffness
       g2 = c4s * (1.0 + 2.0 * stM.bss * Ess * Ess);
       g2 = (g2 + 2.0*dc4s*Ess) * rexp;
+      g2 = g2 + (0.5*ddc4s/stM.bss)*(rexp - 1.0);
       g2 = 4.0 * J4d * stM.ass * g2;
 
       CArray4 Hss_prod;
@@ -1146,22 +1153,25 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
       double Ess = Inv6 - 1.0;
       double Efs = Inv8;
 
-      // Smoothed Heaviside function
-      double c4f  = 1.0 / (1.0 + exp(-stM.khs*Eff));
-      double c4s  = 1.0 / (1.0 + exp(-stM.khs*Ess));
+      // Smoothed Heaviside function: 1 / (1 + exp(-kx)) = 1 - 1 / (1 + exp(kx))
+      double k = stM.khs;
+      double one_over_exp_plus_one_f = 1.0 / (exp(k * Eff) + 1.0);
+      double one_over_exp_plus_one_s = 1.0 / (exp(k * Ess) + 1.0);
+      double c4f  = 1.0 - one_over_exp_plus_one_f;
+      double c4s  = 1.0 - one_over_exp_plus_one_s;
       
       // Approx. derivative of smoothed heaviside function
       // double dc4f = 0.25*stM.khs*exp(-stM.khs*abs(Eff));
       // double dc4s = 0.25*stM.khs*exp(-stM.khs*abs(Ess));
 
-      // Exact first and second derivative of smoothed heaviside function
-      double exp_val = exp(-stM.khs*(Eff));
-      double dc4f = stM.khs*exp_val / pow((1.0 + exp_val),2);
-      double ddc4f = -pow(stM.khs,2)*(1.0/exp_val - exp_val) / (1.0/exp_val + exp_val + 2.0);
-      exp_val = exp(-stM.khs*(Ess));
-      double dc4s = stM.khs*exp_val / pow((1.0 + exp_val),2);
-      double ddc4s = -pow(stM.khs,2)*(1.0/exp_val - exp_val) / (1.0/exp_val + exp_val + 2.0);
+      // Exact first derivative of smoothed heaviside function (from Wolfram Alpha)
+      double dc4f = k * (one_over_exp_plus_one_f - pow(one_over_exp_plus_one_f,2));
+      double dc4s = k * (one_over_exp_plus_one_s - pow(one_over_exp_plus_one_s,2));
 
+      // Exact second derivative of smoothed heaviside function (from Wolfram Alpha)
+      double ddc4f = pow(k,2) * (-one_over_exp_plus_one_f + 3.0*pow(one_over_exp_plus_one_f,2) - 2.0*pow(one_over_exp_plus_one_f,3));
+      double ddc4s = pow(k,2) * (-one_over_exp_plus_one_s + 3.0*pow(one_over_exp_plus_one_s,2) - 2.0*pow(one_over_exp_plus_one_s,3));
+      
       // Isochoric stress and stiffness
       double g1 = stM.a * exp(stM.b*(Inv1-3.0));
 
@@ -1255,7 +1265,7 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
       // Now that both isochoric and volumetric components were added, anisotropic components need to be added
 
       // Fiber-sheet interaction terms
-      g1   = stM.afs * exp(stM.bfs*Efs*Efs);
+      g1   = 2.0 * stM.afs * exp(stM.bfs*Efs*Efs);
       double Hfs[N][N];
       mat_fun_carray::mat_symm_prod<N>(fl.rcol(0), fl.rcol(1), Hfs);
       for (int i = 0; i < N; i++) {
@@ -1284,7 +1294,7 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
       g1   = g1 + (0.5*dc4f/stM.bff)*(rexp - 1.0);
       g1   = (2.0*stM.aff*g1) + Tfa;
       double Hff[N][N];
-      mat_fun_carray::mat_symm_prod<N>(fl.rcol(0), fl.rcol(0), Hff);
+      mat_fun_carray::mat_dyad_prod<N>(fl.rcol(0), fl.rcol(0), Hff);
       for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
           S[i][j] += g1*Hff[i][j];
@@ -1294,7 +1304,7 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
       // Fiber-fiber interaction stiffness
       g1   = c4f*(1.0 + (2.0*stM.bff*Eff*Eff));
       g1   = (g1 + (2.0*dc4f*Eff))*rexp;
-      g1 = g1 + ddc4f*(rexp - 1.0)/(2*stM.bff);
+      g1   = g1 + (0.5*ddc4f/stM.bff)*(rexp - 1.0);
       g1   = 4.0*stM.aff*g1;
       CArray4 Hff_Hff_prod;
       mat_fun_carray::ten_dyad_prod(Hff, Hff, Hff_Hff_prod);
@@ -1314,7 +1324,7 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
       g2   = g2 + (0.5*dc4s/stM.bss)*(rexp - 1.0);
       g2   = 2.0*stM.ass*g2 + Tsa;
       double Hss[N][N];
-      mat_fun_carray::mat_symm_prod<N>(fl.rcol(1), fl.rcol(1), Hss);
+      mat_fun_carray::mat_dyad_prod<N>(fl.rcol(1), fl.rcol(1), Hss);
       for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
           S[i][j] += g2*Hss[i][j];
@@ -1324,7 +1334,7 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
       // Sheet-sheet interaction stiffness
       g2   = c4s*(1.0 + (2.0*stM.bss*Ess*Ess));
       g2   = (g2 + (2.0*dc4s*Ess))*rexp;
-      g2 = g2 + ddc4s*(rexp - 1.0)/(2*stM.bss);
+      g2   = g2 + (0.5*ddc4s/stM.bss)*(rexp - 1.0);
       g2   = 4.0*stM.ass*g2;
       CArray4 Hss_Hss_prod;
       mat_fun_carray::ten_dyad_prod(Hss,Hss,Hss_Hss_prod);

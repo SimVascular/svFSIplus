@@ -889,7 +889,7 @@ public:
      * Pseudocode:
      * - Compute Psi(F)
      * - Compute S(F) from get_pk2cc()
-     * - For many random dF
+     * - For each component-wise perturbation dF
      *      - Compute dPsi
      *      - Compute dE
      *      - Compute error S:dE - dPsi
@@ -916,66 +916,68 @@ public:
             std::cerr << "Error: order must be 1 or 2." << std::endl;
             return;
         }
-        // Loop over many random perturbations to the deformation gradient, dF
-        for (int i = 0; i < n_iter; i++) {
-            // Generate random dF with values between 0 and 1
-            double dF[3][3];
-            create_random_F(dF, 0.0, 1.0);
+        // Loop over perturbations to each component of F, dF
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                // Generate dF with 1.0 in (i,j) component
+                double dF[3][3] = {};
+                dF[i][j] = 1.0;
 
-            // Create list of deltas for convergence test (delta = delta_max, delta_max/2, delta_max/4, ...)
-            std::vector<double> deltas;
-            double delta = delta_max;
-            while (delta >= delta_min) {
-                deltas.push_back(delta);
-                delta /= 2.0;
-            }
-
-            // Compute dPsi and S:dE for each delta and store error in list
-            std::vector<double> errors;
-            double dPsi, SdE;
-
-            for (int i = 0; i < deltas.size(); i++) {
-                calcdPsiFiniteDifference(F, dF, deltas[i], order, dPsi);
-                calcSdEFiniteDifference(F, dF, deltas[i], order, SdE);
-
-                // Compute error between dPsi and S:dE
-                double error = fabs(dPsi - SdE);
-
-                // Store error in list
-                errors.push_back(error);
-            }
-
-            // Compute order of convergence by fitting a line to log(delta) vs log(error)
-            std::vector<double> log_deltas, log_errors;
-            for (int i = 0; i < deltas.size(); i++) {
-                log_deltas.push_back(log(deltas[i]));
-                log_errors.push_back(log(errors[i]));
-            }
-
-            // Fit a line to log(delta) vs log(error)
-            // m is the slope (order of convergence), b is the intercept
-            auto [m, b] = computeLinearRegression(log_deltas, log_errors);
-
-            // Check that order of convergence is > (order + 1) - 0.02
-            EXPECT_GT(m, order + 1 - 0.02);
-
-            // Print results if verbose
-            if (verbose) {
-                std::cout << "Slope (order of convergence): " << m << std::endl;
-                std::cout << "Intercept: " << b << std::endl;
-                std::cout << "Errors: ";
-                for (int i = 0; i < errors.size(); i++) {
-                    std::cout << errors[i] << " ";
+                // Create list of deltas for convergence test (delta = delta_max, delta_max/2, delta_max/4, ...)
+                std::vector<double> deltas;
+                double delta = delta_max;
+                while (delta >= delta_min) {
+                    deltas.push_back(delta);
+                    delta /= 2.0;
                 }
-                std::cout << std::endl;
-                std::cout << std::endl;
-                
-                std::cout << "F = " << std::endl;
-                for (int i = 0; i < 3; i++) {
-                    for (int J = 0; J < 3; J++) {
-                        std::cout << F[i][J] << " ";
+
+                // Compute dPsi and S:dE for each delta and store error in list
+                std::vector<double> errors;
+                double dPsi, SdE;
+
+                for (int i = 0; i < deltas.size(); i++) {
+                    calcdPsiFiniteDifference(F, dF, deltas[i], order, dPsi);
+                    calcSdEFiniteDifference(F, dF, deltas[i], order, SdE);
+
+                    // Compute error between dPsi and S:dE
+                    double error = fabs(dPsi - SdE);
+
+                    // Store error in list
+                    errors.push_back(error);
+                }
+
+                // Compute order of convergence by fitting a line to log(delta) vs log(error)
+                std::vector<double> log_deltas, log_errors;
+                for (int i = 0; i < deltas.size(); i++) {
+                    log_deltas.push_back(log(deltas[i]));
+                    log_errors.push_back(log(errors[i]));
+                }
+
+                // Fit a line to log(delta) vs log(error)
+                // m is the slope (order of convergence), b is the intercept
+                auto [m, b] = computeLinearRegression(log_deltas, log_errors);
+
+                // Check that order of convergence is > (order + 1) - 0.02
+                EXPECT_GT(m, order + 1 - 0.02);
+
+                // Print results if verbose
+                if (verbose) {
+                    std::cout << "Slope (order of convergence): " << m << std::endl;
+                    std::cout << "Intercept: " << b << std::endl;
+                    std::cout << "Errors: ";
+                    for (int i = 0; i < errors.size(); i++) {
+                        std::cout << errors[i] << " ";
                     }
                     std::cout << std::endl;
+                    std::cout << std::endl;
+                    
+                    std::cout << "F = " << std::endl;
+                    for (int i = 0; i < 3; i++) {
+                        for (int J = 0; J < 3; J++) {
+                            std::cout << F[i][J] << " ";
+                        }
+                        std::cout << std::endl;
+                    }
                 }
             }
         }
@@ -1082,7 +1084,7 @@ public:
      *
      * Pseudocode:
      * - Compute S(F) and CC(F) from get_pk2cc()
-     * - For many random dF
+     * - For each component-wise perturbation dF
      *      - Compute S(F + dF) from get_pk2cc()
      *      - Compute dS = S(F + dF) - S(F)
      *      - Compute dE from dF
@@ -1131,68 +1133,70 @@ public:
         // where S is also obtained from get_pk2cc()
         double dS[3][3], CCdE[3][3];
         
-        // Loop over many random perturbations to the deformation gradient
-        for (int i = 0; i < n_iter; i++) {
-            // Generate random dF
-            double dF[3][3];
-            create_random_F(dF, 0.0, 1.0);
+        // Loop over perturbations to each component of F, dF
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                // Generate dF with 1.0 in (i,j) component
+                double dF[3][3] = {};
+                dF[i][j] = 1.0;
     
-            // Compute dS
-            calcdSFiniteDifference(F, dF, delta, order, dS);
+                // Compute dS
+                calcdSFiniteDifference(F, dF, delta, order, dS);
 
-            // Compute CC:dE
-            calcCCdEFiniteDifference(F, dF, delta, order, CCdE);
-    
-            // Check that CC_ijkl dE_kl = dS_ij
-            for (int i = 0; i < 3; i++) {
-                for (int j = 0; j < 3; j++) {
-                    EXPECT_NEAR(CCdE[i][j], dS[i][j], fmax(abs_tol, rel_tol * fabs(dS[i][j])));
-                }
-            }
-    
-            // Print results if verbose
-            if (verbose) {
-                std::cout << "Iteration " << i << ":" << std::endl;
-    
-                printMaterialParameters();
-    
-                std::cout << "F =" << std::endl;
+                // Compute CC:dE
+                calcCCdEFiniteDifference(F, dF, delta, order, CCdE);
+        
+                // Check that CC_ijkl dE_kl = dS_ij
                 for (int i = 0; i < 3; i++) {
                     for (int j = 0; j < 3; j++) {
-                        std::cout << F[i][j] << " ";
+                        EXPECT_NEAR(CCdE[i][j], dS[i][j], fmax(abs_tol, rel_tol * fabs(dS[i][j])));
                     }
-                    std::cout << std::endl;
                 }
-    
-                std::cout << "CC =" << std::endl;
-                for (int i = 0; i < 3; i++) {
-                    for (int j = 0; j < 3; j++) {
-                        for (int k = 0; k < 3; k++) {
-                            for (int l = 0; l < 3; l++) {
-                                std::cout << CC[i][j][k][l] << " ";
-                            }
-                            std::cout << std::endl;
+        
+                // Print results if verbose
+                if (verbose) {
+                    std::cout << "Iteration " << i << ":" << std::endl;
+        
+                    printMaterialParameters();
+        
+                    std::cout << "F =" << std::endl;
+                    for (int i = 0; i < 3; i++) {
+                        for (int j = 0; j < 3; j++) {
+                            std::cout << F[i][j] << " ";
                         }
+                        std::cout << std::endl;
+                    }
+        
+                    std::cout << "CC =" << std::endl;
+                    for (int i = 0; i < 3; i++) {
+                        for (int j = 0; j < 3; j++) {
+                            for (int k = 0; k < 3; k++) {
+                                for (int l = 0; l < 3; l++) {
+                                    std::cout << CC[i][j][k][l] << " ";
+                                }
+                                std::cout << std::endl;
+                            }
+                        }
+                        std::cout << std::endl;
+                    }
+        
+                    std::cout << "dS =" << std::endl;
+                    for (int i = 0; i < 3; i++) {
+                        for (int j = 0; j < 3; j++) {
+                            std::cout << dS[i][j] << " ";
+                        }
+                        std::cout << std::endl;
+                    }
+        
+                    std::cout << "CCdE =" << std::endl;
+                    for (int i = 0; i < 3; i++) {
+                        for (int j = 0; j < 3; j++) {
+                            std::cout << CCdE[i][j] << " ";
+                        }
+                        std::cout << std::endl;
                     }
                     std::cout << std::endl;
                 }
-    
-                std::cout << "dS =" << std::endl;
-                for (int i = 0; i < 3; i++) {
-                    for (int j = 0; j < 3; j++) {
-                        std::cout << dS[i][j] << " ";
-                    }
-                    std::cout << std::endl;
-                }
-    
-                std::cout << "CCdE =" << std::endl;
-                for (int i = 0; i < 3; i++) {
-                    for (int j = 0; j < 3; j++) {
-                        std::cout << CCdE[i][j] << " ";
-                    }
-                    std::cout << std::endl;
-                }
-                std::cout << std::endl;
             }
         }
     }
@@ -1203,7 +1207,7 @@ public:
      * Analytically, we should have CC:dE = dS. This function determines the order of convergence of CC:dE = dS, where dE and dS are computed using finite differences in F.
      *
      * Pseudocode:
-     * - For many random dF
+     * - For each component-wise perturbation dF
      *     - For decreasing delta
      *       - Compute dS
      *       - Compute CC:dE 
@@ -1214,13 +1218,12 @@ public:
      * instead of derivatives (e.g. dS/dF and CC:dE/dF).
      * @param F Deformation gradient.
      * @param dF Deformation gradient perturbation shape.
-     * @param n_iter Number of random perturbations in F to test.
      * @param delta_max Maximum perturbation scaling factor.
      * @param delta_min Minimum perturbation scaling factor.
      * @param order Order of the finite difference scheme (1 for first order, 2 for second order, etc.).
      * @param verbose Show values of errors and order of convergence if true.
      */
-    void testMaterialElasticityConsistencyConvergenceOrder(double F[3][3], int n_iter, double delta_max, double delta_min, int order, bool verbose = false) {
+    void testMaterialElasticityConsistencyConvergenceOrder(double F[3][3], double delta_max, double delta_min, int order, bool verbose = false) {
         // Check that delta_max > delta_min
         if (delta_max <= delta_min) {
             std::cerr << "Error: delta_max must be greater than delta_min." << std::endl;
@@ -1241,74 +1244,76 @@ public:
             delta /= 2.0;
         }
 
-        // Loop over many random perturbations to the deformation gradient, dF
-        for (int i = 0; i < n_iter; i++) {
-            // Generate random dF with values between 0 and 1
-            double dF[3][3];
-            create_random_F(dF, 0.0, 1.0);
-        
-            // Compute dS and CC:dE for each delta and store error in list
-            std::vector<double> errors;
-            double dS[3][3], CCdE[3][3];
-            for (int i = 0; i < deltas.size(); i++) {
-                calcdSFiniteDifference(F, dF, deltas[i], order, dS);
-                calcCCdEFiniteDifference(F, dF, deltas[i], order, CCdE);
+        // Loop over perturbations to each component of F, dF
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                // Generate dF with 1.0 in (i,j) component
+                double dF[3][3] = {};
+                dF[i][j] = 1.0;
+            
+                // Compute dS and CC:dE for each delta and store error in list
+                std::vector<double> errors;
+                double dS[3][3], CCdE[3][3];
+                for (int i = 0; i < deltas.size(); i++) {
+                    calcdSFiniteDifference(F, dF, deltas[i], order, dS);
+                    calcCCdEFiniteDifference(F, dF, deltas[i], order, CCdE);
 
-                // Compute Frobenius norm of error between dS and CC:dE
-                double error = 0.0;
-                for (int i = 0; i < 3; i++) {
-                    for (int j = 0; j < 3; j++) {
-                        error += pow(dS[i][j] - CCdE[i][j], 2);
+                    // Compute Frobenius norm of error between dS and CC:dE
+                    double error = 0.0;
+                    for (int i = 0; i < 3; i++) {
+                        for (int j = 0; j < 3; j++) {
+                            error += pow(dS[i][j] - CCdE[i][j], 2);
+                        }
                     }
+                    error = sqrt(error);
+
+                    // Store error in list
+                    errors.push_back(error);
                 }
-                error = sqrt(error);
 
-                // Store error in list
-                errors.push_back(error);
-            }
-
-            // Compute order of convergence by fitting a line to log(delta) vs log(error)
-            std::vector<double> log_deltas, log_errors;
-            for (int i = 0; i < deltas.size(); i++) {
-                log_deltas.push_back(log(deltas[i]));
-                log_errors.push_back(log(errors[i]));
-            }
-
-            // Fit a line to log(delta) vs log(error)
-            // m is the slope (order of convergence), b is the intercept
-            auto [m, b] = computeLinearRegression(log_deltas, log_errors);
-
-            // Check that order of convergence is > (order + 1) - 0.02
-            EXPECT_GT(m, order + 1 - 0.02);
-
-            // Print results if verbose
-            if (verbose) {
-                std::cout << "Iteration " << i << ":" << std::endl;
-                std::cout << "Slope (order of convergence): " << m << std::endl;
-                std::cout << "Intercept: " << b << std::endl;
-                std::cout << "Errors: ";
-                for (int i = 0; i < errors.size(); i++) {
-                    std::cout << errors[i] << " ";
+                // Compute order of convergence by fitting a line to log(delta) vs log(error)
+                std::vector<double> log_deltas, log_errors;
+                for (int i = 0; i < deltas.size(); i++) {
+                    log_deltas.push_back(log(deltas[i]));
+                    log_errors.push_back(log(errors[i]));
                 }
-                std::cout << std::endl;
-                std::cout << std::endl;
-                
-                std::cout << "F = " << std::endl;
-                for (int i = 0; i < 3; i++) {
-                    for (int J = 0; J < 3; J++) {
-                        std::cout << F[i][J] << " ";
+
+                // Fit a line to log(delta) vs log(error)
+                // m is the slope (order of convergence), b is the intercept
+                auto [m, b] = computeLinearRegression(log_deltas, log_errors);
+
+                // Check that order of convergence is > (order + 1) - 0.02
+                EXPECT_GT(m, order + 1 - 0.02);
+
+                // Print results if verbose
+                if (verbose) {
+                    std::cout << "Iteration " << i << ":" << std::endl;
+                    std::cout << "Slope (order of convergence): " << m << std::endl;
+                    std::cout << "Intercept: " << b << std::endl;
+                    std::cout << "Errors: ";
+                    for (int i = 0; i < errors.size(); i++) {
+                        std::cout << errors[i] << " ";
+                    }
+                    std::cout << std::endl;
+                    std::cout << std::endl;
+                    
+                    std::cout << "F = " << std::endl;
+                    for (int i = 0; i < 3; i++) {
+                        for (int J = 0; J < 3; J++) {
+                            std::cout << F[i][J] << " ";
+                        }
+                        std::cout << std::endl;
+                    }
+
+                    std::cout << "dF = " << std::endl;
+                    for (int i = 0; i < 3; i++) {
+                        for (int J = 0; J < 3; J++) {
+                            std::cout << dF[i][J] << " ";
+                        }
+                        std::cout << std::endl;
                     }
                     std::cout << std::endl;
                 }
-
-                std::cout << "dF = " << std::endl;
-                for (int i = 0; i < 3; i++) {
-                    for (int J = 0; J < 3; J++) {
-                        std::cout << dF[i][J] << " ";
-                    }
-                    std::cout << std::endl;
-                }
-                std::cout << std::endl;
             }
         }
     }
