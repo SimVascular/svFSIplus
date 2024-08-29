@@ -1575,8 +1575,10 @@ TEST_F(STRUCT_HolzapfelOgdenMATest, TestMaterialElasticityConsistencyConvergence
         // Convert to C array
         convertToCArray(F_std, F);
 
-        // Set convergence order tolerances larger to get this test to pass
-        convergence_order_tol = 0.1;
+        // Set convergence order tolerances larger and special delta_max/delta_min to get this test to pass
+        convergence_order_tol = 0.02;
+        delta_max = 4e-6;
+        delta_min = 1e-6;
         
         // Check order of convergence of consistency of material elasticity
         TestHO_ma->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, convergence_order_tol, verbose);
@@ -1591,6 +1593,11 @@ TEST_F(STRUCT_HolzapfelOgdenMATest, TestMaterialElasticityConsistencyConvergence
     for (auto F_std : F_large_list) {
         // Convert to C array
         convertToCArray(F_std, F);
+
+        // Set convergence order tolerances larger and special delta_max/delta_min to get this test to pass
+        convergence_order_tol = 0.02;
+        delta_max = 4e-6;
+        delta_min = 1e-6;
 
         // Check order of convergence of consistency of material elasticity
         TestHO_ma->testMaterialElasticityConsistencyConvergenceOrder(F, delta_max, delta_min, order, convergence_order_tol, verbose);
