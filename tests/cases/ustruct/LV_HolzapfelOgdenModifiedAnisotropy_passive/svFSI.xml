@@ -24,7 +24,6 @@
 
 </GeneralSimulationParameters>
 
-
 <Add_mesh name="msh" > 
 
   <Mesh_file_path> mesh/mesh-complete.mesh.vtu </Mesh_file_path>
@@ -47,9 +46,8 @@
   <Mesh_scale_factor> 100.0 </Mesh_scale_factor> <!-- Convert from m to cm -->
 </Add_mesh>
 
-<!-- Using cgs units-->
-<Add_equation type="struct" > 
 
+<Add_equation type="ustruct" > 
    <Coupled> true </Coupled>
    <Min_iterations> 3 </Min_iterations>  
    <Max_iterations> 20 </Max_iterations> 
@@ -61,8 +59,8 @@
    <Viscosity model="Constant" >
          <Value> 0.0 </Value>
       </Viscosity>
-    
-    <Constitutive_model type="HolzapfelOgden"> 
+   
+    <Constitutive_model type="HolzapfelOgden-ModifiedAnisotropy"> 
      <a> 590.0 </a>                                   <!-- dyne/cm^2 -->
      <b> 8.023 </b>                                   <!-- no units -->
      <a4f> 184720.0 </a4f>
@@ -77,7 +75,8 @@
    <Dilational_penalty_model> ST91 </Dilational_penalty_model>
    <Penalty_parameter>1.0e7</Penalty_parameter>
 
-    <Output type="Spatial" >
+   <Output type="Spatial" >
+     <Pressure> true </Pressure>
      <Displacement> true </Displacement>
      <Velocity> true </Velocity>
      <Jacobian> true </Jacobian>
@@ -113,3 +112,5 @@
 </Add_equation>
 
 </svFSIFile>
+
+

@@ -62,7 +62,7 @@
          <Value> 0.0 </Value>
       </Viscosity>
     
-    <Constitutive_model type="HolzapfelOgden"> 
+    <Constitutive_model type="HolzapfelOgden-ModifiedAnisotropy"> 
      <a> 590.0 </a>                                   <!-- dyne/cm^2 -->
      <b> 8.023 </b>                                   <!-- no units -->
      <a4f> 184720.0 </a4f>
