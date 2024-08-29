@@ -578,10 +578,11 @@ public:
      * @param[in] delta_min Minimum perturbation scaling factor.
      * @param[in] delta_max Maximum perturbation scaling factor.
      * @param[in] order Order of the finite difference scheme (1 for first order, 2 for second order, etc.).
+     * @param[in] convergence_order_tol Tolerance for comparing convergence order with expected value
      * @param[in] verbose Show values error and order of convergence if true.
      */
     template<int N>
-    void testPK2StressConvergenceOrder(const double F[N][N], const double delta_max, const double delta_min, const int order, const bool verbose = false) {
+    void testPK2StressConvergenceOrder(const double F[N][N], const double delta_max, const double delta_min, const int order, const double convergence_order_tol, const bool verbose = false) {
         // Check delta_max > delta_min
         if (delta_max <= delta_min) {
             std::cerr << "Error: delta_max must be greater than delta_min." << std::endl;
@@ -636,8 +637,8 @@ public:
         // m is the slope (order of convergence), b is the intercept
         auto [m, b] = computeLinearRegression(log_deltas, log_errors);
 
-        // Check that order of convergence is > order - 0.02
-        EXPECT_GT(m, order - 0.02);
+        // Check that order of convergence is > order - convergence_order_tol
+        EXPECT_GT(m, order - convergence_order_tol);
 
         // Print results if verbose
         if (verbose) {
@@ -897,14 +898,14 @@ public:
      * 
      * Note that the order of convergence should be order + 1, because we are comparing differences (dPsi and S:dE)
      * instead of derivatives (e.g. dPsi/dF and S:dE/dF).
-     * @param F Deformation gradient.
-     * @param n_iter Number of random perturbations to test.
-     * @param delta_max Maximum perturbation scaling factor.
-     * @param delta_min Minimum perturbation scaling factor.
-     * @param order Order of the finite difference scheme (1 for first order, 2 for second order, etc.).
+     * @param[in] F Deformation gradient.
+     * @param[in] delta_max Maximum perturbation scaling factor.
+     * @param[in] delta_min Minimum perturbation scaling factor.
+     * @param[in] order Order of the finite difference scheme (1 for first order, 2 for second order, etc.).
+     * @param[in] convergence_order_tol Tolerance for comparing convergence order with expected value
      * @param verbose Show values of errors and order of convergence if true.
      */
-    void testPK2StressConsistencyConvergenceOrder(double F[3][3], int n_iter, double delta_max, double delta_min, int order, bool verbose = false) {
+    void testPK2StressConsistencyConvergenceOrder(double F[3][3], double delta_max, double delta_min, int order, const double convergence_order_tol, bool verbose = false) {
         // Check that delta_max > delta_min
         if (delta_max <= delta_min) {
             std::cerr << "Error: delta_max must be greater than delta_min." << std::endl;
@@ -957,8 +958,8 @@ public:
                 // m is the slope (order of convergence), b is the intercept
                 auto [m, b] = computeLinearRegression(log_deltas, log_errors);
 
-                // Check that order of convergence is > (order + 1) - 0.02
-                EXPECT_GT(m, order + 1 - 0.02);
+                // Check that order of convergence is > (order + 1) - convergence_order_tol
+                EXPECT_GT(m, order + 1 - convergence_order_tol);
 
                 // Print results if verbose
                 if (verbose) {
@@ -1091,14 +1092,13 @@ public:
      *      - Check that CC:dE = dS
      * 
      * @param[in] F Deformation gradient.
-     * @param[in] n_iter Number of random perturbations to test.
      * @param[in] rel_tol Relative tolerance for comparing dS and CC:dE.
      * @param[in] abs_tol Absolute tolerance for comparing dS and CC:dE.
      * @param[in] delta Perturbation scaling factor.
      * @param[in] verbose Show values of CC, dE, CCdE, and dS if true.
      * @return None.
      */
-    void testMaterialElasticityConsistentWithPK2Stress(double F[3][3], int n_iter, double rel_tol, double abs_tol, double delta, bool verbose = false) {
+    void testMaterialElasticityConsistentWithPK2Stress(double F[3][3], double rel_tol, double abs_tol, double delta, bool verbose = false) {
         int order = 2;
 
         // Compute E from F
@@ -1216,14 +1216,14 @@ public:
      * 
      * Note that the order of convergence should be order + 1, because we are comparing differences (dS and CC:dE)
      * instead of derivatives (e.g. dS/dF and CC:dE/dF).
-     * @param F Deformation gradient.
-     * @param dF Deformation gradient perturbation shape.
-     * @param delta_max Maximum perturbation scaling factor.
-     * @param delta_min Minimum perturbation scaling factor.
-     * @param order Order of the finite difference scheme (1 for first order, 2 for second order, etc.).
-     * @param verbose Show values of errors and order of convergence if true.
+     * @param[in] F Deformation gradient.
+     * @param[in] delta_max Maximum perturbation scaling factor.
+     * @param[in] delta_min Minimum perturbation scaling factor.
+     * @param[in] order Order of the finite difference scheme (1 for first order, 2 for second order, etc.).
+     * @param[in] convergence_order_tol Tolerance for comparing convergence order with expected value
+     * @param[in] verbose Show values of errors and order of convergence if true.
      */
-    void testMaterialElasticityConsistencyConvergenceOrder(double F[3][3], double delta_max, double delta_min, int order, bool verbose = false) {
+    void testMaterialElasticityConsistencyConvergenceOrder(double F[3][3], double delta_max, double delta_min, int order, const double convergence_order_tol, bool verbose = false) {
         // Check that delta_max > delta_min
         if (delta_max <= delta_min) {
             std::cerr << "Error: delta_max must be greater than delta_min." << std::endl;
@@ -1282,8 +1282,8 @@ public:
                 // m is the slope (order of convergence), b is the intercept
                 auto [m, b] = computeLinearRegression(log_deltas, log_errors);
 
-                // Check that order of convergence is > (order + 1) - 0.02
-                EXPECT_GT(m, order + 1 - 0.02);
+                // Check that order of convergence is > (order + 1) - convergence_order_tol
+                EXPECT_GT(m, order + 1 - convergence_order_tol);
 
                 // Print results if verbose
                 if (verbose) {
