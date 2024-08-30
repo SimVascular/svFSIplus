@@ -30,10 +30,13 @@
 
 // The code here replicates the Fortran code in PIC.f.
 //
-// See the publication below, section 4.4 for theory and derivation:
-// Bazilevs, et al. "Isogeometric fluid-structure interaction:
-// theory, algorithms, and computations.", Computational Mechanics,
-// 43 (2008): 3-37. doi: 10.1007/s00466-008-0315-x
+// See the publications below, section 4.4 for theory and derivation:
+//  1.  Bazilevs, et al. "Isogeometric fluid-structure interaction:
+//      theory, algorithms, and computations.", Computational Mechanics,
+//      43 (2008): 3-37. doi: 10.1007/s00466-008-0315-x
+//  2. Bazilevs, et al. "Variational multiscale residual-based 
+//      turbulence modeling for large eddy simulation of incompressible 
+//      flows.", CMAME (2007)
 
 #include "pic.h"
 
@@ -152,8 +155,8 @@ void picc(Simulation* simulation)
   } else {
     for (int a = 0; a < tnNo; a++) {
       for (int i = 0; i < e-s+1; i++) {
-        An(i+s,a) = An(i+s,a) - R(i,a);
-        Yn(i+s,a) = Yn(i+s,a) - R(i,a)*coef[0];
+        An(i+s,a) = An(i+s,a) - R(i,a); // eqn 94 of Bazilevs 2007 // here, -R contains the acceleration update (obtained from Newton solve))?
+        Yn(i+s,a) = Yn(i+s,a) - R(i,a)*coef[0]; // eqn 95 of Bazilevs 2007
         Dn(i+s,a) = Dn(i+s,a) - R(i,a)*coef[1];
       }
     }
@@ -472,9 +475,9 @@ void pic_eth(Simulation* simulation)
 //   Dg = (1 - eq.af) * Do  +  eq.af * Dn
 //
 // Modifies:
-//   Ag -  
-//   Yg -
-//   Dg -
+//   Ag - acceleration
+//   Yg - velocity
+//   Dg - displacement
 //
 void pici(Simulation* simulation, Array<double>& Ag, Array<double>& Yg, Array<double>& Dg)
 {
@@ -547,15 +550,15 @@ void pici(Simulation* simulation, Array<double>& Ag, Array<double>& Yg, Array<do
     } else {
         for (int a = 0; a < tnNo; a++) {
             for (int j = s; j <= e; j++) {
-                Ag(j, a) = Ao(j, a) * coef(0) + An(j, a) * coef(1);
-                Yg(j, a) = Yo(j, a) * coef(2) + Yn(j, a) * coef(3);
+                Ag(j, a) = Ao(j, a) * coef(0) + An(j, a) * coef(1); // eqn 89 of Bazilevs 2007
+                Yg(j, a) = Yo(j, a) * coef(2) + Yn(j, a) * coef(3); // eqn 90 of Bazilevs 2007
                 Dg(j, a) = Do(j, a) * coef(2) + Dn(j, a) * coef(3);
             }
         }
     }
   }
 
-  if (com_mod.pstEq) {
+  if (com_mod.pstEq) { // prestress
     com_mod.pSn = 0.0;
     com_mod.pSa = 0.0;
   }
@@ -589,10 +592,11 @@ void picp(Simulation* simulation)
   dmsg << "pstEq: " << com_mod.pstEq;
   #endif
 
+  // Variables for prestress calculations
   auto& pS0 = com_mod.pS0;
   auto& pSn = com_mod.pSn;
 
-  auto& Ad = com_mod.Ad;
+  auto& Ad = com_mod.Ad; // time derivative of displacement
   auto& Ao = com_mod.Ao;
   auto& An = com_mod.An;
   auto& Yo = com_mod.Yo;
@@ -644,9 +648,8 @@ void picp(Simulation* simulation)
 
   for (int iEq = 0; iEq < com_mod.nEq; iEq++) {
     auto& eq = com_mod.eq[iEq];
-    int s = eq.s;
-    int e = eq.e;
-    double coef = (eq.gam - 1.0) / eq.gam;
+    int s = eq.s; // start row
+    int e = eq.e; // end row
 
     #ifdef debug_picp
     dmsg << "----- iEq " << iEq << " -----";
@@ -657,9 +660,10 @@ void picp(Simulation* simulation)
     #endif
 
     // [TODO:DaveP] careful here with s amd e.
+    double coef = (eq.gam - 1.0) / eq.gam;
     for (int i = s; i <= e; i++) {
       for (int j = 0; j < Ao.ncols(); j++) {
-        An(i,j) = Ao(i,j) * coef;
+        An(i,j) = Ao(i,j) * coef; // eqn 87 of Bazilevs 2007
       }
     }
 
@@ -668,7 +672,7 @@ void picp(Simulation* simulation)
       cep_ion::cep_integ(simulation, iEq, e, Do);
     }
 
-    Yn.set_rows(s,e, Yo.rows(s,e));
+    Yn.set_rows(s,e, Yo.rows(s,e)); // eqn 86 of Bazilevs 2007
 
     if (com_mod.dFlag) {
 

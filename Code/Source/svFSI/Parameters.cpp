@@ -1030,7 +1030,7 @@ bool OutputParameters::get_output_value(const std::string& name)
 /// @brief The VariableWallPropsParameters class stores parameters for
 /// variable wall properties for the CMM equation.
 ///
-/// Define the XML element name for viscosiity parameters.
+/// Define the XML element name for variable wall parameters.
 const std::string VariableWallPropsParameters::xml_element_name_ = "Variable_wall_properties";
 
 VariableWallPropsParameters::VariableWallPropsParameters()
@@ -1062,6 +1062,51 @@ void VariableWallPropsParameters::set_values(tinyxml2::XMLElement* xml_elem)
 
   std::function<void(const std::string&, const std::string&)> ftpr =
       std::bind( &VariableWallPropsParameters::set_parameter_value, *this, _1, _2);
+
+  xml_util_set_parameters(ftpr, xml_elem, error_msg);
+
+  value_set = true;
+}
+
+//////////////////////////////////////////////////////////
+//               VariablePermeabilityPropParameters            //
+//////////////////////////////////////////////////////////
+
+/// @brief The VariablePermeabilityPropParameters class stores parameters for
+/// variable permeability property for the fluid equation (Navier-Stokes-Brinkman).
+///
+/// Define the XML element name for variable permeability parameter.
+const std::string VariablePermeabilityPropParameters::xml_element_name_ = "Variable_permeability_property";
+
+VariablePermeabilityPropParameters::VariablePermeabilityPropParameters()
+{
+  // A parameter that must be defined.
+  bool required = true;
+
+  mesh_name = Parameter<std::string>("mesh_name", "", required);
+
+  set_parameter("Permeability_property_file_path", "", required, permeability_property_file_path);
+}
+
+void VariablePermeabilityPropParameters::set_values(tinyxml2::XMLElement* xml_elem)
+{
+  using namespace tinyxml2;
+  std::string error_msg = "Unknown " + xml_element_name_ + " XML element '";
+
+  // Get the 'type' from the <Variable_permeability_property mesh_name=NAME> element.
+  const char* sname;
+  auto result = xml_elem->QueryStringAttribute("mesh_name", &sname);
+  if (sname == nullptr) {
+    throw std::runtime_error("No TYPE given in the XML <Variable_permeability_property mesh_name=NAME> element.");
+  }
+  mesh_name.set(std::string(sname));
+  auto item = xml_elem->FirstChildElement();
+
+  using std::placeholders::_1;
+  using std::placeholders::_2;
+
+  std::function<void(const std::string&, const std::string&)> ftpr =
+      std::bind( &VariablePermeabilityPropParameters::set_parameter_value, *this, _1, _2);
 
   xml_util_set_parameters(ftpr, xml_elem, error_msg);
 
@@ -1302,6 +1347,10 @@ DomainParameters::DomainParameters()
   set_parameter("Solid_viscosity", 0.9, !required, solid_viscosity);
   set_parameter("Source_term", 0.0, !required, source_term);
   set_parameter("Time_step_for_integration", 0.0, !required, time_step_for_integration);
+
+  set_parameter("Permeability", 0.0, !required, permeability); todo: default value of permeability depends on how permeability parameter gets used in the weak form / implementation. Want default value to be such that default value leads to Navier-Stokes (no Brinkman)
+  last here - change all permeability and Permeability variables (and related terms) to "Darcy_permeability" for clarity
+  last here - finished adding permeability variable to fluid equations. Finished reviewing fluid weak form derivation. Finished deriving weak form with brinkman term (including brinkman contributions to residual and tangent matrix). Next: make sure that my fluid weak form derivation matches implementation in svFSI. then make sure that fannie's implementation of brinkman term in svfsi code matches my weak form derivation (and residual and tangent matrix derivation). then, figure out what the default value for permeability should be (to enable default use of Navier-Stokes)
 }
 
 void DomainParameters::print_parameters()
@@ -1776,6 +1825,9 @@ void EquationParameters::set_values(tinyxml2::XMLElement* eq_elem)
 
     } else if (name == VariableWallPropsParameters::xml_element_name_) {
       variable_wall_properties.set_values(item);
+
+    } else if (name == VariablePermeabilityPropParameters::xml_element_name_) {
+      variable_permeability_property.set_values(item);
 
     } else if (item->GetText() != nullptr) {
       auto value = item->GetText();

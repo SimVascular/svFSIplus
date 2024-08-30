@@ -1306,6 +1306,10 @@ void read_domain(Simulation* simulation, EquationParameters* eq_params, eqType& 
           case PhysicalProperyType::source_term:
             rtmp = domain_params->source_term.value();
           break;
+
+          case PhysicalProperyType::permeability:
+            rtmp = domain_params->permeability.value();
+          break;
         }
 
         lEq.dmn[iDmn].prop[prop] = rtmp;
@@ -2877,7 +2881,7 @@ void read_visc_model(Simulation* simulation, EquationParameters* eq_params, Doma
 // Read CMM variable wall properties from a file.
 //
 // Modifies:
-//   com_mod.msh[iM.x - seems to use this as a scratch array.
+//   com_mod.msh[iM].x - seems to use this as a scratch array.
 //
 void read_wall_props_ff(ComMod& com_mod, const std::string& file_name, const int iM, const int iFa)
 {
@@ -2959,6 +2963,29 @@ void read_wall_props_ff(ComMod& com_mod, const std::string& file_name, const int
       com_mod.varWallProps(1,Ac) = face.x(0,a);
     }
   }
+}
+
+//--------------------
+// read_permeability_prop_ff
+//--------------------
+// Read fluid variable permeability property from a file.
+//
+// Modifies:
+//   com_mod.msh[iM].x - seems to use this as a scratch array.
+//
+void read_permeability_prop_ff(ComMod& com_mod, const std::string& file_name, const int iM)
+{
+    auto& mesh = com_mod.msh[iM];
+    mesh.x.resize(1, mesh.gnNo);
+
+    // Read permeability
+    int data_comp = 1;
+    vtk_xml::read_vtu_pdata(file_name, "Permeability", com_mod.nsd, data_comp, -1, mesh);
+
+    for (int a = 0; a < mesh.gnNo; a++) {
+      int Ac = mesh.gN[a];
+      com_mod.varPermeabilityProp(0,Ac) = mesh.x(0,a);
+    }
 }
 
 //--------------

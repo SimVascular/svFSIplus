@@ -215,7 +215,7 @@ void construct_fsi(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Ar
           case Equation_fluid: {
             auto N0 = fs_1[0].N.col(g);
             auto N1 = fs_1[1].N.col(g);
-            fluid::fluid_3d_m(com_mod, vmsStab, fs_1[0].eNoN, fs_1[1].eNoN, w, ksix, N0, N1, Nwx, Nqx, Nwxx, al, yl, bfl, lR, lK);
+            fluid::fluid_3d_m(com_mod, vmsStab, fs_1[0].eNoN, fs_1[1].eNoN, w, ksix, N0, N1, Nwx, Nqx, Nwxx, al, yl, bfl, lR, lK, 0.0); // using zero permeability to use Navier-Stokes here, not Navier-Stokes-Brinkman
           } break;
 
           case Equation_struct: {
@@ -239,7 +239,7 @@ void construct_fsi(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Ar
           case Equation_fluid: {
             auto N0 = fs_1[0].N.col(g);
             auto N1 = fs_1[1].N.col(g);
-            fluid::fluid_2d_m(com_mod, vmsStab, fs_1[0].eNoN, fs_1[1].eNoN, w, ksix, N0, N1, Nwx, Nqx, Nwxx, al, yl, bfl, lR, lK);
+            fluid::fluid_2d_m(com_mod, vmsStab, fs_1[0].eNoN, fs_1[1].eNoN, w, ksix, N0, N1, Nwx, Nqx, Nwxx, al, yl, bfl, lR, lK, 0.0); // using zero permeability to use Navier-Stokes here, not Navier-Stokes-Brinkman
           } break;
 
           case Equation_lElas:
@@ -287,7 +287,7 @@ void construct_fsi(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Ar
           case Equation_fluid: {
             auto N0 = fs_2[0].N.col(g);
             auto N1 = fs_2[1].N.col(g);
-            fluid::fluid_3d_c(com_mod, vmsStab, fs_2[0].eNoN, fs_2[1].eNoN, w, ksix, N0, N1, Nwx, Nqx, Nwxx, al, yl, bfl, lR, lK);
+            fluid::fluid_3d_c(com_mod, vmsStab, fs_2[0].eNoN, fs_2[1].eNoN, w, ksix, N0, N1, Nwx, Nqx, Nwxx, al, yl, bfl, lR, lK, 0.0); // using zero permeability to use Navier-Stokes here, not Navier-Stokes-Brinkman
           } break;
 
           case Equation_ustruct:
@@ -301,7 +301,7 @@ void construct_fsi(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const Ar
           case Equation_fluid: {
             auto N0 = fs_2[0].N.col(g);
             auto N1 = fs_2[1].N.col(g);
-            fluid::fluid_2d_c(com_mod, vmsStab, fs_2[0].eNoN, fs_2[1].eNoN, w, ksix, N0, N1, Nwx, Nqx, Nwxx, al, yl, bfl, lR, lK);
+            fluid::fluid_2d_c(com_mod, vmsStab, fs_2[0].eNoN, fs_2[1].eNoN, w, ksix, N0, N1, Nwx, Nqx, Nwxx, al, yl, bfl, lR, lK, 0.0); // using zero permeability to use Navier-Stokes here, not Navier-Stokes-Brinkman
           } break;
 
           case Equation_ustruct:

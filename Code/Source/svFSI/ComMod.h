@@ -396,7 +396,7 @@ class viscModelType
     // Limiting zero shear-rate viscosity value
     double mu_o = 0.0;
 
-    // Limiting high shear-rate viscosity (asymptotic) value
+    // Limiting high shear-rate viscosity (asymptotic) value (at infinity)
     double mu_i = 0.0;
 
     // Strain-rate tensor multiplier
@@ -831,7 +831,7 @@ class mshType
     int gnEl = 0;
 
     /// @brief Global number of nodes (control points)
-    int gnNo = 0;
+    int gnNo = 0; // global number of nodes on a single mesh
 
     /// @brief Number of element face. Used for reading Gambit mesh files
     int nEf = 0;
@@ -918,7 +918,7 @@ class mshType
     Array<double> xib;
 
     /// @brief Position coordinates
-    Array<double> x;
+    Array<double> x; // these are not necessarily position coordinates, as they get overwritten by read_vtu_pdata()
 
     /// @brief Parent shape function
     Array<double> N;
@@ -1377,6 +1377,10 @@ class ComMod {
 
     /// @brief Whether to use precomputed state-variable solutions
     bool usePrecomp = false;
+
+    /// @brief Whether variable permeability property is used for fluid (Navier-Stokes-Brinkman)
+    bool fluidVarPermeability = false;
+    
     //----- int members -----//
 
     /// @brief Current domain
@@ -1398,7 +1402,7 @@ class ComMod {
 
     /// @brief Global total number of nodes, across all meshes (total) and all 
     /// procs (global)
-    int gtnNo = 0;
+    int gtnNo = 0; // total number of nodes across all meshes and all processors
 
     /// @brief Number of equations
     int nEq = 0;
@@ -1438,7 +1442,7 @@ class ComMod {
 
     /// @brief Total number of nodes (number of nodes on current proc across
     /// all meshes)
-    int tnNo = 0;
+    int tnNo = 0; // total number of nodes across all meshes, but only on current processor
 
     /// @brief Restart Time Step
     int rsTS = 0;
@@ -1505,20 +1509,20 @@ class ComMod {
     /// @brief IB: iblank used for immersed boundaries (1 => solid, 0 => fluid)
     Vector<int> iblank;
 
-    /// @brief Old time derivative of variables (acceleration)
+    /// @brief Old time derivative of variables (acceleration); known result at current time step
     Array<double>  Ao;
 
-    /// @brief New time derivative of variables
+    /// @brief New time derivative of variables (acceleration); unknown result at next time step
     Array<double>  An;
 
-    /// @brief Old integrated variables (dissplacement)
+    /// @brief Old integrated variables (displacement)
     Array<double>  Do;
 
-    /// @brief New integrated variables
+    /// @brief New integrated variables (displacement)
     Array<double>  Dn;
 
     /// @brief Residual vector
-    Array<double>  R;
+    Array<double>  R; this gets updated to also be the negative of the acceleration update in the Newton solver?
 
     /// @brief LHS matrix
     Array<double>  Val;
@@ -1526,10 +1530,10 @@ class ComMod {
     /// @brief Position vector of mesh nodes (in ref config)
     Array<double>  x;
 
-    /// @brief Old variables (velocity)
+    /// @brief Old variables (velocity); known result at current time step
     Array<double>  Yo;
 
-    /// @brief New variables
+    /// @brief New variables (velocity); unknown result at next time step
     Array<double>  Yn;
 
     /// @brief Body force
@@ -1561,6 +1565,9 @@ class ComMod {
 
     /// @brief CMM-variable wall properties: 1-thickness, 2-Elasticity modulus
     Array<double>  varWallProps;
+
+    /// @brief Fluid-variable permeability property
+    Array<double>  varPermeabilityProp;
 
     //------------------------
     // DERIVED TYPE VARIABLES

@@ -640,7 +640,7 @@ void set_bc_cmm_l(ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, con
 
     Vector<double> pSl(6), vwp(2); 
 
-    for (int a = 0; a < 3; a++) { 
+    for (int a = 0; a < 3; a++) { // does "a" correspond to index on spatial dimension (assuming 3D model) or node number on element (assuming triangle element on face, lFa)?
       int Ac = lFa.IEN(a,e);
       ptr(a) = Ac;
 
@@ -661,7 +661,7 @@ void set_bc_cmm_l(ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, con
     }
 
     pSl = pSl / 3.0;
-    vwp = vwp / 3.0;
+    vwp = vwp / 3.0; // vwp = [thickness, elastic modulus] for element e, averaged over the 3 nodes of element e (assuming it is a triangle element)?
 
     // Add CMM BCs contributions to the LHS/RHS
     cmm::cmm_b(com_mod, lFa, e, al, dl, xl, bfl, pSl, vwp, ptr);

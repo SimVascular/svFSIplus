@@ -120,7 +120,7 @@ SetEquationPropertiesMapType set_equation_props = {
     com_mod.cmmVarWall = true;
 
     if (com_mod.varWallProps.size() == 0) {
-      com_mod.varWallProps.resize(2, com_mod.gtnNo);
+      com_mod.varWallProps.resize(2, com_mod.gtnNo); // varWallProps = array of size 2 x total number of nodes across all meshes and all processors; first column is thickness and second column is elastic modulus
     }
 
     auto mesh_name = eq_params->variable_wall_properties.mesh_name.value();
@@ -214,6 +214,23 @@ SetEquationPropertiesMapType set_equation_props = {
   using namespace consts;
   auto& com_mod = simulation->get_com_mod();
   lEq.phys = consts::EquationType::phys_fluid;
+  
+  // Set variable permeability property.
+  if (eq_params->variable_permeability_property.defined()) {
+    com_mod.fluidVarPermeability = true;
+
+    if (com_mod.varPermeabilityProp.size() == 0) {
+      com_mod.varPermeabilityProp.resize(1, com_mod.gtnNo); // varPermeabilityProp = array of size 1 x total number of nodes across all meshes and all processors
+    }
+
+    auto mesh_name = eq_params->variable_permeability_property.mesh_name.value();
+    int iM = 0;
+    all_fun::find_msh(com_mod.msh, mesh_name, iM);
+    auto file_path = eq_params->variable_permeability_property.permeability_property_file_path.value();
+    read_permeability_prop_ff(com_mod, file_path, iM);
+    
+    last here - finished this section, whats next?
+  }
 
   propL[0][0] = PhysicalProperyType::fluid_density;
   propL[1][0] = PhysicalProperyType::backflow_stab;
