@@ -461,7 +461,7 @@ void bw_fluid_3d(ComMod& com_mod, const int eNoNw, const int eNoNq, const double
 /// equations. Dirichlet boundary conditions are either treated
 /// strongly or weakly.
 //
-void construct_fluid(ComMod& com_mod, const mshType& lM, const Array<double>& Ag, const Array<double>& Yg) last here
+void construct_fluid(ComMod& com_mod, const mshType& lM, const Array<double>& Ag, const Array<double>& Yg)
 {
   #define n_debug_construct_fluid
   #ifdef debug_construct_fluid
@@ -646,7 +646,7 @@ void construct_fluid(ComMod& com_mod, const mshType& lM, const Array<double>& Ag
         auto N0 = fs[0].N.rcol(g); 
         auto N1 = fs[1].N.rcol(g); 
         fluid_2d_m(com_mod, vmsStab, fs[0].eNoN, fs[1].eNoN, w, ksix, N0, N1, 
-            Nwx, Nqx, Nwxx, al, yl, bfl, lR, lK, K_inverse_permeability); last here
+            Nwx, Nqx, Nwxx, al, yl, bfl, lR, lK, K_inverse_permeability);
       }
     } // g: loop
 
@@ -695,7 +695,7 @@ void construct_fluid(ComMod& com_mod, const mshType& lM, const Array<double>& Ag
       } else if (nsd == 2) {
         auto N0 = fs[0].N.rcol(g); 
         auto N1 = fs[1].N.rcol(g); 
-        fluid_2d_c(com_mod, vmsStab, fs[0].eNoN, fs[1].eNoN, w, ksix, N0, N1, Nwx, Nqx, Nwxx, al, yl, bfl, lR, lK, K_inverse_permeability); last here
+        fluid_2d_c(com_mod, vmsStab, fs[0].eNoN, fs[1].eNoN, w, ksix, N0, N1, Nwx, Nqx, Nwxx, al, yl, bfl, lR, lK, K_inverse_permeability);
       }
 
     } // g: loop
@@ -761,46 +761,46 @@ void fluid_2d_c(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
   // fluid equation always come first
   // Velocity and its gradients, inertia (acceleration & body force)
   //
-  Vector<double> ud{-f[0], -f[1]}; // ud[i] = ith component of acceleration - ith component of body force
-  Vector<double> u(2); // u[i] = ith component of velocity, u
-  Array<double> ux(2,2); // ux[i,j] = derivative of jth component of u with respect to ith component of x = du_j/dx_i
-  Array3<double> uxx(2,2,2); // uxx[i,j,k] = 2nd derivative of u_j with respect x_i and x_k
+  Vector<double> ud{-f[0], -f[1]}; // ud[j] = jth component of (acceleration - body force)
+  Vector<double> u(2); // u[j] = jth component of velocity, u
+  Array<double> ux(2,2); // ux[i, j] = derivative of jth component of velocity with respect to ith component of x = du_j/dx_i
+  Array3<double> uxx(2,2,2); // uxx[i, j, k] = 2nd derivative of jth component of velocity with respect to ith component of x and kth component of x = d2(u_j)/(dx_i*dx_k)
 
   for (int a = 0; a < eNoNw; a++) { // 8/29/24 JP: done checking this section
-    ud(0) = ud(0) + Nw(a)*(al(0,a)-bfl(0,a)); // 8/29/24 JP: done checking this line
-    ud(1) = ud(1) + Nw(a)*(al(1,a)-bfl(1,a)); // 8/29/24 JP: done checking this line
+    ud(0) = ud(0) + Nw(a)*(al(0,a)-bfl(0,a)); // a_x - f_x
+    ud(1) = ud(1) + Nw(a)*(al(1,a)-bfl(1,a)); // a_y - f_y
 
-    u(0) = u(0) + Nw(a)*yl(0,a); // 8/29/24 JP: done checking this line
-    u(1) = u(1) + Nw(a)*yl(1,a); // 8/29/24 JP: done checking this line
+    u(0) = u(0) + Nw(a)*yl(0,a); // u_x
+    u(1) = u(1) + Nw(a)*yl(1,a); // u_y
 
-    ux(0,0) = ux(0,0) + Nwx(0,a)*yl(0,a); // 8/29/24 JP: done checking this line
-    ux(1,0) = ux(1,0) + Nwx(1,a)*yl(0,a); // 8/29/24 JP: done checking this line
-    ux(0,1) = ux(0,1) + Nwx(0,a)*yl(1,a); // 8/29/24 JP: done checking this line
-    ux(1,1) = ux(1,1) + Nwx(1,a)*yl(1,a); // 8/29/24 JP: done checking this line
+    ux(0,0) = ux(0,0) + Nwx(0,a)*yl(0,a); // du_x/dx
+    ux(1,0) = ux(1,0) + Nwx(1,a)*yl(0,a); // du_x/dy
+    ux(0,1) = ux(0,1) + Nwx(0,a)*yl(1,a); // du_y/dx
+    ux(1,1) = ux(1,1) + Nwx(1,a)*yl(1,a); // du_y/dy
 
-    uxx(0,0,0) = uxx(0,0,0) + Nwxx(0,a)*yl(0,a); // 8/29/24 JP: done checking this line // d2(x-velocity)/dx2
-    uxx(1,0,1) = uxx(1,0,1) + Nwxx(1,a)*yl(0,a); // 8/29/24 JP: done checking this line // d2(x-velocity)/dy2
-    uxx(1,0,0) = uxx(1,0,0) + Nwxx(2,a)*yl(0,a); // 8/29/24 JP: done checking this line // d2(x-velocity)/dxdy
+    uxx(0,0,0) = uxx(0,0,0) + Nwxx(0,a)*yl(0,a); // d2(u_x)/dx2
+    uxx(1,0,1) = uxx(1,0,1) + Nwxx(1,a)*yl(0,a); // d2(u_x)/dy2
+    uxx(1,0,0) = uxx(1,0,0) + Nwxx(2,a)*yl(0,a); // d2(u_x)/dydx
 
-    uxx(0,1,0) = uxx(0,1,0) + Nwxx(0,a)*yl(1,a); // 8/29/24 JP: done checking this line // d2(y-velocity)/dx2
-    uxx(1,1,1) = uxx(1,1,1) + Nwxx(1,a)*yl(1,a); // 8/29/24 JP: done checking this line // d2(y-velocity)/dy2
-    uxx(1,1,0) = uxx(1,1,0) + Nwxx(2,a)*yl(1,a); // 8/29/24 JP: done checking this line // d2(y-velocity)/dxdy
+    uxx(0,1,0) = uxx(0,1,0) + Nwxx(0,a)*yl(1,a); // d2(u_y)/dx2
+    uxx(1,1,1) = uxx(1,1,1) + Nwxx(1,a)*yl(1,a); // d2(u_y)/dy2
+    uxx(1,1,0) = uxx(1,1,0) + Nwxx(2,a)*yl(1,a); // d2(u_y)/dydx
   }
 
-  double divU = ux(0,0) + ux(1,1); // 8/29/24 JP: done checking this line
-  uxx(0,0,1) = uxx(1,0,0); // 8/29/24 JP: done checking this line // d2(x-velocity)/dydx
-  uxx(0,1,1) = uxx(1,1,0); // 8/29/24 JP: done checking this line // d2(y-velocity)/dydx
+  double divU = ux(0,0) + ux(1,1); // divergence of velocity // 8/29/24 JP: done checking this line
+  uxx(0,0,1) = uxx(1,0,0); // d2(u_x)/dxdy // 8/29/24 JP: done checking this line
+  uxx(0,1,1) = uxx(1,1,0); // d2(u_y)/dxdy // 8/29/24 JP: done checking this line
 
-  Vector<double> d2u2(2); // d2u2[i] = laplacian of ith component of velocity
-  d2u2(0) = uxx(0,0,0) + uxx(1,0,1); // 8/29/24 JP: done checking this line 
-  d2u2(1) = uxx(0,1,0) + uxx(1,1,1); // 8/29/24 JP: done checking this line 
+  Vector<double> d2u2(2); // d2u2[j] = laplacian of jth component of velocity // 8/29/24 JP: done checking this section
+  d2u2(0) = uxx(0,0,0) + uxx(1,0,1);
+  d2u2(1) = uxx(0,1,0) + uxx(1,1,1);
 
 
   // Pressure and its gradient // 8/29/24 JP: done checking this section
   Vector<double> px(2); // px[i] = derivative of pressure with respect to ith component of x = dp/dx_i
   for (int a = 0; a < eNoNq; a++) {
-    px(0) = px(0) + Nqx(0,a)*yl(2,a); // 8/29/24 JP: done checking this line
-    px(1) = px(1) + Nqx(1,a)*yl(2,a); // 8/29/24 JP: done checking this line
+    px(0) = px(0) + Nqx(0,a)*yl(2,a);
+    px(1) = px(1) + Nqx(1,a)*yl(2,a);
   }
 
   //  Update convection velocity relative to mesh velocity
@@ -811,7 +811,7 @@ void fluid_2d_c(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
      }
   }
 
-  // 2 * strain rate tensor = 2*e_ij := (u_ij + u_ji) // 8/29/24 JP: done checking this section
+  // 2 * strain rate tensor = 2*e_ij = du_i/dx_j + du_j/dx_i) // 8/29/24 JP: done checking this section
   Array<double> es(2,2);
   es(0,0) = ux(0,0) + ux(0,0);
   es(1,0) = ux(1,0) + ux(0,1);
@@ -827,25 +827,25 @@ void fluid_2d_c(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
   dmsg << "es: " << es;
   #endif
 
-  Array<double> esNx(2,eNoNw);
+  Array<double> esNx(2,eNoNw); // esNx[i, a] = jth column of (ith row of 2 * strain rate tensor) * derivative of shape function (for element node, a) with respect to x_j, with sum over j = 2 * e_ij * dN_a/dx_j // 8/29/24 JP: done checking this section
   for (int a = 0; a < eNoNw; a++) {
     esNx(0,a) = es(0,0)*Nwx(0,a) + es(1,0)*Nwx(1,a);
     esNx(1,a) = es(0,1)*Nwx(0,a) + es(1,1)*Nwx(1,a);
   }
 
-  Array3<double> es_x(2,2,2); // derivative of 2 * strain rate tensor with respect to x = es_x[k, l, j] = d(2 * e_kl)/d(x_j) // 8/29/24 JP: done checking this section
+  Array3<double> es_x(2,2,2); // es_x[i, j, k] = derivative of 2 * strain rate tensor with respect to kth component of x = d(2 * e_ij)/d(x_k) // 8/29/24 JP: done checking this section
   for (int k = 0; k < 2; k++) { 
-    es_x(0,0,k) = uxx(0,0,k) + uxx(0,0,k);
-    es_x(1,1,k) = uxx(1,1,k) + uxx(1,1,k);
-    es_x(1,0,k) = uxx(1,0,k) + uxx(0,1,k);
-    es_x(0,1,k) = es_x(1,0,k);
+    es_x(0,0,k) = uxx(0,0,k) + uxx(0,0,k); // d2(u_0)/(dx_0*dx_k) * 2
+    es_x(1,1,k) = uxx(1,1,k) + uxx(1,1,k); // d2(u_1)/(dx_1*dx_k) * 2
+    es_x(1,0,k) = uxx(1,0,k) + uxx(0,1,k); // d2(u_0)/(dx_1*dx_k) + d2(u_1)/(dx_0*dx_k)
+    es_x(0,1,k) = es_x(1,0,k); // d2(u_1)/(dx_0*dx_k) + d2(u_0)/(dx_1*dx_k)
   }
 
-  Vector<double> mu_x(2); // mu_x[i] = gamma * derivative of gamma with respect to ith component of x // 8/29/24 JP: done checking this section
+  Vector<double> mu_x(2); // mu_x[j] = gamma * derivative of gamma with respect to jth component of x // 8/29/24 JP: done checking this section
   mu_x(0) = (es_x(0,0,0)*es(0,0) + es_x(1,1,0)*es(1,1))*0.50 +  es_x(1,0,0)*es(1,0);
   mu_x(1) = (es_x(0,0,1)*es(0,0) + es_x(1,1,1)*es(1,1))*0.50 +  es_x(1,0,1)*es(1,0);
 
-  // Shear-rate := (2*e_ij*e_ij)^.5 // gamma // 8/29/24 JP: done checking this section
+  // shear rate = gamma = (2*e_ij*e_ij)^0.5 // 8/29/24 JP: done checking this section
   double gam = es(0,0)*es(0,0) + es(1,0)*es(1,0) + es(0,1)*es(0,1) + es(1,1)*es(1,1);
   gam = sqrt(0.50*gam);
 
@@ -857,9 +857,9 @@ void fluid_2d_c(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
   if (utils::is_zero(gam)) {
      mu_g = 0.0;
   } else {
-     mu_g = mu_g / gam;
+     mu_g = mu_g / gam; // mu_g = derivative of effective dynamic viscosity with respect to gamma, then divided by gamma
   }
-  std::transform(mu_x.begin(), mu_x.end(), mu_x.begin(), [mu_g](double &v){return mu_g*v;}); // mu_x[i] = derivative of effective dynamic viscosity with respect to ith component of x // 8/29/24 JP: done checking this line
+  std::transform(mu_x.begin(), mu_x.end(), mu_x.begin(), [mu_g](double &v){return mu_g*v;}); // mu_x[j] = derivative of effective dynamic viscosity with respect to jth component of x // 8/29/24 JP: done checking this line
   //mu_x(:) = mu_g * mu_x(:)
 
   #ifdef debug_fluid_2d_c 
@@ -872,9 +872,9 @@ void fluid_2d_c(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
 
   // Stabilization parameters
   //
-  Array3<double> updu(2,2,eNoNw); // derivative of up with respect to u? updu[i,j,:] = derivative of ith component continuity PDE residual (not weak form residual) with respect to jth component of u?
-  Vector<double> up(2); // up[i] = ith component of u_prime ( where u_prime = fine-scale velocity in VMS) = -tau_M / rho * ith component of momentum PDE residual (not weak form residual)
-  double tauM{0.0}; // tau_M / rho = tau_SUPS / rho
+  Array3<double> updu(2,2,eNoNw); // updu[j, i,:] = negative of derivative of ith component of momentum PDE residual (not weak form residual) with respect to jth component of velocity
+  Vector<double> up(2); // up[i] = ith component of u_prime (where u_prime = fine-scale velocity in VMS) = -tau_M / rho * ith component of momentum PDE residual (not weak form residual)
+  double tauM{0.0}; // tauM = tau_M / rho = tau_SUPS / rho
 
   if (vmsFlag) {
     // Stabilization parameters
@@ -893,21 +893,21 @@ void fluid_2d_c(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
     rV(0) = ud(0) + u(0)*ux(0,0) + u(1)*ux(1,0);
     rV(1) = ud(1) + u(0)*ux(0,1) + u(1)*ux(1,1);
 
-    Vector<double> rS(2); // divergence of 2 * effective dynamic viscosity * strain rate tensor // rS[i] = ith component of gradient of (2 * effective dynamic viscosity * strain rate tensor) // 8/29/24 JP: done checking this section
+    Vector<double> rS(2); // rS[i] = ith component of divergence of (2 * effective dynamic viscosity * strain rate tensor) = d(2 * mu * e_ij)/dx_j // 8/29/24 JP: done checking this section
     rS(0) = mu_x(0)*es(0,0) + mu_x(1)*es(1,0) + mu*d2u2(0);
     rS(1) = mu_x(0)*es(0,1) + mu_x(1)*es(1,1) + mu*d2u2(1);
 
     up(0) = -tauM*(rho*rV(0) + px(0) - rS(0) + mu*K_inverse_permeability*u(0)); // 8/29/24 JP: done checking this line
     up(1) = -tauM*(rho*rV(1) + px(1) - rS(1) + mu*K_inverse_permeability*u(1)); // 8/29/24 JP: done checking this line
 
-    for (int a = 0; a < eNoNw; a++) {
+    for (int a = 0; a < eNoNw; a++) { // 8/29/24 JP: done checking this section
       double uNx = u(0)*Nwx(0,a) + u(1)*Nwx(1,a);
       T1 = -rho*uNx + mu*(Nwxx(0,a) + Nwxx(1,a)) + mu_x(0)*Nwx(0,a) + mu_x(1)*Nwx(1,a) - mu*K_inverse_permeability*Nw(a);
 
       updu(0,0,a) = mu_x(0)*Nwx(0,a) + d2u2(0)*mu_g*esNx(0,a) + T1;
-      updu(1,0,a) = mu_x(1)*Nwx(0,a) + d2u2(0)*mu_g*esNx(1,a);
+      updu(1,0,a) = mu_x(1)*Nwx(0,a) + d2u2(1)*mu_g*esNx(0,a);
 
-      updu(0,1,a) = mu_x(0)*Nwx(1,a) + d2u2(1)*mu_g*esNx(0,a);
+      updu(0,1,a) = mu_x(0)*Nwx(1,a) + d2u2(0)*mu_g*esNx(1,a);
       updu(1,1,a) = mu_x(1)*Nwx(1,a) + d2u2(1)*mu_g*esNx(1,a) + T1;
     } 
 
@@ -932,31 +932,31 @@ void fluid_2d_c(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
   //
   for (int a = 0; a < eNoNq; a++) { // 8/29/24 JP: done checking this section
     double upNx = up(0)*Nqx(0,a) + up(1)*Nqx(1,a);
-    lR(2,a) = lR(2,a) + w*(Nq(a)*divU - upNx); // weak form residual for continuity equation
+    lR(2,a) = lR(2,a) + w*(Nq(a)*divU - upNx); // continuity (weak form) residual
   }
 
   // Tangent (stiffness) matrices
   //
-  for (int b = 0; b < eNoNw; b++) { last here - check this section 8/29/24
+  for (int b = 0; b < eNoNw; b++) { // 8/29/24 JP: done checking this section
     T1 = rho*amd*Nw(b);
 
     for (int a = 0; a < eNoNq; a++) {
       // dRc_a/dU_b1
-      double T2 = Nqx(0,a)*(updu(0,0,b) - T1) + Nqx(1,a)*updu(0,1,b); last here - JP 8/29/24 last here
-      lK(6,a,b) = lK(6,a,b) + wl*(Nq(a)*Nwx(0,b) - tauM*T2);
+      double T2 = Nqx(0,a)*(updu(0,0,b) - T1) + Nqx(1,a)*updu(0,1,b);
+      lK(6,a,b) = lK(6,a,b) + wl*(Nq(a)*Nwx(0,b) - tauM*T2); // derivative of continuity (weak form) residual with respect to the x-component of (the acceleration at the next time step)
 
       // dRc_a/dU_b2
       T2 = Nqx(0,a)*updu(1,0,b) + Nqx(1,a)*(updu(1,1,b) - T1);
-      lK(7,a,b) = lK(7,a,b) + wl*(Nq(a)*Nwx(1,b) - tauM*T2);
+      lK(7,a,b) = lK(7,a,b) + wl*(Nq(a)*Nwx(1,b) - tauM*T2); // derivative of continuity (weak form) residual with respect to the y-component of (the acceleration at the next time step)
     }
   }
 
   if (vmsFlag) { // 8/29/24 JP: done checking this section
     for (int b = 0; b < eNoNq; b++) {
       for (int a = 0; a < eNoNq; a++) {
-        // dC/dP (derivative of continuity (weak form) residual with respect to pressure)
+        // dRc_a/dP_b
         double NxNx = Nqx(0,a)*Nqx(0,b) + Nqx(1,a)*Nqx(1,b);
-        lK(8,a,b) = lK(8,a,b) + wl*tauM*NxNx;
+        lK(8,a,b) = lK(8,a,b) + wl*tauM*NxNx; // derivative of continuity (weak form) residual with respect to (time derivative of pressure at the next time step)
       }
     }
   }
@@ -978,7 +978,7 @@ void fluid_2d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
   dmsg << "eNoNw: " << eNoNw;
   dmsg << "eNoNq: " << eNoNq;
   #endif
-
+last here - next check this function - last here
   int cEq = com_mod.cEq;
   auto& eq = com_mod.eq[cEq];
   int cDmn = com_mod.cDmn;
@@ -1187,9 +1187,9 @@ void fluid_2d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
     T1 = -rho*uNx(a) + mu*(Nwxx(0,a) + Nwxx(1,a)) + mu_x(0)*Nwx(0,a) + mu_x(1)*Nwx(1,a) - mu*K_inverse_permeability*Nw(a);
 
     updu(0,0,a) = mu_x(0)*Nwx(0,a) + d2u2(0)*mu_g*esNx(0,a) + T1;
-    updu(1,0,a) = mu_x(1)*Nwx(0,a) + d2u2(0)*mu_g*esNx(1,a);
+    updu(1,0,a) = mu_x(1)*Nwx(0,a) + d2u2(1)*mu_g*esNx(0,a);
 
-    updu(0,1,a) = mu_x(0)*Nwx(1,a) + d2u2(1)*mu_g*esNx(0,a);
+    updu(0,1,a) = mu_x(0)*Nwx(1,a) + d2u2(0)*mu_g*esNx(1,a);
     updu(1,1,a) = mu_x(1)*Nwx(1,a) + d2u2(1)*mu_g*esNx(1,a) + T1;
   }
 
@@ -1239,7 +1239,7 @@ void fluid_2d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
   // Residual contribution Birkman term 
   // Local residue
   for (int a = 0; a < eNoNw; a++) {
-      lR(0,a) = lR(0,a) + mu*K_inverse_permeability*w*Nw(a)*(u(0)+up(0)); last here - why do we add "up" (-tauM * PDE residual) here? I think it is because it is inclued in eqn 18 of Fuchsberger 2022 (On the incorporation of obstacles in a fluid flow problem using a Navier–Stokes–Brinkman penalization approach) - next todo: read that paper and derive the eqns; last here -  finished deriving VMS for nsb eqns, now need to check that translates to code correctly // "mu*K_inverse_permeability*w*Nw(a)*(u(0)" = dynamic viscosity * vc / permeability * element shape function evaluated at node a * velocity = mu * vc / K * N^{e}_{a} * u
+      lR(0,a) = lR(0,a) + mu*K_inverse_permeability*w*Nw(a)*(u(0)+up(0)); last here - why do we add "up" (-tauM * PDE residual) here? I think it is because it is inclued in eqn 18 of Fuchsberger 2022 (On the incorporation of obstacles in a fluid flow problem using a Navier–Stokes–Brinkman penalization approach) // "mu*K_inverse_permeability*w*Nw(a)*(u(0)" = dynamic viscosity * vc / permeability * element shape function evaluated at node a * velocity = mu * vc / K * N^{e}_{a} * u
       lR(1,a) = lR(1,a) + mu*K_inverse_permeability*w*Nw(a)*(u(1)+up(1));
   }
 }
@@ -1493,15 +1493,15 @@ void fluid_3d_c(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
       T1 = -rho*uNx + mu*(Nwxx(0,a) + Nwxx(1,a) + Nwxx(2,a)) + mu_x[0]*Nwx(0,a) + mu_x[1]*Nwx(1,a) + mu_x[2]*Nwx(2,a) - mu*K_inverse_permeability*Nw(a);
 
       updu[0][0][a] = mu_x[0]*Nwx(0,a) + d2u2[0]*mu_g*esNx[0][a] + T1;
-      updu[1][0][a] = mu_x[1]*Nwx(0,a) + d2u2[0]*mu_g*esNx[1][a];
-      updu[2][0][a] = mu_x[2]*Nwx(0,a) + d2u2[0]*mu_g*esNx[2][a];
+      updu[1][0][a] = mu_x[1]*Nwx(0,a) + d2u2[1]*mu_g*esNx[0][a];
+      updu[2][0][a] = mu_x[2]*Nwx(0,a) + d2u2[2]*mu_g*esNx[0][a];
   
-      updu[0][1][a] = mu_x[0]*Nwx(1,a) + d2u2[1]*mu_g*esNx[0][a];
+      updu[0][1][a] = mu_x[0]*Nwx(1,a) + d2u2[0]*mu_g*esNx[1][a];
       updu[1][1][a] = mu_x[1]*Nwx(1,a) + d2u2[1]*mu_g*esNx[1][a] + T1;
-      updu[2][1][a] = mu_x[2]*Nwx(1,a) + d2u2[1]*mu_g*esNx[2][a];
+      updu[2][1][a] = mu_x[2]*Nwx(1,a) + d2u2[2]*mu_g*esNx[1][a];
   
-      updu[0][2][a] = mu_x[0]*Nwx(2,a) + d2u2[2]*mu_g*esNx[0][a];
-      updu[1][2][a] = mu_x[1]*Nwx(2,a) + d2u2[2]*mu_g*esNx[1][a];
+      updu[0][2][a] = mu_x[0]*Nwx(2,a) + d2u2[0]*mu_g*esNx[2][a];
+      updu[1][2][a] = mu_x[1]*Nwx(2,a) + d2u2[1]*mu_g*esNx[2][a];
       updu[2][2][a] = mu_x[2]*Nwx(2,a) + d2u2[2]*mu_g*esNx[2][a] + T1;
     }
 
@@ -1902,15 +1902,15 @@ void fluid_3d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
     T1 = -rho*uNx[a] + mu*(Nwxx(0,a) + Nwxx(1,a) + Nwxx(2,a)) + mu_x[0]*Nwx(0,a) + mu_x[1]*Nwx(1,a) + mu_x[2]*Nwx(2,a) - mu*K_inverse_permeability*Nw(a);
 
     updu[0][0][a] = mu_x[0]*Nwx(0,a) + d2u2[0]*mu_g*esNx[0][a] + T1;
-    updu[1][0][a] = mu_x[1]*Nwx(0,a) + d2u2[0]*mu_g*esNx[1][a];
-    updu[2][0][a] = mu_x[2]*Nwx(0,a) + d2u2[0]*mu_g*esNx[2][a];
+    updu[1][0][a] = mu_x[1]*Nwx(0,a) + d2u2[1]*mu_g*esNx[0][a];
+    updu[2][0][a] = mu_x[2]*Nwx(0,a) + d2u2[2]*mu_g*esNx[0][a];
 
-    updu[0][1][a] = mu_x[0]*Nwx(1,a) + d2u2[1]*mu_g*esNx[0][a];
+    updu[0][1][a] = mu_x[0]*Nwx(1,a) + d2u2[0]*mu_g*esNx[1][a];
     updu[1][1][a] = mu_x[1]*Nwx(1,a) + d2u2[1]*mu_g*esNx[1][a] + T1;
-    updu[2][1][a] = mu_x[2]*Nwx(1,a) + d2u2[1]*mu_g*esNx[2][a];
+    updu[2][1][a] = mu_x[2]*Nwx(1,a) + d2u2[2]*mu_g*esNx[1][a];
 
-    updu[0][2][a] = mu_x[0]*Nwx(2,a) + d2u2[2]*mu_g*esNx[0][a];
-    updu[1][2][a] = mu_x[1]*Nwx(2,a) + d2u2[2]*mu_g*esNx[1][a];
+    updu[0][2][a] = mu_x[0]*Nwx(2,a) + d2u2[0]*mu_g*esNx[2][a];
+    updu[1][2][a] = mu_x[1]*Nwx(2,a) + d2u2[1]*mu_g*esNx[2][a];
     updu[2][2][a] = mu_x[2]*Nwx(2,a) + d2u2[2]*mu_g*esNx[2][a] + T1;
   }
 
@@ -2004,9 +2004,9 @@ void get_viscosity(const ComMod& com_mod, const dmnType& lDmn, double& gamma, do
 {
   using namespace consts;
 
-  mu = 0.0; // dynamic viscosity
+  mu = 0.0; // effective dynamic viscosity
   mu_s = 0.0; // not sure what this is
-  mu_x = 0.0; // derivative of mu with respect to gamma
+  mu_x = 0.0; // derivative of effective dynamic viscosity with respect to gamma
 
   double mu_i, mu_o, lam, a, n, T1, T2;
 
