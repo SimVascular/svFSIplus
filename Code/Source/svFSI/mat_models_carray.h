@@ -1134,6 +1134,228 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
   cc_to_voigt_carray<N>(CC, Dm);
 }
 
+
+/**
+ * @brief Get the viscous PK2 stress and corresponding tangent matrix contributions for a solid
+ * with a viscous pseudo-potential model.
+ * 
+ * @tparam nsd Number of spatial dimensions
+ * @param mu Solid viscosity parameter
+ * @param eNoN Number of nodes in an element
+ * @param Nx Shape function gradient matrix
+ * @param vx Velocity gradient matrix
+ * @param F Deformation gradient matrix
+ * @param Svis Viscous 2nd Piola-Kirchhoff stress matrix
+ * @param Kvis_u Viscous tangent matrix contribution due to displacement
+ * @param Kvis_v Visous tangent matrix contribution due to velocity
+ */
+template <size_t nsd>
+void get_visc_stress_pot(const double mu, const int eNoN, const Array<double>& Nx, const double vx[nsd][nsd], const double F[nsd][nsd],
+                        Array<double>& Svis, Array3<double>& Kvis_u, Array3<double>& Kvis_v) {
+
+    std::cout << "get_visc_stress_pot: " << std::endl;
+    std::cout << "mu: " << mu << std::endl;
+    
+    // Initialize Svis, Kvis_u, Kvis_v to zero
+    for (int i = 0; i < nsd; i++) {
+        for (int j = 0; j < nsd; j++) {
+            Svis(i,j) = 0.0;
+            for (int a = 0; a < eNoN; a++) {
+                for (int b = 0; b < eNoN; b++) {
+                    Kvis_u(i*nsd+j,a,b) = 0.0;
+                    Kvis_v(i*nsd+j,a,b) = 0.0;
+                }
+            }
+        }
+    }
+
+
+    // Required intermediate terms for stress and tangent
+    double Ft[nsd][nsd] = {0}, vxt[nsd][nsd] = {0}, F_Ft[nsd][nsd] = {0}, Ft_vx[nsd][nsd] = {0}, F_vxt[nsd][nsd] = {0};
+    mat_fun_carray::transpose<nsd>(F, Ft);
+    mat_fun_carray::mat_mul<nsd>(F, Ft, F_Ft);
+    mat_fun_carray::mat_mul<nsd>(Ft, vx, Ft_vx);
+    mat_fun_carray::transpose<nsd>(vx, vxt);
+    mat_fun_carray::mat_mul<nsd>(F, vxt, F_vxt);
+
+    //double F_Nx[nsd][eNoN] = {0}, vx_Nx[nsd][eNoN] = {0};
+    Array<double> F_Nx(nsd,eNoN), vx_Nx(nsd,eNoN);
+    
+    for (int a = 0; a < eNoN; ++a) {
+        for (int i = 0; i < nsd; ++i) {
+            for (int j = 0; j < nsd; ++j) {
+                F_Nx(i,a) = F[i][j] * Nx(j,a);
+                vx_Nx(i,a) = vx[i][j] * Nx(j,a);
+            }
+        }
+    }
+
+    // 2nd Piola-Kirchhoff stress due to viscosity
+    double Ft_vx_symm[nsd][nsd] = {0};
+    mat_fun_carray::mat_symm<nsd>(Ft_vx, Ft_vx_symm);
+    for (int i = 0; i < nsd; i++) {
+        for (int j = 0; j < nsd; j++) {
+            Svis(i,j) = mu * Ft_vx_symm[i][j];
+        }
+    }
+    //Svis = mu * Ft_vx_symm;
+
+    // Tangent matrix contributions due to viscosity
+    for (int b = 0; b < eNoN; ++b) {
+        for (int a = 0; a < eNoN; ++a) {
+            double Nx_Nx = 0.0;
+            for (int i = 0; i < nsd; ++i) {
+                Nx_Nx += Nx(i,a) * Nx(i,b);
+            }
+
+            for (int i = 0; i < nsd; ++i) {
+                for (int j = 0; j < nsd; ++j) {
+                    int ii = i * nsd + j;
+                    Kvis_u(ii,a,b) = 0.5 * mu * (F_Nx(i,b) * vx_Nx(j,a) + Nx_Nx * F_vxt[i][j]);
+                    Kvis_v(ii,a,b) = 0.5 * mu * (Nx_Nx * F_Ft[i][j] + F_Nx(i,b) * F_Nx(j,a));
+                }
+            }
+        }
+    }
+}
+
+/**
+ * @brief Get the viscous PK2 stress and corresponding tangent matrix contributions for a solid
+ * with a Newtonian fluid-like viscosity model.
+ * 
+ * @tparam nsd Number of spatial dimensions
+ * @param mu Solid viscosity parameter
+ * @param eNoN Number of nodes in an element
+ * @param Nx Shape function gradient matrix
+ * @param vx Velocity gradient matrix
+ * @param F Deformation gradient matrix
+ * @param Svis Viscous 2nd Piola-Kirchhoff stress matrix
+ * @param Kvis_u Viscous tangent matrix contribution due to displacement
+ * @param Kvis_v Visous tangent matrix contribution due to velocity
+ */
+template <size_t nsd>
+void get_visc_stress_newt(const double mu, const int eNoN, const Array<double>& Nx, const double vx[nsd][nsd], const double F[nsd][nsd],
+                           Array<double>& Svis, Array3<double>& Kvis_u, Array3<double>& Kvis_v) {
+    
+    std::cout << "get_visc_stress_newt: " << std::endl;
+    std::cout << "mu: " << mu << std::endl;
+
+    // Initialize Svis, Kvis_u, Kvis_v to zero
+    for (int i = 0; i < nsd; i++) {
+        for (int j = 0; j < nsd; j++) {
+            Svis(i,j) = 0.0;
+            for (int a = 0; a < eNoN; a++) {
+                for (int b = 0; b < eNoN; b++) {
+                    Kvis_u(i*nsd+j,a,b) = 0.0;
+                    Kvis_v(i*nsd+j,a,b) = 0.0;
+                }
+            }
+        }
+    }
+
+    // Get identity matrix, Jacobian, and F^-1
+    double Idm[nsd][nsd] = {0};
+    mat_fun_carray::mat_id<nsd>(Idm);
+    double J = mat_fun_carray::mat_det<nsd>(F);
+    double Fi[nsd][nsd] = {0};
+    mat_fun_carray::mat_inv<nsd>(F, Fi); 
+
+    // Required intermediate terms for stress and tangent
+    double vx_Fi[nsd][nsd] = {0}, vx_Fi_symm[nsd][nsd] = {0}, ddev[nsd][nsd] = {0};
+    // vx_Fi: Velocity gradient in current configuration          
+    mat_fun_carray::mat_mul<nsd>(vx, Fi, vx_Fi);        
+    mat_fun_carray::mat_symm<nsd>(vx_Fi, vx_Fi_symm);
+    // ddev: Deviatoric part of rate of strain tensor
+    mat_fun_carray::mat_dev<nsd>(vx_Fi_symm, ddev);
+    //double Nx_Fi[nsd][eNoN] = {0}, ddev_Nx_Fi[nsd][eNoN] = {0}, vx_Fi_Nx_Fi[nsd][eNoN] = {0};
+    Array<double> Nx_Fi(nsd,eNoN), ddev_Nx_Fi(nsd,eNoN), vx_Fi_Nx_Fi(nsd,eNoN);
+    for (int a = 0; a < eNoN; ++a) {
+        for (int i = 0; i < nsd; ++i) {
+            for (int j = 0; j < nsd; ++j) {
+                Nx_Fi(i,a) += Nx(j,a) * Fi[j][i];
+            }
+        }
+        for (int i = 0; i < nsd; ++i) {
+          for (int j = 0; j < nsd; ++j) {
+              ddev_Nx_Fi(i,a) += ddev[i][j] * Nx_Fi(j,a);
+              vx_Fi_Nx_Fi(i,a) += vx_Fi[i][j] * Nx_Fi(j,a);
+          }
+        }
+    }
+
+    // 2nd Piola-Kirchhoff stress due to viscosity
+    double Fit[nsd][nsd] = {0};
+    mat_fun_carray::transpose<nsd>(Fi, Fit);
+    double ddev_Fit[nsd][nsd] = {0};
+    mat_fun_carray::mat_mul<nsd>(ddev, Fit, ddev_Fit);
+    double Fi_ddev_Fit[nsd][nsd] = {0};
+    mat_fun_carray::mat_mul<nsd>(Fi, ddev_Fit, Fi_ddev_Fit);
+    for (int i = 0; i < nsd; i++) {
+        for (int j = 0; j < nsd; j++) {
+            Svis(i,j) = 2.0 * mu * J * Fi_ddev_Fit[i][j];
+        }
+    }
+    //Svis = 2.0 * mu * J * Fi_ddev_Fit;
+
+    // Tangent matrix contributions due to viscosity
+    double r2d = 2.0 / nsd;
+    for (int b = 0; b < eNoN; ++b) {
+        for (int a = 0; a < eNoN; ++a) {
+            double Nx_Fi_Nx_Fi = 0.0;
+            for (int i = 0; i < nsd; ++i) {
+                Nx_Fi_Nx_Fi += Nx_Fi(i,a) * Nx_Fi(i,b);
+            }
+
+            for (int i = 0; i < nsd; ++i) {
+                for (int j = 0; j < nsd; ++j) {
+                    int ii = i * nsd + j;
+
+                    // Derivative of the residual w.r.t displacement
+                    Kvis_u(ii,a,b) = mu * J * (2.0 * 
+                                    (ddev_Nx_Fi(i,a) * Nx_Fi(j,b) - ddev_Nx_Fi(i,b) * Nx_Fi(j,a)) -
+                                    (Nx_Fi_Nx_Fi * vx_Fi[i][j] + Nx_Fi(i,b) * vx_Fi_Nx_Fi(j,a) -
+                                    r2d * Nx_Fi(i,a) * vx_Fi_Nx_Fi(j,b)));
+
+                    // Derivative of the residual w.r.t velocity
+                    Kvis_v(ii,a,b) = mu * J * (Nx_Fi_Nx_Fi * Idm[i][j] +
+                                    Nx_Fi(i,b) * Nx_Fi(j,a) - r2d * Nx_Fi(i,a) * Nx_Fi(j,b));
+                }
+            }
+        }
+    }
+}
+
+
+/**
+ * @brief Get the solid viscous PK2 stress and corresponding tangent matrix contributions
+ * Calls the appropriate function based on the viscosity type, either viscous 
+ * pseudo-potential or Newtonian viscosity model.
+ * 
+ * @tparam nsd Number of spatial dimensions
+ * @param[in] lDmn Domain object
+ * @param[in] eNoN Number of nodes in an element
+ * @param[in] Nx Shape function gradient matrix
+ * @param[in] vx Velocity gradient matrix
+ * @param[in] F Deformation gradient matrix
+ * @param[out] Svis Viscous 2nd Piola-Kirchhoff stress matrix
+ * @param[out] Kvis_u Viscous tangent matrix contribution due to displacement
+ * @param[out] Kvis_v Viscous tangent matrix contribution due to velocity
+ */
+template <size_t nsd>
+void get_visc_stress_and_tangent(const dmnType& lDmn, const int eNoN, const Array<double>& Nx, const double vx[nsd][nsd], const double F[nsd][nsd],
+                                 Array<double>& Svis, Array3<double>& Kvis_u, Array3<double>& Kvis_v) {
+
+    switch (lDmn.solid_visc.viscType) {
+      case consts::SolidViscosityModelType::viscType_Newtonian:
+        get_visc_stress_newt<nsd>(lDmn.solid_visc.mu, eNoN, Nx, vx, F, Svis, Kvis_u, Kvis_v);
+      break;
+
+      case consts::SolidViscosityModelType::viscType_Potential:
+        get_visc_stress_pot<nsd>(lDmn.solid_visc.mu, eNoN, Nx, vx, F, Svis, Kvis_u, Kvis_v);
+      break;
+    }
+}
+
 };
 
 #endif

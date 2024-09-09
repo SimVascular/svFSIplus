@@ -53,9 +53,9 @@
 
    <Use_taylor_hood_type_basis> false </Use_taylor_hood_type_basis> 
 
-   <Viscosity model="Constant" >
+   <Fluid_viscosity model="Constant" >
      <Value> 1.0 </Value>
-   </Viscosity>
+   </Fluid_viscosity>
 
    <Momentum_stabilization_coefficient> 10.0 </Momentum_stabilization_coefficient> 
 

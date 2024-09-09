@@ -398,7 +398,7 @@ enum class PhysicalProperyType
   NA = 0, 
   fluid_density = 1, 
   solid_density = 2, 
-  solid_viscosity = 3, 
+  //solid_viscosity = 3, 
   elasticity_modulus = 4,
   poisson_ratio = 5, 
   conductivity = 6, 
@@ -459,6 +459,16 @@ enum class FluidViscosityModelType
 
 /// Map for fluid viscosity model string to FluidViscosityModelType. 
 extern const std::map<std::string,FluidViscosityModelType> fluid_viscosity_model_name_to_type;
+
+enum class SolidViscosityModelType 
+{
+  viscType_NA = 695, 
+  viscType_Newtonian = 694,
+  viscType_Potential = 693
+};
+
+/// Map for solid viscosity model string to SolidViscosityModelType.
+extern const std::map<std::string,SolidViscosityModelType> solid_viscosity_model_name_to_type;
 
 /// Template for printing enum class types as an int.
 template<typename T>

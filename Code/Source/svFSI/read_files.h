@@ -86,7 +86,9 @@ namespace read_files_ns {
 
   void read_trac_bcff(ComMod& com_mod, MBType& lMB, faceType& lFa, const std::string& file_name);
 
-  void read_visc_model(Simulation* simulation, EquationParameters* eq_params, DomainParameters* domain_params, dmnType& lDmn);
+  void read_fluid_visc_model(Simulation* simulation, EquationParameters* eq_params, DomainParameters* domain_params, dmnType& lDmn);
+
+  void read_solid_visc_model(Simulation* simulation, EquationParameters* eq_params, DomainParameters* domain_params, dmnType& lDmn);
 
   void read_wall_props_ff(ComMod& com_mod, const std::string& file_path, const int iM, const int iFa);
 

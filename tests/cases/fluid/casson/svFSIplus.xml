@@ -51,11 +51,11 @@
 
    <Density> 1.06 </Density> 
 
-   <Viscosity model="Cassons" >
+   <Fluid_viscosity model="Cassons" >
       <Asymptotic_viscosity_parameter> 0.3953 </Asymptotic_viscosity_parameter> 
       <Yield_stress_parameter> 0.22803 </Yield_stress_parameter> 
       <Low_shear_rate_threshold> 0.5 </Low_shear_rate_threshold> 
-   </Viscosity>
+   </Fluid_viscosity>
       
    <Output type="Spatial" >
       <Velocity> true </Velocity>

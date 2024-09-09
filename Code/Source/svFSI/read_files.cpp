@@ -1299,9 +1299,9 @@ void read_domain(Simulation* simulation, EquationParameters* eq_params, eqType& 
             }
           break;
 
-          case PhysicalProperyType::solid_viscosity:
-            rtmp = domain_params->solid_viscosity.value();
-          break;
+          // case PhysicalProperyType::solid_viscosity:
+          //   rtmp = domain_params->solid_viscosity.value();
+          // break;
 
           case PhysicalProperyType::source_term:
             rtmp = domain_params->source_term.value();
@@ -1333,7 +1333,13 @@ void read_domain(Simulation* simulation, EquationParameters* eq_params, eqType& 
      if ((lEq.dmn[iDmn].phys == EquationType::phys_fluid) ||  
          (lEq.dmn[iDmn].phys == EquationType::phys_stokes) ||  
          (lEq.dmn[iDmn].phys == EquationType::phys_CMM && !com_mod.cmmInit)) {
-       read_visc_model(simulation, eq_params, domain_params, lEq.dmn[iDmn]);
+       read_fluid_visc_model(simulation, eq_params, domain_params, lEq.dmn[iDmn]);
+     }
+
+     // Set parameters for a fluid viscosity model.
+     if ((lEq.dmn[iDmn].phys == EquationType::phys_struct) ||  
+         (lEq.dmn[iDmn].phys == EquationType::phys_ustruct)) {
+       read_solid_visc_model(simulation, eq_params, domain_params, lEq.dmn[iDmn]);
      }
   }
 }
@@ -2830,11 +2836,11 @@ void read_rmsh(Simulation* simulation, EquationParameters* eq_param)
 }
 
 //-----------------
-// read_visc_model
+// read_fluid_visc_model
 //-----------------
-// Set the viscosity material model parameters for the given domain.
+// Set the fluid viscosity material model parameters for the given domain.
 //
-void read_visc_model(Simulation* simulation, EquationParameters* eq_params, DomainParameters* domain_params, dmnType& lDmn)
+void read_fluid_visc_model(Simulation* simulation, EquationParameters* eq_params, DomainParameters* domain_params, dmnType& lDmn)
 { 
   using namespace consts;
 
@@ -2843,14 +2849,14 @@ void read_visc_model(Simulation* simulation, EquationParameters* eq_params, Doma
   FluidViscosityModelType vmodel_type;
   std::string vmodel_str; 
 
-  if (domain_params->viscosity.model.defined()) {
-    vmodel_str = domain_params->viscosity.model.value();
+  if (domain_params->fluid_viscosity.model.defined()) {
+    vmodel_str = domain_params->fluid_viscosity.model.value();
     std::transform(vmodel_str.begin(), vmodel_str.end(), vmodel_str.begin(), ::tolower);
 
     try {
       vmodel_type = fluid_viscosity_model_name_to_type.at(vmodel_str);
     } catch (const std::out_of_range& exception) {
-      throw std::runtime_error("Unknown viscosity model '" + vmodel_str + "'.");
+      throw std::runtime_error("Unknown fluid viscosity model '" + vmodel_str + "'.");
     }
   } else {
     vmodel_type = FluidViscosityModelType::viscType_Const;
@@ -2858,16 +2864,54 @@ void read_visc_model(Simulation* simulation, EquationParameters* eq_params, Doma
 
   // Set the parameters for the given viscosity model.
   //
-  auto& viscosity_params = domain_params->viscosity;
+  auto& viscosity_params = domain_params->fluid_viscosity;
 
   try {
-    set_viscosity_props[vmodel_type](simulation, viscosity_params, lDmn);
+    set_fluid_viscosity_props[vmodel_type](simulation, viscosity_params, lDmn);
    } catch (const std::bad_function_call& exception) {
-    throw std::runtime_error("[read_visc_model] Viscosity model '" + vmodel_str + "' is not supported.");
+    throw std::runtime_error("[read_fluid_visc_model] Viscosity model '" + vmodel_str + "' is not supported.");
   }
 
-  if ((lDmn.phys == EquationType::phys_stokes) && (lDmn.visc.viscType != FluidViscosityModelType::viscType_Const)) {
+  if ((lDmn.phys == EquationType::phys_stokes) && (lDmn.fluid_visc.viscType != FluidViscosityModelType::viscType_Const)) {
     throw std::runtime_error("Only constant viscosity is allowed for Stokes flow.");
+  }
+}
+
+//-----------------
+// read_solid_visc_model
+//-----------------
+// Set the solid viscosity material model parameters for the given domain.
+//
+void read_solid_visc_model(Simulation* simulation, EquationParameters* eq_params, DomainParameters* domain_params, dmnType& lDmn)
+{ 
+  using namespace consts;
+
+  // Get viscosity model.
+  //
+  SolidViscosityModelType vmodel_type;
+  std::string vmodel_str; 
+
+  if (domain_params->solid_viscosity.model.defined()) {
+    vmodel_str = domain_params->solid_viscosity.model.value();
+    std::transform(vmodel_str.begin(), vmodel_str.end(), vmodel_str.begin(), ::tolower);
+
+    try {
+      vmodel_type = solid_viscosity_model_name_to_type.at(vmodel_str);
+    } catch (const std::out_of_range& exception) {
+      throw std::runtime_error("Unknown solid viscosity model '" + vmodel_str + "'.");
+    }
+  } else {
+    vmodel_type = SolidViscosityModelType::viscType_Newtonian;
+  }
+
+  // Set the parameters for the given viscosity model.
+  //
+  auto& viscosity_params = domain_params->solid_viscosity;
+
+  try {
+    set_solid_viscosity_props[vmodel_type](simulation, viscosity_params, lDmn);
+   } catch (const std::bad_function_call& exception) {
+    throw std::runtime_error("[read_solid_visc_model] Viscosity model '" + vmodel_str + "' is not supported.");
   }
 }
 

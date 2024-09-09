@@ -48,9 +48,9 @@
    <Backflow_stabilization_coefficient> 0.2 </Backflow_stabilization_coefficient>
    <Density> 1.06 </Density>
 
-   <Viscosity model="Constant" >
+   <Fluid_viscosity model="Constant" >
      <Value> 0.04 </Value>
-   </Viscosity>
+   </Fluid_viscosity>
 
    <Output type="Spatial" >
      <Velocity> true </Velocity>

@@ -791,25 +791,25 @@ class VariableWallPropsParameters : public ParameterLists
 
 
 //////////////////////////////////////////////////////////
-//                 Viscosity                            //
+//                 FluidViscosity                            //
 //////////////////////////////////////////////////////////
 
 // The following classes are used to store parameters for
-// various viscosity models.
+// various fluid viscosity models.
 
-class ViscosityNewtonianParameters : public ParameterLists
+class FluidViscosityNewtonianParameters : public ParameterLists
 {
   public:
-    ViscosityNewtonianParameters();
+    FluidViscosityNewtonianParameters();
     void print_parameters();
     void set_values(tinyxml2::XMLElement* equation_params);
     Parameter<double> constant_value;
 };
 
-class ViscosityCarreauYasudaParameters : public ParameterLists
+class FluidViscosityCarreauYasudaParameters : public ParameterLists
 {
   public:
-    ViscosityCarreauYasudaParameters();
+    FluidViscosityCarreauYasudaParameters();
     void print_parameters();
     void set_values(tinyxml2::XMLElement* xml_elem);
 
@@ -820,10 +820,10 @@ class ViscosityCarreauYasudaParameters : public ParameterLists
     Parameter<double> shear_rate_tensor_exponent;
 };
 
-class ViscosityCassonsParameters : public ParameterLists
+class FluidViscosityCassonsParameters : public ParameterLists
 {
   public:
-    ViscosityCassonsParameters();
+    FluidViscosityCassonsParameters();
     void print_parameters();
     void set_values(tinyxml2::XMLElement* xml_elem);
     Parameter<double> asymptotic_viscosity; 
@@ -831,10 +831,10 @@ class ViscosityCassonsParameters : public ParameterLists
     Parameter<double> low_shear_rate_threshold;
 };
 
-class ViscosityParameters : public ParameterLists
+class FluidViscosityParameters : public ParameterLists
 {
   public:
-    ViscosityParameters();
+    FluidViscosityParameters();
 
     static const std::string xml_element_name_;
 
@@ -848,10 +848,56 @@ class ViscosityParameters : public ParameterLists
 
     Parameter<std::string> model;
 
-    ViscosityNewtonianParameters newtonian_model;
-    ViscosityCarreauYasudaParameters carreau_yasuda_model;
-    ViscosityCassonsParameters cassons_model;
+    FluidViscosityNewtonianParameters newtonian_model;
+    FluidViscosityCarreauYasudaParameters carreau_yasuda_model;
+    FluidViscosityCassonsParameters cassons_model;
 };
+
+//////////////////////////////////////////////////////////
+//                 SolidViscosity                            //
+//////////////////////////////////////////////////////////
+
+// The following classes are used to store parameters for
+// various solid viscosity models.
+
+class SolidViscosityNewtonianParameters : public ParameterLists
+{
+  public:
+    SolidViscosityNewtonianParameters();
+    void print_parameters();
+    void set_values(tinyxml2::XMLElement* equation_params);
+    Parameter<double> constant_value;
+};
+
+class SolidViscosityPotentialParameters : public ParameterLists
+{
+  public:
+    SolidViscosityPotentialParameters();
+    void print_parameters();
+    void set_values(tinyxml2::XMLElement* equation_params);
+    Parameter<double> constant_value;
+};
+
+class SolidViscosityParameters : public ParameterLists
+{
+  public:
+    SolidViscosityParameters();
+
+    static const std::string xml_element_name_;
+
+    static const std::string NEWTONIAN_MODEL;
+    static const std::string POTENTIAL_MODEL;
+    static const std::set<std::string> model_names;
+
+    void print_parameters();
+    void set_values(tinyxml2::XMLElement* xml_elem);
+
+    Parameter<std::string> model;
+
+    SolidViscosityNewtonianParameters newtonian_model;
+    SolidViscosityPotentialParameters potential_model;
+};
+
 
 /// @brief The LinearAlgebraParameters class stores parameters for
 /// the 'Linear_algebra' XML element.
@@ -991,9 +1037,9 @@ class FiberReinforcementStressParameters : public ParameterLists
 /// <Domain id="1" >
 ///   <Equation> fluid </Equation>
 ///   <Density> 1.06 </Density>
-///   <Viscosity model="Constant" >
+///   <Fluid_viscosity model="Constant" >
 ///     <Value> 0.04 </Value>
-///   </Viscosity>
+///   </Fluid_viscosity>
 ///   <Backflow_stabilization_coefficient> 0.2 </Backflow_stabilization_coefficient>
 /// </Domain>
 /// \endcode
@@ -1011,7 +1057,8 @@ class DomainParameters : public ParameterLists
     ConstitutiveModelParameters constitutive_model;
     FiberReinforcementStressParameters fiber_reinforcement_stress;
     StimulusParameters stimulus;
-    ViscosityParameters viscosity;
+    FluidViscosityParameters fluid_viscosity;
+    SolidViscosityParameters solid_viscosity;
 
     // Attributes.
     Parameter<std::string> id;
@@ -1060,7 +1107,7 @@ class DomainParameters : public ParameterLists
 
     Parameter<double> shell_thickness;
     Parameter<double> solid_density;
-    Parameter<double> solid_viscosity;
+    //Parameter<double> solid_viscosity;
     Parameter<double> source_term;
     Parameter<double> time_step_for_integration;
 };
@@ -1199,7 +1246,9 @@ class EquationParameters : public ParameterLists
 
     VariableWallPropsParameters variable_wall_properties;
 
-    ViscosityParameters viscosity;
+    FluidViscosityParameters fluid_viscosity;
+
+    SolidViscosityParameters solid_viscosity;
 
     ECGLeadsParameters ecg_leads;
 };

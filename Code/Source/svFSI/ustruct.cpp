@@ -450,7 +450,9 @@ void ustruct_2d_c(ComMod& com_mod, CepMod& cep_mod, const bool vmsFlag, const in
   auto& dmn = eq.dmn[cDmn];
   const double dt = com_mod.dt;
   double ctV = 36.0;
-  double mu = dmn.prop[PhysicalProperyType::solid_viscosity];
+  //double mu = dmn.prop[PhysicalProperyType::solid_viscosity];
+  // TODO: Update solid viscosity implementation here
+  double mu = 0;
 
   Vector<double> fb(2);
   fb[0] = dmn.prop[PhysicalProperyType::f_x];
@@ -667,7 +669,9 @@ void ustruct_3d_c(ComMod& com_mod, CepMod& cep_mod, const bool vmsFlag, const in
   auto& dmn = eq.dmn[cDmn];
   const double dt = com_mod.dt;
   double ctV = 36.0;
-  double mu = dmn.prop[PhysicalProperyType::solid_viscosity];
+  //double mu = dmn.prop[PhysicalProperyType::solid_viscosity];
+  // TODO: Update solid viscosity implementation here
+  double mu = 0;
 
   Vector<double> fb(3);
   fb[0] = dmn.prop[PhysicalProperyType::f_x];
@@ -931,7 +935,9 @@ void ustruct_2d_m(ComMod& com_mod, CepMod& cep_mod, const bool vmsFlag, const in
   fb[0] = dmn.prop[PhysicalProperyType::f_x];
   fb[1] = dmn.prop[PhysicalProperyType::f_y];
 
-  double mu = dmn.prop[PhysicalProperyType::solid_viscosity];
+  //double mu = dmn.prop[PhysicalProperyType::solid_viscosity];
+  // TODO: Update solid viscosity implementation here
+  double mu = 0;
   double am = eq.am;
   double af = eq.af * eq.gam * dt;
   double afm = af / am;
@@ -1228,7 +1234,9 @@ void ustruct_3d_m(ComMod& com_mod, CepMod& cep_mod, const bool vmsFlag, const in
 
   // Define parameters
   //
-  double mu = dmn.prop[PhysicalProperyType::solid_viscosity];
+  //double mu = dmn.prop[PhysicalProperyType::solid_viscosity];
+  // TODO: Update solid viscosity implementation here
+  double mu = 0;
 
   Vector<double> fb(3);
   fb[0] = dmn.prop[PhysicalProperyType::f_x];
