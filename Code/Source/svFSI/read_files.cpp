@@ -1552,9 +1552,8 @@ void read_fiber_temporal_values_file(FiberReinforcementStressParameters& fiber_p
 
   int i, j;
   temporal_values_file >> i >> j; 
-
-  if (i < 2) {
-    throw std::runtime_error("The fiber reinforcement stress the values file '" + file_name + "' has an incorrect format.");
+  if ((i == 0) || (j == 0) || (i < 2)) {
+    throw std::runtime_error("Error reading the first line of the fiber reinforcement stress the values file '" + file_name + "' has an incorrect format.");
   }
 
   lDmn.stM.Tf.gt.d = 1;
@@ -2368,6 +2367,9 @@ void read_temp_spat_values(const ComMod& com_mod, const mshType& msh, const face
 
   int ndof, num_ts, num_nodes;
   file_stream >> ndof >> num_ts >> num_nodes;
+  if ((ndof == 0) || (num_ts == 0) || (num_nodes == 0)) {
+    throw std::runtime_error("Error reading the first line of the temporal and spatial values file '" + file_name + "'.");
+  }
 
   if (num_nodes != lFa.nNo) {
     throw std::runtime_error("The number of nodes (" + std::to_string(num_nodes) + ") in the temporal and spatial values file '" + 
@@ -2480,6 +2482,9 @@ void read_temp_spat_values(const ComMod& com_mod, const mshType& msh, const std:
   //
   int ndof, num_ts, num_nodes;
   file_stream >> ndof >> num_ts >> num_nodes;
+  if ((ndof == 0) || (num_ts == 0) || (num_nodes == 0)) {
+    throw std::runtime_error("Error reading the first line of the temporal and spatial values file '" + file_name + "'.");
+  }
   #ifdef debug_read_ts_values_bf 
   dmsg << "ndof: " << ndof;
   dmsg << "num_ts: " << num_ts;
@@ -2587,8 +2592,8 @@ void read_temporal_values(const std::string& file_name, bcType& lBc)
 
   int i, j;
   temporal_values_file >> i >> j; 
-  if (i < 2) {
-    throw std::runtime_error("The temporal values file '" + file_name + "' has an incorrect format.");
+  if ((i == 0) || (j == 0) || (i < 2)) {
+    throw std::runtime_error("Error reading the first line of the temporal values file '" + file_name + "'.");
   }
   lBc.gt.n = j;
 
@@ -2612,6 +2617,11 @@ void read_temporal_values(const std::string& file_name, bcType& lBc)
       }
       values.push_back(value);
     }
+
+    if (values.size() != 2) { 
+      throw std::runtime_error("Error reading values for the temporal values file '" + file_name + "' for line '" + line + "'.");
+    }
+
     temporal_values.push_back(values);
   }
 
