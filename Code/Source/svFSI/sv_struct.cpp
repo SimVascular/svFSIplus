@@ -659,6 +659,7 @@ void struct_3d_carray(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const in
     ud[1] += N(a)*(rho*(al(j,a)-bfl(1,a)) + dmp*yl(j,a));
     ud[2] += N(a)*(rho*(al(k,a)-bfl(2,a)) + dmp*yl(k,a));
 
+    // Velocity gradient tensor w.r.t. reference coordinates (dv/dX)
     vx[0][0] += Nx(0,a)*yl(i,a);
     vx[0][1] += Nx(1,a)*yl(i,a);
     vx[0][2] += Nx(2,a)*yl(i,a);
@@ -669,6 +670,7 @@ void struct_3d_carray(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const in
     vx[2][1] += Nx(1,a)*yl(k,a);
     vx[2][2] += Nx(2,a)*yl(k,a);
 
+    // Deformation gradient tensor (I + du/dX)
     F[0][0] += Nx(0,a)*dl(i,a);
     F[0][1] += Nx(1,a)*dl(i,a);
     F[0][2] += Nx(2,a)*dl(i,a);

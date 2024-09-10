@@ -1142,8 +1142,8 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
  * @tparam nsd Number of spatial dimensions
  * @param mu Solid viscosity parameter
  * @param eNoN Number of nodes in an element
- * @param Nx Shape function gradient matrix
- * @param vx Velocity gradient matrix
+ * @param Nx Shape function gradient w.r.t. reference configuration coordinates (dN/dX)
+ * @param vx Velocity gradient matrix w.r.t reference configuration coordinates (dv/dX)
  * @param F Deformation gradient matrix
  * @param Svis Viscous 2nd Piola-Kirchhoff stress matrix
  * @param Kvis_u Viscous tangent matrix contribution due to displacement
@@ -1153,8 +1153,6 @@ template <size_t nsd>
 void get_visc_stress_pot(const double mu, const int eNoN, const Array<double>& Nx, const double vx[nsd][nsd], const double F[nsd][nsd],
                         Array<double>& Svis, Array3<double>& Kvis_u, Array3<double>& Kvis_v) {
 
-    std::cout << "get_visc_stress_pot: " << std::endl;
-    std::cout << "mu: " << mu << std::endl;
     
     // Initialize Svis, Kvis_u, Kvis_v to zero
     for (int i = 0; i < nsd; i++) {
@@ -1191,6 +1189,9 @@ void get_visc_stress_pot(const double mu, const int eNoN, const Array<double>& N
     }
 
     // 2nd Piola-Kirchhoff stress due to viscosity
+    // S = mu * E_dot 
+    //   = mu * 1/2 * F^T * (dv/dx + dv/dx^T) * F 
+    //   = mu * 1/2 * ( F^T * dv/dX + (F^T * dv/dX)^T )
     double Ft_vx_symm[nsd][nsd] = {0};
     mat_fun_carray::mat_symm<nsd>(Ft_vx, Ft_vx_symm);
     for (int i = 0; i < nsd; i++) {
@@ -1226,8 +1227,8 @@ void get_visc_stress_pot(const double mu, const int eNoN, const Array<double>& N
  * @tparam nsd Number of spatial dimensions
  * @param mu Solid viscosity parameter
  * @param eNoN Number of nodes in an element
- * @param Nx Shape function gradient matrix
- * @param vx Velocity gradient matrix
+ * @param Nx Shape function gradient w.r.t. reference configuration coordinates (dN/dX)
+ * @param vx Velocity gradient matrix w.r.t reference configuration coordinates (dv/dX)
  * @param F Deformation gradient matrix
  * @param Svis Viscous 2nd Piola-Kirchhoff stress matrix
  * @param Kvis_u Viscous tangent matrix contribution due to displacement
@@ -1237,8 +1238,6 @@ template <size_t nsd>
 void get_visc_stress_newt(const double mu, const int eNoN, const Array<double>& Nx, const double vx[nsd][nsd], const double F[nsd][nsd],
                            Array<double>& Svis, Array3<double>& Kvis_u, Array3<double>& Kvis_v) {
     
-    std::cout << "get_visc_stress_newt: " << std::endl;
-    std::cout << "mu: " << mu << std::endl;
 
     // Initialize Svis, Kvis_u, Kvis_v to zero
     for (int i = 0; i < nsd; i++) {
@@ -1334,8 +1333,8 @@ void get_visc_stress_newt(const double mu, const int eNoN, const Array<double>& 
  * @tparam nsd Number of spatial dimensions
  * @param[in] lDmn Domain object
  * @param[in] eNoN Number of nodes in an element
- * @param[in] Nx Shape function gradient matrix
- * @param[in] vx Velocity gradient matrix
+ * @param[in] Nx Shape function gradient w.r.t. reference configuration coordinates (dN/dX)
+ * @param[in] vx Velocity gradient matrix w.r.t reference configuration coordinates (dv/dX)
  * @param[in] F Deformation gradient matrix
  * @param[out] Svis Viscous 2nd Piola-Kirchhoff stress matrix
  * @param[out] Kvis_u Viscous tangent matrix contribution due to displacement
