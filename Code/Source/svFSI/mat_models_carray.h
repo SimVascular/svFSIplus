@@ -39,6 +39,7 @@
 #include "Tensor4.h"
 
 #include "mat_fun.h"
+#include "mat_fun_carray.h"
 
 namespace mat_models_carray {
 
@@ -1353,6 +1354,46 @@ template <size_t nsd>
 void get_visc_stress_and_tangent(const dmnType& lDmn, const int eNoN, const Array<double>& Nx, const double vx[nsd][nsd], const double F[nsd][nsd],
                                  Array<double>& Svis, Array3<double>& Kvis_u, Array3<double>& Kvis_v) {
 
+    switch (lDmn.solid_visc.viscType) {
+      case consts::SolidViscosityModelType::viscType_Newtonian:
+        get_visc_stress_newt<nsd>(lDmn.solid_visc.mu, eNoN, Nx, vx, F, Svis, Kvis_u, Kvis_v);
+      break;
+
+      case consts::SolidViscosityModelType::viscType_Potential:
+        get_visc_stress_pot<nsd>(lDmn.solid_visc.mu, eNoN, Nx, vx, F, Svis, Kvis_u, Kvis_v);
+      break;
+    }
+}
+
+/**
+ * @brief Get the solid viscous PK2 stress and corresponding tangent matrix contributions
+ * Calls the appropriate function based on the viscosity type, either viscous 
+ * pseudo-potential or Newtonian viscosity model.
+ * 
+ * Same as above, except takes vx and F as Array objects instead of C-style arrays.
+ * 
+ * @tparam nsd Number of spatial dimensions
+ * @param[in] lDmn Domain object
+ * @param[in] eNoN Number of nodes in an element
+ * @param[in] Nx Shape function gradient w.r.t. reference configuration coordinates (dN/dX)
+ * @param[in] vx Velocity gradient matrix w.r.t reference configuration coordinates (dv/dX)
+ * @param[in] F Deformation gradient matrix
+ * @param[out] Svis Viscous 2nd Piola-Kirchhoff stress matrix
+ * @param[out] Kvis_u Viscous tangent matrix contribution due to displacement
+ * @param[out] Kvis_v Viscous tangent matrix contribution due to velocity
+ */
+template <size_t nsd>
+void get_visc_stress_and_tangent(const dmnType& lDmn, const int eNoN, const Array<double>& Nx, Array<double>& vx_Array, Array<double>& F_Array,
+                                 Array<double>& Svis, Array3<double>& Kvis_u, Array3<double>& Kvis_v) {
+
+    // Convert vx_Array and F_Array to C-style arrays
+    double vx[nsd][nsd], F[nsd][nsd];
+    for (int i = 0; i < nsd; i++) {
+        for (int j = 0; j < nsd; j++) {
+            vx[i][j] = vx_Array(i,j);
+            F[i][j] = F_Array(i,j);
+        }
+    }
     switch (lDmn.solid_visc.viscType) {
       case consts::SolidViscosityModelType::viscType_Newtonian:
         get_visc_stress_newt<nsd>(lDmn.solid_visc.mu, eNoN, Nx, vx, F, Svis, Kvis_u, Kvis_v);
