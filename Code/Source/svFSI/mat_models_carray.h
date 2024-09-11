@@ -1138,6 +1138,13 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
 /**
  * @brief Get the viscous PK2 stress and corresponding tangent matrix contributions for a solid
  * with a viscous pseudo-potential model.
+ * This is defined by a viscous pseuo-potential
+ * Psi = mu/2 * tr(E_dot^2)
+ * The viscous 2nd Piola-Kirchhoff stress is given by
+ * Svis = dPsi/dE_dot 
+ *   = mu * E_dot
+ *   = mu * 1/2 * F^T * (grad(v) + grad(v)^T) * F
+ *   = mu * 1/2 * ( (F^T * Grad(v)) + (F^T * Grad(v))^T )
  * 
  * @tparam nsd Number of spatial dimensions
  * @param mu Solid viscosity parameter
@@ -1189,9 +1196,7 @@ void get_visc_stress_pot(const double mu, const int eNoN, const Array<double>& N
     }
 
     // 2nd Piola-Kirchhoff stress due to viscosity
-    // S = mu * E_dot 
-    //   = mu * 1/2 * F^T * (dv/dx + dv/dx^T) * F 
-    //   = mu * 1/2 * ( F^T * dv/dX + (F^T * dv/dX)^T )
+    // Svis = mu * 1/2 * ( (F^T * dv/dX) + (F^T * dv/dX)^T )
     double Ft_vx_symm[nsd][nsd] = {0};
     mat_fun_carray::mat_symm<nsd>(Ft_vx, Ft_vx_symm);
     for (int i = 0; i < nsd; i++) {
@@ -1199,7 +1204,6 @@ void get_visc_stress_pot(const double mu, const int eNoN, const Array<double>& N
             Svis(i,j) = mu * Ft_vx_symm[i][j];
         }
     }
-    //Svis = mu * Ft_vx_symm;
 
     // Tangent matrix contributions due to viscosity
     for (int b = 0; b < eNoN; ++b) {
@@ -1223,6 +1227,11 @@ void get_visc_stress_pot(const double mu, const int eNoN, const Array<double>& N
 /**
  * @brief Get the viscous PK2 stress and corresponding tangent matrix contributions for a solid
  * with a Newtonian fluid-like viscosity model.
+ * The viscous deviatoric Cauchy stress is given by
+ * sigma_vis_dev = 2 * mu * d_dev
+ * where d_dev = 1/2 * (grad(v) + grad(v)^T) - 1/3 * (div(v)) * I
+ * The viscous 2nd Piola-Kirchhoff stress is given by a pull-back operation
+ * Svis = 2 * mu * J * F^-1 * d_dev * F^-T
  * 
  * @tparam nsd Number of spatial dimensions
  * @param mu Solid viscosity parameter
@@ -1283,6 +1292,7 @@ void get_visc_stress_newt(const double mu, const int eNoN, const Array<double>& 
     }
 
     // 2nd Piola-Kirchhoff stress due to viscosity
+    // Svis = 2 * mu * J * F^-1 * d_dev * F^-T
     double Fit[nsd][nsd] = {0};
     mat_fun_carray::transpose<nsd>(Fi, Fit);
     double ddev_Fit[nsd][nsd] = {0};
@@ -1294,7 +1304,6 @@ void get_visc_stress_newt(const double mu, const int eNoN, const Array<double>& 
             Svis(i,j) = 2.0 * mu * J * Fi_ddev_Fit[i][j];
         }
     }
-    //Svis = 2.0 * mu * J * Fi_ddev_Fit;
 
     // Tangent matrix contributions due to viscosity
     double r2d = 2.0 / nsd;
