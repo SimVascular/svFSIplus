@@ -445,25 +445,16 @@ void struct_2d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, 
 
   S0(1,0) = S0(0,1);
 
-  // TODO: Update solid viscosity contribution below
-  double mu = 0.0;
-
-  double Jac = mat_det(F, 2);
-  auto Fi = mat_inv(F, 2);
-
-  // Viscous contribution
-  // Velocity gradient in current configuration
-  auto VxFi = mat_mul(vx, Fi);
-
-  // Deviatoric strain tensor
-  auto ddev = mat_dev(mat_symm(VxFi,2), 2);
-
-  // 2nd Piola-Kirchhoff stress due to viscosity
-  auto Svis = mat_mul(ddev, transpose(Fi));
-  Svis = 2.0 * mu * Jac * mat_mul(Fi, Svis);
-
+  // 2nd Piola-Kirchhoff stress (S) and material stiffness tensor in Voight notation (Dm)
   Array<double> S(2,2), Dm(3,3);
   mat_models::get_pk2cc(com_mod, cep_mod, dmn, F, nFn, fN, ya_g, S, Dm);
+
+  // Viscous 2nd Piola-Kirchhoff stress and tangent contributions
+  Array<double> Svis(2,2);
+  Array3<double> Kvis_u(4, eNoN, eNoN);
+  Array3<double> Kvis_v(4, eNoN, eNoN);
+
+  mat_models_carray::get_visc_stress_and_tangent<2>(dmn, eNoN, Nx, vx, F, Svis, Kvis_u, Kvis_v);
 
   // Elastic + Viscous stresses
   S = S + Svis;
@@ -507,22 +498,9 @@ void struct_2d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, 
 
   Array<double> NxFi(2,eNoN), DdNx(2,eNoN), VxNx(2,eNoN);
 
-  for (int a = 0; a < eNoN; a++) {
-    NxFi(0,a) = Nx(0,a)*Fi(0,0) + Nx(1,a)*Fi(1,0);
-    NxFi(1,a) = Nx(0,a)*Fi(0,1) + Nx(1,a)*Fi(1,1);
-
-    DdNx(0,a) = ddev(0,0)*NxFi(0,a) + ddev(0,1)*NxFi(1,a);
-    DdNx(1,a) = ddev(1,0)*NxFi(0,a) + ddev(1,1)*NxFi(1,a);
-
-    VxNx(0,a) = VxFi(0,0)*NxFi(0,a) + VxFi(1,0)*NxFi(1,a);
-    VxNx(1,a) = VxFi(0,1)*NxFi(0,a) + VxFi(1,1)*NxFi(1,a);
-  }
 
   //     Local stiffness tensor
-  //
-  double rmu = afu*mu*Jac;
-  double rmv = afv*mu*Jac;
-  double T1, Tv, NxNx, NxSNx, BmDBm;
+  double T1, NxNx, NxSNx, BmDBm;
 
   for (int b = 0; b < eNoN; b++) { 
     for (int a = 0; a < eNoN; a++) { 
@@ -542,51 +520,30 @@ void struct_2d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, 
       DBm(2,0) = Dm(2,0)*Bm(0,0,b) + Dm(2,1)*Bm(1,0,b) + Dm(2,2)*Bm(2,0,b);
       DBm(2,1) = Dm(2,0)*Bm(0,1,b) + Dm(2,1)*Bm(1,1,b) + Dm(2,2)*Bm(2,1,b);
 
-      NxNx = NxFi(0,a)*NxFi(0,b) + NxFi(1,a)*NxFi(1,b);
 
       // dM1/du1
       // Material stiffness: Bt*D*B
       BmDBm = Bm(0,0,a)*DBm(0,0) + Bm(1,0,a)*DBm(1,0) + Bm(2,0,a)*DBm(2,0);
 
-      //     Viscous terms contribution
-      Tv = (2.0*(DdNx(0,a)*NxFi(0,b) - DdNx(0,b)*NxFi(0,a)) - (NxNx*VxFi(0,0) + NxFi(0,b)*VxNx(0,a) -  
-           NxFi(0,a)*VxNx(0,b))) * rmu + (NxNx) * rmv;
-
-      lK(0,a,b) = lK(0,a,b) + w*(T1 + afu*BmDBm + Tv);
+      lK(0,a,b) = lK(0,a,b) + w*( T1 + afu*(BmDBm + Kvis_u(0,a,b)) + afv*Kvis_v(0,a,b) );
 
       // dM1/du2
       // Material stiffness: Bt*D*B
       BmDBm = Bm(0,0,a)*DBm(0,1) + Bm(1,0,a)*DBm(1,1) + Bm(2,0,a)*DBm(2,1);
 
-      //  Viscous terms contribution
-      Tv = (2.0*(DdNx(0,a)*NxFi(1,b) - DdNx(0,b)*NxFi(1,a)) - 
-           (NxNx*VxFi(0,1) + NxFi(0,b)*VxNx(1,a) -  
-           NxFi(0,a)*VxNx(1,b))) * rmu + (NxFi(1,a)*NxFi(0,b) - 
-           NxFi(0,a)*NxFi(1,b)) * rmv;
-
-      lK(1,a,b) = lK(1,a,b) + w*(afu*BmDBm + Tv);
+      lK(1,a,b) = lK(1,a,b) + w*( afu*(BmDBm + Kvis_u(1,a,b)) + afv*Kvis_v(1,a,b) );
 
       // dM2/du1
       // Material stiffness: Bt*D*B
       BmDBm = Bm(0,1,a)*DBm(0,0) + Bm(1,1,a)*DBm(1,0) + Bm(2,1,a)*DBm(2,0);
 
-      //  Viscous terms contribution
-      Tv = (2.0*(DdNx(1,a)*NxFi(0,b) - DdNx(1,b)*NxFi(0,a)) - 
-           (NxNx*VxFi(1,0) + NxFi(1,b)*VxNx(0,a) - 
-           NxFi(1,a)*VxNx(0,b))) * rmu + (NxFi(0,a)*NxFi(1,b) - 
-           NxFi(1,a)*NxFi(0,b)) * rmv;
-
-      lK(dof+0,a,b) = lK(dof+0,a,b) + w*(afu*BmDBm + Tv);
+      lK(dof+0,a,b) = lK(dof+0,a,b) + w*( afu*(BmDBm + Kvis_u(dof+0,a,b)) + afv*Kvis_v(dof+0,a,b) );
 
       // dM2/du2
       // Material stiffness: Bt*D*B
       BmDBm = Bm(0,1,a)*DBm(0,1) + Bm(1,1,a)*DBm(1,1) + Bm(2,1,a)*DBm(2,1);
 
-      //  Viscous terms contribution
-      Tv = (2.0*(DdNx(1,a)*NxFi(1,b) - DdNx(1,b)*NxFi(1,a)) - (NxNx*VxFi(1,1) + NxFi(1,b)*VxNx(1,a)
-           -  NxFi(1,a)*VxNx(1,b))) * rmu + (NxNx) * rmv;
-
-      lK(dof+1,a,b) = lK(dof+1,a,b) + w*(T1 + afu*BmDBm + Tv);
+      lK(dof+1,a,b) = lK(dof+1,a,b) + w*( T1 + afu*(BmDBm + Kvis_u(dof+1,a,b)) + afv*Kvis_v(dof+1,a,b) );
     }
   }
 }
@@ -696,39 +653,6 @@ void struct_3d_carray(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const in
   S0[2][1] = S0[1][2];
   S0[0][2] = S0[2][0];
 
-  // double Jac = mat_fun_carray::mat_det<3>(F);
-
-  // double Fi[3][3]; 
-  // mat_fun_carray::mat_inv<3>(F, Fi);
-
-  // // Viscous contribution
-  // // Velocity gradient in current configuration
-  // double VxFi[3][3]; 
-  // mat_fun_carray::mat_mul(vx, Fi, VxFi);
-
-  // // Deviatoric strain tensor
-  // double VxFi_sym[3][3]; 
-  // mat_fun_carray::mat_symm<3>(VxFi,VxFi_sym);
-
-  // double ddev[3][3]; 
-  // mat_fun_carray::mat_dev<3>(VxFi_sym, ddev);
-
-  // // 2nd Piola-Kirchhoff stress due to viscosity
-  // double Fi_transp[3][3]; 
-  // mat_fun_carray::transpose<3>(Fi, Fi_transp);
-
-  // double Svis[3][3]; 
-  // mat_fun_carray::mat_mul<3>(ddev, Fi_transp, Svis);
-
-  // double Fi_Svis_m[3][3]; 
-  // mat_fun_carray::mat_mul<3>(Fi, Svis, Fi_Svis_m);
-
-  // for (int i = 0; i < 3; i++) {
-  //   for (int j = 0; j < 3; j++) {
-  //     Svis[i][j] = 2.0 * mu * Jac * Fi_Svis_m[i][j];
-  //   }
-  // }
-
   // Initialize tensor indexing.
   mat_fun_carray::ten_init(3);
 
@@ -820,30 +744,7 @@ void struct_3d_carray(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const in
     Bm(5,2,a) = (Nx(2,a)*F[2][0] + F[2][2]*Nx(0,a));
   }
 
-  // // Below quantities are used for viscous stress contribution
-  // // Shape function gradients in the current configuration
-  // //
-  // Array<double> NxFi(3,eNoN), DdNx(3,eNoN), VxNx(3,eNoN);
-
-  // for (int a = 0; a < eNoN; a++) {
-  //   NxFi(0,a) = Nx(0,a)*Fi[0][0] + Nx(1,a)*Fi[1][0] + Nx(2,a)*Fi[2][0];
-  //   NxFi(1,a) = Nx(0,a)*Fi[0][1] + Nx(1,a)*Fi[1][1] + Nx(2,a)*Fi[2][1];
-  //   NxFi(2,a) = Nx(0,a)*Fi[0][2] + Nx(1,a)*Fi[1][2] + Nx(2,a)*Fi[2][2];
-
-  //   DdNx(0,a) = ddev[0][0]*NxFi(0,a) + ddev[0][1]*NxFi(1,a) + ddev[0][2]*NxFi(2,a);
-  //   DdNx(1,a) = ddev[1][0]*NxFi(0,a) + ddev[1][1]*NxFi(1,a) + ddev[1][2]*NxFi(2,a);
-  //   DdNx(2,a) = ddev[2][0]*NxFi(0,a) + ddev[2][1]*NxFi(1,a) + ddev[2][2]*NxFi(2,a);
-
-  //   VxNx(0,a) = VxFi[0][0]*NxFi(0,a) + VxFi[1][0]*NxFi(1,a) + VxFi[2][0]*NxFi(2,a);
-  //   VxNx(1,a) = VxFi[0][1]*NxFi(0,a) + VxFi[1][1]*NxFi(1,a) + VxFi[2][1]*NxFi(2,a);
-  //   VxNx(2,a) = VxFi[0][2]*NxFi(0,a) + VxFi[1][2]*NxFi(1,a) + VxFi[2][2]*NxFi(2,a);
-  // }
-
   // Local stiffness tensor
-  double r13 = 1.0 / 3.0;
-  double r23 = 2.0 / 3.0;
-  // double rmu = afu * mu * Jac;
-  // double rmv = afv * mu * Jac;
   double NxSNx, T1, NxNx, BmDBm;
 
   Array<double> DBm(6,3);
@@ -863,17 +764,12 @@ void struct_3d_carray(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const in
 
       // Material Stiffness (Bt*D*B)
       mat_fun_carray::mat_mul6x3<3>(Dm, Bm.rslice(b), DBm);
-      // NxNx = NxFi(0,a)*NxFi(0,b) + NxFi(1,a)*NxFi(1,b) + NxFi(2,a)*NxFi(2,b);
 
       // dM1/du1
       // Material stiffness: Bt*D*B
       BmDBm = Bm(0,0,a)*DBm(0,0) + Bm(1,0,a)*DBm(1,0) +
               Bm(2,0,a)*DBm(2,0) + Bm(3,0,a)*DBm(3,0) +
               Bm(4,0,a)*DBm(4,0) + Bm(5,0,a)*DBm(5,0);
-
-      // // Viscous terms contribution
-      // Tv = (2.0*(DdNx(0,a)*NxFi(0,b) - DdNx(0,b)*NxFi(0,a)) - (NxNx*VxFi[0][0] + NxFi(0,b)*VxNx(0,a) -  
-      //      r23*NxFi(0,a)*VxNx(0,b))) * rmu + (r13*NxFi(0,a)*NxFi(0,b) + NxNx) * rmv;
 
       lK(0,a,b) = lK(0,a,b) + w*( T1 + afu*(BmDBm + Kvis_u(0,a,b)) + afv*Kvis_v(0,a,b) );
 
@@ -883,11 +779,6 @@ void struct_3d_carray(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const in
               Bm(2,0,a)*DBm(2,1) + Bm(3,0,a)*DBm(3,1) +
               Bm(4,0,a)*DBm(4,1) + Bm(5,0,a)*DBm(5,1);
 
-      // // Viscous terms contribution
-      // Tv = (2.0*(DdNx(0,a)*NxFi(1,b) - DdNx(0,b)*NxFi(1,a))
-      //        - (NxNx*VxFi[0][1] + NxFi(0,b)*VxNx(1,a)
-      //        -  r23*NxFi(0,a)*VxNx(1,b))) * rmu
-      //      + (NxFi(1,a)*NxFi(0,b) - r23*NxFi(0,a)*NxFi(1,b)) * rmv;
 
       lK(1,a,b) = lK(1,a,b) + w*( afu*(BmDBm + Kvis_u(1,a,b)) + afv*(Kvis_v(1,a,b)) );
 
@@ -897,11 +788,6 @@ void struct_3d_carray(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const in
               Bm(2,0,a)*DBm(2,2) + Bm(3,0,a)*DBm(3,2) +
               Bm(4,0,a)*DBm(4,2) + Bm(5,0,a)*DBm(5,2);
 
-      // Viscous terms contribution
-      // Tv = (2.0*(DdNx(0,a)*NxFi(2,b) - DdNx(0,b)*NxFi(2,a)) - 
-      //      (NxNx*VxFi[0][2] + NxFi(0,b)*VxNx(2,a) -  
-      //      r23*NxFi(0,a)*VxNx(2,b))) * rmu + 
-      //      (NxFi(2,a)*NxFi(0,b) - r23*NxFi(0,a)*NxFi(2,b)) * rmv;
 
       lK(2,a,b) = lK(2,a,b) + w*( afu*(BmDBm + Kvis_u(2,a,b)) + afv*Kvis_v(2,a,b) );
 
@@ -911,11 +797,6 @@ void struct_3d_carray(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const in
               Bm(2,1,a)*DBm(2,0) + Bm(3,1,a)*DBm(3,0) +
               Bm(4,1,a)*DBm(4,0) + Bm(5,1,a)*DBm(5,0);
 
-      // Viscous terms contribution
-      // Tv = (2.0*(DdNx(1,a)*NxFi(0,b) - DdNx(1,b)*NxFi(0,a)) - 
-      //      (NxNx*VxFi[1][0] + NxFi(1,b)*VxNx(0,a) -  
-      //      r23*NxFi(1,a)*VxNx(0,b))) * rmu + 
-      //      (NxFi(0,a)*NxFi(1,b) - r23*NxFi(1,a)*NxFi(0,b)) * rmv;
 
       lK(dof+0,a,b) = lK(dof+0,a,b) + w*( afu*(BmDBm + Kvis_u(dof+0,a,b)) + afv*Kvis_v(dof+0,a,b) );
 
@@ -925,11 +806,6 @@ void struct_3d_carray(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const in
               Bm(2,1,a)*DBm(2,1) + Bm(3,1,a)*DBm(3,1) +
               Bm(4,1,a)*DBm(4,1) + Bm(5,1,a)*DBm(5,1);
 
-      // Viscous terms contribution
-      // Tv = (2.0*(DdNx(1,a)*NxFi(1,b) - DdNx(1,b)*NxFi(1,a)) - 
-      //      (NxNx*VxFi[1][1] + NxFi(1,b)*VxNx(1,a) -  
-      //      r23*NxFi(1,a)*VxNx(1,b))) * rmu + 
-      //      (r13*NxFi(1,a)*NxFi(1,b) + NxNx) * rmv;
 
       lK(dof+1,a,b) = lK(dof+1,a,b) + w*(T1 + afu*(BmDBm + Kvis_u(dof+1,a,b)) + afv*Kvis_v(dof+1,a,b) );
 
@@ -939,11 +815,6 @@ void struct_3d_carray(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const in
               Bm(2,1,a)*DBm(2,2) + Bm(3,1,a)*DBm(3,2) +
               Bm(4,1,a)*DBm(4,2) + Bm(5,1,a)*DBm(5,2);
 
-      // Viscous terms contribution
-      // Tv = (2.0*(DdNx(1,a)*NxFi(2,b) - DdNx(1,b)*NxFi(2,a)) - 
-      //      (NxNx*VxFi[1][2] + NxFi(1,b)*VxNx(2,a) -  
-      //      r23*NxFi(1,a)*VxNx(2,b))) * rmu + (NxFi(2,a)*NxFi(1,b) - 
-      //      r23*NxFi(1,a)*NxFi(2,b)) * rmv;
 
       lK(dof+2,a,b) = lK(dof+2,a,b) + w*( afu*(BmDBm + Kvis_u(dof+2,a,b)) + afv*Kvis_v(dof+2,a,b) );
 
@@ -953,11 +824,6 @@ void struct_3d_carray(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const in
               Bm(2,2,a)*DBm(2,0) + Bm(3,2,a)*DBm(3,0) +
               Bm(4,2,a)*DBm(4,0) + Bm(5,2,a)*DBm(5,0);
 
-      // Viscous terms contribution
-      // Tv = (2.0*(DdNx(2,a)*NxFi(0,b) - DdNx(2,b)*NxFi(0,a)) - 
-      //      (NxNx*VxFi[2][0] + NxFi(2,b)*VxNx(0,a) -  
-      //      r23*NxFi(2,a)*VxNx(0,b))) * rmu + (NxFi(0,a)*NxFi(2,b) - 
-      //      r23*NxFi(2,a)*NxFi(0,b)) * rmv;
 
       lK(2*dof+0,a,b) = lK(2*dof+0,a,b) + w*( afu*(BmDBm + Kvis_u(2*dof+0,a,b)) + afv*Kvis_v(2*dof+0,a,b) );
  
@@ -967,11 +833,6 @@ void struct_3d_carray(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const in
               Bm(2,2,a)*DBm(2,1) + Bm(3,2,a)*DBm(3,1) +
               Bm(4,2,a)*DBm(4,1) + Bm(5,2,a)*DBm(5,1);
 
-     // Viscous terms contribution
-    //  Tv = (2.0*(DdNx(2,a)*NxFi(1,b) - DdNx(2,b)*NxFi(1,a)) - 
-    //       (NxNx*VxFi[2][1] + NxFi(2,b)*VxNx(1,a) -  
-    //       r23*NxFi(2,a)*VxNx(1,b))) * rmu + (NxFi(1,a)*NxFi(2,b) - 
-    //       r23*NxFi(2,a)*NxFi(1,b)) * rmv;
 
      lK(2*dof+1,a,b) = lK(2*dof+1,a,b) + w*( afu*(BmDBm + Kvis_u(2*dof+1,a,b)) + afv*Kvis_v(2*dof+1,a,b) );
 
@@ -981,12 +842,6 @@ void struct_3d_carray(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const in
               Bm(2,2,a)*DBm(2,2) + Bm(3,2,a)*DBm(3,2) +
               Bm(4,2,a)*DBm(4,2) + Bm(5,2,a)*DBm(5,2);
 
-      // // Viscous terms contribution
-      // Tv = (2.0*(DdNx(2,a)*NxFi(2,b) - DdNx(2,b)*NxFi(2,a)) - 
-      //      (NxNx*VxFi[2][2] + NxFi(2,b)*VxNx(2,a) -  
-      //      r23*NxFi(2,a)*VxNx(2,b))) * rmu + 
-      //      (r13*NxFi(2,a)*NxFi(2,b) + NxNx) * rmv;
-
       lK(2*dof+2,a,b) = lK(2*dof+2,a,b) + w*( T1 + afu*(BmDBm + Kvis_u(2*dof+2,a,b)) + afv*Kvis_v(2*dof+2,a,b) );
     }
   }
@@ -995,6 +850,7 @@ void struct_3d_carray(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const in
 
 /// @brief Reproduces Fortran 'STRUCT3D' subroutine.
 //
+// DEPRECATED: This function is deprecated and will be removed in the future.
 void struct_3d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, const double w, 
     const Vector<double>& N, const Array<double>& Nx, const Array<double>& al, const Array<double>& yl, 
     const Array<double>& dl, const Array<double>& bfl, const Array<double>& fN, const Array<double>& pS0l, 
@@ -1023,7 +879,6 @@ void struct_3d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, 
   //
   double rho = dmn.prop.at(PhysicalProperyType::solid_density);
   //double mu = dmn.prop.at(PhysicalProperyType::solid_viscosity);
-  // TODO: Do I need to update solid viscosity implementation here?
   double mu = 0;
   double dmp = dmn.prop.at(PhysicalProperyType::damping);
   Vector<double> fb({dmn.prop.at(PhysicalProperyType::f_x), 
