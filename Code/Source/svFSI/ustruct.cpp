@@ -385,13 +385,13 @@ void construct_usolid(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const
         auto N0 = fs[0].N.col(g);
         auto N1 = fs[1].N.col(g);
         ustruct_3d_c(com_mod, cep_mod, vmsStab, fs[0].eNoN, fs[1].eNoN, w, Jac, N0, N1, Nwx, 
-            Nqx, al, yl, dl, bfl, ksix, lR, lK, lKd);
+            Nqx, al, yl, dl, bfl, lR, lK, lKd);
 
       } else if (nsd == 2) {
         auto N0 = fs[0].N.col(g);
         auto N1 = fs[1].N.col(g);
         ustruct_2d_c(com_mod, cep_mod, vmsStab, fs[0].eNoN, fs[1].eNoN, w, Jac, N0, N1, Nwx, 
-            Nqx, al, yl, dl, bfl, ksix, lR, lK, lKd);
+            Nqx, al, yl, dl, bfl, lR, lK, lKd);
       }
 
     } // for g = 0 to fs[1].nG
@@ -428,7 +428,7 @@ int get_col_ptr(ComMod& com_mod, const int rowN, const int colN)
 void ustruct_2d_c(ComMod& com_mod, CepMod& cep_mod, const bool vmsFlag, const int eNoNw, const int eNoNq,
     const double w, const double Je, const Vector<double>& Nw,  const Vector<double>& Nq,
     const Array<double>& Nwx, const Array<double>& Nqx, const Array<double>& al, const Array<double>& yl, 
-    const Array<double>& dl, const Array<double>& bfl, const Array<double>& Kxi, Array<double>& lR, Array3<double>& lK, 
+    const Array<double>& dl, const Array<double>& bfl, Array<double>& lR, Array3<double>& lK, 
     Array3<double>& lKd)
 {
   using namespace consts;
@@ -450,9 +450,6 @@ void ustruct_2d_c(ComMod& com_mod, CepMod& cep_mod, const bool vmsFlag, const in
   int cDmn = com_mod.cDmn;
   auto& dmn = eq.dmn[cDmn];
   const double dt = com_mod.dt;
-
-  double ctV = 36.0;
-  double mu = dmn.solid_visc.mu;
 
   Vector<double> fb(2);
   fb[0] = dmn.prop[PhysicalProperyType::f_x];
@@ -529,21 +526,9 @@ void ustruct_2d_c(ComMod& com_mod, CepMod& cep_mod, const bool vmsFlag, const in
   //
   double tauM = 0.0;
   double tauC = 0.0;
-  Array<double> Kx(3,3); 
 
   if (vmsFlag) {
     mat_models::get_tau(com_mod, eq.dmn[cDmn], Jac, Je, tauM, tauC);
-
-    // Stabilization parameter for solid viscosity
-    Kx = mat_mul(Kxi, Fi);
-    Kx = mat_mul(transpose(Fi), Kx);
-
-    double tauV = Kx(0,0)*Kx(0,0) + Kx(1,0)*Kx(1,0) + Kx(2,0)*Kx(2,0) + 
-                  Kx(0,1)*Kx(0,1) + Kx(1,1)*Kx(1,1) + Kx(2,1)*Kx(2,1) + 
-                  Kx(0,2)*Kx(0,2) + Kx(1,2)*Kx(1,2) + Kx(2,2)*Kx(2,2);
-
-    tauV = ctV * mu * mu * tauV;
-    tauM = 1.0 / sqrt( tauV + pow(1.0/tauM,2.0));
 
   } else {
     tauM = 0.0;
@@ -647,7 +632,7 @@ void ustruct_2d_c(ComMod& com_mod, CepMod& cep_mod, const bool vmsFlag, const in
 void ustruct_3d_c(ComMod& com_mod, CepMod& cep_mod, const bool vmsFlag, const int eNoNw, const int eNoNq,
     const double w, const double Je, const Vector<double>& Nw,  const Vector<double>& Nq,
     const Array<double>& Nwx, const Array<double>& Nqx, const Array<double>& al, const Array<double>& yl, 
-    const Array<double>& dl, const Array<double>& bfl, const Array<double>& Kxi, Array<double>& lR, Array3<double>& lK, 
+    const Array<double>& dl, const Array<double>& bfl, Array<double>& lR, Array3<double>& lK, 
     Array3<double>& lKd)
 {
   using namespace consts;
@@ -669,9 +654,6 @@ void ustruct_3d_c(ComMod& com_mod, CepMod& cep_mod, const bool vmsFlag, const in
   int cDmn = com_mod.cDmn;
   auto& dmn = eq.dmn[cDmn];
   const double dt = com_mod.dt;
-
-  double ctV = 36.0;
-  double mu = dmn.solid_visc.mu;
 
   Vector<double> fb(3);
   fb[0] = dmn.prop[PhysicalProperyType::f_x];
@@ -767,21 +749,9 @@ void ustruct_3d_c(ComMod& com_mod, CepMod& cep_mod, const bool vmsFlag, const in
   //
   double tauM = 0.0;
   double tauC = 0.0;
-  Array<double> Kx(3,3); 
 
   if (vmsFlag) {
     mat_models::get_tau(com_mod, eq.dmn[cDmn], Jac, Je, tauM, tauC);
-
-    // Stabilization parameter for solid viscosity
-    Kx = mat_mul(Kxi, Fi);
-    Kx = mat_mul(transpose(Fi), Kx);
-
-    double tauV = Kx(0,0)*Kx(0,0) + Kx(1,0)*Kx(1,0) + Kx(2,0)*Kx(2,0) + 
-                  Kx(0,1)*Kx(0,1) + Kx(1,1)*Kx(1,1) + Kx(2,1)*Kx(2,1) + 
-                  Kx(0,2)*Kx(0,2) + Kx(1,2)*Kx(1,2) + Kx(2,2)*Kx(2,2);
-
-    tauV = ctV * mu * mu * tauV;
-    tauM = 1.0 / sqrt( tauV + pow(1.0/tauM,2.0));
 
   } else {
     tauM = 0.0;
