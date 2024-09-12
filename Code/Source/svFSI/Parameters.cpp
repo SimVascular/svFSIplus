@@ -1449,6 +1449,8 @@ void DomainParameters::print_parameters()
   stimulus.print_parameters();
 
   fluid_viscosity.print_parameters();
+
+  solid_viscosity.print_parameters();
 }
 
 void DomainParameters::set_values(tinyxml2::XMLElement* domain_elem)
