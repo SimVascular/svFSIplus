@@ -64,7 +64,7 @@ def run_by_name(folder, name, t_max, n_proc=1):
 
     # run simulation
     if is_not_Darwin:
-        if folder.endswith("petsc"):
+        if "petsc" in folder:
             cmd = " ".join(
             [
                 "mpirun",
@@ -87,7 +87,7 @@ def run_by_name(folder, name, t_max, n_proc=1):
             ]
             )
     else:
-        if folder.endswith("petsc") or folder.endswith("trilinos"): 
+        if "petsc" in folder or "trilinos" in folder: 
             return
         else:
             cmd = " ".join(
@@ -119,7 +119,7 @@ def run_with_reference(
     n_proc=1,
     t_max=1,
     name_ref=None,
-    name_inp="svFSI.xml",
+    name_inp="svFSIplus.xml",
 ):
     """
     Run a test case and compare it to a stored reference solution
@@ -141,7 +141,7 @@ def run_with_reference(
     if is_not_Darwin:
         res = run_by_name(folder, name_inp, t_max, n_proc)
     else:
-        if folder.endswith("petsc") or folder.endswith("trilinos"): 
+        if "petsc" in folder or "trilinos" in folder: 
             return
         else:
             res = run_by_name(folder, name_inp, t_max, n_proc)
