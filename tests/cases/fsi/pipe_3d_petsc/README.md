@@ -1,23 +1,18 @@
 
 # **Problem Description**
 
-Solve pressure wave propagation in an arterial model using the Arbitrary Lagrangian-Eulerian method [1]. The problem set-up is as follows.
+Simulate pressure wave propagation in an arterial model using the Arbitrary Lagrangian-Eulerian method
 
-<p align="center">
-   <img src="./configuration.png" width="600">
-</p>
+The simulation differs from the <a href="https://github.com/SimVascular/svFSIplus/tree/main/tests/cases/fsi/pipe_3d"> FSI in a 3D Pipe </a> test only in the linear algebra package it uses.
 
-And the results are
-
-<p align="center">
-   <img src="./results.gif" width="600">
-</p>
-
-The input file `svFSI.xml` follows the input file format for svFSIplus. More on ALE-FSI simulations can be found here:
-
-- SimVascular Website: https://simvascular.github.io/docssvFSI-FSI.html
-- Youtube Tutorial: https://www.youtube.com/watch?v=QIpyThIAD7k
-
-## Reference
-
-1.  Liu, Ju, and Alison L. Marsden.  A Unified Continuum and Variational Multiscale Formulation for Fluids, Solids, and Fluid Structure Interaction.  *Computer Methods in Applied Mechanics and Engineering* 337 (August 2018): 549 97. https://doi.org/10.1016/j.cma.2018.03.045.
+The simulation uses the PETSc linear algebra package with the **petsc-jacobi** preconditioner.
+```
+<LS type="GMRES" >
+  <Linear_algebra type="petsc" >
+    <Preconditioner> petsc-jacobi </Preconditioner>
+  </Linear_algebra>
+  <Max_iterations> 100 </Max_iterations>
+  <Tolerance> 1e-12 </Tolerance>
+  <Krylov_space_dimension> 50 </Krylov_space_dimension>
+</LS>
+```

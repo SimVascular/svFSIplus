@@ -1802,7 +1802,7 @@ void read_files(Simulation* simulation, const std::string& file_name)
           if ((dmn.phys != EquationType::phys_ustruct) && (dmn.phys != EquationType::phys_struct)) { 
             continue; 
           }
-          if (dmn.stM.isoType != ConstitutiveModelType::stIso_HO) {
+          if ((dmn.stM.isoType != ConstitutiveModelType::stIso_HO) || (dmn.stM.isoType != ConstitutiveModelType::stIso_HO_ma)) {
             throw std::runtime_error("Active strain is allowed with Holzapfel-Ogden passive constitutive model only");
           }
         }
@@ -2671,7 +2671,7 @@ void read_temporal_values(const std::string& file_name, bfType& lBf)
 //----------------
 // read_trac_bcff
 //----------------
-// Reads pressure/traction data from a vtp file and stores in moving BC data structure.
+// Reads pressure/traction data from a vtk vtp or vtu file and stores in moving BC data structure.
 //
 // Reproduces 'SUBROUTINE READTRACBCFF(lMB, lFa, fName)' defined in READFILES.f.
 //
@@ -2683,15 +2683,15 @@ void read_trac_bcff(ComMod& com_mod, MBType& lMB, faceType& lFa, const std::stri
     throw std::runtime_error("The VTK VTP traction data file '" + fName + "' can't be read.");
   }
 
-  // Read the vtp file.
+  // Read the vtk file.
   //
-  VtkVtpData vtp_data(fName);
-  int num_points = vtp_data.num_points();
+  auto vtk_data = VtkData::create_reader(fName);
+  int num_points = vtk_data->num_points();
   if (num_points == 0) {
     throw std::runtime_error("The VTK VTP traction data file '" + fName + "' does not contain any points.");
   }
 
-  int num_elems = vtp_data.num_elems();
+  int num_elems = vtk_data->num_elems();
   if (num_elems == 0) {
     throw std::runtime_error("The VTK VTP traction data file '" + fName + "' does not contain any elements.");
   }
@@ -2706,7 +2706,7 @@ void read_trac_bcff(ComMod& com_mod, MBType& lMB, faceType& lFa, const std::stri
   }
 
   // Check that the vtk file has traction data.
-  if (!vtp_data.has_point_data(data_name)) {
+  if (!vtk_data->has_point_data(data_name)) {
     throw std::runtime_error("No PointData DataArray named '" + data_name + "' found in the VTK VTP traction data file '" + fName +
         "' for the '" + lFa.name + "' face.");
   }
@@ -2719,7 +2719,7 @@ void read_trac_bcff(ComMod& com_mod, MBType& lMB, faceType& lFa, const std::stri
   faceType gFa;
   gFa.nNo = num_points;
   gFa.x.resize(com_mod.nsd, gFa.nNo);
-  vtp_data.copy_points(tmpX2);
+  vtk_data->copy_points(tmpX2);
 
   for (int i = 0; i < num_points; i++) {
     for (int j = 0; j < com_mod.nsd; j++) {
@@ -2728,9 +2728,9 @@ void read_trac_bcff(ComMod& com_mod, MBType& lMB, faceType& lFa, const std::stri
   }
 
   if (data_name == "Pressure") {
-    vtp_data.copy_point_data(data_name, tmpX1);
+    vtk_data->copy_point_data(data_name, tmpX1);
   } else { 
-    vtp_data.copy_point_data(data_name, tmpX2);
+    vtk_data->copy_point_data(data_name, tmpX2);
   }
 
   // Project traction from gFa to lFa. First prepare lFa%x, lFa%IEN
