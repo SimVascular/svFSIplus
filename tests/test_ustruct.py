@@ -57,3 +57,11 @@ def test_LV_NeoHookean_passive_sv0D(n_proc):
     test_folder = "LV_NeoHookean_passive_sv0D"
 
     run_with_reference(base_folder, test_folder, fields, n_proc, t_max=3)
+
+def test_tensile_adventitia_Newtonian_viscosity(n_proc):
+    test_folder = "tensile_adventitia_Newtonian_viscosity"
+    run_with_reference(base_folder, test_folder, fields, n_proc, t_max=1)
+
+def test_tensile_adventitia_Potential_viscosity(n_proc):
+    test_folder = "tensile_adventitia_Potential_viscosity"
+    run_with_reference(base_folder, test_folder, fields, n_proc, t_max=1)

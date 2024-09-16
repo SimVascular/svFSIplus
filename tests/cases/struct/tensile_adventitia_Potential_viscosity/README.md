@@ -12,7 +12,7 @@ $$
 
 
 
-The load profile is a 0.5s ramp to 1e5 dynes/cm^2, then held for another 0.5s. 
+The load profile is a 0.25s ramp to the max value, then held for 0.25s, then a 0.25s ramp down to 0, then held for 0.25s.
 The load is applied on the Z1 face in the z-direction.
 
 ![Load Profile](load.png)
