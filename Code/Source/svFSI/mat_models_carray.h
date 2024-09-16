@@ -1234,6 +1234,8 @@ void get_visc_stress_pot(const double mu, const int eNoN, const Array<double>& N
  * The viscous 2nd Piola-Kirchhoff stress is given by a pull-back operation
  * Svis = 2 * mu * J * F^-1 * d_dev * F^-T
  * 
+ * Note, there is likely an error/bug in the tangent contributions that leads to suboptimal nonlinear convergence
+ * 
  * @tparam nsd Number of spatial dimensions
  * @param mu Solid viscosity parameter
  * @param eNoN Number of nodes in an element
