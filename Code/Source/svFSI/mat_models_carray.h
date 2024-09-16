@@ -1190,8 +1190,8 @@ void get_visc_stress_pot(const double mu, const int eNoN, const Array<double>& N
     for (int a = 0; a < eNoN; ++a) {
         for (int i = 0; i < nsd; ++i) {
             for (int j = 0; j < nsd; ++j) {
-                F_Nx(i,a) = F[i][j] * Nx(j,a);
-                vx_Nx(i,a) = vx[i][j] * Nx(j,a);
+                F_Nx(i,a) += F[i][j] * Nx(j,a);
+                vx_Nx(i,a) += vx[i][j] * Nx(j,a);
             }
         }
     }
