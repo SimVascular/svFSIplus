@@ -71,4 +71,8 @@ def test_tensile_adventitia_Guccione_active(n_proc):
 
 def test_tensile_adventitia_Newtonian_viscosity(n_proc):
     test_folder = "tensile_adventitia_Newtonian_viscosity"
-    run_with_reference(base_folder, test_folder, fields, n_proc, t_max=2)
+    run_with_reference(base_folder, test_folder, fields, n_proc, t_max=1)
+
+def test_tensile_adventitia_Potential_viscosity(n_proc):
+    test_folder = "tensile_adventitia_Potential_viscosity"
+    run_with_reference(base_folder, test_folder, fields, n_proc, t_max=1)

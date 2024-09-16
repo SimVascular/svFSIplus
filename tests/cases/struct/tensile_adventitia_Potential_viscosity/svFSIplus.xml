@@ -72,7 +72,7 @@
    <Elasticity_modulus> 1.0e5 </Elasticity_modulus> <!-- dyn/cm^2 -->
    <Poisson_ratio> 0.48333 </Poisson_ratio>  <!-- unitless -->
 
-    <Solid_viscosity model="Newtonian" >
+    <Solid_viscosity model="Potential" >
         <Value> 50.0 </Value>
     </Solid_viscosity>
 

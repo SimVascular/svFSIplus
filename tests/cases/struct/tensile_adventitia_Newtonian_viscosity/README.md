@@ -1,5 +1,20 @@
-This test case simulates prescribed extension and compression of a slab of material
-described by the Neohookean material model and a Newtonian solid viscosity model.
+This test case simulates pulling and releasing a slab of material
+described by the Guccione material model and a Newtonian solid viscosity model. 
+In this viscosity model, the viscous deviatoric Cauchy stress is identical to that
+for a Newtonian fluid:
+
+$$
+\sigma^{dev}_{vis} = 2 \mu \mathbf{d}^{dev}
+$$
+where
+$$
+\mathbf{d}^{dev} = \frac{1}{2} (\nabla_x \mathbf{v} + (\nabla_x \mathbf{v})^T) - \frac{1}{3} (\nabla_x \cdot \mathbf{v}) \mathbf{I}
+$$
+
+The viscous part of the 2nd Piola-Kirchhoff stress is then given by a pull-back operation
+$$
+\mathbf{S}_{vis} = 2 \mu J \mathbf{F}^{-1} \mathbf{d}^{dev} \mathbf{F}^{-T}
+$$
 
 The load profile is a 0.5s ramp to 1e5 dynes/cm^2, then held for another 0.5s. 
 The load is applied on the Z1 face in the z-direction.
