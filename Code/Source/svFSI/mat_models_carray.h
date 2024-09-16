@@ -1287,7 +1287,7 @@ void get_visc_stress_newt(const double mu, const int eNoN, const Array<double>& 
         for (int i = 0; i < nsd; ++i) {
           for (int j = 0; j < nsd; ++j) {
               ddev_Nx_Fi(i,a) += ddev[i][j] * Nx_Fi(j,a);
-              vx_Fi_Nx_Fi(i,a) += vx_Fi[i][j] * Nx_Fi(j,a);
+              vx_Fi_Nx_Fi(i,a) += vx_Fi[j][i] * Nx_Fi(j,a);
           }
         }
     }
