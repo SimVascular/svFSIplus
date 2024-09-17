@@ -1801,7 +1801,7 @@ void read_files(Simulation* simulation, const std::string& file_name)
           if ((dmn.phys != EquationType::phys_ustruct) && (dmn.phys != EquationType::phys_struct)) { 
             continue; 
           }
-          if ((dmn.stM.isoType != ConstitutiveModelType::stIso_HO) || (dmn.stM.isoType != ConstitutiveModelType::stIso_HO_ma)) {
+          if ((dmn.stM.isoType != ConstitutiveModelType::stIso_HO)) {
             throw std::runtime_error("Active strain is allowed with Holzapfel-Ogden passive constitutive model only");
           }
         }
