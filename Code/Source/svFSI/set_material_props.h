@@ -164,7 +164,6 @@ SeMaterialPropertiesMapType set_material_props = {
 {
   lDmn.stM.isoType = consts::ConstitutiveModelType::stIso_HO_ma;
   auto& params = domain_params->constitutive_model.holzapfel;
-  std::cout <<"Within HO-ma" <<std::endl;
   lDmn.stM.a = params.a.value();
   lDmn.stM.b = params.b.value();
   lDmn.stM.aff = params.a4f.value(); 
