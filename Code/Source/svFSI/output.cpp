@@ -165,6 +165,12 @@ void output_result(Simulation* simulation,  std::array<double,3>& timeP, const i
   } else {
     logger << sOut << std::endl;
   }
+
+  // if max number of iterations is reached, throw a warning
+  if (eq.itr == eq.maxItr) {
+    logger << "MAX NUMBER OF NONLINEAR ITERATIONS REACHED. CHECK CONVERGENCE." << std::endl;
+  }
+
 }
 
 void read_restart_header(ComMod& com_mod, std::array<int,7>& tStamp, double& timeP, std::ifstream& restart_file)
