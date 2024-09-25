@@ -90,7 +90,7 @@ namespace read_files_ns {
 
   void read_wall_props_ff(ComMod& com_mod, const std::string& file_path, const int iM, const int iFa);
   
-  void read_permeability_prop_ff(ComMod& com_mod, const std::string& file_name, const int iM);
+  void read_inverse_darcy_permeability_prop_ff(ComMod& com_mod, const std::string& file_name, const int iM);
 
   void set_cmm_bdry(mshType& lM, Vector<int>& bNds);
 

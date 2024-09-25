@@ -411,7 +411,7 @@ enum class PhysicalProperyType
   shell_thickness = 13, 
   ctau_M = 14,                 // stabilization coeffs. for USTRUCT (momentum, continuity)
   ctau_C = 15,
-  permeability = 16
+  inverse_darcy_permeability = 16
 };
 
 enum class PreconditionerType 

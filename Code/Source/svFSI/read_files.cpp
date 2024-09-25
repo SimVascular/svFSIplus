@@ -1307,8 +1307,8 @@ void read_domain(Simulation* simulation, EquationParameters* eq_params, eqType& 
             rtmp = domain_params->source_term.value();
           break;
 
-          case PhysicalProperyType::permeability:
-            rtmp = domain_params->permeability.value();
+          case PhysicalProperyType::inverse_darcy_permeability:
+            rtmp = domain_params->inverse_darcy_permeability.value();
           break;
         }
 
@@ -2966,25 +2966,25 @@ void read_wall_props_ff(ComMod& com_mod, const std::string& file_name, const int
 }
 
 //--------------------
-// read_permeability_prop_ff
+// read_inverse_darcy_permeability_prop_ff
 //--------------------
-// Read fluid variable permeability property from a file.
+// Read fluid variable inverse darcy permeability property from a file.
 //
 // Modifies:
 //   com_mod.msh[iM].x - seems to use this as a scratch array.
 //
-void read_permeability_prop_ff(ComMod& com_mod, const std::string& file_name, const int iM)
+void read_inverse_darcy_permeability_prop_ff(ComMod& com_mod, const std::string& file_name, const int iM)
 {
     auto& mesh = com_mod.msh[iM];
     mesh.x.resize(1, mesh.gnNo);
 
-    // Read permeability
+    // Read read_inverse_darcy_permeability_prop_ff
     int data_comp = 1;
-    vtk_xml::read_vtu_pdata(file_name, "Permeability", com_mod.nsd, data_comp, -1, mesh);
+    vtk_xml::read_vtu_pdata(file_name, "Inverse_darcy_permeability", com_mod.nsd, data_comp, -1, mesh);
 
     for (int a = 0; a < mesh.gnNo; a++) {
       int Ac = mesh.gN[a];
-      com_mod.varPermeabilityProp(0,Ac) = mesh.x(0,a);
+      com_mod.varInverseDarcyPermeabilityProp(0,Ac) = mesh.x(0,a);
     }
 }
 

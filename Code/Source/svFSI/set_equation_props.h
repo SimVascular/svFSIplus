@@ -215,21 +215,19 @@ SetEquationPropertiesMapType set_equation_props = {
   auto& com_mod = simulation->get_com_mod();
   lEq.phys = consts::EquationType::phys_fluid;
   
-  // Set variable permeability property.
-  if (eq_params->variable_permeability_property.defined()) {
-    com_mod.fluidVarPermeability = true;
+  // Set variable inverse darcy permeability property.
+  if (eq_params->variable_inverse_darcy_permeability_property.defined()) {
+    com_mod.fluidVarInverseDarcyPermeability = true;
 
-    if (com_mod.varPermeabilityProp.size() == 0) {
-      com_mod.varPermeabilityProp.resize(1, com_mod.gtnNo); // varPermeabilityProp = array of size 1 x total number of nodes across all meshes and all processors
+    if (com_mod.varInverseDarcyPermeabilityProp.size() == 0) {
+      com_mod.varInverseDarcyPermeabilityProp.resize(1, com_mod.gtnNo); // varInverseDarcyPermeabilityProp = array of size 1 x total number of nodes across all meshes and all processors
     }
 
-    auto mesh_name = eq_params->variable_permeability_property.mesh_name.value();
+    auto mesh_name = eq_params->variable_inverse_darcy_permeability_property.mesh_name.value();
     int iM = 0;
     all_fun::find_msh(com_mod.msh, mesh_name, iM);
-    auto file_path = eq_params->variable_permeability_property.permeability_property_file_path.value();
-    read_permeability_prop_ff(com_mod, file_path, iM);
-    
-    last here - finished this section, whats next?
+    auto file_path = eq_params->variable_inverse_darcy_permeability_property.inverse_darcy_permeability_property_file_path.value();
+    read_inverse_darcy_permeability_prop_ff(com_mod, file_path, iM);
   }
 
   propL[0][0] = PhysicalProperyType::fluid_density;

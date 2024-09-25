@@ -789,18 +789,18 @@ class VariableWallPropsParameters : public ParameterLists
     bool value_set = false;
 };
 
-/// @brief The VariablePermeabilityPropParameters class stores parameters for
-/// variable permeability property for the fluid equation (Navier-Stokes-Brinkman).
-class VariablePermeabilityPropParameters : public ParameterLists
+/// @brief The VariableInverseDarcyPermeabilityPropParameters class stores parameters for
+/// variable inverse darcy permeability property for the fluid equation (Navier-Stokes-Brinkman).
+class VariableInverseDarcyPermeabilityPropParameters : public ParameterLists
 {
   public:
-    VariablePermeabilityPropParameters();
+    VariableInverseDarcyPermeabilityPropParameters();
     static const std::string xml_element_name_;
     bool defined() const { return value_set; };
     void set_values(tinyxml2::XMLElement* xml_elemnt);
 
     Parameter<std::string> mesh_name;
-    Parameter<std::string> permeability_property_file_path;
+    Parameter<std::string> inverse_darcy_permeability_property_file_path;
     bool value_set = false;
 };
 
@@ -1079,7 +1079,7 @@ class DomainParameters : public ParameterLists
     Parameter<double> source_term;
     Parameter<double> time_step_for_integration;
     
-    Parameter<double> permeability;
+    Parameter<double> inverse_darcy_permeability;
 };
 
 /// @brief The RemesherParameters class stores parameters for the 
@@ -1220,7 +1220,7 @@ class EquationParameters : public ParameterLists
 
     ECGLeadsParameters ecg_leads;
 
-    VariablePermeabilityPropParameters variable_permeability_property;
+    VariableInverseDarcyPermeabilityPropParameters variable_inverse_darcy_permeability_property;
 };
 
 /// @brief The GeneralSimulationParameters class stores paramaters for the
