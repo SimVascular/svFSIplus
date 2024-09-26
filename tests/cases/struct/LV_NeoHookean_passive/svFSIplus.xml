@@ -59,9 +59,6 @@
    <Constitutive_model type="neoHookean"> 
       </Constitutive_model> 
    <Dilational_penalty_model> ST91 </Dilational_penalty_model>
-   <Solid_viscosity model="Potential" >
-         <Value> 0.0 </Value>
-      </Solid_viscosity>
 
 
     <Output type="Spatial" >
