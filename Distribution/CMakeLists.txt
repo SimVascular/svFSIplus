@@ -104,7 +104,7 @@ if(APPLE)
   set(CPACK_PACKAGE_FILE_NAME "svFSIplus-darwin-x64-${SV_FULL_VERSION}${INSTALL_TYPE_STR}")
 
   # Components. Just install the svFSIplus executable.
-  set(CPACK_COMPONENTS_ALL CoreExecutables CoreLibraries CoreHeaders)
+  set(CPACK_COMPONENTS_ALL CoreExecutables) 
 
   # Cpack install help
   set(CPACK_GENERATOR "productbuild")
