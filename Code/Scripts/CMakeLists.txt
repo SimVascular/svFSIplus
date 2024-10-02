@@ -2,11 +2,13 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/SimVascularScriptMacros.cmake)
 file(MAKE_DIRECTORY ${TEMP_DIR}/developer ${TEMP_DIR}/install)
 
 set(core_str)
+
 if(UNIX)
   file(READ ${SV_SOURCE_DIR}/Scripts/home-locate-linux.sh locate_script)
   set(core_str "${locate_script}\n")
   set_env_string_concat(SV_HOME "$DIR" core_str)
 endif()
+
 if(WIN32 AND NOT UNIX)
   set(core_str "@echo off\r\n")
   set_env_string_concat(SV_HOME "%~dp0" core_str)
