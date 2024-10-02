@@ -161,6 +161,6 @@ endif()
 
 #-----------------------------------------------------------------------------
 # Configure Exe Scripts, this should be the last subdirectory
-include(SimVascularInstallLibs)
-add_subdirectory(Scripts)
+#include(SimVascularInstallLibs)
+#add_subdirectory(Scripts)
 #-----------------------------------------------------------------------------
