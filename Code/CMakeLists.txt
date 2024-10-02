@@ -159,8 +159,3 @@ if(SV_ENABLE_DISTRIBUTION)
 endif()
 #-----------------------------------------------------------------------------
 
-#-----------------------------------------------------------------------------
-# Configure Exe Scripts, this should be the last subdirectory
-#include(SimVascularInstallLibs)
-#add_subdirectory(Scripts)
-#-----------------------------------------------------------------------------
