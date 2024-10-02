@@ -1522,7 +1522,7 @@ class ComMod {
     Array<double>  Dn;
 
     /// @brief Residual vector
-    Array<double>  R; this gets updated to also be the negative of the acceleration update in the Newton solver?
+    Array<double>  R;
 
     /// @brief LHS matrix
     Array<double>  Val;

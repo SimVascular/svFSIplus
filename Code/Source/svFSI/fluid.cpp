@@ -2049,4 +2049,3 @@ void get_viscosity(const ComMod& com_mod, const dmnType& lDmn, double& gamma, do
 }
 
 };
-last here - for poiseulle flow over porous media test case - should i make the variability defined in the mesh or based on a function or what? how do Gauss points relate to nodal values? are they one-to-one? if not, that might affect how i define the variability? how does CMM or whatever do it? see email from dave
