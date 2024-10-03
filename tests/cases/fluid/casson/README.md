@@ -11,11 +11,11 @@ where $k_0(c)$ and $k_1(c)$ are functions of the hematocrit $c$.
 
 The model parameters are specified in the `Viscosity` sub-section
 ```
-<Fluid_viscosity model="Cassons" >
+<Viscosity model="Cassons" >
   <Asymptotic_viscosity_parameter> 0.3953 </Asymptotic_viscosity_parameter> 
   <Yield_stress_parameter> 0.22803 </Yield_stress_parameter> 
   <Low_shear_rate_threshold> 0.5 </Low_shear_rate_threshold> 
-</Fluid_viscosity>
+</Viscosity>
 ```
 
 

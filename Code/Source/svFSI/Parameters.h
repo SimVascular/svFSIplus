@@ -1037,9 +1037,9 @@ class FiberReinforcementStressParameters : public ParameterLists
 /// <Domain id="1" >
 ///   <Equation> fluid </Equation>
 ///   <Density> 1.06 </Density>
-///   <Fluid_viscosity model="Constant" >
+///   <Viscosity model="Constant" >
 ///     <Value> 0.04 </Value>
-///   </Fluid_viscosity>
+///   </Viscosity>
 ///   <Backflow_stabilization_coefficient> 0.2 </Backflow_stabilization_coefficient>
 /// </Domain>
 /// \endcode
@@ -1107,7 +1107,6 @@ class DomainParameters : public ParameterLists
 
     Parameter<double> shell_thickness;
     Parameter<double> solid_density;
-    //Parameter<double> solid_viscosity;
     Parameter<double> source_term;
     Parameter<double> time_step_for_integration;
 };

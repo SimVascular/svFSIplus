@@ -1075,7 +1075,7 @@ void VariableWallPropsParameters::set_values(tinyxml2::XMLElement* xml_elem)
 /// @brief Process parameters for various fluid viscosity models.
 ///
 /// Define the XML element name for viscosiity parameters.
-const std::string FluidViscosityParameters::xml_element_name_ = "Fluid_viscosity";
+const std::string FluidViscosityParameters::xml_element_name_ = "Viscosity";
 
 const std::string FluidViscosityParameters::CONSTANT_MODEL = "Constant";
 const std::string FluidViscosityParameters::CARREAU_YASUDA_MODEL = "Carreau-Yasuda";
@@ -1198,7 +1198,7 @@ FluidViscosityParameters::FluidViscosityParameters()
   // A parameter that must be defined.
   bool required = true;
 
-  // Stores model from the <Fluid_viscosity model= > XML element 
+  // Stores model from the <Viscosity model= > XML element 
   model = Parameter<std::string>("model", "", required);
 }
 
@@ -1222,14 +1222,14 @@ void FluidViscosityParameters::set_values(tinyxml2::XMLElement* xml_elem)
   auto result = xml_elem->QueryStringAttribute("model", &smodel);
 
   if (smodel == nullptr) {
-    throw std::runtime_error("No MODEL given in the <Fluid_viscosity model=MODEL > XML element."); 
+    throw std::runtime_error("No MODEL given in the <Viscosity model=MODEL > XML element."); 
   }
   model.set(std::string(smodel));
 
   // Check fluid_viscosity model name.
   if (model_names.count(model.value()) == 0) { 
       throw std::runtime_error("Unknown fluid viscosity model '" + model.value() + 
-        " in '" + xml_elem->Name() + "'.");
+        "' in '" + xml_elem->Name() + "'.");
   }
 
   // Set parameters for the given fluid_viscosity model.
@@ -1243,7 +1243,7 @@ void FluidViscosityParameters::set_values(tinyxml2::XMLElement* xml_elem)
 /// @brief Process parameters for various solid viscosity models.
 ///
 /// Define the XML element name for viscosiity parameters.
-const std::string SolidViscosityParameters::xml_element_name_ = "Solid_viscosity";
+const std::string SolidViscosityParameters::xml_element_name_ = "Viscosity";
 
 const std::string SolidViscosityParameters::NEWTONIAN_MODEL = "Newtonian";
 const std::string SolidViscosityParameters::POTENTIAL_MODEL = "Potential";
@@ -1323,7 +1323,7 @@ SolidViscosityParameters::SolidViscosityParameters()
   // A parameter that must be defined.
   bool required = true;
 
-  // Stores model from the <Solid_viscosity model= > XML element 
+  // Stores model from the <Viscosity model= > XML element 
   model = Parameter<std::string>("model", "", required);
 }
 
@@ -1335,7 +1335,7 @@ void SolidViscosityParameters::print_parameters()
   std::cout << "--------------------" << std::endl;
   std::cout << model.name() << ": '" << model.value() << "'" << std::endl;
 
-  // Print parameters for the given Solid_viscosity model.
+  // Print parameters for the given solid_viscosity model.
   PrintSolidViscosityModelParamsMap[model.value_](this);
 }
 
@@ -1347,14 +1347,14 @@ void SolidViscosityParameters::set_values(tinyxml2::XMLElement* xml_elem)
   auto result = xml_elem->QueryStringAttribute("model", &smodel);
 
   if (smodel == nullptr) {
-    throw std::runtime_error("No MODEL given in the <Solid_viscosity model=MODEL > XML element."); 
+    throw std::runtime_error("No MODEL given in the <Viscosity model=MODEL > XML element."); 
   }
   model.set(std::string(smodel));
 
   // Check solid viscosity model name.
   if (model_names.count(model.value()) == 0) { 
       throw std::runtime_error("Unknown solid viscosity model '" + model.value() + 
-        " in '" + xml_elem->Name() + "'.");
+        "' in '" + xml_elem->Name() + "'.");
   }
 
   // Set parameters for the given solid viscosity model.
@@ -1424,7 +1424,6 @@ DomainParameters::DomainParameters()
   set_parameter("Relative_tolerance", 1e-4, !required, relative_tolerance);
   set_parameter("Shell_thickness", 0.0, !required, shell_thickness);
   set_parameter("Solid_density", 0.5, !required, solid_density);
-  //set_parameter("Solid_viscosity", 0.9, !required, solid_viscosity);
   set_parameter("Source_term", 0.0, !required, source_term);
   set_parameter("Time_step_for_integration", 0.0, !required, time_step_for_integration);
 }
@@ -1481,11 +1480,15 @@ void DomainParameters::set_values(tinyxml2::XMLElement* domain_elem)
     } else if (name == StimulusParameters::xml_element_name_) {
       stimulus.set_values(item);
 
-    } else if (name == FluidViscosityParameters::xml_element_name_) {
-      fluid_viscosity.set_values(item);
-
-    } else if (name == SolidViscosityParameters::xml_element_name_) {
-      solid_viscosity.set_values(item);
+    } else if (name == FluidViscosityParameters::xml_element_name_ || name == SolidViscosityParameters::xml_element_name_) {
+      if (equation.value() == "fluid") {
+        fluid_viscosity.set_values(item);
+      } else if (equation.value() == "struct" || equation.value() == "ustruct") {
+        solid_viscosity.set_values(item);
+      }
+      else {
+        throw std::runtime_error("Viscosity model not supported for equation '" + equation.value() + "'.");
+      }
   
     } else if (item->GetText() != nullptr) {
       auto value = item->GetText();
@@ -1898,11 +1901,14 @@ void EquationParameters::set_values(tinyxml2::XMLElement* eq_elem)
     } else if (name == StimulusParameters::xml_element_name_) {
       default_domain->stimulus.set_values(item);
 
-    } else if (name == FluidViscosityParameters::xml_element_name_) {
-      default_domain->fluid_viscosity.set_values(item);
-
-    } else if (name == SolidViscosityParameters::xml_element_name_) {
-      default_domain->solid_viscosity.set_values(item);
+    } else if (name == FluidViscosityParameters::xml_element_name_ || name == SolidViscosityParameters::xml_element_name_) {
+      if (type.value() == "fluid") {
+        default_domain->fluid_viscosity.set_values(item);
+      } else if (type.value() == "struct" || type.value() == "ustruct") {
+        default_domain->solid_viscosity.set_values(item);
+      } else {
+        throw std::runtime_error("Viscosity model not supported for equation '" + default_domain->equation.value() + "'.");
+      }
 
     } else if (name == ECGLeadsParameters::xml_element_name_) {
       ecg_leads.set_values(item);

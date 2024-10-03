@@ -64,9 +64,9 @@
    <Domain id="0" >
       <Equation> fluid </Equation> 
       <Density> 1.0 </Density> 
-      <Fluid_viscosity model="Constant" >
+      <Viscosity model=>"Constant" >
          <Value> 0.04 </Value>
-      </Fluid_viscosity>
+      </Viscosity>
       <Backflow_stabilization_coefficient> 0.2 </Backflow_stabilization_coefficient> 
    </Domain>
    

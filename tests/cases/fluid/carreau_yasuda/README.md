@@ -25,13 +25,13 @@ where
 The model parameters are specified in the `Viscosity` sub-section
 
 ```
-<Fluid_viscosity model="Carreau-Yasuda" >
+<Viscosity model="Carreau-Yasuda" >
   <Limiting_high_shear_rate_viscosity> 0.022 </Limiting_high_shear_rate_viscosity>
   <Limiting_low_shear_rate_viscosity> 0.22 </Limiting_low_shear_rate_viscosity> 
   <Shear_rate_tensor_multiplier> 0.11 </Shear_rate_tensor_multiplier> 
   <Shear_rate_tensor_exponent> 0.644 </Shear_rate_tensor_exponent> 
   <Power_law_index> 0.392 </Power_law_index> 
-</Fluid_viscosity>
+</Viscosity>
 ```
 
 

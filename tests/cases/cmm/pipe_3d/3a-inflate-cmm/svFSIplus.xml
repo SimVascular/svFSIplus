@@ -53,9 +53,9 @@
    <Tolerance> 1e-12 </Tolerance> 
 
    <Fluid_density> 1.06 </Fluid_density>
-   <Fluid_viscosity model="Constant" >
+   <Viscosity model="Constant" >
    <Value> 0.04 </Value>
-   </Fluid_viscosity>
+   </Viscosity>
    <Solid_density> 1.0 </Solid_density>
    <Poisson_ratio> 0.5 </Poisson_ratio>
    <Shell_thickness> 0.2 </Shell_thickness>
