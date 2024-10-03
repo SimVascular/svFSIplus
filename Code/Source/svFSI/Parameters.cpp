@@ -1481,9 +1481,10 @@ void DomainParameters::set_values(tinyxml2::XMLElement* domain_elem)
       stimulus.set_values(item);
 
     } else if (name == FluidViscosityParameters::xml_element_name_ || name == SolidViscosityParameters::xml_element_name_) {
-      if (equation.value() == "fluid") {
+      auto eq_type = consts::equation_name_to_type.at(equation.value());
+      if (eq_type == consts::EquationType::phys_fluid || eq_type == consts::EquationType::phys_CMM || eq_type == consts::EquationType::phys_stokes) {
         fluid_viscosity.set_values(item);
-      } else if (equation.value() == "struct" || equation.value() == "ustruct") {
+      } else if (eq_type == consts::EquationType::phys_struct || eq_type == consts::EquationType::phys_ustruct) {
         solid_viscosity.set_values(item);
       }
       else {
@@ -1902,12 +1903,13 @@ void EquationParameters::set_values(tinyxml2::XMLElement* eq_elem)
       default_domain->stimulus.set_values(item);
 
     } else if (name == FluidViscosityParameters::xml_element_name_ || name == SolidViscosityParameters::xml_element_name_) {
-      if (type.value() == "fluid") {
+      auto eq_type = consts::equation_name_to_type.at(type.value());
+      if (eq_type == consts::EquationType::phys_fluid || eq_type == consts::EquationType::phys_CMM || eq_type == consts::EquationType::phys_stokes) {
         default_domain->fluid_viscosity.set_values(item);
-      } else if (type.value() == "struct" || type.value() == "ustruct") {
+      } else if (eq_type == consts::EquationType::phys_struct || eq_type == consts::EquationType::phys_ustruct) {
         default_domain->solid_viscosity.set_values(item);
       } else {
-        throw std::runtime_error("Viscosity model not supported for equation '" + default_domain->equation.value() + "'.");
+        throw std::runtime_error("Viscosity model not supported for equation '" + type.value() + "'.");
       }
 
     } else if (name == ECGLeadsParameters::xml_element_name_) {
