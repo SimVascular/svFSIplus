@@ -458,15 +458,7 @@ double norm(const Vector<double>& u, const double v[N])
   return norm;
 }
 
-template <size_t N>
-double norm(const Vector<double>& u, const Vector<double>& v)
-{
-  double norm = 0.0;
-  for (int i = 0; i < N; i++) {
-    norm += u[i]*v[i];
-  }
-  return norm;
-}
+
 
 template <size_t N>
 void mat_symm(const double A[N][N], double S[N][N])

@@ -58,9 +58,8 @@
    <Density> 1.0 </Density>                           <!-- g/cm^3 -->
    <Elasticity_modulus> 1.0e6 </Elasticity_modulus>   <!-- dyne/cm^2 -->
    <Poisson_ratio> 0.483333 </Poisson_ratio>
-   <Viscosity model="Constant" >
-         <Value> 0.0 </Value>
-      </Viscosity>
+   
+   <!-- <Solid_viscosity> 0.9 </Solid_viscosity> -->
     
     <Constitutive_model type="HolzapfelOgden"> 
      <a> 590.0 </a>                                   <!-- dyne/cm^2 -->
