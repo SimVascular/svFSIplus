@@ -61,7 +61,6 @@ ComMod::ComMod()
   pstEq        = false;
   sstEq        = false;
   ibFlag       = false;
-  fluidVarInverseDarcyPermeability = false;
 
 }
 

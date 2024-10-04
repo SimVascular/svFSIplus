@@ -1377,9 +1377,6 @@ class ComMod {
 
     /// @brief Whether to use precomputed state-variable solutions
     bool usePrecomp = false;
-
-    /// @brief Whether variable inverse darcy permeability property is used for fluid (Navier-Stokes-Brinkman)
-    bool fluidVarInverseDarcyPermeability = false;
     
     //----- int members -----//
 
@@ -1565,9 +1562,6 @@ class ComMod {
 
     /// @brief CMM-variable wall properties: 1-thickness, 2-Elasticity modulus
     Array<double>  varWallProps;
-
-    /// @brief Fluid-variable inverse darcy permeability property
-    Array<double>  varInverseDarcyPermeabilityProp;
 
     //------------------------
     // DERIVED TYPE VARIABLES

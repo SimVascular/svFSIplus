@@ -214,29 +214,15 @@ SetEquationPropertiesMapType set_equation_props = {
   using namespace consts;
   auto& com_mod = simulation->get_com_mod();
   lEq.phys = consts::EquationType::phys_fluid;
-  
-  // Set variable inverse darcy permeability property.
-  if (eq_params->variable_inverse_darcy_permeability_property.defined()) {
-    com_mod.fluidVarInverseDarcyPermeability = true;
-
-    if (com_mod.varInverseDarcyPermeabilityProp.size() == 0) {
-      com_mod.varInverseDarcyPermeabilityProp.resize(1, com_mod.gtnNo); // varInverseDarcyPermeabilityProp = array of size 1 x total number of nodes across all meshes and all processors
-    }
-
-    auto mesh_name = eq_params->variable_inverse_darcy_permeability_property.mesh_name.value();
-    int iM = 0;
-    all_fun::find_msh(com_mod.msh, mesh_name, iM);
-    auto file_path = eq_params->variable_inverse_darcy_permeability_property.inverse_darcy_permeability_property_file_path.value();
-    read_inverse_darcy_permeability_prop_ff(com_mod, file_path, iM);
-  }
 
   propL[0][0] = PhysicalProperyType::fluid_density;
   propL[1][0] = PhysicalProperyType::backflow_stab;
-  propL[2][0] = PhysicalProperyType::f_x;
-  propL[3][0] = PhysicalProperyType::f_y;
+  propL[2][0] = PhysicalProperyType::inverse_darcy_permeability;
+  propL[3][0] = PhysicalProperyType::f_x;
+  propL[4][0] = PhysicalProperyType::f_y;
 
   if (simulation->com_mod.nsd == 3) {
-    propL[4][0] = PhysicalProperyType::f_z;
+    propL[5][0] = PhysicalProperyType::f_z;
   }
 
   // Set fluid domain properties.

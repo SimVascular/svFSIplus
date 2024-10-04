@@ -1069,51 +1069,6 @@ void VariableWallPropsParameters::set_values(tinyxml2::XMLElement* xml_elem)
 }
 
 //////////////////////////////////////////////////////////
-//               VariableInverseDarcyPermeabilityPropParameters            //
-//////////////////////////////////////////////////////////
-
-/// @brief The VariableInverseDarcyPermeabilityPropParameters class stores parameters for
-/// variable inverse Darcy permeability property for the fluid equation (Navier-Stokes-Brinkman).
-///
-/// Define the XML element name for variable inverse Darcy permeability parameter.
-const std::string VariableInverseDarcyPermeabilityPropParameters::xml_element_name_ = "Variable_inverese_darcy_permeability_property";
-
-VariableInverseDarcyPermeabilityPropParameters::VariableInverseDarcyPermeabilityPropParameters()
-{
-  // A parameter that must be defined.
-  bool required = true;
-
-  mesh_name = Parameter<std::string>("mesh_name", "", required);
-
-  set_parameter("Inverse_darcy_permeability_property_file_path", "", required, inverse_darcy_permeability_property_file_path);
-}
-
-void VariableInverseDarcyPermeabilityPropParameters::set_values(tinyxml2::XMLElement* xml_elem)
-{
-  using namespace tinyxml2;
-  std::string error_msg = "Unknown " + xml_element_name_ + " XML element '";
-
-  // Get the 'type' from the <Variable_inverse_darcy_permeability_property mesh_name=NAME> element.
-  const char* sname;
-  auto result = xml_elem->QueryStringAttribute("mesh_name", &sname);
-  if (sname == nullptr) {
-    throw std::runtime_error("No TYPE given in the XML <Variable_inverse_darcy_permeability_property mesh_name=NAME> element.");
-  }
-  mesh_name.set(std::string(sname));
-  auto item = xml_elem->FirstChildElement();
-
-  using std::placeholders::_1;
-  using std::placeholders::_2;
-
-  std::function<void(const std::string&, const std::string&)> ftpr =
-      std::bind( &VariableInverseDarcyPermeabilityPropParameters::set_parameter_value, *this, _1, _2);
-
-  xml_util_set_parameters(ftpr, xml_elem, error_msg);
-
-  value_set = true;
-}
-
-//////////////////////////////////////////////////////////
 //                  ViscosityParameters                 //
 //////////////////////////////////////////////////////////
 
@@ -1823,9 +1778,6 @@ void EquationParameters::set_values(tinyxml2::XMLElement* eq_elem)
 
     } else if (name == VariableWallPropsParameters::xml_element_name_) {
       variable_wall_properties.set_values(item);
-
-    } else if (name == VariableInverseDarcyPermeabilityPropParameters::xml_element_name_) {
-      variable_inverse_darcy_permeability_property.set_values(item);
 
     } else if (item->GetText() != nullptr) {
       auto value = item->GetText();

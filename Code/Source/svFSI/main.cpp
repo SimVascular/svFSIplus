@@ -199,6 +199,7 @@ void iterate_solution(Simulation* simulation)
   auto& cm_mod = simulation->cm_mod;
   auto& cm = com_mod.cm;
   auto& cep_mod = simulation->get_cep_mod();
+  // std::cout << "here 9" << std::endl;
 
   int nTS = com_mod.nTS; // number of time steps
   int stopTS = nTS;
@@ -206,6 +207,7 @@ void iterate_solution(Simulation* simulation)
   int tnNo = com_mod.tnNo; // total number of nodes across all meshes, but only on current processor
   int nFacesLS = com_mod.nFacesLS;
   int nsd = com_mod.nsd;
+  // std::cout << "here 10" << std::endl;
 
   std::cout << std::scientific << std::setprecision(16);
 
@@ -246,6 +248,7 @@ void iterate_solution(Simulation* simulation)
   if (cTS <= nITs) { 
     dt = dt / 10.0;
   }
+  // std::cout << "here 11" << std::endl;
 
   double& time = com_mod.time;
   auto& cEq = com_mod.cEq;
@@ -308,6 +311,7 @@ void iterate_solution(Simulation* simulation)
     dmsg << "mvMsh: " << com_mod.mvMsh;
     dmsg << "rmsh.isReqd: " << com_mod.rmsh.isReqd;
     #endif
+    // std::cout << "here 12" << std::endl;
 
     for (auto& eq : com_mod.eq) {
       eq.itr = 0;
@@ -326,12 +330,14 @@ void iterate_solution(Simulation* simulation)
         break;
       }
     }
+    // std::cout << "here 13" << std::endl;
 
     // Predictor step
     #ifdef debug_iterate_solution
     dmsg << "Predictor step ... " << std::endl;
     #endif
     pic::picp(simulation);
+    // std::cout << "here 14" << std::endl;
 
     // Apply Dirichlet BCs strongly
     //
@@ -346,8 +352,10 @@ void iterate_solution(Simulation* simulation)
     #endif
 
     set_bc::set_bc_dir(com_mod, An, Yn, Dn);
+    // std::cout << "here 15" << std::endl;
 
     iterate_precomputed_time(simulation);
+    // std::cout << "here 16" << std::endl;
 
     // Inner loop for Newton iteration
     //
@@ -388,11 +396,13 @@ void iterate_solution(Simulation* simulation)
       #ifdef debug_iterate_solution
       dmsg << "Initiator step ..." << std::endl;
       #endif
+      // std::cout << "here 17" << std::endl;
       pic::pici(simulation, Ag, Yg, Dg);
       Ag.write("Ag_pic"+ istr);
       Yg.write("Yg_pic"+ istr);
       Dg.write("Dg_pic"+ istr);
       Yn.write("Yn_pic"+ istr);
+      // std::cout << "here 18" << std::endl;
 
       if (Rd.size() != 0) {
         Rd = 0.0;
@@ -411,7 +421,8 @@ void iterate_solution(Simulation* simulation)
       #ifdef debug_iterate_solution
       dmsg << "Allocating the RHS and LHS"  << std::endl;
       #endif
-
+      
+      // std::cout << "here 19" << std::endl;
       ls_ns::ls_alloc(com_mod, eq);
       com_mod.Val.write("Val_alloc"+ istr);
 
@@ -423,7 +434,8 @@ void iterate_solution(Simulation* simulation)
       #ifdef debug_iterate_solution
       dmsg << "Set body forces ..."  << std::endl;
       #endif
-
+      
+      // std::cout << "here 20" << std::endl;
       bf::set_bf(com_mod, Dg);
       com_mod.Val.write("Val_bf"+ istr);
 
@@ -432,10 +444,12 @@ void iterate_solution(Simulation* simulation)
       #ifdef debug_iterate_solution
       dmsg << "Assembling equation:  " << eq.sym;
       #endif
-
+      
+      // std::cout << "here 21" << std::endl;
       for (int iM = 0; iM < com_mod.nMsh; iM++) {
         eq_assem::global_eq_assem(com_mod, cep_mod, com_mod.msh[iM], Ag, Yg, Dg);
       }
+      // std::cout << "here 22" << std::endl;
       com_mod.R.write("R_as"+ istr);
       com_mod.Val.write("Val_as"+ istr);
 
@@ -452,7 +466,8 @@ void iterate_solution(Simulation* simulation)
       Dg.write("Dg_vor_neu"+ istr);
 
       set_bc::set_bc_neu(com_mod, cm_mod, Yg, Dg);
-
+      
+      // std::cout << "here 23" << std::endl;
       com_mod.Val.write("Val_neu"+ istr);
       com_mod.R.write("R_neu"+ istr);
       Yg.write("Yg_neu"+ istr);
@@ -466,7 +481,8 @@ void iterate_solution(Simulation* simulation)
         #endif
         set_bc::set_bc_cmm(com_mod, cm_mod, Ag, Dg);
       }
-
+      
+      // std::cout << "here 24" << std::endl;
       // Apply weakly applied Dirichlet BCs
       //
       #ifdef debug_iterate_solution
@@ -474,7 +490,8 @@ void iterate_solution(Simulation* simulation)
       #endif
 
       set_bc::set_bc_dir_w(com_mod, Yg, Dg);
-
+      
+      // std::cout << "here 25" << std::endl;
       // Apply contact model and add its contribution to residual
       //
       if (com_mod.iCntct) {
@@ -499,6 +516,7 @@ void iterate_solution(Simulation* simulation)
         #endif
         all_fun::commu(com_mod, com_mod.R);
       }
+      // std::cout << "here 26" << std::endl;
 
       // Update residual in displacement equation for USTRUCT phys.
       // Note that this step is done only first iteration. Residual
@@ -571,9 +589,11 @@ void iterate_solution(Simulation* simulation)
       #ifdef debug_iterate_solution
       dmsg << "Solving equation: " << eq.sym; 
       #endif
-
+      
+      // std::cout << "here 27" << std::endl;
       ls_ns::ls_solve(com_mod, eq, incL, res);
-
+      
+      // std::cout << "here 28" << std::endl;
       com_mod.Val.write("Val_solve"+ istr);
       com_mod.R.write("R_solve"+ istr);
 
@@ -587,6 +607,7 @@ void iterate_solution(Simulation* simulation)
       #endif
 
       pic::picc(simulation);
+      // std::cout << "here 29" << std::endl;
       com_mod.Yn.write("Yn_picc"+ istr);
 
       // Writing out the time passed, residual, and etc.
@@ -599,7 +620,8 @@ void iterate_solution(Simulation* simulation)
       } 
 
       output::output_result(simulation, com_mod.timeP, 2, iEqOld);
-
+      
+      // std::cout << "here 30" << std::endl;
       inner_count += 1;
     } // Inner loop
 
@@ -775,6 +797,7 @@ int main(int argc, char *argv[])
   }
 
   std::cout << std::scientific << std::setprecision(16);
+  // std::cout << "here 1" << std::endl;
 
   // Initialize MPI.
   //
@@ -784,6 +807,7 @@ int main(int argc, char *argv[])
   MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
   //std::cout << "[svFSI] MPI rank: " << mpi_rank << std::endl;
   //std::cout << "[svFSI] MPI size: " << mpi_size << std::endl;
+  // std::cout << "here 2" << std::endl;
 
   // Create a Simulation object that stores all data structures for a simulation.
   //
@@ -793,6 +817,7 @@ int main(int argc, char *argv[])
   auto simulation = new Simulation();
   auto& cm = simulation->com_mod.cm;
   std::string file_name(argv[1]);
+  // std::cout << "here 3" << std::endl;
 
   #define n_debug_main
   #ifdef debug_main
@@ -809,6 +834,7 @@ int main(int argc, char *argv[])
     #ifdef debug_main
     dmsg << "Read files " << " ... ";
     #endif
+    // std::cout << "here 4" << std::endl;
     read_files(simulation, file_name);
 
 
@@ -816,6 +842,7 @@ int main(int argc, char *argv[])
     #ifdef debug_main
     dmsg << "Distribute data to processors " << " ... ";
     #endif
+    // std::cout << "here 5" << std::endl;
     distribute(simulation);
 
     // Initialize simulation data.
@@ -825,7 +852,9 @@ int main(int argc, char *argv[])
     #ifdef debug_main
     dmsg << "Initialize " << " ... ";
     #endif
+    // std::cout << "here 6" << std::endl;
     initialize(simulation, init_time);
+    // std::cout << "here 6b" << std::endl;
 
     // Create LinearAlgebra objects for each equation.
     //
@@ -833,6 +862,7 @@ int main(int argc, char *argv[])
       auto& eq = simulation->com_mod.eq[iEq];
       add_eq_linear_algebra(simulation->com_mod, eq);
     }
+    // std::cout << "here 7" << std::endl;
 
     #ifdef debug_main
     for (int iM = 0; iM < simulation->com_mod.nMsh; iM++) {
@@ -846,6 +876,7 @@ int main(int argc, char *argv[])
 
     // Run the simulation.
     run_simulation(simulation);
+    // std::cout << "here 8" << std::endl;
 
     #ifdef debug_main
     dmsg << "resetSim: " << simulation->com_mod.resetSim;

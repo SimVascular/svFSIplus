@@ -789,21 +789,6 @@ class VariableWallPropsParameters : public ParameterLists
     bool value_set = false;
 };
 
-/// @brief The VariableInverseDarcyPermeabilityPropParameters class stores parameters for
-/// variable inverse darcy permeability property for the fluid equation (Navier-Stokes-Brinkman).
-class VariableInverseDarcyPermeabilityPropParameters : public ParameterLists
-{
-  public:
-    VariableInverseDarcyPermeabilityPropParameters();
-    static const std::string xml_element_name_;
-    bool defined() const { return value_set; };
-    void set_values(tinyxml2::XMLElement* xml_elemnt);
-
-    Parameter<std::string> mesh_name;
-    Parameter<std::string> inverse_darcy_permeability_property_file_path;
-    bool value_set = false;
-};
-
 
 //////////////////////////////////////////////////////////
 //                 Viscosity                            //
@@ -1194,6 +1179,9 @@ class EquationParameters : public ParameterLists
 
     Parameter<std::string> type;
     Parameter<bool> use_taylor_hood_type_basis;
+    
+    // Inverse of Darcy permeability. Default value of 0.0 for Navier-Stokes and non-zero for Navier-Stokes-Brinkman
+    Parameter<double> inverse_darcy_permeability;
 
     // Sub-element parameters.
     //
@@ -1220,8 +1208,6 @@ class EquationParameters : public ParameterLists
     ViscosityParameters viscosity;
 
     ECGLeadsParameters ecg_leads;
-
-    VariableInverseDarcyPermeabilityPropParameters variable_inverse_darcy_permeability_property;
 };
 
 /// @brief The GeneralSimulationParameters class stores paramaters for the
