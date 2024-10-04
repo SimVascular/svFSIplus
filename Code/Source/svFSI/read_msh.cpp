@@ -1493,7 +1493,6 @@ void read_msh(Simulation* simulation)
 
     // Read in domain IDs. 
     //
-    // std::cout << "read_msh.cpp - here 1" << std::endl;
     if (mesh_param->domain_file_path.defined()) { 
       /*
       if (rmsh.isReqd) {
@@ -1505,20 +1504,15 @@ void read_msh(Simulation* simulation)
       dmsg << "domain_file_path: " << domain_file_path;
       #endif
       if ((domain_file_path.find(".vtp") != std::string::npos) || (domain_file_path.find(".vtu") != std::string::npos)) {
-        // std::cout << "read_msh.cpp - here 2" << std::endl;
         set_dmn_id_vtk(simulation, com_mod.msh[iM], domain_file_path, "DOMAIN_ID");
-        // std::cout << "read_msh.cpp - here 3" << std::endl;
       } else {
         set_dmn_id_ff(simulation, com_mod.msh[iM], domain_file_path);
-        // std::cout << "read_msh.cpp - here 3" << std::endl;
       }
     }
-    // std::cout << "read_msh.cpp - here 5" << std::endl;
 
     if (com_mod.msh[iM].eId.size() != 0) {
       flag = true;
     }
-    // std::cout << "read_msh.cpp - here 6" << std::endl;
   }
 
   #ifdef debug_read_msh 

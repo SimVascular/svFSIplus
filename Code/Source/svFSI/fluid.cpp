@@ -527,10 +527,7 @@ void construct_fluid(ComMod& com_mod, const mshType& lM, const Array<double>& Ag
       continue;
     }
     
-    // std::cout << "here 33" << std::endl;
     double K_inverse_darcy_permeability = eq.dmn[cDmn].prop.at(PhysicalProperyType::inverse_darcy_permeability);
-    // std::cout << "K_inverse_darcy_permeability = " << K_inverse_darcy_permeability << std::endl;
-    // std::cout << "here 34" << std::endl;
 
     //  Update shape functions for NURBS
     if (lM.eType == ElementType::NRB) {
@@ -583,7 +580,6 @@ void construct_fluid(ComMod& com_mod, const mshType& lM, const Array<double>& Ag
       }
     }
     
-    // std::cout << "here 35" << std::endl;
     // Gauss integration 1
     //
     #ifdef debug_construct_fluid
@@ -643,7 +639,6 @@ void construct_fluid(ComMod& com_mod, const mshType& lM, const Array<double>& Ag
       }
     } // g: loop
     
-    // std::cout << "here 36" << std::endl;
     // Set function spaces for velocity and pressure.
     //
     fs::get_thood_fs(com_mod, fs, lM, vmsStab, 2);
@@ -694,7 +689,6 @@ void construct_fluid(ComMod& com_mod, const mshType& lM, const Array<double>& Ag
 
     } // g: loop
     
-    // std::cout << "here 37" << std::endl;
     eq.linear_algebra->assemble(com_mod, eNoN, ptr, lK, lR);
 
   } // e: loop
@@ -703,7 +697,6 @@ void construct_fluid(ComMod& com_mod, const mshType& lM, const Array<double>& Ag
   double end_time = utils::cput();
   double etime = end_time - start_time;
   #endif
-  // std::cout << "here 38" << std::endl;
 }
 
 /// @brief Reproduces Fortran 'FLUID2D_C()'.
