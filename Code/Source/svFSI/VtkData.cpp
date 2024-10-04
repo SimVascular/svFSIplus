@@ -32,6 +32,7 @@
 #include "Array.h"
 
 #include <vtkDoubleArray.h>
+#include "vtkCellArray.h"
 #include "vtkCellData.h"
 #include <vtkGenericCell.h>
 #include <vtkIntArray.h>

@@ -82,9 +82,16 @@ endif()
 #-----------------------------------------------------------------------------
 # Shared Libs
 #-----------------------------------------------------------------------------
-set(SV_INSTALL_HEADERS ON)
-set(SV_INSTALL_EXTERNALS ON)
-set(SV_INSTALL_LIBS ON)
+
+set(SV_INSTALL_HEADERS OFF)
+#set(SV_INSTALL_HEADERS ON)
+
+set(SV_INSTALL_EXTERNALS OFF)
+#set(SV_INSTALL_EXTERNALS ON)
+
+set(SV_INSTALL_LIBS OFF)
+#set(SV_INSTALL_LIBS ON)
+
 if(BUILD_SHARED_LIBS)
   set(SV_LIBRARY_TYPE "SHARED" CACHE STRING "Shared cache" FORCE)
   set(SV_STATIC_BUILD "0")
