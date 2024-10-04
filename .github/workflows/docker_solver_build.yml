@@ -1,6 +1,6 @@
 name: Build and Push Docker Image
 
-on: [push]
+on: [push,pull_request]
 #  push:
 #    branches:
 #      - main  # Trigger the workflow on pushes to the main branch
