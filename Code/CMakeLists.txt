@@ -90,14 +90,14 @@ include(SimVascularDependentOptions)
 include(SimVascularInstallSetup)
 
 #set(SV_USE_TRILINOS {SV_USE_TRILINOS} PARENT_SCOPE)
-#set(SV_USE_TRILINOS OFF CACHE INTERNAL BOOL "Use Trilinos Library with svFSI")
+#set(SV_USE_TRILINOS OFF CACHE INTERNAL BOOL "Use Trilinos Library with svFSIplus")
 #set(SV_USE_TRILINOS OFF CACHE BOOL INTERNAL)
 
 #-----------------------------------------------------------------------------
 
 #-----------------------------------------------------------------------------
 # Set EXE names for the executables
-set(SV_SVFSI_EXE "svFSI")
+set(SV_SVFSI_EXE "svfsiplus")
 #-----------------------------------------------------------------------------
 
 #-----------------------------------------------------------------------------
@@ -159,8 +159,3 @@ if(SV_ENABLE_DISTRIBUTION)
 endif()
 #-----------------------------------------------------------------------------
 
-#-----------------------------------------------------------------------------
-# Configure Exe Scripts, this should be the last subdirectory
-include(SimVascularInstallLibs)
-add_subdirectory(Scripts)
-#-----------------------------------------------------------------------------

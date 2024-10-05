@@ -43,5 +43,5 @@ jobs:
           conda run -n svfsiplus pytest -rPv --durations=0
       - name: Run unit tests
         run: |
-          cd build/svFSI-build/Source/svFSI
+          cd build/svFSIplus-build/Source/svFSI
           ctest --verbose
