@@ -54,6 +54,7 @@ endif()
 
 #-----------------------------------------------------------------------------
 Project(SV_TOP)
+message(STATUS "SV_TOP: ${SV_TOP}")
 #-----------------------------------------------------------------------------
 
 #-----------------------------------------------------------------------------
@@ -124,9 +125,9 @@ set(SV_EXTERNALS_TOPLEVEL_DIR "${CMAKE_BINARY_DIR}/Externals-build/sv_externals"
 # svFSIplus solver.
 set(SV_ADDITIONAL_CMAKE_ARGS "" CACHE STRING "If more options want to be provided to the sv_externals build, they can be with this string")
 set(SV_APPLE_CMAKE_ARGS)
-ExternalProject_Add(svFSI
+ExternalProject_Add(svFSIplus
   SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Code
-  BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/svFSI-build
+  BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/svFSIplus-build
   DEPENDS Externals
   DOWNLOAD_COMMAND ""
   UPDATE_COMMAND ""
