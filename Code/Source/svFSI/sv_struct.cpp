@@ -387,7 +387,6 @@ void struct_2d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, 
   // Set parameters
   //
   double rho = dmn.prop.at(PhysicalProperyType::solid_density);
-  //double mu = dmn.prop.at(PhysicalProperyType::solid_viscosity);
   double dmp = dmn.prop.at(PhysicalProperyType::damping);
   Vector<double> fb({dmn.prop.at(PhysicalProperyType::f_x), dmn.prop.at(PhysicalProperyType::f_y)});
   double afu = eq.af * eq.beta*dt*dt;
@@ -576,7 +575,6 @@ void struct_3d_carray(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const in
   // Set parameters
   //
   double rho = dmn.prop.at(PhysicalProperyType::solid_density);
-  //double mu = dmn.prop.at(PhysicalProperyType::solid_viscosity);
   double dmp = dmn.prop.at(PhysicalProperyType::damping);
   double fb[3]{dmn.prop.at(PhysicalProperyType::f_x), 
                dmn.prop.at(PhysicalProperyType::f_y), 
@@ -588,7 +586,6 @@ void struct_3d_carray(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const in
 
   #ifdef debug_struct_3d
   dmsg << "rho: " << rho;
-  dmsg << "mu: " << mu;
   dmsg << "dmp: " << dmp;
   dmsg << "afu: " << afu;
   dmsg << "afv: " << afv;
@@ -878,8 +875,7 @@ void struct_3d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, 
   // Set parameters
   //
   double rho = dmn.prop.at(PhysicalProperyType::solid_density);
-  //double mu = dmn.prop.at(PhysicalProperyType::solid_viscosity);
-  double mu = 0;
+  double mu = 0.0;
   double dmp = dmn.prop.at(PhysicalProperyType::damping);
   Vector<double> fb({dmn.prop.at(PhysicalProperyType::f_x), 
                      dmn.prop.at(PhysicalProperyType::f_y), 
@@ -891,7 +887,6 @@ void struct_3d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, 
 
   #ifdef debug_struct_3d 
   dmsg << "rho: " << rho;
-  dmsg << "mu: " << mu;
   dmsg << "dmp: " << dmp;
   dmsg << "afu: " << afu;
   dmsg << "afv: " << afv;

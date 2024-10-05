@@ -398,19 +398,18 @@ enum class PhysicalProperyType
   NA = 0, 
   fluid_density = 1, 
   solid_density = 2, 
-  //solid_viscosity = 3, 
-  elasticity_modulus = 4,
-  poisson_ratio = 5, 
-  conductivity = 6, 
-  f_x = 7,                     // internal force x
-  f_y = 8,                     // internal force y
-  f_z = 9,                     // internal force z
-  backflow_stab = 10,          // stabilization coeff. for backflow divergence
-  source_term = 11,            // external source
-  damping = 12,
-  shell_thickness = 13, 
-  ctau_M = 14,                 // stabilization coeffs. for USTRUCT (momentum, continuity)
-  ctau_C = 15
+  elasticity_modulus = 3,
+  poisson_ratio = 4, 
+  conductivity = 5, 
+  f_x = 6,                     // internal force x
+  f_y = 7,                     // internal force y
+  f_z = 8,                     // internal force z
+  backflow_stab = 9,          // stabilization coeff. for backflow divergence
+  source_term = 10,            // external source
+  damping = 11,
+  shell_thickness = 12, 
+  ctau_M = 13,                 // stabilization coeffs. for USTRUCT (momentum, continuity)
+  ctau_C = 14
 };
 
 enum class PreconditionerType 

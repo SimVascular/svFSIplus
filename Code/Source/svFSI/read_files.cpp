@@ -1299,10 +1299,6 @@ void read_domain(Simulation* simulation, EquationParameters* eq_params, eqType& 
             }
           break;
 
-          // case PhysicalProperyType::solid_viscosity:
-          //   rtmp = domain_params->solid_viscosity.value();
-          // break;
-
           case PhysicalProperyType::source_term:
             rtmp = domain_params->source_term.value();
           break;
