@@ -56,17 +56,17 @@ jobs:
             conda run -n svfsiplus pytest -rPv --durations=0
         - name: Run unit tests
           run: |  
-            cd build/svFSI-build/Source/svFSI
+            cd build/svFSIplus-build/Source/svFSI
             ctest --verbose
         - name: Generate code coverage
           run: |
-            cd build/svFSI-build
+            cd build/svFSIplus-build
             make coverage
         - name: Save coverage report
           uses: actions/upload-artifact@v3
           with:
             name: coverage_report
-            path: build/svFSI-build/coverage
+            path: build/svFSIplus-build/coverage
         - name: Upload coverage reports to Codecov
           uses: codecov/codecov-action@v3
           env:

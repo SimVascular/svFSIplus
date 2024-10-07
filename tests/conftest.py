@@ -11,8 +11,8 @@ is_not_Darwin = True
 if platform.system() == "Darwin": is_not_Darwin = False
 
 this_file_dir = os.path.abspath(os.path.dirname(__file__))
-cpp_exec = os.path.join(this_file_dir, "..", "build", "svFSI-build", "bin", "svFSI")
-cpp_exec_p = os.path.join(this_file_dir, "..", "build-petsc", "svFSI-build", "bin", "svFSI")
+cpp_exec = os.path.join(this_file_dir, "..", "build", "svFSIplus-build", "bin", "svfsiplus")
+cpp_exec_p = os.path.join(this_file_dir, "..", "build-petsc", "svFSIplus-build", "bin", "svfsiplus")
 
 # Relative tolerances for each tested field
 RTOL = {
