@@ -439,6 +439,19 @@ void get_xi(const int nsd, consts::ElementType eType, const int eNoN, const Arra
   xi = xiK;
 }
 
+/**
+ * @brief Get shape function gradient w.r.t reference configuration coordinates. 
+ * dN/dX = dN/dxi * dxi/dX, where xi is the parametric coordinates of the parent element
+ * 
+ * @param eNoN Number of nodes in the element
+ * @param nsd Number of spatial dimensions
+ * @param insd 
+ * @param Nxi Shape function gradient w.r.t. parametric coordinates of the parent element
+ * @param x Element node positions in reference configuration
+ * @param Nx Shape function gradient w.r.t reference configuration coordinates
+ * @param Jac Jacobian of element in reference configuration
+ * @param ks Matrix where each component is (dxi/dX)^2
+ */
 void gnn(const int eNoN, const int nsd, const int insd, Array<double>& Nxi, Array<double>& x, Array<double>& Nx, 
     double& Jac, Array<double>& ks)
 {
