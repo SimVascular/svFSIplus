@@ -46,4 +46,6 @@ jobs:
     
     - name: Move new cache to old cache
       if: always()
-      run: mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+      run: |
+        rm -rf /tmp/.buildx-cache
+        mv /tmp/.buildx-cache-new /tmp/.buildx-cache
