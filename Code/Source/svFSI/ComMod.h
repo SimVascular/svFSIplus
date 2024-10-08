@@ -386,7 +386,7 @@ class stModelType
 
 /// @brief Fluid viscosity model type
 //
-class viscModelType
+class fluidViscModelType
 {
   public:
 
@@ -407,6 +407,19 @@ class viscModelType
 
     // Power-law exponent
     double n = 0.0;
+};
+
+/// @brief Fluid viscosity model type
+//
+class solidViscModelType
+{
+  public:
+
+    // Type of constitutive model for fluid viscosity
+    consts::SolidViscosityModelType viscType = consts::SolidViscosityModelType::viscType_NA;
+
+    // Viscosity value
+    double mu = 0.0;
 };
 
 /// @brief Domain type is to keep track with element belong to which domain
@@ -439,7 +452,10 @@ class dmnType
     stModelType stM;
 
     // Viscosity model for fluids
-    viscModelType visc;
+    fluidViscModelType fluid_visc;
+
+    // Viscosity model for solids
+    solidViscModelType solid_visc;
 };
 
 /// @brief Mesh adjacency (neighboring element for each element)

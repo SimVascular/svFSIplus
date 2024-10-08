@@ -255,7 +255,7 @@ void stokes_2d_c(ComMod& com_mod, const int lStab, const int eNoNw, const int eN
   int cDmn = com_mod.cDmn;
   auto& dmn = eq.dmn[cDmn];
   const double dt = com_mod.dt;
-  double mu = dmn.visc.mu_i;
+  double mu = dmn.fluid_visc.mu_i;
   double ctM = dmn.prop[PhysicalProperyType::ctau_M];
 
   Vector<double> fb(2);
@@ -378,7 +378,7 @@ void stokes_2d_m(ComMod& com_mod, const int eNoNw, const int eNoNq, const double
   auto& dmn = eq.dmn[cDmn];
   const double dt = com_mod.dt;
 
-  double mu = dmn.visc.mu_i;
+  double mu = dmn.fluid_visc.mu_i;
   Vector<double> fb(2);
   fb[0] = dmn.prop[PhysicalProperyType::f_x];
   fb[1] = dmn.prop[PhysicalProperyType::f_y];
@@ -488,7 +488,7 @@ void stokes_3d_c(ComMod& com_mod, const int lStab, const int eNoNw, const int eN
   int cDmn = com_mod.cDmn;
   auto& dmn = eq.dmn[cDmn];
   const double dt = com_mod.dt;
-  double mu = dmn.visc.mu_i;
+  double mu = dmn.fluid_visc.mu_i;
   double ctM = dmn.prop[PhysicalProperyType::ctau_M];
 
   Vector<double> fb(3);
@@ -604,7 +604,7 @@ void stokes_3d_m(ComMod& com_mod, const int eNoNw, const int eNoNq, const double
   auto& dmn = eq.dmn[cDmn];
   const double dt = com_mod.dt;
 
-  double mu = dmn.visc.mu_i;
+  double mu = dmn.fluid_visc.mu_i;
   Vector<double> fb(3);
   fb[0] = dmn.prop[PhysicalProperyType::f_x];
   fb[1] = dmn.prop[PhysicalProperyType::f_y];

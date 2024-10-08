@@ -1069,43 +1069,43 @@ void VariableWallPropsParameters::set_values(tinyxml2::XMLElement* xml_elem)
 }
 
 //////////////////////////////////////////////////////////
-//                  ViscosityParameters                 //
+//                  FluidViscosityParameters                 //
 //////////////////////////////////////////////////////////
 
-/// @brief Process parameters for various viscosity models.
+/// @brief Process parameters for various fluid viscosity models.
 ///
 /// Define the XML element name for viscosiity parameters.
-const std::string ViscosityParameters::xml_element_name_ = "Viscosity";
+const std::string FluidViscosityParameters::xml_element_name_ = "Viscosity";
 
-const std::string ViscosityParameters::CONSTANT_MODEL = "Constant";
-const std::string ViscosityParameters::CARREAU_YASUDA_MODEL = "Carreau-Yasuda";
-const std::string ViscosityParameters::CASSONS_MODEL = "Cassons";
+const std::string FluidViscosityParameters::CONSTANT_MODEL = "Constant";
+const std::string FluidViscosityParameters::CARREAU_YASUDA_MODEL = "Carreau-Yasuda";
+const std::string FluidViscosityParameters::CASSONS_MODEL = "Cassons";
 
-const std::set<std::string> ViscosityParameters::model_names = {
-  ViscosityParameters::CONSTANT_MODEL,
-  ViscosityParameters::CARREAU_YASUDA_MODEL,
-  ViscosityParameters::CASSONS_MODEL
+const std::set<std::string> FluidViscosityParameters::model_names = {
+  FluidViscosityParameters::CONSTANT_MODEL,
+  FluidViscosityParameters::CARREAU_YASUDA_MODEL,
+  FluidViscosityParameters::CASSONS_MODEL
 };
 
-/// @brief Define a map to set parameters for each viscosity model.
-using VpType = ViscosityParameters*;
+/// @brief Define a map to set parameters for each fluid viscosity model.
+using FVpType = FluidViscosityParameters*;
 using XmlType = tinyxml2::XMLElement*;
-using SetViscosityParamMapType = std::map<std::string, std::function<void(VpType, XmlType)>>;
-SetViscosityParamMapType SetViscosityModelParamsMap = {
-  {ViscosityParameters::CARREAU_YASUDA_MODEL, [](VpType vp, XmlType params) -> void { vp->carreau_yasuda_model.set_values(params); }},
-  {ViscosityParameters::CASSONS_MODEL, [](VpType vp, XmlType params) -> void { vp->cassons_model.set_values(params); }},
-  {ViscosityParameters::CONSTANT_MODEL, [](VpType vp, XmlType params) -> void { vp->newtonian_model.set_values(params); }},
+using SetFluidViscosityParamMapType = std::map<std::string, std::function<void(FVpType, XmlType)>>;
+SetFluidViscosityParamMapType SetFluidViscosityModelParamsMap = {
+  {FluidViscosityParameters::CARREAU_YASUDA_MODEL, [](FVpType vp, XmlType params) -> void { vp->carreau_yasuda_model.set_values(params); }},
+  {FluidViscosityParameters::CASSONS_MODEL, [](FVpType vp, XmlType params) -> void { vp->cassons_model.set_values(params); }},
+  {FluidViscosityParameters::CONSTANT_MODEL, [](FVpType vp, XmlType params) -> void { vp->newtonian_model.set_values(params); }},
 };
 
-/// @brief Define a map to print parameters for each viscosity model.
-using PrintViscosityParamaMapType = std::map<std::string, std::function<void(VpType)>>;
-PrintViscosityParamaMapType PrintViscosityModelParamsMap = {
-  {ViscosityParameters::CARREAU_YASUDA_MODEL, [](VpType vp) -> void { vp->carreau_yasuda_model.print_parameters(); }},
-  {ViscosityParameters::CASSONS_MODEL, [](VpType vp) -> void { vp->cassons_model.print_parameters(); }},
-  {ViscosityParameters::CONSTANT_MODEL, [](VpType vp) -> void { vp->newtonian_model.print_parameters(); }},
+/// @brief Define a map to print parameters for each fluid viscosity model.
+using PrintFluidViscosityParamaMapType = std::map<std::string, std::function<void(FVpType)>>;
+PrintFluidViscosityParamaMapType PrintFluidViscosityModelParamsMap = {
+  {FluidViscosityParameters::CARREAU_YASUDA_MODEL, [](FVpType vp) -> void { vp->carreau_yasuda_model.print_parameters(); }},
+  {FluidViscosityParameters::CASSONS_MODEL, [](FVpType vp) -> void { vp->cassons_model.print_parameters(); }},
+  {FluidViscosityParameters::CONSTANT_MODEL, [](FVpType vp) -> void { vp->newtonian_model.print_parameters(); }},
 };
 
-ViscosityNewtonianParameters::ViscosityNewtonianParameters()
+FluidViscosityNewtonianParameters::FluidViscosityNewtonianParameters()
 {
   // A parameter that must be defined.
   bool required = true;
@@ -1113,24 +1113,24 @@ ViscosityNewtonianParameters::ViscosityNewtonianParameters()
   set_parameter("Value", 0.0, !required, constant_value);
 }
 
-void ViscosityNewtonianParameters::print_parameters()
+void FluidViscosityNewtonianParameters::print_parameters()
 {
   std::cout << constant_value.name_ << ": " << constant_value.value_ << std::endl;
 }
 
-void ViscosityNewtonianParameters::set_values(tinyxml2::XMLElement* xml_elem)
+void FluidViscosityNewtonianParameters::set_values(tinyxml2::XMLElement* xml_elem)
 {
   std::string error_msg = "Unknown Constitutive_model type=Newtonian XML element '";
 
   using std::placeholders::_1;
   using std::placeholders::_2;
   std::function<void(const std::string&, const std::string&)> ftpr =
-      std::bind( &ViscosityNewtonianParameters::set_parameter_value, *this, _1, _2);
+      std::bind( &FluidViscosityNewtonianParameters::set_parameter_value, *this, _1, _2);
 
   xml_util_set_parameters(ftpr, xml_elem, error_msg);
 }
 
-ViscosityCarreauYasudaParameters::ViscosityCarreauYasudaParameters()
+FluidViscosityCarreauYasudaParameters::FluidViscosityCarreauYasudaParameters()
 {
   // A parameter that must be defined.
   bool required = true;
@@ -1144,7 +1144,7 @@ ViscosityCarreauYasudaParameters::ViscosityCarreauYasudaParameters()
   set_parameter("Shear_rate_tensor_exponent", 0.0, !required, shear_rate_tensor_exponent); 
 }
 
-void ViscosityCarreauYasudaParameters::print_parameters()
+void FluidViscosityCarreauYasudaParameters::print_parameters()
 {
   std::cout << limiting_high_shear_rate_viscosity.name_ << ": " << limiting_high_shear_rate_viscosity.value_ << std::endl;
   std::cout << limiting_low_shear_rate_viscosity.name_ << ": " << limiting_low_shear_rate_viscosity.value_ << std::endl;
@@ -1153,18 +1153,18 @@ void ViscosityCarreauYasudaParameters::print_parameters()
   std::cout << shear_rate_tensor_multipler.name_ << ": " << shear_rate_tensor_multipler.value_ << std::endl;
 }
 
-void ViscosityCarreauYasudaParameters::set_values(tinyxml2::XMLElement* xml_elem)
+void FluidViscosityCarreauYasudaParameters::set_values(tinyxml2::XMLElement* xml_elem)
 {
   std::string error_msg = "Unknown Constitutive_model type=CarreauYasuda XML element '";
   using std::placeholders::_1;
   using std::placeholders::_2;
   std::function<void(const std::string&, const std::string&)> ftpr =
-      std::bind( &ViscosityCarreauYasudaParameters::set_parameter_value, *this, _1, _2);
+      std::bind( &FluidViscosityCarreauYasudaParameters::set_parameter_value, *this, _1, _2);
 
   xml_util_set_parameters(ftpr, xml_elem, error_msg);
 }
 
-ViscosityCassonsParameters::ViscosityCassonsParameters()
+FluidViscosityCassonsParameters::FluidViscosityCassonsParameters()
 {
   // A parameter that must be defined.
   bool required = true;
@@ -1174,26 +1174,26 @@ ViscosityCassonsParameters::ViscosityCassonsParameters()
   set_parameter("Yield_stress_parameter", 0.0, !required, yield_stress);
 }
 
-void ViscosityCassonsParameters::print_parameters()
+void FluidViscosityCassonsParameters::print_parameters()
 {
   std::cout << asymptotic_viscosity.name_ << ": " << asymptotic_viscosity.value_ << std::endl;
   std::cout << low_shear_rate_threshold.name_ << ": " << low_shear_rate_threshold.value_ << std::endl;
   std::cout << yield_stress.name_ << ": " << yield_stress.value_ << std::endl;
 }
 
-void ViscosityCassonsParameters::set_values(tinyxml2::XMLElement* xml_elem)
+void FluidViscosityCassonsParameters::set_values(tinyxml2::XMLElement* xml_elem)
 {
   std::string error_msg = "Unknown Constitutive_model type=Cassons XML element '";
 
   using std::placeholders::_1;
   using std::placeholders::_2;
   std::function<void(const std::string&, const std::string&)> ftpr =
-      std::bind( &ViscosityCassonsParameters::set_parameter_value, *this, _1, _2);
+      std::bind( &FluidViscosityCassonsParameters::set_parameter_value, *this, _1, _2);
 
   xml_util_set_parameters(ftpr, xml_elem, error_msg);
 }
 
-ViscosityParameters::ViscosityParameters()
+FluidViscosityParameters::FluidViscosityParameters()
 {
   // A parameter that must be defined.
   bool required = true;
@@ -1202,7 +1202,7 @@ ViscosityParameters::ViscosityParameters()
   model = Parameter<std::string>("model", "", required);
 }
 
-void ViscosityParameters::print_parameters()
+void FluidViscosityParameters::print_parameters()
 { 
   std::cout << std::endl;
   std::cout << "--------------------" << std::endl;
@@ -1210,11 +1210,11 @@ void ViscosityParameters::print_parameters()
   std::cout << "--------------------" << std::endl;
   std::cout << model.name() << ": '" << model.value() << "'" << std::endl;
 
-  // Print parameters for the given viscosity model.
-  PrintViscosityModelParamsMap[model.value_](this);
+  // Print parameters for the given fluid_viscosity model.
+  PrintFluidViscosityModelParamsMap[model.value_](this);
 }
 
-void ViscosityParameters::set_values(tinyxml2::XMLElement* xml_elem)
+void FluidViscosityParameters::set_values(tinyxml2::XMLElement* xml_elem)
 {
   using namespace tinyxml2;
 
@@ -1226,14 +1226,139 @@ void ViscosityParameters::set_values(tinyxml2::XMLElement* xml_elem)
   }
   model.set(std::string(smodel));
 
-  // Check viscosity model name.
+  // Check fluid_viscosity model name.
   if (model_names.count(model.value()) == 0) { 
-      throw std::runtime_error("Unknown viscosity model '" + model.value() + 
-        " in '" + xml_elem->Name() + "'.");
+      throw std::runtime_error("Unknown fluid viscosity model '" + model.value() + 
+        "' in '" + xml_elem->Name() + "'.");
   }
 
-  // Set parameters for the given viscosity model.
-  SetViscosityModelParamsMap[model.value()](this, xml_elem);
+  // Set parameters for the given fluid_viscosity model.
+  SetFluidViscosityModelParamsMap[model.value()](this, xml_elem);
+}
+
+//////////////////////////////////////////////////////////
+//                  SolidViscosityParameters                 //
+//////////////////////////////////////////////////////////
+
+/// @brief Process parameters for various solid viscosity models.
+///
+/// Define the XML element name for viscosiity parameters.
+const std::string SolidViscosityParameters::xml_element_name_ = "Viscosity";
+
+const std::string SolidViscosityParameters::NEWTONIAN_MODEL = "Newtonian";
+const std::string SolidViscosityParameters::POTENTIAL_MODEL = "Potential";
+
+const std::set<std::string> SolidViscosityParameters::model_names = {
+  SolidViscosityParameters::NEWTONIAN_MODEL,
+  SolidViscosityParameters::POTENTIAL_MODEL
+};
+
+/// @brief Define a map to set parameters for each solid viscosity model.
+using SVpType = SolidViscosityParameters*;
+using XmlType = tinyxml2::XMLElement*;
+using SetSolidViscosityParamMapType = std::map<std::string, std::function<void(SVpType, XmlType)>>;
+SetSolidViscosityParamMapType SetSolidViscosityModelParamsMap = {
+  {SolidViscosityParameters::NEWTONIAN_MODEL, [](SVpType vp, XmlType params) -> void { vp->newtonian_model.set_values(params); }},
+  {SolidViscosityParameters::POTENTIAL_MODEL, [](SVpType vp, XmlType params) -> void { vp->potential_model.set_values(params); }},
+};
+
+/// @brief Define a map to print parameters for each solid viscosity model.
+using PrintSolidViscosityParamaMapType = std::map<std::string, std::function<void(SVpType)>>;
+PrintSolidViscosityParamaMapType PrintSolidViscosityModelParamsMap = {
+  {SolidViscosityParameters::NEWTONIAN_MODEL, [](SVpType vp) -> void { vp->newtonian_model.print_parameters(); }},
+  {SolidViscosityParameters::POTENTIAL_MODEL, [](SVpType vp) -> void { vp->potential_model.print_parameters(); }},
+};
+
+SolidViscosityNewtonianParameters::SolidViscosityNewtonianParameters()
+{
+  // A parameter that must be defined.
+  bool required = true;
+
+  set_parameter("Value", 0.0, !required, constant_value);
+}
+
+void SolidViscosityNewtonianParameters::print_parameters()
+{
+  std::cout << constant_value.name_ << ": " << constant_value.value_ << std::endl;
+}
+
+void SolidViscosityNewtonianParameters::set_values(tinyxml2::XMLElement* xml_elem)
+{
+  std::string error_msg = "Unknown Constitutive_model type=Newtonian XML element '";
+
+  using std::placeholders::_1;
+  using std::placeholders::_2;
+  std::function<void(const std::string&, const std::string&)> ftpr =
+      std::bind( &SolidViscosityNewtonianParameters::set_parameter_value, *this, _1, _2);
+
+  xml_util_set_parameters(ftpr, xml_elem, error_msg);
+}
+
+SolidViscosityPotentialParameters::SolidViscosityPotentialParameters()
+{
+  // A parameter that must be defined.
+  bool required = true;
+
+  set_parameter("Value", 0.0, !required, constant_value);
+}
+
+void SolidViscosityPotentialParameters::print_parameters()
+{
+  std::cout << constant_value.name_ << ": " << constant_value.value_ << std::endl;
+}
+
+void SolidViscosityPotentialParameters::set_values(tinyxml2::XMLElement* xml_elem)
+{
+  std::string error_msg = "Unknown Constitutive_model type=Potential XML element '";
+  using std::placeholders::_1;
+  using std::placeholders::_2;
+  std::function<void(const std::string&, const std::string&)> ftpr =
+      std::bind( &SolidViscosityPotentialParameters::set_parameter_value, *this, _1, _2);
+
+  xml_util_set_parameters(ftpr, xml_elem, error_msg);
+}
+
+SolidViscosityParameters::SolidViscosityParameters()
+{
+  // A parameter that must be defined.
+  bool required = true;
+
+  // Stores model from the <Viscosity model= > XML element 
+  model = Parameter<std::string>("model", "", required);
+}
+
+void SolidViscosityParameters::print_parameters()
+{ 
+  std::cout << std::endl;
+  std::cout << "--------------------" << std::endl;
+  std::cout << "Viscosity Parameters" << std::endl;
+  std::cout << "--------------------" << std::endl;
+  std::cout << model.name() << ": '" << model.value() << "'" << std::endl;
+
+  // Print parameters for the given solid_viscosity model.
+  PrintSolidViscosityModelParamsMap[model.value_](this);
+}
+
+void SolidViscosityParameters::set_values(tinyxml2::XMLElement* xml_elem)
+{
+  using namespace tinyxml2;
+
+  const char* smodel;
+  auto result = xml_elem->QueryStringAttribute("model", &smodel);
+
+  if (smodel == nullptr) {
+    throw std::runtime_error("No MODEL given in the <Viscosity model=MODEL > XML element."); 
+  }
+  model.set(std::string(smodel));
+
+  // Check solid viscosity model name.
+  if (model_names.count(model.value()) == 0) { 
+      throw std::runtime_error("Unknown solid viscosity model '" + model.value() + 
+        "' in '" + xml_elem->Name() + "'.");
+  }
+
+  // Set parameters for the given solid viscosity model.
+  SetSolidViscosityModelParamsMap[model.value()](this, xml_elem);
 }
 
 //////////////////////////////////////////////////////////
@@ -1299,7 +1424,6 @@ DomainParameters::DomainParameters()
   set_parameter("Relative_tolerance", 1e-4, !required, relative_tolerance);
   set_parameter("Shell_thickness", 0.0, !required, shell_thickness);
   set_parameter("Solid_density", 0.5, !required, solid_density);
-  set_parameter("Solid_viscosity", 0.0, !required, solid_viscosity);
   set_parameter("Source_term", 0.0, !required, source_term);
   set_parameter("Time_step_for_integration", 0.0, !required, time_step_for_integration);
 }
@@ -1323,7 +1447,9 @@ void DomainParameters::print_parameters()
 
   stimulus.print_parameters();
 
-  viscosity.print_parameters();
+  fluid_viscosity.print_parameters();
+
+  solid_viscosity.print_parameters();
 }
 
 void DomainParameters::set_values(tinyxml2::XMLElement* domain_elem)
@@ -1354,8 +1480,16 @@ void DomainParameters::set_values(tinyxml2::XMLElement* domain_elem)
     } else if (name == StimulusParameters::xml_element_name_) {
       stimulus.set_values(item);
 
-    } else if (name == ViscosityParameters::xml_element_name_) {
-      viscosity.set_values(item);
+    } else if (name == FluidViscosityParameters::xml_element_name_ || name == SolidViscosityParameters::xml_element_name_) {
+      auto eq_type = consts::equation_name_to_type.at(equation.value());
+      if (eq_type == consts::EquationType::phys_fluid || eq_type == consts::EquationType::phys_CMM || eq_type == consts::EquationType::phys_stokes) {
+        fluid_viscosity.set_values(item);
+      } else if (eq_type == consts::EquationType::phys_struct || eq_type == consts::EquationType::phys_ustruct) {
+        solid_viscosity.set_values(item);
+      }
+      else {
+        throw std::runtime_error("Viscosity model not supported for equation '" + equation.value() + "'.");
+      }
   
     } else if (item->GetText() != nullptr) {
       auto value = item->GetText();
@@ -1768,8 +1902,15 @@ void EquationParameters::set_values(tinyxml2::XMLElement* eq_elem)
     } else if (name == StimulusParameters::xml_element_name_) {
       default_domain->stimulus.set_values(item);
 
-    } else if (name == ViscosityParameters::xml_element_name_) {
-      default_domain->viscosity.set_values(item);
+    } else if (name == FluidViscosityParameters::xml_element_name_ || name == SolidViscosityParameters::xml_element_name_) {
+      auto eq_type = consts::equation_name_to_type.at(type.value());
+      if (eq_type == consts::EquationType::phys_fluid || eq_type == consts::EquationType::phys_CMM || eq_type == consts::EquationType::phys_stokes) {
+        default_domain->fluid_viscosity.set_values(item);
+      } else if (eq_type == consts::EquationType::phys_struct || eq_type == consts::EquationType::phys_ustruct) {
+        default_domain->solid_viscosity.set_values(item);
+      } else {
+        throw std::runtime_error("Viscosity model not supported for equation '" + type.value() + "'.");
+      }
 
     } else if (name == ECGLeadsParameters::xml_element_name_) {
       ecg_leads.set_values(item);
