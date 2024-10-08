@@ -81,6 +81,7 @@ $(function() {
 <code>#include &quot;fs.h&quot;</code><br />
 <code>#include &quot;mat_fun.h&quot;</code><br />
 <code>#include &quot;mat_models.h&quot;</code><br />
+<code>#include &quot;mat_models_carray.h&quot;</code><br />
 <code>#include &quot;nn.h&quot;</code><br />
 <code>#include &quot;utils.h&quot;</code><br />
 <code>#include &lt;math.h&gt;</code><br />
@@ -105,12 +106,12 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>ustruct::b_ustruct_2d
 <tr class="memitem:a4ace415cc431abf3f4456f0dd7dd031d"><td class="memItemLeft" align="right" valign="top"><a id="a4ace415cc431abf3f4456f0dd7dd031d"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>ustruct::get_col_ptr</b> (<a class="el" href="class_com_mod.html">ComMod</a> &amp;com_mod, const int rowN, const int colN)</td></tr>
 <tr class="separator:a4ace415cc431abf3f4456f0dd7dd031d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aaa1ab7ca2894a7a5c0b2029f611a6ef0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ustruct_8cpp.html#aaa1ab7ca2894a7a5c0b2029f611a6ef0">ustruct::ustruct_2d_c</a> (<a class="el" href="class_com_mod.html">ComMod</a> &amp;com_mod, <a class="el" href="class_cep_mod.html">CepMod</a> &amp;cep_mod, const bool vmsFlag, const int eNoNw, const int eNoNq, const double w, const double Je, const <a class="el" href="class_vector.html">Vector</a>&lt; double &gt; &amp;Nw, const <a class="el" href="class_vector.html">Vector</a>&lt; double &gt; &amp;Nq, const Array&lt; double &gt; &amp;Nwx, const Array&lt; double &gt; &amp;Nqx, const Array&lt; double &gt; &amp;al, const Array&lt; double &gt; &amp;yl, const Array&lt; double &gt; &amp;dl, const Array&lt; double &gt; &amp;bfl, const Array&lt; double &gt; &amp;Kxi, Array&lt; double &gt; &amp;lR, <a class="el" href="class_array3.html">Array3</a>&lt; double &gt; &amp;lK, <a class="el" href="class_array3.html">Array3</a>&lt; double &gt; &amp;lKd)</td></tr>
-<tr class="memdesc:aaa1ab7ca2894a7a5c0b2029f611a6ef0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reproduces Fortran USTRUCT2D_C.  <a href="ustruct_8cpp.html#aaa1ab7ca2894a7a5c0b2029f611a6ef0">More...</a><br /></td></tr>
-<tr class="separator:aaa1ab7ca2894a7a5c0b2029f611a6ef0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8977669b9f49017e71078d220da9e6a7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ustruct_8cpp.html#a8977669b9f49017e71078d220da9e6a7">ustruct::ustruct_3d_c</a> (<a class="el" href="class_com_mod.html">ComMod</a> &amp;com_mod, <a class="el" href="class_cep_mod.html">CepMod</a> &amp;cep_mod, const bool vmsFlag, const int eNoNw, const int eNoNq, const double w, const double Je, const <a class="el" href="class_vector.html">Vector</a>&lt; double &gt; &amp;Nw, const <a class="el" href="class_vector.html">Vector</a>&lt; double &gt; &amp;Nq, const Array&lt; double &gt; &amp;Nwx, const Array&lt; double &gt; &amp;Nqx, const Array&lt; double &gt; &amp;al, const Array&lt; double &gt; &amp;yl, const Array&lt; double &gt; &amp;dl, const Array&lt; double &gt; &amp;bfl, const Array&lt; double &gt; &amp;Kxi, Array&lt; double &gt; &amp;lR, <a class="el" href="class_array3.html">Array3</a>&lt; double &gt; &amp;lK, <a class="el" href="class_array3.html">Array3</a>&lt; double &gt; &amp;lKd)</td></tr>
-<tr class="memdesc:a8977669b9f49017e71078d220da9e6a7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reproduces Fortran USTRUCT3D_C.  <a href="ustruct_8cpp.html#a8977669b9f49017e71078d220da9e6a7">More...</a><br /></td></tr>
-<tr class="separator:a8977669b9f49017e71078d220da9e6a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1932a6e82fe23a81987cfc209b92f394"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ustruct_8cpp.html#a1932a6e82fe23a81987cfc209b92f394">ustruct::ustruct_2d_c</a> (<a class="el" href="class_com_mod.html">ComMod</a> &amp;com_mod, <a class="el" href="class_cep_mod.html">CepMod</a> &amp;cep_mod, const bool vmsFlag, const int eNoNw, const int eNoNq, const double w, const double Je, const <a class="el" href="class_vector.html">Vector</a>&lt; double &gt; &amp;Nw, const <a class="el" href="class_vector.html">Vector</a>&lt; double &gt; &amp;Nq, const Array&lt; double &gt; &amp;Nwx, const Array&lt; double &gt; &amp;Nqx, const Array&lt; double &gt; &amp;al, const Array&lt; double &gt; &amp;yl, const Array&lt; double &gt; &amp;dl, const Array&lt; double &gt; &amp;bfl, Array&lt; double &gt; &amp;lR, <a class="el" href="class_array3.html">Array3</a>&lt; double &gt; &amp;lK, <a class="el" href="class_array3.html">Array3</a>&lt; double &gt; &amp;lKd)</td></tr>
+<tr class="memdesc:a1932a6e82fe23a81987cfc209b92f394"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reproduces Fortran USTRUCT2D_C.  <a href="ustruct_8cpp.html#a1932a6e82fe23a81987cfc209b92f394">More...</a><br /></td></tr>
+<tr class="separator:a1932a6e82fe23a81987cfc209b92f394"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:addd531ce2343b1ad531413660c82977b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ustruct_8cpp.html#addd531ce2343b1ad531413660c82977b">ustruct::ustruct_3d_c</a> (<a class="el" href="class_com_mod.html">ComMod</a> &amp;com_mod, <a class="el" href="class_cep_mod.html">CepMod</a> &amp;cep_mod, const bool vmsFlag, const int eNoNw, const int eNoNq, const double w, const double Je, const <a class="el" href="class_vector.html">Vector</a>&lt; double &gt; &amp;Nw, const <a class="el" href="class_vector.html">Vector</a>&lt; double &gt; &amp;Nq, const Array&lt; double &gt; &amp;Nwx, const Array&lt; double &gt; &amp;Nqx, const Array&lt; double &gt; &amp;al, const Array&lt; double &gt; &amp;yl, const Array&lt; double &gt; &amp;dl, const Array&lt; double &gt; &amp;bfl, Array&lt; double &gt; &amp;lR, <a class="el" href="class_array3.html">Array3</a>&lt; double &gt; &amp;lK, <a class="el" href="class_array3.html">Array3</a>&lt; double &gt; &amp;lKd)</td></tr>
+<tr class="memdesc:addd531ce2343b1ad531413660c82977b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reproduces Fortran USTRUCT3D_C.  <a href="ustruct_8cpp.html#addd531ce2343b1ad531413660c82977b">More...</a><br /></td></tr>
+<tr class="separator:addd531ce2343b1ad531413660c82977b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a80e8da99aee39c727871f006d2548d07"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ustruct_8cpp.html#a80e8da99aee39c727871f006d2548d07">ustruct::ustruct_2d_m</a> (<a class="el" href="class_com_mod.html">ComMod</a> &amp;com_mod, <a class="el" href="class_cep_mod.html">CepMod</a> &amp;cep_mod, const bool vmsFlag, const int eNoNw, const int eNoNq, const int nFn, const double w, const double Je, const <a class="el" href="class_vector.html">Vector</a>&lt; double &gt; &amp;Nw, const <a class="el" href="class_vector.html">Vector</a>&lt; double &gt; &amp;Nq, const Array&lt; double &gt; &amp;Nwx, const Array&lt; double &gt; &amp;al, const Array&lt; double &gt; &amp;yl, const Array&lt; double &gt; &amp;dl, const Array&lt; double &gt; &amp;bfl, const Array&lt; double &gt; &amp;fN, const <a class="el" href="class_vector.html">Vector</a>&lt; double &gt; &amp;ya_l, Array&lt; double &gt; &amp;lR, <a class="el" href="class_array3.html">Array3</a>&lt; double &gt; &amp;lK, <a class="el" href="class_array3.html">Array3</a>&lt; double &gt; &amp;lKd)</td></tr>
 <tr class="memdesc:a80e8da99aee39c727871f006d2548d07"><td class="mdescLeft">&#160;</td><td class="mdescRight">Replicates Fortran USTRUCT2D_M.  <a href="ustruct_8cpp.html#a80e8da99aee39c727871f006d2548d07">More...</a><br /></td></tr>
 <tr class="separator:a80e8da99aee39c727871f006d2548d07"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -282,8 +283,8 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>ustruct::get_col_ptr</
 
 </div>
 </div>
-<a id="aaa1ab7ca2894a7a5c0b2029f611a6ef0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aaa1ab7ca2894a7a5c0b2029f611a6ef0">&#9670;&nbsp;</a></span>ustruct_2d_c()</h2>
+<a id="a1932a6e82fe23a81987cfc209b92f394"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1932a6e82fe23a81987cfc209b92f394">&#9670;&nbsp;</a></span>ustruct_2d_c()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -377,12 +378,6 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>ustruct::get_col_ptr</
           <td></td>
           <td class="paramtype">const Array&lt; double &gt; &amp;&#160;</td>
           <td class="paramname"><em>bfl</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const Array&lt; double &gt; &amp;&#160;</td>
-          <td class="paramname"><em>Kxi</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -552,8 +547,8 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>ustruct::get_col_ptr</
 
 </div>
 </div>
-<a id="a8977669b9f49017e71078d220da9e6a7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8977669b9f49017e71078d220da9e6a7">&#9670;&nbsp;</a></span>ustruct_3d_c()</h2>
+<a id="addd531ce2343b1ad531413660c82977b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#addd531ce2343b1ad531413660c82977b">&#9670;&nbsp;</a></span>ustruct_3d_c()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -647,12 +642,6 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>ustruct::get_col_ptr</
           <td></td>
           <td class="paramtype">const Array&lt; double &gt; &amp;&#160;</td>
           <td class="paramname"><em>bfl</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const Array&lt; double &gt; &amp;&#160;</td>
-          <td class="paramname"><em>Kxi</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>

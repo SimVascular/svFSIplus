@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.1"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>svFSIplus: ViscosityCassonsParameters Class Reference</title>
+<title>svFSIplus: SolidViscosityPotentialParameters Class Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -65,13 +65,13 @@ $(function() {
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-attribs">Public Attributes</a> &#124;
-<a href="class_viscosity_cassons_parameters-members.html">List of all members</a>  </div>
+<a href="class_solid_viscosity_potential_parameters-members.html">List of all members</a>  </div>
   <div class="headertitle">
-<div class="title">ViscosityCassonsParameters Class Reference</div>  </div>
+<div class="title">SolidViscosityPotentialParameters Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 <div class="dynheader">
-Inheritance diagram for ViscosityCassonsParameters:</div>
+Inheritance diagram for SolidViscosityPotentialParameters:</div>
 <div class="dyncontent">
 <div class="center"><!-- SVG 0 -->
 </div>
@@ -79,12 +79,12 @@ Inheritance diagram for ViscosityCassonsParameters:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a798b15dc88319ea1ed69615caa378149"><td class="memItemLeft" align="right" valign="top"><a id="a798b15dc88319ea1ed69615caa378149"></a>
+<tr class="memitem:a93359b359584dab345606f7106059e4a"><td class="memItemLeft" align="right" valign="top"><a id="a93359b359584dab345606f7106059e4a"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>print_parameters</b> ()</td></tr>
-<tr class="separator:a798b15dc88319ea1ed69615caa378149"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a429308c38a6fb0e5cb880226ae678aa6"><td class="memItemLeft" align="right" valign="top"><a id="a429308c38a6fb0e5cb880226ae678aa6"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>set_values</b> (tinyxml2::XMLElement *xml_elem)</td></tr>
-<tr class="separator:a429308c38a6fb0e5cb880226ae678aa6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="separator:a93359b359584dab345606f7106059e4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3574c45730bf131e2ef06384fbd438ef"><td class="memItemLeft" align="right" valign="top"><a id="a3574c45730bf131e2ef06384fbd438ef"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>set_values</b> (tinyxml2::XMLElement *equation_params)</td></tr>
+<tr class="separator:a3574c45730bf131e2ef06384fbd438ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_class_parameter_lists"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_class_parameter_lists')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="class_parameter_lists.html">ParameterLists</a></td></tr>
 <tr class="memitem:a6d6b1f24d88e33ab3e752a31c2203f6d inherit pub_methods_class_parameter_lists"><td class="memItemLeft" align="right" valign="top"><a id="a6d6b1f24d88e33ab3e752a31c2203f6d"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>set_xml_element_name</b> (const std::string &amp;name)</td></tr>
@@ -125,15 +125,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>set_parameter</b> (co
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a99deb4079f1839a057c4806e0fcd2348"><td class="memItemLeft" align="right" valign="top"><a id="a99deb4079f1839a057c4806e0fcd2348"></a>
-<a class="el" href="class_parameter.html">Parameter</a>&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>asymptotic_viscosity</b></td></tr>
-<tr class="separator:a99deb4079f1839a057c4806e0fcd2348"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae2bdfe6d658f85857cc5ce0bd05ffbd8"><td class="memItemLeft" align="right" valign="top"><a id="ae2bdfe6d658f85857cc5ce0bd05ffbd8"></a>
-<a class="el" href="class_parameter.html">Parameter</a>&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>yield_stress</b></td></tr>
-<tr class="separator:ae2bdfe6d658f85857cc5ce0bd05ffbd8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a93bcb4b6522e5d78efb3b7a6e6ea5755"><td class="memItemLeft" align="right" valign="top"><a id="a93bcb4b6522e5d78efb3b7a6e6ea5755"></a>
-<a class="el" href="class_parameter.html">Parameter</a>&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>low_shear_rate_threshold</b></td></tr>
-<tr class="separator:a93bcb4b6522e5d78efb3b7a6e6ea5755"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a97776760748bc3c089dc49ca241c9658"><td class="memItemLeft" align="right" valign="top"><a id="a97776760748bc3c089dc49ca241c9658"></a>
+<a class="el" href="class_parameter.html">Parameter</a>&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>constant_value</b></td></tr>
+<tr class="separator:a97776760748bc3c089dc49ca241c9658"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_attribs_class_parameter_lists"><td colspan="2" onclick="javascript:toggleInherit('pub_attribs_class_parameter_lists')"><img src="closed.png" alt="-"/>&#160;Public Attributes inherited from <a class="el" href="class_parameter_lists.html">ParameterLists</a></td></tr>
 <tr class="memitem:a6131758a550b2e63f34e7554933e27f8 inherit pub_attribs_class_parameter_lists"><td class="memItemLeft" align="right" valign="top">std::map&lt; std::string, std::variant&lt; <a class="el" href="class_parameter.html">Parameter</a>&lt; bool &gt; *, <a class="el" href="class_parameter.html">Parameter</a>&lt; double &gt; *, <a class="el" href="class_parameter.html">Parameter</a>&lt; int &gt; *, <a class="el" href="class_parameter.html">Parameter</a>&lt; std::string &gt; *, <a class="el" href="class_vector_parameter.html">VectorParameter</a>&lt; double &gt; *, <a class="el" href="class_vector_parameter.html">VectorParameter</a>&lt; int &gt; *, <a class="el" href="class_vector_parameter.html">VectorParameter</a>&lt; std::string &gt; * &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_parameter_lists.html#a6131758a550b2e63f34e7554933e27f8">params_map</a></td></tr>
 <tr class="memdesc:a6131758a550b2e63f34e7554933e27f8 inherit pub_attribs_class_parameter_lists"><td class="mdescLeft">&#160;</td><td class="mdescRight">Map used for storing parameters by name / <a class="el" href="class_parameter.html" title="The Parameter class template is used to store a named paramater and its scalar value as a basic type:...">Parameter</a> template union.  <a href="class_parameter_lists.html#a6131758a550b2e63f34e7554933e27f8">More...</a><br /></td></tr>
