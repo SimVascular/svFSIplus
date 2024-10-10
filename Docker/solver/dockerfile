@@ -18,26 +18,7 @@ RUN cmake -DSV_PETSC_DIR:STRING=/petsc .. &&\
 # FINAL IMAGE with solver executable
 FROM simvascular/libraries:ubuntu22 AS final 
 
-#Set arguments:
-# BUILD: build type (petsc, trilinos, none)
-# TASKS: number of tasks to run in parallel
-# INPUT: input file to run the solver
-        
-ENV BUILD=none
-ENV TASKS=2
-ENV INPUT="svFSIplus.xml"
-
 COPY --from=builder /svFSIplus/build-petsc /build-petsc
 COPY --from=builder /svFSIplus/build-trilinos /build-trilinos
-COPY --from=builder /svFSIplus/build-trilinos /build-none
 
-# Set the working directory to where input files are mounted
-WORKDIR /mnt
-
-# Set entrypoint to run the solver when the container starts and checks if BUILD has the correct value
-ENTRYPOINT ["sh", "-c", "\
-  if [ \"${BUILD}\" != \"none\" ] && [ \"${BUILD}\" != \"petsc\" ] && [ \"${BUILD}\" != \"trilinos\" ]; then \
-    echo \"Invalid BUILD value: ${BUILD}\" >&2; \
-    exit 1; \
-  fi; \
-  mpirun -n ${TASKS} /build-${BUILD}/svFSI-build/bin/svFSI ${INPUT}"]
+WORKDIR /
