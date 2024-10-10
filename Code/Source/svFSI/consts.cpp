@@ -86,7 +86,10 @@ const std::map<std::string,ConstitutiveModelType> constitutive_model_name_to_typ
   {"Gucci", ConstitutiveModelType::stIso_Gucci},
 
   {"HO", ConstitutiveModelType::stIso_HO}, 
-  {"Holzapfel", ConstitutiveModelType::stIso_HO},
+  {"HolzapfelOgden", ConstitutiveModelType::stIso_HO},
+
+  {"HO_ma", ConstitutiveModelType::stIso_HO_ma}, 
+  {"HolzapfelOgden-ModifiedAnisotropy", ConstitutiveModelType::stIso_HO_ma},
 
   {"quad", ConstitutiveModelType::stVol_Quad},
   {"Quad", ConstitutiveModelType::stVol_Quad},

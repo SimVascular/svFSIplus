@@ -517,7 +517,8 @@ class ConstitutiveModelParameters : public ParameterLists
     // Model types supported.
     static const std::string GUCCIONE_MODEL;
     static const std::string HGO_MODEL;
-    static const std::string HOLZAPFEL_MODEL;
+    static const std::string HOLZAPFEL_OGDEN_MODEL;
+    static const std::string HOLZAPFEL_OGDEN_MA_MODEL;
     static const std::string LEE_SACKS;
     static const std::string NEOHOOKEAN_MODEL;
     static const std::string STVENANT_KIRCHHOFF_MODEL;
