@@ -20,14 +20,6 @@ jobs:
       with:
         install: true
     
-    - name: Cache Docker layers
-      uses: actions/cache@v3
-      with:
-        path: /tmp/.buildx-cache
-        key: ${{ runner.os }}-buildx-${{ github.sha }}
-        restore-keys: |
-          ${{ runner.os }}-buildx-
-    
     - name: Log in to DockerHub as simvascular
       uses: docker/login-action@v2
       with:
@@ -41,11 +33,3 @@ jobs:
         file: ./Docker/solver/dockerfile
         push: true
         tags: simvascular/solver:latest
-        cache-from: type=local,src=/tmp/.buildx-cache
-        cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
-    
-    - name: Move new cache to old cache
-      if: always()
-      run: |
-        rm -rf /tmp/.buildx-cache
-        mv /tmp/.buildx-cache-new /tmp/.buildx-cache
