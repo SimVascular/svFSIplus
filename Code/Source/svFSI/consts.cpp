@@ -86,7 +86,10 @@ const std::map<std::string,ConstitutiveModelType> constitutive_model_name_to_typ
   {"Gucci", ConstitutiveModelType::stIso_Gucci},
 
   {"HO", ConstitutiveModelType::stIso_HO}, 
-  {"Holzapfel", ConstitutiveModelType::stIso_HO},
+  {"HolzapfelOgden", ConstitutiveModelType::stIso_HO},
+
+  {"HO_ma", ConstitutiveModelType::stIso_HO_ma}, 
+  {"HolzapfelOgden-ModifiedAnisotropy", ConstitutiveModelType::stIso_HO_ma},
 
   {"quad", ConstitutiveModelType::stVol_Quad},
   {"Quad", ConstitutiveModelType::stVol_Quad},
@@ -124,6 +127,21 @@ const std::map<std::string,FluidViscosityModelType> fluid_viscosity_model_name_t
   {"cass", FluidViscosityModelType::viscType_Cass},
   {"cassons", FluidViscosityModelType::viscType_Cass},
 
+};
+
+/// @brief Map for solid viscosity model string to SolidViscosityModelType.
+//
+const std::map<std::string,SolidViscosityModelType> solid_viscosity_model_name_to_type
+{
+  {"Newtonian", SolidViscosityModelType::viscType_Newtonian},
+  {"newtonian", SolidViscosityModelType::viscType_Newtonian},
+  {"Newt", SolidViscosityModelType::viscType_Newtonian},
+  {"newt", SolidViscosityModelType::viscType_Newtonian},
+
+  {"Potential", SolidViscosityModelType::viscType_Potential},
+  {"potential", SolidViscosityModelType::viscType_Potential},
+  {"Pot", SolidViscosityModelType::viscType_Potential},
+  {"pot", SolidViscosityModelType::viscType_Potential},
 };
 
 

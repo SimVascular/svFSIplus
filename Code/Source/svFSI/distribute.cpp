@@ -1061,12 +1061,13 @@ void dist_eq(ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, const std::
 
     if ((dmn.phys == EquationType::phys_struct) || (dmn.phys == EquationType::phys_ustruct)) {
       dist_mat_consts(com_mod, cm_mod, cm, dmn.stM);
+      dist_solid_visc_model(com_mod, cm_mod, cm, dmn.solid_visc);
     } 
 
     if ((dmn.phys == EquationType::phys_fluid) || 
         (dmn.phys == EquationType::phys_stokes) || 
         (dmn.phys == EquationType::phys_CMM && !com_mod.cmmInit)) {
-      dist_visc_model(com_mod, cm_mod, cm, dmn.visc);
+      dist_fluid_visc_model(com_mod, cm_mod, cm, dmn.fluid_visc);
     }
   }
 
@@ -1220,11 +1221,11 @@ void dist_mat_consts(const ComMod& com_mod, const CmMod& cm_mod, const cmType& c
    cm.bcast(cm_mod, lStM.Tf.gt.r, "lStM.Tf.gt.r");
    cm.bcast(cm_mod, lStM.Tf.gt.i, "lStM.Tf.gt.i");
   }
-
+  cm.bcast(cm_mod, &lStM.Tf.eta_s);
 }
 
 
-void dist_visc_model(const ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, viscModelType& lVis)
+void dist_fluid_visc_model(const ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, fluidViscModelType& lVis)
 {
   using namespace consts;
 
@@ -1234,6 +1235,14 @@ void dist_visc_model(const ComMod& com_mod, const CmMod& cm_mod, const cmType& c
   cm.bcast(cm_mod, &lVis.lam);
   cm.bcast(cm_mod, &lVis.a);
   cm.bcast(cm_mod, &lVis.n);
+}
+
+void dist_solid_visc_model(const ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, solidViscModelType& lVis)
+{
+  using namespace consts;
+
+  cm.bcast_enum(cm_mod, &lVis.viscType);
+  cm.bcast(cm_mod, &lVis.mu);
 }
 
 

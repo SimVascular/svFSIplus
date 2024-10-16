@@ -36,6 +36,8 @@
 #include "initialize.h"
 #include "mat_fun.h"
 #include "mat_models.h"
+#include "mat_fun_carray.h"
+#include "mat_models_carray.h"
 #include "nn.h"
 #include "shells.h"
 #include "utils.h"

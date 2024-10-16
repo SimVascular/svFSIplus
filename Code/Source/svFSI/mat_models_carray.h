@@ -39,6 +39,7 @@
 #include "Tensor4.h"
 
 #include "mat_fun.h"
+#include "mat_fun_carray.h"
 
 namespace mat_models_carray {
 
@@ -221,6 +222,7 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
   // Fiber-reinforced stress
   double Tfa = 0.0;
   mat_models::get_fib_stress(com_mod, cep_mod, stM.Tf, Tfa);
+  double Tsa = Tfa*stM.Tf.eta_s;
 
   // Electromechanics coupling - active stress
   if (cep_mod.cem.aStress) {
@@ -905,41 +907,57 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
         //err = "Min fiber directions not defined for Holzapfel material model (2)"
       }
 
+      // Compute fiber-based isochoric invariants
       double C_fl[N];
       mat_fun_carray::mat_mul(C, fl.rcol(0), C_fl);
       double Inv4 = J2d * mat_fun_carray::norm<N>(fl.rcol(0), C_fl);
-      //double Inv4 = J2d*utils::norm(fl.col(0), mat_mul(C, fl.col(0)));
 
       mat_fun_carray::mat_mul(C, fl.rcol(1), C_fl);
       double Inv6 = J2d * mat_fun_carray::norm<N>(fl.rcol(1), C_fl);
-      //double Inv6 = J2d*utils::norm(fl.col(1), mat_mul(C, fl.col(1)));
 
-      mat_fun_carray::mat_mul(C, fl.rcol(0), C_fl);
-      double Inv8 = J2d * mat_fun_carray::norm<N>(fl.rcol(1), C_fl);
-      //double Inv8 = J2d*utils::norm(fl.col(0), mat_mul(C, fl.col(1)));
+      mat_fun_carray::mat_mul(C, fl.rcol(1), C_fl);
+      double Inv8 = J2d * mat_fun_carray::norm<N>(fl.rcol(0), C_fl);
 
       double Eff = Inv4 - 1.0;
       double Ess = Inv6 - 1.0;
       double Efs = Inv8;
 
+      // Smoothed Heaviside function: 1 / (1 + exp(-kx)) = 1 - 1 / (1 + exp(kx))
+      double k = stM.khs;
+      double one_over_exp_plus_one_f = 1.0 / (exp(k * Eff) + 1.0);
+      double one_over_exp_plus_one_s = 1.0 / (exp(k * Ess) + 1.0);
+      double c4f  = 1.0 - one_over_exp_plus_one_f;
+      double c4s  = 1.0 - one_over_exp_plus_one_s;
+      
+      // Approx. derivative of smoothed heaviside function
+      // double dc4f = 0.25*stM.khs*exp(-stM.khs*abs(Eff));
+      // double dc4s = 0.25*stM.khs*exp(-stM.khs*abs(Ess));
+
+      // Exact first derivative of smoothed heaviside function (from Wolfram Alpha)
+      double dc4f = k * (one_over_exp_plus_one_f - pow(one_over_exp_plus_one_f,2));
+      double dc4s = k * (one_over_exp_plus_one_s - pow(one_over_exp_plus_one_s,2));
+
+      // Exact second derivative of smoothed heaviside function (from Wolfram Alpha)
+      double ddc4f = pow(k,2) * (-one_over_exp_plus_one_f + 3.0*pow(one_over_exp_plus_one_f,2) - 2.0*pow(one_over_exp_plus_one_f,3));
+      double ddc4s = pow(k,2) * (-one_over_exp_plus_one_s + 3.0*pow(one_over_exp_plus_one_s,2) - 2.0*pow(one_over_exp_plus_one_s,3));
+      
+      // Isotropic + fiber-sheet interaction stress
       double g1 = stM.a * exp(stM.b*(Inv1-3.0));
-      double g2 = 2.0 * stM.afs * Efs * exp(stM.bfs*Efs*Efs);
+      double g2 = 2.0 * stM.afs * exp(stM.bfs*Efs*Efs);
 
       double Hfs[N][N];
       mat_fun_carray::mat_symm_prod<N>(fl.rcol(0), fl.rcol(1), Hfs);
-      //auto Hfs = mat_symm_prod(fl.col(0), fl.col(1), nsd);
 
       double Sb[N][N];
       for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
-          Sb[i][j] = g1*Idm[i][j] + g2*Hfs[i][j];
+          Sb[i][j] = g1*Idm[i][j] + g2*Efs*Hfs[i][j];
         }
       }
-      //auto Sb = g1*Idm + g2*Hfs;
 
-      Efs = Efs * Efs;
-      g1 = 2.0*J4d*stM.b*g1;
-      g2 = 4.0*J4d*stM.afs*(1.0 + 2.0*stM.bfs*Efs)* exp(stM.bfs*Efs);
+      // Isotropic + fiber-sheet interaction stiffness
+      g1 = g1 * 2.0 * J4d * stM.b;
+      g2 = g2 * 2.0 * J4d * (1.0 + 2.0*stM.bfs*Efs*Efs);
 
       CArray4 Idm_prod;
       mat_fun_carray::ten_dyad_prod<N>(Idm, Idm, Idm_prod);
@@ -958,84 +976,79 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
           }
         }
       }
-      //auto CCb  = g1 * ten_dyad_prod(Idm, Idm, nsd) + g2 * ten_dyad_prod(Hfs, Hfs, nsd);
 
-      //  Fiber reinforcement/active stress
-      if (Eff > 0.0) {
-        g1 = Tfa;
-        g1 = g1 + 2.0 * stM.aff * Eff * exp(stM.bff*Eff*Eff);
-
-        double Hff[N][N];
-        mat_fun_carray::mat_dyad_prod<N>(fl.col(0), fl.col(0), Hff);
-        //auto Hff = mat_dyad_prod(fl.col(0), fl.col(0), nsd);
-
-        for (int i = 0; i < N; i++) {
+      //  Fiber-fiber interaction stress + additional reinforcement (Tfa)
+      double rexp = exp(stM.bff*Eff*Eff);
+      g1 = c4f * Eff * rexp;
+      g1 = g1 + (0.5*dc4f/stM.bff) * (rexp - 1.0);
+      g1 = 2.0 * stM.aff * g1 + Tfa;
+      double Hff[N][N];
+      mat_fun_carray::mat_dyad_prod<N>(fl.col(0), fl.col(0), Hff);
+      for (int i = 0; i < N; i++) {
           for (int j = 0; j < N; j++) {
             Sb[i][j] += g1 * Hff[i][j]; 
           }
         }
-        //Sb  = Sb + g1*Hff;
 
-        Eff = Eff * Eff;
-        g1  = 4.0*J4d*stM.aff*(1.0 + 2.0*stM.bff*Eff)*exp(stM.bff*Eff);
+      // Fiber-fiber interaction stiffness
+      g1 = c4f * (1.0 + 2.0*stM.bff*Eff*Eff);
+      g1 = (g1 + 2.0*dc4f*Eff) * rexp;
+      g1 = g1 + (0.5*ddc4f/stM.bff)*(rexp - 1.0);
+      g1 = 4.0 * J4d * stM.aff * g1;
+      CArray4 Hff_prod;
+      mat_fun_carray::ten_dyad_prod<N>(Hff, Hff, Hff_prod);
 
-        CArray4 Hff_prod;
-        mat_fun_carray::ten_dyad_prod<N>(Hff, Hff, Hff_prod);
-
-        for (int i = 0; i < N; i++) {
-          for (int j = 0; j < N; j++) {
-            for (int k = 0; k < N; k++) {
-              for (int l = 0; l < N; l++) {
-                CCb[i][j][k][l] += g1 * Hff_prod[i][j][k][l];
-              }
+      for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+          for (int k = 0; k < N; k++) {
+            for (int l = 0; l < N; l++) {
+              CCb[i][j][k][l] += g1 * Hff_prod[i][j][k][l];
             }
           }
         }
-        //CCb = CCb + g1*ten_dyad_prod(Hff, Hff, nsd);
       }
 
-      if (Ess > 0.0) {
-        g2 = 2.0 * stM.ass * Ess * exp(stM.bss*Ess*Ess);
+      // Sheet-sheet interaction stress + additional cross-fiber stress
+      rexp = exp(stM.bss*Ess*Ess);
+      g2 = c4s * Ess * rexp;
+      g2 = g2 + (0.5*dc4s/stM.bss) * (rexp - 1.0);
+      g2 = 2.0 * stM.ass * g2 + Tsa;
+      double Hss[N][N];
+      mat_fun_carray::mat_dyad_prod<N>(fl.col(1), fl.col(1), Hss);
 
-        double Hss[N][N];
-        mat_fun_carray::mat_dyad_prod<N>(fl.col(1), fl.col(1), Hss);
-        //auto Hss = mat_dyad_prod(fl.col(1), fl.col(1), nsd);
-
-        for (int i = 0; i < N; i++) {
-          for (int j = 0; j < N; j++) {
-            Sb[i][j] += g2 * Hss[i][j];
-          }
+      for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+          Sb[i][j] += g2 * Hss[i][j];
         }
-        //Sb  = Sb + g2*Hss;
+      }
 
-        Ess = Ess * Ess;
-        g2 = 4.0 * J4d * stM.ass  *  (1.0 + 2.0*stM.bss*Ess)  *  exp(stM.bss * Ess);
+      // Sheet-sheet interaction stiffness
+      g2 = c4s * (1.0 + 2.0 * stM.bss * Ess * Ess);
+      g2 = (g2 + 2.0*dc4s*Ess) * rexp;
+      g2 = g2 + (0.5*ddc4s/stM.bss)*(rexp - 1.0);
+      g2 = 4.0 * J4d * stM.ass * g2;
 
-        CArray4 Hss_prod;
-        mat_fun_carray::ten_dyad_prod<N>(Hss, Hss, Hss_prod);
+      CArray4 Hss_prod;
+      mat_fun_carray::ten_dyad_prod<N>(Hss, Hss, Hss_prod);
 
-        for (int i = 0; i < N; i++) {
-          for (int j = 0; j < N; j++) {
-            for (int k = 0; k < N; k++) {
-              for (int l = 0; l < N; l++) {
-                CCb[i][j][k][l] += g2 * Hss_prod[i][j][k][l];
-              }
+      for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+          for (int k = 0; k < N; k++) {
+            for (int l = 0; l < N; l++) {
+              CCb[i][j][k][l] += g2 * Hss_prod[i][j][k][l];
             }
           }
         }
-        //CCb = CCb + g2*ten_dyad_prod(Hss, Hss, nsd);
-
       }
 
+      // Isochoric 2nd-Piola-Kirchhoff stress and stiffness tensors
       double r1 = J2d * mat_fun_carray::mat_ddot<N>(C, Sb) / nd;
-      //double r1 = J2d*mat_ddot(C, Sb, nsd) / nd;
 
       for (int i = 0; i < nsd; i++) {
         for (int j = 0; j < nsd; j++) {
           S[i][j] = J2d*Sb[i][j] - r1*Ci[i][j];
         }
       }
-      //S  = J2d*Sb - r1*Ci;
 
       CArray4 Ci_C_prod;
       mat_fun_carray::ten_dyad_prod<N>(Ci, C, Ci_C_prod);
@@ -1050,17 +1063,13 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
           }
         }
       }
-      //auto PP = ten_ids(nsd) - (1.0/nd) * ten_dyad_prod(Ci, C, nsd);
 
       mat_fun_carray::ten_ddot<N>(CCb, PP, CC);
-      //CC = ten_ddot(CCb, PP, nsd);
 
       CArray4 CC_t;
       mat_fun_carray::ten_transpose<N>(CC, CC_t);
-      //CC  = ten_transpose(CC, nsd);
 
       mat_fun_carray::ten_ddot<N>(PP, CC_t, CC);
-      //CC  = ten_ddot(PP, CC, nsd);
 
       CArray4 Ci_S_prod;
       mat_fun_carray::ten_dyad_prod<N>(Ci, S, Ci_S_prod);
@@ -1077,14 +1086,13 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
           }
         }
       }
-      // CC  = CC - (2.0/nd) * ( ten_dyad_prod(Ci, S, nsd) + ten_dyad_prod(S, Ci, nsd) );
 
+      // Add pressure contribution
       for (int i = 0; i < nsd; i++) {
         for (int j = 0; j < nsd; j++) {
           S[i][j] += p * J * Ci[i][j];
         }
       }
-      //S = S + p*J*Ci;
 
       CArray4 Ci_sym_prod;
       mat_fun_carray::ten_symm_prod<N>(Ci, Ci, Ci_sym_prod);
@@ -1101,7 +1109,6 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
           }
         }
       }
-      //CC  = CC + 2.0*(r1 - p*J) * ten_symm_prod(Ci, Ci, nsd) + (pl*J - 2.0*r1/nd) * ten_dyad_prod(Ci, Ci, nsd);
 
       if (cep_mod.cem.aStrain) {
         double S_prod[N][N];
@@ -1126,12 +1133,501 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
 
     } break;
 
+//  HO (Holzapfel-Ogden)-MA model for myocardium with full invariants for the anisotropy terms (modified-anisotropy)
+    case ConstitutiveModelType::stIso_HO_ma: {
+      if (nfd != 2) {
+        //err = "Min fiber directions not defined for Holzapfel material model (2)"
+      }
+
+      // Compute fiber-based full invariants (not isochoric)
+      double C_fl[N];
+      mat_fun_carray::mat_mul(C, fl.rcol(0), C_fl);
+      double Inv4 = mat_fun_carray::norm<N>(fl.rcol(0), C_fl);
+
+      mat_fun_carray::mat_mul(C, fl.rcol(1), C_fl);
+      double Inv6 = mat_fun_carray::norm<N>(fl.rcol(1), C_fl);
+
+      mat_fun_carray::mat_mul(C, fl.rcol(1), C_fl);
+      double Inv8 = mat_fun_carray::norm<N>(fl.rcol(0), C_fl);
+
+      double Eff = Inv4 - 1.0;
+      double Ess = Inv6 - 1.0;
+      double Efs = Inv8;
+
+      // Smoothed Heaviside function: 1 / (1 + exp(-kx)) = 1 - 1 / (1 + exp(kx))
+      double k = stM.khs;
+      double one_over_exp_plus_one_f = 1.0 / (exp(k * Eff) + 1.0);
+      double one_over_exp_plus_one_s = 1.0 / (exp(k * Ess) + 1.0);
+      double c4f  = 1.0 - one_over_exp_plus_one_f;
+      double c4s  = 1.0 - one_over_exp_plus_one_s;
+      
+      // Approx. derivative of smoothed heaviside function
+      // double dc4f = 0.25*stM.khs*exp(-stM.khs*abs(Eff));
+      // double dc4s = 0.25*stM.khs*exp(-stM.khs*abs(Ess));
+
+      // Exact first derivative of smoothed heaviside function (from Wolfram Alpha)
+      double dc4f = k * (one_over_exp_plus_one_f - pow(one_over_exp_plus_one_f,2));
+      double dc4s = k * (one_over_exp_plus_one_s - pow(one_over_exp_plus_one_s,2));
+
+      // Exact second derivative of smoothed heaviside function (from Wolfram Alpha)
+      double ddc4f = pow(k,2) * (-one_over_exp_plus_one_f + 3.0*pow(one_over_exp_plus_one_f,2) - 2.0*pow(one_over_exp_plus_one_f,3));
+      double ddc4s = pow(k,2) * (-one_over_exp_plus_one_s + 3.0*pow(one_over_exp_plus_one_s,2) - 2.0*pow(one_over_exp_plus_one_s,3));
+      
+      // Isochoric stress and stiffness
+      double g1 = stM.a * exp(stM.b*(Inv1-3.0));
+
+      double Sb[N][N];
+      for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+          Sb[i][j] = g1*Idm[i][j];
+        }
+      }
+      double r1 = J2d/nd*mat_fun_carray::mat_ddot(C,Sb);
+      g1 = g1*2.0*J4d*stM.b;
+
+      CArray4 Idm_prod;
+      mat_fun_carray::ten_dyad_prod<N>(Idm, Idm, Idm_prod);
+
+      CArray4 CCb;
+      for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+          for (int k = 0; k < N; k++) {
+            for (int l = 0; l < N; l++) {
+              CCb[i][j][k][l] = g1 * Idm_prod[i][j][k][l];
+            }
+          }
+        }
+      }
+
+      // Add isochoric stress and stiffness contribution
+      for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+          S[i][j] = J2d*Sb[i][j] - r1*Ci[i][j];
+        }
+      }
+      CArray4 Ci_C_prod;
+      mat_fun_carray::ten_dyad_prod<N>(Ci, C, Ci_C_prod);
+      double PP[N][N][N][N];
+
+      for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+          for (int k = 0; k < N; k++) {
+            for (int l = 0; l < N; l++) {
+              PP[i][j][k][l] = Ids[i][j][k][l] - (1.0/nd) * Ci_C_prod[i][j][k][l];
+            }
+          }
+        }
+      }
+
+      mat_fun_carray::ten_ddot<N>(CCb, PP, CC);
+
+      CArray4 CC_t;
+      mat_fun_carray::ten_transpose<N>(CC, CC_t);
+
+      mat_fun_carray::ten_ddot<N>(PP, CC_t, CC);
+
+      CArray4 Ci_S_prod;
+      mat_fun_carray::ten_dyad_prod<N>(Ci, S, Ci_S_prod);
+
+      CArray4 S_Ci_prod;
+      mat_fun_carray::ten_dyad_prod<N>(S, Ci, S_Ci_prod);
+
+      for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+          for (int k = 0; k < N; k++) {
+            for (int l = 0; l < N; l++) {
+              CC[i][j][k][l] -= (2.0/nd) * (Ci_S_prod[i][j][k][l] + S_Ci_prod[i][j][k][l]);
+            }
+          }
+        }
+      }
+
+      // Add pressure contribution to stress and stiffness
+      for (int i = 0; i < N; i++) {
+          for (int j = 0; j < N; j++) {
+            S[i][j] += p*J*Ci[i][j];
+          }
+        }
+    
+      CArray4 Ci_Ci_prod;
+      mat_fun_carray::ten_dyad_prod(Ci, Ci, Ci_Ci_prod);
+      CArray4 Ci_Ci_symprod;
+      mat_fun_carray::ten_symm_prod(Ci, Ci, Ci_Ci_symprod);
+      for (int i = 0; i < N; i++) {
+          for (int j = 0; j < N; j++) {
+            for (int k = 0; k < N; k++) {
+              for (int l = 0; l < N; l++) {
+                CC[i][j][k][l] += 2.0*(r1 - p*J)*Ci_Ci_symprod[i][j][k][l] + (pl*J - 2.0*r1/nd)*Ci_Ci_prod[i][j][k][l];
+              }
+            }
+          }
+        }
+
+      // Now that both isochoric and volumetric components were added, anisotropic components need to be added
+
+      // Fiber-sheet interaction terms
+      g1   = 2.0 * stM.afs * exp(stM.bfs*Efs*Efs);
+      double Hfs[N][N];
+      mat_fun_carray::mat_symm_prod<N>(fl.rcol(0), fl.rcol(1), Hfs);
+      for (int i = 0; i < N; i++) {
+          for (int j = 0; j < N; j++) {
+            S[i][j] += g1*Efs*Hfs[i][j];
+          }
+        }
+
+      g1   = g1 * 2.0*(1.0 + 2.0*stM.bfs*Efs*Efs);
+
+      CArray4 Hfs_Hfs_prod;
+      mat_fun_carray::ten_dyad_prod(Hfs, Hfs, Hfs_Hfs_prod);
+      for (int i = 0; i < N; i++) {
+          for (int j = 0; j < N; j++) {
+            for (int k = 0; k < N; k++) {
+              for (int l = 0; l < N; l++) {
+                CC[i][j][k][l] += g1*Hfs_Hfs_prod[i][j][k][l];
+              }
+            }
+          }
+        }
+
+      // Fiber-fiber interaction stress + additional reinforcement (Tfa)
+      double rexp = exp(stM.bff * Eff * Eff);
+      g1   = c4f*Eff*rexp;
+      g1   = g1 + (0.5*dc4f/stM.bff)*(rexp - 1.0);
+      g1   = (2.0*stM.aff*g1) + Tfa;
+      double Hff[N][N];
+      mat_fun_carray::mat_dyad_prod<N>(fl.rcol(0), fl.rcol(0), Hff);
+      for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+          S[i][j] += g1*Hff[i][j];
+        }
+      }
+ 
+      // Fiber-fiber interaction stiffness
+      g1   = c4f*(1.0 + (2.0*stM.bff*Eff*Eff));
+      g1   = (g1 + (2.0*dc4f*Eff))*rexp;
+      g1   = g1 + (0.5*ddc4f/stM.bff)*(rexp - 1.0);
+      g1   = 4.0*stM.aff*g1;
+      CArray4 Hff_Hff_prod;
+      mat_fun_carray::ten_dyad_prod(Hff, Hff, Hff_Hff_prod);
+      for (int i = 0; i < N; i++) {
+          for (int j = 0; j < N; j++) {
+            for (int k = 0; k < N; k++) {
+              for (int l = 0; l < N; l++) {
+                CC[i][j][k][l] += g1*Hff_Hff_prod[i][j][k][l];
+              }
+            }
+          }
+        }
+         
+      // Sheet-sheet interaction stress + additional cross-fiber stress
+      rexp = exp(stM.bss * Ess * Ess);
+      double g2   = c4s*Ess*rexp;
+      g2   = g2 + (0.5*dc4s/stM.bss)*(rexp - 1.0);
+      g2   = 2.0*stM.ass*g2 + Tsa;
+      double Hss[N][N];
+      mat_fun_carray::mat_dyad_prod<N>(fl.rcol(1), fl.rcol(1), Hss);
+      for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+          S[i][j] += g2*Hss[i][j];
+        }
+      }
+  
+      // Sheet-sheet interaction stiffness
+      g2   = c4s*(1.0 + (2.0*stM.bss*Ess*Ess));
+      g2   = (g2 + (2.0*dc4s*Ess))*rexp;
+      g2   = g2 + (0.5*ddc4s/stM.bss)*(rexp - 1.0);
+      g2   = 4.0*stM.ass*g2;
+      CArray4 Hss_Hss_prod;
+      mat_fun_carray::ten_dyad_prod(Hss,Hss,Hss_Hss_prod);
+      for (int i = 0; i < N; i++) {
+          for (int j = 0; j < N; j++) {
+            for (int k = 0; k < N; k++) {
+              for (int l = 0; l < N; l++) {
+                CC[i][j][k][l] += g2*Hss_Hss_prod[i][j][k][l];
+              }
+            }
+          }
+        }
+      } break;
+
     default:
       throw std::runtime_error("Undefined material constitutive model.");
   } 
 
   // Convert to Voigt Notation
   cc_to_voigt_carray<N>(CC, Dm);
+}
+
+
+/**
+ * @brief Get the viscous PK2 stress and corresponding tangent matrix contributions for a solid
+ * with a viscous pseudo-potential model.
+ * This is defined by a viscous pseuo-potential
+ * Psi = mu/2 * tr(E_dot^2)
+ * The viscous 2nd Piola-Kirchhoff stress is given by
+ * Svis = dPsi/dE_dot 
+ *   = mu * E_dot
+ *   = mu * 1/2 * F^T * (grad(v) + grad(v)^T) * F
+ *   = mu * 1/2 * ( (F^T * Grad(v)) + (F^T * Grad(v))^T )
+ * 
+ * @tparam nsd Number of spatial dimensions
+ * @param mu Solid viscosity parameter
+ * @param eNoN Number of nodes in an element
+ * @param Nx Shape function gradient w.r.t. reference configuration coordinates (dN/dX)
+ * @param vx Velocity gradient matrix w.r.t reference configuration coordinates (dv/dX)
+ * @param F Deformation gradient matrix
+ * @param Svis Viscous 2nd Piola-Kirchhoff stress matrix
+ * @param Kvis_u Viscous tangent matrix contribution due to displacement
+ * @param Kvis_v Visous tangent matrix contribution due to velocity
+ */
+template <size_t nsd>
+void get_visc_stress_pot(const double mu, const int eNoN, const Array<double>& Nx, const double vx[nsd][nsd], const double F[nsd][nsd],
+                        Array<double>& Svis, Array3<double>& Kvis_u, Array3<double>& Kvis_v) {
+
+    
+    // Initialize Svis, Kvis_u, Kvis_v to zero
+    for (int i = 0; i < nsd; i++) {
+        for (int j = 0; j < nsd; j++) {
+            Svis(i,j) = 0.0;
+            for (int a = 0; a < eNoN; a++) {
+                for (int b = 0; b < eNoN; b++) {
+                    Kvis_u(i*nsd+j,a,b) = 0.0;
+                    Kvis_v(i*nsd+j,a,b) = 0.0;
+                }
+            }
+        }
+    }
+
+
+    // Required intermediate terms for stress and tangent
+    double Ft[nsd][nsd] = {0}, vxt[nsd][nsd] = {0}, F_Ft[nsd][nsd] = {0}, Ft_vx[nsd][nsd] = {0}, F_vxt[nsd][nsd] = {0};
+    mat_fun_carray::transpose<nsd>(F, Ft);
+    mat_fun_carray::mat_mul<nsd>(F, Ft, F_Ft);
+    mat_fun_carray::mat_mul<nsd>(Ft, vx, Ft_vx);
+    mat_fun_carray::transpose<nsd>(vx, vxt);
+    mat_fun_carray::mat_mul<nsd>(F, vxt, F_vxt);
+
+    //double F_Nx[nsd][eNoN] = {0}, vx_Nx[nsd][eNoN] = {0};
+    Array<double> F_Nx(nsd,eNoN), vx_Nx(nsd,eNoN);
+    
+    for (int a = 0; a < eNoN; ++a) {
+        for (int i = 0; i < nsd; ++i) {
+            for (int j = 0; j < nsd; ++j) {
+                F_Nx(i,a) += F[i][j] * Nx(j,a);
+                vx_Nx(i,a) += vx[i][j] * Nx(j,a);
+            }
+        }
+    }
+
+    // 2nd Piola-Kirchhoff stress due to viscosity
+    // Svis = mu * 1/2 * ( (F^T * dv/dX) + (F^T * dv/dX)^T )
+    double Ft_vx_symm[nsd][nsd] = {0};
+    mat_fun_carray::mat_symm<nsd>(Ft_vx, Ft_vx_symm);
+    for (int i = 0; i < nsd; i++) {
+        for (int j = 0; j < nsd; j++) {
+            Svis(i,j) = mu * Ft_vx_symm[i][j];
+        }
+    }
+
+    // Tangent matrix contributions due to viscosity
+    for (int b = 0; b < eNoN; ++b) {
+        for (int a = 0; a < eNoN; ++a) {
+            double Nx_Nx = 0.0;
+            for (int i = 0; i < nsd; ++i) {
+                Nx_Nx += Nx(i,a) * Nx(i,b);
+            }
+
+            for (int i = 0; i < nsd; ++i) {
+                for (int j = 0; j < nsd; ++j) {
+                    int ii = i * nsd + j;
+                    Kvis_u(ii,a,b) = 0.5 * mu * (F_Nx(i,b) * vx_Nx(j,a) + Nx_Nx * F_vxt[i][j]);
+                    Kvis_v(ii,a,b) = 0.5 * mu * (Nx_Nx * F_Ft[i][j] + F_Nx(i,b) * F_Nx(j,a));
+                }
+            }
+        }
+    }
+}
+
+/**
+ * @brief Get the viscous PK2 stress and corresponding tangent matrix contributions for a solid
+ * with a Newtonian fluid-like viscosity model.
+ * The viscous deviatoric Cauchy stress is given by
+ * sigma_vis_dev = 2 * mu * d_dev
+ * where d_dev = 1/2 * (grad(v) + grad(v)^T) - 1/3 * (div(v)) * I
+ * The viscous 2nd Piola-Kirchhoff stress is given by a pull-back operation
+ * Svis = 2 * mu * J * F^-1 * d_dev * F^-T
+ * 
+ * Note, there is likely an error/bug in the tangent contributions that leads to suboptimal nonlinear convergence
+ * 
+ * @tparam nsd Number of spatial dimensions
+ * @param mu Solid viscosity parameter
+ * @param eNoN Number of nodes in an element
+ * @param Nx Shape function gradient w.r.t. reference configuration coordinates (dN/dX)
+ * @param vx Velocity gradient matrix w.r.t reference configuration coordinates (dv/dX)
+ * @param F Deformation gradient matrix
+ * @param Svis Viscous 2nd Piola-Kirchhoff stress matrix
+ * @param Kvis_u Viscous tangent matrix contribution due to displacement
+ * @param Kvis_v Visous tangent matrix contribution due to velocity
+ */
+template <size_t nsd>
+void get_visc_stress_newt(const double mu, const int eNoN, const Array<double>& Nx, const double vx[nsd][nsd], const double F[nsd][nsd],
+                           Array<double>& Svis, Array3<double>& Kvis_u, Array3<double>& Kvis_v) {
+    
+
+    // Initialize Svis, Kvis_u, Kvis_v to zero
+    for (int i = 0; i < nsd; i++) {
+        for (int j = 0; j < nsd; j++) {
+            Svis(i,j) = 0.0;
+            for (int a = 0; a < eNoN; a++) {
+                for (int b = 0; b < eNoN; b++) {
+                    Kvis_u(i*nsd+j,a,b) = 0.0;
+                    Kvis_v(i*nsd+j,a,b) = 0.0;
+                }
+            }
+        }
+    }
+
+    // Get identity matrix, Jacobian, and F^-1
+    double Idm[nsd][nsd] = {0};
+    mat_fun_carray::mat_id<nsd>(Idm);
+    double J = mat_fun_carray::mat_det<nsd>(F);
+    double Fi[nsd][nsd] = {0};
+    mat_fun_carray::mat_inv<nsd>(F, Fi); 
+
+    // Required intermediate terms for stress and tangent
+    double vx_Fi[nsd][nsd] = {0}, vx_Fi_symm[nsd][nsd] = {0}, ddev[nsd][nsd] = {0};
+    // vx_Fi: Velocity gradient in current configuration          
+    mat_fun_carray::mat_mul<nsd>(vx, Fi, vx_Fi);        
+    mat_fun_carray::mat_symm<nsd>(vx_Fi, vx_Fi_symm);
+    // ddev: Deviatoric part of rate of strain tensor
+    mat_fun_carray::mat_dev<nsd>(vx_Fi_symm, ddev);
+    //double Nx_Fi[nsd][eNoN] = {0}, ddev_Nx_Fi[nsd][eNoN] = {0}, vx_Fi_Nx_Fi[nsd][eNoN] = {0};
+    Array<double> Nx_Fi(nsd,eNoN), ddev_Nx_Fi(nsd,eNoN), vx_Fi_Nx_Fi(nsd,eNoN);
+    for (int a = 0; a < eNoN; ++a) {
+        for (int i = 0; i < nsd; ++i) {
+            for (int j = 0; j < nsd; ++j) {
+                Nx_Fi(i,a) += Nx(j,a) * Fi[j][i];
+            }
+        }
+        for (int i = 0; i < nsd; ++i) {
+          for (int j = 0; j < nsd; ++j) {
+              ddev_Nx_Fi(i,a) += ddev[i][j] * Nx_Fi(j,a);
+              vx_Fi_Nx_Fi(i,a) += vx_Fi[j][i] * Nx_Fi(j,a);
+          }
+        }
+    }
+
+    // 2nd Piola-Kirchhoff stress due to viscosity
+    // Svis = 2 * mu * J * F^-1 * d_dev * F^-T
+    double Fit[nsd][nsd] = {0};
+    mat_fun_carray::transpose<nsd>(Fi, Fit);
+    double ddev_Fit[nsd][nsd] = {0};
+    mat_fun_carray::mat_mul<nsd>(ddev, Fit, ddev_Fit);
+    double Fi_ddev_Fit[nsd][nsd] = {0};
+    mat_fun_carray::mat_mul<nsd>(Fi, ddev_Fit, Fi_ddev_Fit);
+    for (int i = 0; i < nsd; i++) {
+        for (int j = 0; j < nsd; j++) {
+            Svis(i,j) = 2.0 * mu * J * Fi_ddev_Fit[i][j];
+        }
+    }
+
+    // Tangent matrix contributions due to viscosity
+    double r2d = 2.0 / nsd;
+    for (int b = 0; b < eNoN; ++b) {
+        for (int a = 0; a < eNoN; ++a) {
+            double Nx_Fi_Nx_Fi = 0.0;
+            for (int i = 0; i < nsd; ++i) {
+                Nx_Fi_Nx_Fi += Nx_Fi(i,a) * Nx_Fi(i,b);
+            }
+
+            for (int i = 0; i < nsd; ++i) {
+                for (int j = 0; j < nsd; ++j) {
+                    int ii = i * nsd + j;
+
+                    // Derivative of the residual w.r.t displacement
+                    Kvis_u(ii,a,b) = mu * J * (2.0 * 
+                                    (ddev_Nx_Fi(i,a) * Nx_Fi(j,b) - ddev_Nx_Fi(i,b) * Nx_Fi(j,a)) -
+                                    (Nx_Fi_Nx_Fi * vx_Fi[i][j] + Nx_Fi(i,b) * vx_Fi_Nx_Fi(j,a) -
+                                    r2d * Nx_Fi(i,a) * vx_Fi_Nx_Fi(j,b)));
+
+                    // Derivative of the residual w.r.t velocity
+                    Kvis_v(ii,a,b) = mu * J * (Nx_Fi_Nx_Fi * Idm[i][j] +
+                                    Nx_Fi(i,b) * Nx_Fi(j,a) - r2d * Nx_Fi(i,a) * Nx_Fi(j,b));
+                }
+            }
+        }
+    }
+}
+
+
+/**
+ * @brief Get the solid viscous PK2 stress and corresponding tangent matrix contributions
+ * Calls the appropriate function based on the viscosity type, either viscous 
+ * pseudo-potential or Newtonian viscosity model.
+ * 
+ * @tparam nsd Number of spatial dimensions
+ * @param[in] lDmn Domain object
+ * @param[in] eNoN Number of nodes in an element
+ * @param[in] Nx Shape function gradient w.r.t. reference configuration coordinates (dN/dX)
+ * @param[in] vx Velocity gradient matrix w.r.t reference configuration coordinates (dv/dX)
+ * @param[in] F Deformation gradient matrix
+ * @param[out] Svis Viscous 2nd Piola-Kirchhoff stress matrix
+ * @param[out] Kvis_u Viscous tangent matrix contribution due to displacement
+ * @param[out] Kvis_v Viscous tangent matrix contribution due to velocity
+ */
+template <size_t nsd>
+void get_visc_stress_and_tangent(const dmnType& lDmn, const int eNoN, const Array<double>& Nx, const double vx[nsd][nsd], const double F[nsd][nsd],
+                                 Array<double>& Svis, Array3<double>& Kvis_u, Array3<double>& Kvis_v) {
+
+    switch (lDmn.solid_visc.viscType) {
+      case consts::SolidViscosityModelType::viscType_Newtonian:
+        get_visc_stress_newt<nsd>(lDmn.solid_visc.mu, eNoN, Nx, vx, F, Svis, Kvis_u, Kvis_v);
+      break;
+
+      case consts::SolidViscosityModelType::viscType_Potential:
+        get_visc_stress_pot<nsd>(lDmn.solid_visc.mu, eNoN, Nx, vx, F, Svis, Kvis_u, Kvis_v);
+      break;
+    }
+}
+
+/**
+ * @brief Get the solid viscous PK2 stress and corresponding tangent matrix contributions
+ * Calls the appropriate function based on the viscosity type, either viscous 
+ * pseudo-potential or Newtonian viscosity model.
+ * 
+ * Same as above, except takes vx and F as Array objects instead of C-style arrays.
+ * 
+ * @tparam nsd Number of spatial dimensions
+ * @param[in] lDmn Domain object
+ * @param[in] eNoN Number of nodes in an element
+ * @param[in] Nx Shape function gradient w.r.t. reference configuration coordinates (dN/dX)
+ * @param[in] vx Velocity gradient matrix w.r.t reference configuration coordinates (dv/dX)
+ * @param[in] F Deformation gradient matrix
+ * @param[out] Svis Viscous 2nd Piola-Kirchhoff stress matrix
+ * @param[out] Kvis_u Viscous tangent matrix contribution due to displacement
+ * @param[out] Kvis_v Viscous tangent matrix contribution due to velocity
+ */
+template <size_t nsd>
+void get_visc_stress_and_tangent(const dmnType& lDmn, const int eNoN, const Array<double>& Nx, Array<double>& vx_Array, Array<double>& F_Array,
+                                 Array<double>& Svis, Array3<double>& Kvis_u, Array3<double>& Kvis_v) {
+
+    // Convert vx_Array and F_Array to C-style arrays
+    double vx[nsd][nsd], F[nsd][nsd];
+    for (int i = 0; i < nsd; i++) {
+        for (int j = 0; j < nsd; j++) {
+            vx[i][j] = vx_Array(i,j);
+            F[i][j] = F_Array(i,j);
+        }
+    }
+    switch (lDmn.solid_visc.viscType) {
+      case consts::SolidViscosityModelType::viscType_Newtonian:
+        get_visc_stress_newt<nsd>(lDmn.solid_visc.mu, eNoN, Nx, vx, F, Svis, Kvis_u, Kvis_v);
+      break;
+
+      case consts::SolidViscosityModelType::viscType_Potential:
+        get_visc_stress_pot<nsd>(lDmn.solid_visc.mu, eNoN, Nx, vx, F, Svis, Kvis_u, Kvis_v);
+      break;
+    }
 }
 
 };
