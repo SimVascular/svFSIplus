@@ -156,6 +156,26 @@ SeMaterialPropertiesMapType set_material_props = {
 } },
 
 //---------------------------//
+//       stIso_HO_ma          //
+//---------------------------//
+//
+{consts::ConstitutiveModelType::stIso_HO_ma, [](DomainParameters* domain_params, double mu, double kap, double lam,
+    dmnType& lDmn) -> void
+{
+  lDmn.stM.isoType = consts::ConstitutiveModelType::stIso_HO_ma;
+  auto& params = domain_params->constitutive_model.holzapfel;
+  lDmn.stM.a = params.a.value();
+  lDmn.stM.b = params.b.value();
+  lDmn.stM.aff = params.a4f.value(); 
+  lDmn.stM.bff = params.b4f.value(); 
+  lDmn.stM.ass = params.a4s.value();
+  lDmn.stM.bss = params.b4s.value();
+  lDmn.stM.afs = params.afs.value();
+  lDmn.stM.bfs = params.bfs.value();
+  lDmn.stM.khs = params.k.value();
+} },
+
+//---------------------------//
 //       stIso_LS            //
 //---------------------------//
 // Lee-Sacks material model.
