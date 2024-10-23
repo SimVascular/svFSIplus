@@ -579,7 +579,7 @@ void construct_fluid(ComMod& com_mod, const mshType& lM, const Array<double>& Ag
         xql(i,j) = xl(i,j);
       }
     }
-    
+
     // Gauss integration 1
     //
     #ifdef debug_construct_fluid
@@ -638,7 +638,7 @@ void construct_fluid(ComMod& com_mod, const mshType& lM, const Array<double>& Ag
             Nwx, Nqx, Nwxx, al, yl, bfl, lR, lK, K_inverse_darcy_permeability);
       }
     } // g: loop
-    
+
     // Set function spaces for velocity and pressure.
     //
     fs::get_thood_fs(com_mod, fs, lM, vmsStab, 2);
@@ -688,7 +688,7 @@ void construct_fluid(ComMod& com_mod, const mshType& lM, const Array<double>& Ag
       }
 
     } // g: loop
-    
+
     eq.linear_algebra->assemble(com_mod, eNoN, ptr, lK, lR);
 
   } // e: loop
@@ -1987,7 +1987,7 @@ void get_viscosity(const ComMod& com_mod, const dmnType& lDmn, double& gamma, do
   using namespace consts;
 
   mu = 0.0; // effective dynamic viscosity
-  mu_s = 0.0; // not sure what this is
+  mu_s = 0.0; // what this is?
   mu_x = 0.0; // derivative of effective dynamic viscosity with respect to gamma
 
   double mu_i, mu_o, lam, a, n, T1, T2;

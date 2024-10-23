@@ -411,7 +411,7 @@ void iterate_solution(Simulation* simulation)
       #ifdef debug_iterate_solution
       dmsg << "Allocating the RHS and LHS"  << std::endl;
       #endif
-      
+
       ls_ns::ls_alloc(com_mod, eq);
       com_mod.Val.write("Val_alloc"+ istr);
 
@@ -423,7 +423,7 @@ void iterate_solution(Simulation* simulation)
       #ifdef debug_iterate_solution
       dmsg << "Set body forces ..."  << std::endl;
       #endif
-      
+
       bf::set_bf(com_mod, Dg);
       com_mod.Val.write("Val_bf"+ istr);
 
@@ -432,7 +432,7 @@ void iterate_solution(Simulation* simulation)
       #ifdef debug_iterate_solution
       dmsg << "Assembling equation:  " << eq.sym;
       #endif
-      
+
       for (int iM = 0; iM < com_mod.nMsh; iM++) {
         eq_assem::global_eq_assem(com_mod, cep_mod, com_mod.msh[iM], Ag, Yg, Dg);
       }
@@ -452,7 +452,7 @@ void iterate_solution(Simulation* simulation)
       Dg.write("Dg_vor_neu"+ istr);
 
       set_bc::set_bc_neu(com_mod, cm_mod, Yg, Dg);
-      
+
       com_mod.Val.write("Val_neu"+ istr);
       com_mod.R.write("R_neu"+ istr);
       Yg.write("Yg_neu"+ istr);
@@ -474,7 +474,7 @@ void iterate_solution(Simulation* simulation)
       #endif
 
       set_bc::set_bc_dir_w(com_mod, Yg, Dg);
-      
+
       // Apply contact model and add its contribution to residual
       //
       if (com_mod.iCntct) {
@@ -571,9 +571,9 @@ void iterate_solution(Simulation* simulation)
       #ifdef debug_iterate_solution
       dmsg << "Solving equation: " << eq.sym; 
       #endif
-      
+
       ls_ns::ls_solve(com_mod, eq, incL, res);
-      
+
       com_mod.Val.write("Val_solve"+ istr);
       com_mod.R.write("R_solve"+ istr);
 
@@ -599,7 +599,7 @@ void iterate_solution(Simulation* simulation)
       } 
 
       output::output_result(simulation, com_mod.timeP, 2, iEqOld);
-      
+
       inner_count += 1;
     } // Inner loop
 

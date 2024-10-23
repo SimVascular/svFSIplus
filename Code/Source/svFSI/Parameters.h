@@ -1208,7 +1208,7 @@ class EquationParameters : public ParameterLists
     Parameter<double> density;
     Parameter<std::string> dilational_penalty_model;
 
-    Parameter<double> elasticity_modulus; // I think this never gets used and thus can be deleted?
+    Parameter<double> elasticity_modulus;
 
     Parameter<std::string> initialize;
     Parameter<bool> initialize_rcr_from_flow;

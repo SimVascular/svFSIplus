@@ -396,7 +396,7 @@ void global_eq_assem(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const 
   #endif
 
   switch (eq.phys) {
-      
+
     case EquationType::phys_fluid:
       fluid::construct_fluid(com_mod, lM, Ag, Yg);
     break;
