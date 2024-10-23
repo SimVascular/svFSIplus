@@ -761,8 +761,10 @@ void fluid_2d_c(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
   // Velocity and its gradients, inertia (acceleration & body force)
   //
   // ud[j] = jth component of (acceleration - body force)
-  Vector<double> u(2); // u[j] = jth component of velocity, u
   Vector<double> ud{-f[0], -f[1]};
+  
+  // u[j] = jth component of velocity, u
+  Vector<double> u(2);
   
   // ux[i, j] = derivative of jth component of velocity with respect to ith component of x = du_j/dx_i
   Array<double> ux(2,2);
@@ -1070,8 +1072,10 @@ void fluid_2d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
   // Velocity and its gradients, inertia (acceleration & body force)
   //
   // ud[j] = jth component of (acceleration - body force)
-  Vector<double> u(2); // u[j] = jth component of velocity, u
   Vector<double> ud{-f[0], -f[1]};
+  
+  // u[j] = jth component of velocity, u
+  Vector<double> u(2);
   
   // ux[i, j] = derivative of jth component of velocity with respect to ith component of x = du_j/dx_i
   Array<double> ux(2,2);
@@ -2138,10 +2142,14 @@ void fluid_3d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
 void get_viscosity(const ComMod& com_mod, const dmnType& lDmn, double& gamma, double& mu, double& mu_s, double& mu_x)
 {
   using namespace consts;
-
-  mu = 0.0; // effective dynamic viscosity
-  mu_s = 0.0; // what this is?
-  mu_x = 0.0; // derivative of effective dynamic viscosity with respect to gamma
+  
+  // effective dynamic viscosity
+  mu = 0.0;
+  
+  mu_s = 0.0;
+  
+  // derivative of effective dynamic viscosity with respect to gamma
+  mu_x = 0.0;
 
   double mu_i, mu_o, lam, a, n, T1, T2;
 
@@ -2152,8 +2160,9 @@ void get_viscosity(const ComMod& com_mod, const dmnType& lDmn, double& gamma, do
       mu_s = mu;
       mu_x = 0.0;
     break;
-
-    case FluidViscosityModelType::viscType_CY: // Carreau-Yasuda
+    
+    // Carreau-Yasuda
+    case FluidViscosityModelType::viscType_CY:
       mu_i = lDmn.fluid_visc.mu_i;
       mu_o = lDmn.fluid_visc.mu_o;
       lam = lDmn.fluid_visc.lam;
@@ -2170,6 +2179,7 @@ void get_viscosity(const ComMod& com_mod, const dmnType& lDmn, double& gamma, do
       mu_x = (mu_o - mu_i) * (n - 1.0) * T2;
     break;
 
+    // Casson
     case FluidViscosityModelType::viscType_Cass:
       mu_i = lDmn.fluid_visc.mu_i;
       mu_o = lDmn.fluid_visc.mu_o;

@@ -368,7 +368,7 @@ void iterate_solution(Simulation* simulation)
     int iEqOld;
 
     // Looping over Newton iterations
-    while (true) {
+    while (true) { 
       #ifdef debug_iterate_solution
       dmsg << "---------- Inner Loop " + std::to_string(inner_count) << " -----------" << std::endl;
       dmsg << "cEq: " << cEq;
@@ -479,7 +479,7 @@ void iterate_solution(Simulation* simulation)
         #endif
         set_bc::set_bc_cmm(com_mod, cm_mod, Ag, Dg);
       }
-      
+
       // Apply weakly applied Dirichlet BCs
       //
       #ifdef debug_iterate_solution

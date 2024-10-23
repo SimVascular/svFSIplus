@@ -529,8 +529,11 @@ void cmm_stiffness(ComMod& com_mod, const Array<double>& Nxi, const Array<double
   double ht, elM; 
 
   if (com_mod.cmmVarWall) {
-    ht = vwp[0]; // thickness
-    elM = vwp[1]; // elasticity modulus
+    // thickness
+    ht = vwp[0];
+    
+    // elasticity modulus
+    elM = vwp[1];
   } else { 
     ht = eq.dmn[cDmn].prop.at(PhysicalProperyType::shell_thickness);
     elM = eq.dmn[cDmn].prop.at(PhysicalProperyType::elasticity_modulus);
