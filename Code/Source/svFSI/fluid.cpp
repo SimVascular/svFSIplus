@@ -1992,20 +1992,20 @@ void get_viscosity(const ComMod& com_mod, const dmnType& lDmn, double& gamma, do
 
   double mu_i, mu_o, lam, a, n, T1, T2;
 
-  switch (lDmn.visc.viscType) {
+  switch (lDmn.fluid_visc.viscType) {
 
     case FluidViscosityModelType::viscType_Const:
-      mu = lDmn.visc.mu_i;
+      mu = lDmn.fluid_visc.mu_i;
       mu_s = mu;
       mu_x = 0.0;
     break;
 
     case FluidViscosityModelType::viscType_CY: // Carreau-Yasuda
-      mu_i = lDmn.visc.mu_i;
-      mu_o = lDmn.visc.mu_o;
-      lam = lDmn.visc.lam;
-      a = lDmn.visc.a;
-      n = lDmn.visc.n;
+      mu_i = lDmn.fluid_visc.mu_i;
+      mu_o = lDmn.fluid_visc.mu_o;
+      lam = lDmn.fluid_visc.lam;
+      a = lDmn.fluid_visc.a;
+      n = lDmn.fluid_visc.n;
 
       T1 = 1.0 + pow(lam*gamma, a);
       T2 = pow(T1,((n-1.0)/a));
@@ -2018,9 +2018,9 @@ void get_viscosity(const ComMod& com_mod, const dmnType& lDmn, double& gamma, do
     break;
 
     case FluidViscosityModelType::viscType_Cass:
-      mu_i = lDmn.visc.mu_i;
-      mu_o = lDmn.visc.mu_o;
-      lam  = lDmn.visc.lam;
+      mu_i = lDmn.fluid_visc.mu_i;
+      mu_o = lDmn.fluid_visc.mu_o;
+      lam  = lDmn.fluid_visc.lam;
 
       if (gamma < lam) { 
          mu_o = mu_o / sqrt(lam);

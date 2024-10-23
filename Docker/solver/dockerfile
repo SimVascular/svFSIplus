@@ -1,0 +1,24 @@
+# Use the pre-configured image from Docker Hub as the base
+FROM simvascular/libraries:ubuntu22 AS builder
+
+# Get latest svFSIplus solver from GitHub repository
+RUN git clone https://github.com/SimVascular/svFSIplus.git
+
+# Trilinos build
+WORKDIR /svFSIplus/build-trilinos
+RUN cmake -DSV_USE_TRILINOS:BOOL=ON .. &&\
+    make -j4
+
+# PETSc build
+WORKDIR /svFSIplus/build-petsc
+RUN cmake -DSV_PETSC_DIR:STRING=/petsc .. &&\
+    make -j4
+
+
+# FINAL IMAGE with solver executable
+FROM simvascular/libraries:ubuntu22 AS final 
+
+COPY --from=builder /svFSIplus/build-petsc /build-petsc
+COPY --from=builder /svFSIplus/build-trilinos /build-trilinos
+
+WORKDIR /

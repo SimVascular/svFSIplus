@@ -1,11 +1,26 @@
 # ================================================================================
-# CMAKE
+# BASE: Common base image with dependencies
 # ================================================================================
-# Use a base image for building tools and dependencise
-FROM ubuntu:22.04 AS buildcmake
+FROM ubuntu:22.04 AS base
 
 # Any debian-based command will not prompt user-input
 ENV DEBIAN_FRONTEND=noninteractive
+
+# Install essentials tools
+RUN apt-get update && \
+    apt-get install -y \
+    build-essential wget git vim \
+    python3 gfortran default-jdk default-jre \
+    libglu1-mesa-dev freeglut3-dev mesa-common-dev \ 
+    openssl libssl-dev zlib1g-dev libicu-dev libglvnd-dev && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# ================================================================================
+# CMAKE
+# ================================================================================
+# Use a base image for building tools and dependencise
+FROM base AS buildcmake
 
 # Setting CMake version CMake installation directory
 ARG CMAKE_VERSION=3.29.0
@@ -13,16 +28,6 @@ ARG CMAKE_INSTALL_DIR=/cmake
 
 # Create new user
 RUN useradd -ms /bin/bash luser
-
-# Install essentials tools
-RUN apt-get update && \
-    apt-get install -y \
-    build-essential wget git \
-    python3 gfortran default-jdk default-jre \
-    libglu1-mesa-dev freeglut3-dev mesa-common-dev \ 
-    openssl libssl-dev zlib1g-dev libicu-dev && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
 
 # ================================================================================
 # Download, extract, install
@@ -43,30 +48,17 @@ RUN rm -rf /cmake-${CMAKE_VERSION}
 # OPENMPI
 # ================================================================================
 # Use a base image for building tools and dependencise
-FROM ubuntu:22.04 AS buildompi
+FROM base AS buildompi
 
 # Copy cmake binary from buildcmake 
 COPY --from=buildcmake /cmake /cmake
 
-# Any debian-based command will not prompt user-input
-ENV DEBIAN_FRONTEND=noninteractive
-
 # Setting OMPI version OMPI installation directory
-ARG OMPI_VERSION=5.0.2
+ARG OMPI_VERSION=5.0.5
 ARG OMPI_INSTALL_DIR=/openmpi
 
 # Create new user
 RUN useradd -ms /bin/bash luser
-
-# Install essentials tools
-RUN apt-get update && \
-    apt-get install -y \
-    build-essential wget git \
-    python3 gfortran default-jdk default-jre \
-    libglu1-mesa-dev freeglut3-dev mesa-common-dev \ 
-    openssl libssl-dev zlib1g-dev libicu-dev && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
 
 # ================================================================================
 # Download, extract, install
@@ -75,7 +67,7 @@ RUN wget https://download.open-mpi.org/release/open-mpi/v5.0/openmpi-${OMPI_VERS
     rm openmpi-${OMPI_VERSION}.tar.gz
 
 WORKDIR /openmpi-${OMPI_VERSION}
-RUN ./configure --prefix=${OMPI_INSTALL_DIR} && \
+RUN ./configure --with-pmix --with-slurm --prefix=${OMPI_INSTALL_DIR} && \
     make -j6 all && \
     make install 
 
@@ -87,15 +79,12 @@ RUN rm -rf /openmpi-${OMPI_VERSION}
 # VTK
 # ================================================================================
 # Use a base image for building tools and dependencise
-FROM ubuntu:22.04 AS buildvtk
+FROM base AS buildvtk
 
 # Copy cmake binary from buildcmake and set ENV
 COPY --from=buildcmake /cmake /cmake 
 
 ENV PATH="/cmake/bin:${PATH}"
-
-# Any debian-based command will not prompt user-input
-ENV DEBIAN_FRONTEND=noninteractive
 
 # Setting VTK  version VTK installation directory
 ARG VTK_VERSION=9.3.0
@@ -103,16 +92,6 @@ ARG VTK_INSTALL_DIR=/vtk
 
 # Create new user
 RUN useradd -ms /bin/bash luser
-
-# Install essentials tools
-RUN apt-get update && \
-    apt-get install -y \
-    build-essential wget git \
-    python3 gfortran default-jdk default-jre \
-    libglu1-mesa-dev freeglut3-dev mesa-common-dev \ 
-    openssl libssl-dev zlib1g-dev libicu-dev libglvnd-dev && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
 
 # ================================================================================
 # Download, extract, install
@@ -158,15 +137,12 @@ RUN rm -rf /VTK-${VTK_VERSION} build-vtk
 # BOOST
 # ================================================================================
 # Use a base image for building tools and dependencise
-FROM ubuntu:22.04 AS buildboost
+FROM base AS buildboost
 
 # Copy cmake binary from buildcmake and set ENV
 COPY --from=buildcmake /cmake /cmake 
 
 ENV PATH="/cmake/bin:${PATH}"
-
-# Any debian-based command will not prompt user-input
-ENV DEBIAN_FRONTEND=noninteractive
 
 # Setting Boost version Boost installation directory
 ARG BOOST_VERSION=1_84_0
@@ -174,16 +150,6 @@ ARG BOOST_INSTALL_DIR=/boost
 
 # Create new user
 RUN useradd -ms /bin/bash luser
-
-# Install essentials tools
-RUN apt-get update && \
-    apt-get install -y \
-    build-essential wget git \
-    python3 gfortran default-jdk default-jre \
-    libglu1-mesa-dev freeglut3-dev mesa-common-dev \ 
-    openssl libssl-dev zlib1g-dev libicu-dev && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
 
 # ================================================================================
 # Download, extract, install
@@ -203,30 +169,17 @@ RUN rm -rf /boost_${BOOST_VERSION}
 # LAPACK
 # ================================================================================
 # Use a base image for building tools and dependencise
-FROM ubuntu:22.04 AS buildlapack
+FROM base AS buildlapack
 
 # Copy cmake binary from buildcmake and set ENV
 COPY --from=buildcmake /cmake /cmake 
 ENV PATH="/cmake/bin:${PATH}"
-
-# Any debian-based command will not prompt user-input
-ENV DEBIAN_FRONTEND=noninteractive
 
 # Setting lapack installation directory
 ARG LAPACK_INSTALL_DIR=/tmp/lapack
 
 # Create new user
 RUN useradd -ms /bin/bash luser
-
-# Install essentials tools
-RUN apt-get update && \
-    apt-get install -y \
-    build-essential wget git \
-    python3 gfortran default-jdk default-jre \
-    libglu1-mesa-dev freeglut3-dev mesa-common-dev \ 
-    openssl libssl-dev zlib1g-dev libicu-dev && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
 
 # ================================================================================
 # Download, extract, install
@@ -240,56 +193,10 @@ WORKDIR /
 RUN rm -rf /build /lapack
 
 # ================================================================================
-# BLAS (USE FROM LAPACK INSTALLATION)
-# ================================================================================
-# Use a base image for building tools and dependencise
-#FROM ubuntu:20.04 AS buildblas
-
-# Copy cmake binary from buildcmake and set ENV
-#COPY --from=buildcmake /cmake /cmake 
-
-#ENV PATH="/cmake/bin:${PATH}"
-
-# Any debian-based command will not prompt user-input
-#ENV DEBIAN_FRONTEND=noninteractive
-
-# Setting blas version and installation directory
-#ARG BLAS_VERSION=3.12.0
-#ARG BLAS_INSTALL_DIR=/blas
-
-# Create new user
-#RUN useradd -ms /bin/bash luser
-
-# Install essentials tools
-#RUN apt-get update && \
-#    apt-get install -y \
-#    build-essential wget git \
-#    python3 gfortran default-jdk default-jre \
-#    libglu1-mesa-dev freeglut3-dev mesa-common-dev \ 
-#    openssl libssl-dev zlib1g-dev libicu-dev && \
-#    apt-get clean && \
-#    rm -rf /var/lib/apt/lists/*
-
-# ================================================================================
-# Download, extract, install
-#RUN wget http://www.netlib.org/blas/blas-${BLAS_VERSION}.tgz && \
-#    tar -xvf blas-${BLAS_VERSION}.tgz && \
-#    rm blas-${BLAS_VERSION}.tgz
-
-#WORKDIR /build
-#RUN cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=${BLAS_INSTALL_DIR} ../BLAS-${BLAS_VERSION} && \
-#    make && \
-#    make install 
-
-# Cleanup
-#WORKDIR /
-#RUN rm -rf /BLAS-${BLAS_VERSION} /build
-
-# ================================================================================
 # HDF5
 # ================================================================================
 # Use a base image for building tools and dependencise
-FROM ubuntu:22.04 AS buildhdf5
+FROM base AS buildhdf5
 
 # Copy cmake binary from buildcmake and set ENV
 COPY --from=buildcmake /cmake /cmake
@@ -297,24 +204,11 @@ COPY --from=buildompi /openmpi /openmpi/
 
 ENV PATH="/cmake/bin:/openmpi:${PATH}"
 
-# Any debian-based command will not prompt user-input
-ENV DEBIAN_FRONTEND=noninteractive
-
 # Setting hdf5 installation directories
 ARG HDF5_INSTALL_DIR=/hdf5
 
 # Create new user
 RUN useradd -ms /bin/bash luser
-
-# Install essentials tools
-RUN apt-get update && \
-    apt-get install -y \
-    build-essential wget git \
-    python3 gfortran default-jdk default-jre \
-    libglu1-mesa-dev freeglut3-dev mesa-common-dev \ 
-    openssl libssl-dev zlib1g-dev libicu-dev && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
 
 # ================================================================================
 # Download, extract, install
@@ -354,7 +248,7 @@ RUN rm -rf /hdf5build
 # ================================================================================
 
 # Use a base image for building tools and dependencise
-FROM ubuntu:22.04 AS buildhypre
+FROM base AS buildhypre
 
 # Copy cmake binary from buildcmake and set ENV
 COPY --from=buildcmake /cmake /cmake
@@ -363,24 +257,11 @@ COPY --from=buildlapack /tmp/lapack /lapack/
 
 ENV PATH="/cmake/bin:/openmpi/bin:/lapack:${PATH}"
 
-# Any debian-based command will not prompt user-input
-ENV DEBIAN_FRONTEND=noninteractive
-
 # Setting hypre installation directory
 ARG HYPRE_INSTALL_DIR=/hypre-install
 
 # Create new user
 RUN useradd -ms /bin/bash luser
-
-# Install essentials tools
-RUN apt-get update && \
-    apt-get install -y \
-    build-essential wget git \
-    python3 gfortran default-jdk default-jre \
-    libglu1-mesa-dev freeglut3-dev mesa-common-dev \ 
-    openssl libssl-dev zlib1g-dev libicu-dev && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
 
 # ================================================================================
 # Download, extract, install
@@ -399,7 +280,7 @@ RUN rm -rf /hypre
 # ================================================================================
 
 # Use a base image for building tools and dependencise
-FROM ubuntu:22.04 AS buildtrilinos
+FROM base AS buildtrilinos
 
 # Copy all dependencies and set ENV
 COPY --from=buildcmake /cmake /cmake
@@ -411,26 +292,14 @@ COPY --from=buildhypre /hypre-install /hypre/
 
 ENV PATH="/cmake/bin:/openmpi/bin:${PATH}"
 
-# Any debian-based command will not prompt user-input
-ENV DEBIAN_FRONTEND=noninteractive
+# Make sure python3 is the default python
+RUN ln -s /usr/bin/python3 /usr/bin/python
 
 # Setting hypre installation directory
 ARG TRILINOS_INSTALL_DIR=/trilinos
 
 # Create new user
 RUN useradd -ms /bin/bash luser
-
-# Install essentials tools
-RUN apt-get update && \
-    apt-get install -y \
-    build-essential wget git \
-    python3 gfortran default-jdk default-jre \
-    libglu1-mesa-dev freeglut3-dev mesa-common-dev \ 
-    openssl libssl-dev zlib1g-dev libicu-dev && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-RUN ln -s /usr/bin/python3 /usr/bin/python
 
 # ================================================================================
 # Download, extract, install
@@ -482,7 +351,7 @@ RUN rm -rf Trilinos
 # ================================================================================
 
 # Use a base image for building tools and dependencise
-FROM ubuntu:22.04 AS buildpetsc
+FROM base AS buildpetsc
 
 # Copy all dependencies and set ENV
 COPY --from=buildcmake /cmake /cmake
@@ -494,28 +363,14 @@ COPY --from=buildhypre /hypre-install /hypre/
 
 ENV PATH="/cmake/bin:${PATH}"
 
-# Any debian-based command will not prompt user-input
-ENV DEBIAN_FRONTEND=noninteractive
+# Make sure python3 is the default python
+RUN ln -s /usr/bin/python3 /usr/bin/python
 
 # Setting petsc installation directory
 ARG PETSC_INSTALL_DIR=/petsc-install
 
 # Create new user
 RUN useradd -ms /bin/bash luser
-
-# Install essentials tools
-RUN apt-get update && \
-    apt-get install -y \
-    build-essential wget git \
-    python3 gfortran default-jdk default-jre \
-    libglu1-mesa-dev freeglut3-dev mesa-common-dev \ 
-    openssl libssl-dev zlib1g-dev libicu-dev && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-# By default the cmake is looking for python and not python3
-# The following line creates a symbolic link python->python3 
-RUN ln -s /usr/bin/python3 /usr/bin/python
 
 # ================================================================================
 # Download and install
@@ -568,26 +423,13 @@ RUN rm -rf /petsc
 # GOOGLE TEST
 # ================================================================================
 # Use a base image for building tools and dependencise
-FROM ubuntu:22.04 AS buildgtest
+FROM base AS buildgtest
 
 # Copy all dependencies and set ENV
 COPY --from=buildcmake /cmake /cmake
 COPY --from=buildompi /openmpi /openmpi
 
 ENV PATH="/cmake/bin:/openmpi/bin:${PATH}"
-
-# Any debian-based command will not prompt user-input
-ENV DEBIAN_FRONTEND=noninteractive
-
-# Install essentials tools
-RUN apt-get update && \
-    apt-get install -y \
-    build-essential wget git \
-    python3 gfortran default-jdk default-jre \
-    libglu1-mesa-dev freeglut3-dev mesa-common-dev \ 
-    openssl libssl-dev zlib1g-dev libicu-dev && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
 
 # ================================================================================
 # GTEST
@@ -606,22 +448,8 @@ RUN rm -rf /googletest
 # ================================================================================
 # FINAL IMAGE
 # ================================================================================
-
 # Use a base image for building tools and dependencise
-FROM ubuntu:22.04 AS final
-
-# Any debian-based command will not prompt user-input
-ENV DEBIAN_FRONTEND=noninteractive
-
-# Install essentials tools
-RUN apt-get update && \
-    apt-get install -y \
-    build-essential wget git git-lfs lcov \
-    python3 gfortran default-jdk default-jre \
-    libglu1-mesa-dev freeglut3-dev mesa-common-dev \ 
-    openssl libssl-dev zlib1g-dev libicu-dev libglvnd-dev && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+FROM base AS final
 
 # Copy all libraries and set ENV
 COPY --from=buildcmake /cmake /cmake
@@ -638,19 +466,17 @@ COPY --from=buildgtest /google /google
 # ================================================================================
 # CONDA
 ENV CONDA_DIR /conda
+
+# Conda environment depending on architecture
 RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /miniconda.sh && \
     /bin/bash /miniconda.sh -b -p $CONDA_DIR
 
-# Set conda environment
 ENV PATH="${CONDA_DIR}/bin:${PATH}"
 
-# Create and activate Conda environment
+# Create Conda environment
 RUN conda create -y -n svfsiplus && \
     conda run -n svfsiplus pip install pytest pytest-cov pytest-mock numpy meshio pandas
 
 # Set libraries environment
 ENV PATH="/google:/vtk:/openmpi/bin:/cmake/bin:/trilinos/lib/cmake/Trilinos:${PATH}"
-ENV LD_LIBRARY_PATH="/petsc/lib:/lapack:$LD_LIBRARY_PATH"
-
-ENV OMPI_ALLOW_RUN_AS_ROOT=1
-ENV OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+ENV LD_LIBRARY_PATH="/openmpi/lib:/petsc/lib:/lapack:$LD_LIBRARY_PATH"

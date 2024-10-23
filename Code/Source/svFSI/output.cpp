@@ -146,12 +146,15 @@ void output_result(Simulation* simulation,  std::array<double,3>& timeP, const i
     tmp = 100.0;
   }
 
+  // Add a warning if the solution to the linear system did not converge.
+  std::string convergence_msg;
   if (eq.FSILS.RI.suc) {
      c1 = "["; 
      c2 = "]";
   } else {
      c1 = "!";  
      c2 = "!";
+     convergence_msg = "  WARNING: The linear system solution has not converged";
   }
 
   // NS     1-2  3.82E1  [ -62 7.92E-4 7.92E-4 3.60E-4]  [   5  -15  23] 
@@ -159,11 +162,23 @@ void output_result(Simulation* simulation,  std::array<double,3>& timeP, const i
   auto db_str = std::to_string(static_cast<int>(round(eq.FSILS.RI.dB)));
   auto calld_str = std::to_string(static_cast<int>(round(tmp)));
   sOut += "  " + c1 + std::to_string(eq.FSILS.RI.itr) + " " + db_str + " " + calld_str + c2;
+  sOut += convergence_msg; 
 
   if (com_mod.nEq > 1) {
     logger << sOut << std::endl;
   } else {
     logger << sOut << std::endl;
+  }
+
+  // Print a warning message if the maximum number of nonlinear iterations has been exceeded.
+  if (eq.itr > eq.maxItr) {
+    auto msg = "[svFSIplus] WARNING The number of nonlinear iterations (" + std::to_string(eq.itr) + 
+        ") has exceeded the maximum number set by the value of the Add_equation/Max_iterations parameter in the svFSIplus solver input file.";
+    if (!eq.FSILS.RI.suc) {
+      msg += " This may be due to the failure of the linear system solution to converge.";
+    }
+    msg += "\n";
+    logger << msg << std::endl; 
   }
 }
 

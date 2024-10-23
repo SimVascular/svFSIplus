@@ -1048,7 +1048,7 @@ Distribute boundary condition data to all processors.
 <!-- dist_visc_model -->
 <!-- =============== -->
 
-<h2 id="dist_visc_model">  dist_visc_model(const ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, viscModelType& lVis) </h2>
+<h2 id="dist_visc_model">  dist_visc_model(const ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, fluidViscModelType& lVis) </h2>
 
 [distribute.cpp](https://github.com/ktbolt/svFSI/blob/Implement-svFSI-using-cpp_19/Code/Source/svFSI_cinterface/distribute.cpp)
 

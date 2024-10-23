@@ -60,6 +60,7 @@ class VtkData {
 
     virtual bool has_point_data(const std::string& data_name) = 0;
 
+    virtual void copy_points(Array<double>& points) = 0;
     virtual void copy_point_data(const std::string& data_name, Array<double>& mesh_data) = 0;
     virtual void copy_point_data(const std::string& data_name, Vector<double>& mesh_data) = 0;
     virtual void write() = 0;
@@ -119,6 +120,7 @@ class VtkVtuData : public VtkData {
     virtual int num_points();
     virtual void read_file(const std::string& file_name);
 
+    void copy_points(Array<double>& points);
     void copy_point_data(const std::string& data_name, Array<double>& mesh_data);
     void copy_point_data(const std::string& data_name, Vector<double>& mesh_data);
     void copy_point_data(const std::string& data_name, Vector<int>& mesh_data);

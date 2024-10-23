@@ -32,6 +32,7 @@
 #include "Array.h"
 
 #include <vtkDoubleArray.h>
+#include "vtkCellArray.h"
 #include "vtkCellData.h"
 #include <vtkGenericCell.h>
 #include <vtkIntArray.h>
@@ -926,6 +927,24 @@ void VtkVtuData::copy_point_data(const std::string& data_name, Vector<int>& mesh
   }
 }
 
+/// @brief Copy points into the given array.
+//
+void VtkVtuData::copy_points(Array<double>& points)
+{ 
+  auto vtk_points = impl->vtk_ugrid->GetPoints();
+  auto num_points = vtk_points->GetNumberOfPoints();
+  Array<double> points_array(3, num_points);
+  
+  double point[3];
+  for (int i = 0; i < num_points; i++) {
+    vtk_points->GetPoint(i, point);
+    points(0,i) = point[0];
+    points(1,i) = point[1];
+    points(2,i) = point[2];
+  } 
+  
+  return;
+}
 
 bool VtkVtuData::has_point_data(const std::string& data_name)
 {
