@@ -195,7 +195,7 @@ std::array&lt; double, 3 &gt;&#160;</td><td class="memItemRight" valign="bottom"
 <tr class="memdesc:a74b27b683845cc2a621040e48a945dca"><td class="mdescLeft">&#160;</td><td class="mdescRight">Total number of degrees of freedom per node.  <a href="class_com_mod.html#a74b27b683845cc2a621040e48a945dca">More...</a><br /></td></tr>
 <tr class="separator:a74b27b683845cc2a621040e48a945dca"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a39e53febfdde055cb194b83de669f4b5"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_com_mod.html#a39e53febfdde055cb194b83de669f4b5">tnNo</a> = 0</td></tr>
-<tr class="memdesc:a39e53febfdde055cb194b83de669f4b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Total number of nodes (number of nodes on current proc across all meshes)  <a href="class_com_mod.html#a39e53febfdde055cb194b83de669f4b5">More...</a><br /></td></tr>
+<tr class="memdesc:a39e53febfdde055cb194b83de669f4b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Total number of nodes (total number of nodes on current processor across all meshes)  <a href="class_com_mod.html#a39e53febfdde055cb194b83de669f4b5">More...</a><br /></td></tr>
 <tr class="separator:a39e53febfdde055cb194b83de669f4b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad84e7bad391ad123bb66f78001100636"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_com_mod.html#ad84e7bad391ad123bb66f78001100636">rsTS</a> = 0</td></tr>
 <tr class="memdesc:ad84e7bad391ad123bb66f78001100636"><td class="mdescLeft">&#160;</td><td class="mdescRight">Restart Time Step.  <a href="class_com_mod.html#ad84e7bad391ad123bb66f78001100636">More...</a><br /></td></tr>
@@ -252,16 +252,16 @@ std::array&lt; double, 3 &gt;&#160;</td><td class="memItemRight" valign="bottom"
 <tr class="memdesc:ad0c1e2a845e0d327e51334d19a0ee14b"><td class="mdescLeft">&#160;</td><td class="mdescRight">IB: iblank used for immersed boundaries (1 =&gt; solid, 0 =&gt; fluid)  <a href="class_com_mod.html#ad0c1e2a845e0d327e51334d19a0ee14b">More...</a><br /></td></tr>
 <tr class="separator:ad0c1e2a845e0d327e51334d19a0ee14b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac9ec1599d78f8570563965f9975ee6d9"><td class="memItemLeft" align="right" valign="top">Array&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_com_mod.html#ac9ec1599d78f8570563965f9975ee6d9">Ao</a></td></tr>
-<tr class="memdesc:ac9ec1599d78f8570563965f9975ee6d9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Old time derivative of variables (acceleration)  <a href="class_com_mod.html#ac9ec1599d78f8570563965f9975ee6d9">More...</a><br /></td></tr>
+<tr class="memdesc:ac9ec1599d78f8570563965f9975ee6d9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Old time derivative of variables (acceleration); known result at current time step.  <a href="class_com_mod.html#ac9ec1599d78f8570563965f9975ee6d9">More...</a><br /></td></tr>
 <tr class="separator:ac9ec1599d78f8570563965f9975ee6d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a89247eb77419c72ced42a2a1ee9d1824"><td class="memItemLeft" align="right" valign="top">Array&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_com_mod.html#a89247eb77419c72ced42a2a1ee9d1824">An</a></td></tr>
-<tr class="memdesc:a89247eb77419c72ced42a2a1ee9d1824"><td class="mdescLeft">&#160;</td><td class="mdescRight">New time derivative of variables.  <a href="class_com_mod.html#a89247eb77419c72ced42a2a1ee9d1824">More...</a><br /></td></tr>
+<tr class="memdesc:a89247eb77419c72ced42a2a1ee9d1824"><td class="mdescLeft">&#160;</td><td class="mdescRight">New time derivative of variables (acceleration); unknown result at next time step.  <a href="class_com_mod.html#a89247eb77419c72ced42a2a1ee9d1824">More...</a><br /></td></tr>
 <tr class="separator:a89247eb77419c72ced42a2a1ee9d1824"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abe59a1b34b4ad737800637b511c41fa7"><td class="memItemLeft" align="right" valign="top">Array&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_com_mod.html#abe59a1b34b4ad737800637b511c41fa7">Do</a></td></tr>
-<tr class="memdesc:abe59a1b34b4ad737800637b511c41fa7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Old integrated variables (dissplacement)  <a href="class_com_mod.html#abe59a1b34b4ad737800637b511c41fa7">More...</a><br /></td></tr>
+<tr class="memdesc:abe59a1b34b4ad737800637b511c41fa7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Old integrated variables (displacement)  <a href="class_com_mod.html#abe59a1b34b4ad737800637b511c41fa7">More...</a><br /></td></tr>
 <tr class="separator:abe59a1b34b4ad737800637b511c41fa7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a86fe135e9367ae9fa24bcca66c0c25ae"><td class="memItemLeft" align="right" valign="top">Array&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_com_mod.html#a86fe135e9367ae9fa24bcca66c0c25ae">Dn</a></td></tr>
-<tr class="memdesc:a86fe135e9367ae9fa24bcca66c0c25ae"><td class="mdescLeft">&#160;</td><td class="mdescRight">New integrated variables.  <a href="class_com_mod.html#a86fe135e9367ae9fa24bcca66c0c25ae">More...</a><br /></td></tr>
+<tr class="memdesc:a86fe135e9367ae9fa24bcca66c0c25ae"><td class="mdescLeft">&#160;</td><td class="mdescRight">New integrated variables (displacement)  <a href="class_com_mod.html#a86fe135e9367ae9fa24bcca66c0c25ae">More...</a><br /></td></tr>
 <tr class="separator:a86fe135e9367ae9fa24bcca66c0c25ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8ffc7b5a1f3675c8c8afa3a71b3e7f8b"><td class="memItemLeft" align="right" valign="top">Array&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_com_mod.html#a8ffc7b5a1f3675c8c8afa3a71b3e7f8b">R</a></td></tr>
 <tr class="memdesc:a8ffc7b5a1f3675c8c8afa3a71b3e7f8b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Residual vector.  <a href="class_com_mod.html#a8ffc7b5a1f3675c8c8afa3a71b3e7f8b">More...</a><br /></td></tr>
@@ -273,10 +273,10 @@ std::array&lt; double, 3 &gt;&#160;</td><td class="memItemRight" valign="bottom"
 <tr class="memdesc:a1f6e06247d04da6550fb03731ef3a024"><td class="mdescLeft">&#160;</td><td class="mdescRight">Position vector of mesh nodes (in ref config)  <a href="class_com_mod.html#a1f6e06247d04da6550fb03731ef3a024">More...</a><br /></td></tr>
 <tr class="separator:a1f6e06247d04da6550fb03731ef3a024"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af1802dc394d8962067547116939dd1d0"><td class="memItemLeft" align="right" valign="top">Array&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_com_mod.html#af1802dc394d8962067547116939dd1d0">Yo</a></td></tr>
-<tr class="memdesc:af1802dc394d8962067547116939dd1d0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Old variables (velocity)  <a href="class_com_mod.html#af1802dc394d8962067547116939dd1d0">More...</a><br /></td></tr>
+<tr class="memdesc:af1802dc394d8962067547116939dd1d0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Old variables (velocity); known result at current time step.  <a href="class_com_mod.html#af1802dc394d8962067547116939dd1d0">More...</a><br /></td></tr>
 <tr class="separator:af1802dc394d8962067547116939dd1d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4823dd0ac7ac43932cea78655bf25eb7"><td class="memItemLeft" align="right" valign="top">Array&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_com_mod.html#a4823dd0ac7ac43932cea78655bf25eb7">Yn</a></td></tr>
-<tr class="memdesc:a4823dd0ac7ac43932cea78655bf25eb7"><td class="mdescLeft">&#160;</td><td class="mdescRight">New variables.  <a href="class_com_mod.html#a4823dd0ac7ac43932cea78655bf25eb7">More...</a><br /></td></tr>
+<tr class="memdesc:a4823dd0ac7ac43932cea78655bf25eb7"><td class="mdescLeft">&#160;</td><td class="mdescRight">New variables (velocity); unknown result at next time step.  <a href="class_com_mod.html#a4823dd0ac7ac43932cea78655bf25eb7">More...</a><br /></td></tr>
 <tr class="separator:a4823dd0ac7ac43932cea78655bf25eb7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af3c9f64171f5a55a88e5b2c094c8b30c"><td class="memItemLeft" align="right" valign="top">Array&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_com_mod.html#af3c9f64171f5a55a88e5b2c094c8b30c">Bf</a></td></tr>
 <tr class="memdesc:af3c9f64171f5a55a88e5b2c094c8b30c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Body force.  <a href="class_com_mod.html#af3c9f64171f5a55a88e5b2c094c8b30c">More...</a><br /></td></tr>
@@ -389,7 +389,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>debug_active</b> = fa
       </table>
 </div><div class="memdoc">
 
-<p>New time derivative of variables. </p>
+<p>New time derivative of variables (acceleration); unknown result at next time step. </p>
 
 </div>
 </div>
@@ -405,7 +405,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>debug_active</b> = fa
       </table>
 </div><div class="memdoc">
 
-<p>Old time derivative of variables (acceleration) </p>
+<p>Old time derivative of variables (acceleration); known result at current time step. </p>
 
 </div>
 </div>
@@ -645,7 +645,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>debug_active</b> = fa
       </table>
 </div><div class="memdoc">
 
-<p>New integrated variables. </p>
+<p>New integrated variables (displacement) </p>
 
 </div>
 </div>
@@ -661,7 +661,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>debug_active</b> = fa
       </table>
 </div><div class="memdoc">
 
-<p>Old integrated variables (dissplacement) </p>
+<p>Old integrated variables (displacement) </p>
 
 </div>
 </div>
@@ -1573,7 +1573,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>debug_active</b> = fa
       </table>
 </div><div class="memdoc">
 
-<p>Total number of nodes (number of nodes on current proc across all meshes) </p>
+<p>Total number of nodes (total number of nodes on current processor across all meshes) </p>
 
 </div>
 </div>
@@ -1653,7 +1653,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>debug_active</b> = fa
       </table>
 </div><div class="memdoc">
 
-<p>New variables. </p>
+<p>New variables (velocity); unknown result at next time step. </p>
 
 </div>
 </div>
@@ -1669,7 +1669,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>debug_active</b> = fa
       </table>
 </div><div class="memdoc">
 
-<p>Old variables (velocity) </p>
+<p>Old variables (velocity); known result at current time step. </p>
 
 </div>
 </div>

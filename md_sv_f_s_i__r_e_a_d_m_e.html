@@ -283,8 +283,8 @@ ComMod</h2>
 <li><a href="#"><b> fs::get_thood_fs(com_mod, fs, lM, vmsStab, 1) </b></a></li>
 <li><a href="#"><b> nn::gnn(fs[1].eNoN, nsd, nsd, Nx, xql, Nqx, Jac, ksix) </b></a></li>
 <li><a href="#"><b> nn::gn_nxx(l, fs[0].eNoN, nsd, nsd, Nx, Nxx, xwl, Nwx, Nwxx) </b></a></li>
-<li><a href="#"><b> fluid_3d_m(com_mod, vmsStab, fs[0].eNoN, fs[1].eNoN, w, ksix, N0, N1, Nwx, Nqx, Nwxx, al, yl, bfl, lR, lK)</b></a> - If nsd=3</li>
-<li><a href="#"><b> fluid_2d_m(com_mod, vmsStab, fs[0].eNoN, fs[1].eNoN, w, ksix, N0, N1, Nwx, Nqx, Nwxx, al, yl, bfl, lR, lK)</b></a> - If nsd=2</li>
+<li><a href="#"><b> fluid_3d_m(com_mod, vmsStab, fs[0].eNoN, fs[1].eNoN, w, ksix, N0, N1, Nwx, Nqx, Nwxx, al, yl, bfl, lR, lK, K_inverse_darcy_permeability)</b></a> - If nsd=3</li>
+<li><a href="#"><b> fluid_2d_m(com_mod, vmsStab, fs[0].eNoN, fs[1].eNoN, w, ksix, N0, N1, Nwx, Nqx, Nwxx, al, yl, bfl, lR, lK, K_inverse_darcy_permeability)</b></a> - If nsd=2</li>
 <li><a href="#"><b> trilinos_doassem_(const_cast&lt;int&amp;&gt;(eNoN), ptr.data(), lK.data(), lR.data())</b></a> - If using <a class="el" href="struct_trilinos.html" title="Initialize all Epetra types we need separate from Fortran.">Trilinos</a></li>
 <li><a href="#do_assem"><b> lhsa_ns::do_assem(com_mod, eNoN, ptr, lK, lR)</b></a> - If not using <a class="el" href="struct_trilinos.html" title="Initialize all Epetra types we need separate from Fortran.">Trilinos</a></li>
 </ul>
@@ -936,8 +936,8 @@ ComMod</h2>
 <li><code>fs::get_thood_fs(com_mod, fs, lM, vmsStab, 1)</code></li>
 <li><code>nn::gnn(fs[1].eNoN, nsd, nsd, Nx, xql, Nqx, Jac, ksix)</code></li>
 <li><code>nn::gn_nxx(l, fs[0].eNoN, nsd, nsd, Nx, Nxx, xwl, Nwx, Nwxx)</code></li>
-<li><code>fluid_3d_m(com_mod, vmsStab, fs[0].eNoN, fs[1].eNoN, w, ksix, N0, N1, Nwx, Nqx, Nwxx, al, yl, bfl, lR, lK)</code> - If nsd=3</li>
-<li><code>fluid_2d_m(com_mod, vmsStab, fs[0].eNoN, fs[1].eNoN, w, ksix, N0, N1, Nwx, Nqx, Nwxx, al, yl, bfl, lR, lK)</code> - If nsd=2</li>
+<li><code>fluid_3d_m(com_mod, vmsStab, fs[0].eNoN, fs[1].eNoN, w, ksix, N0, N1, Nwx, Nqx, Nwxx, al, yl, bfl, lR, lK, K_inverse_darcy_permeability)</code> - If nsd=3</li>
+<li><code>fluid_2d_m(com_mod, vmsStab, fs[0].eNoN, fs[1].eNoN, w, ksix, N0, N1, Nwx, Nqx, Nwxx, al, yl, bfl, lR, lK, K_inverse_darcy_permeability)</code> - If nsd=2</li>
 <li><code>trilinos_doassem_(const_cast&lt;int&amp;&gt;(eNoN), ptr.data(), lK.data(), lR.data())</code> - If using <a class="el" href="struct_trilinos.html" title="Initialize all Epetra types we need separate from Fortran.">Trilinos</a></li>
 <li><code>lhsa_ns::do_assem(com_mod, eNoN, ptr, lK, lR)</code> - If not using <a class="el" href="struct_trilinos.html" title="Initialize all Epetra types we need separate from Fortran.">Trilinos</a></li>
 </ul>

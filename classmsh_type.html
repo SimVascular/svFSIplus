@@ -99,7 +99,7 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><b>dname</b> = &q
 <tr class="memdesc:a7e8fb50227cbe604cd6d01102231ad53"><td class="mdescLeft">&#160;</td><td class="mdescRight">Global number of elements (knot spans)  <a href="classmsh_type.html#a7e8fb50227cbe604cd6d01102231ad53">More...</a><br /></td></tr>
 <tr class="separator:a7e8fb50227cbe604cd6d01102231ad53"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4079f486ba185ef804b14e2ca4347325"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmsh_type.html#a4079f486ba185ef804b14e2ca4347325">gnNo</a> = 0</td></tr>
-<tr class="memdesc:a4079f486ba185ef804b14e2ca4347325"><td class="mdescLeft">&#160;</td><td class="mdescRight">Global number of nodes (control points)  <a href="classmsh_type.html#a4079f486ba185ef804b14e2ca4347325">More...</a><br /></td></tr>
+<tr class="memdesc:a4079f486ba185ef804b14e2ca4347325"><td class="mdescLeft">&#160;</td><td class="mdescRight">Global number of nodes (control points) on a single mesh.  <a href="classmsh_type.html#a4079f486ba185ef804b14e2ca4347325">More...</a><br /></td></tr>
 <tr class="separator:a4079f486ba185ef804b14e2ca4347325"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae736fdac34664b9d61b1a5bc8998287d"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmsh_type.html#ae736fdac34664b9d61b1a5bc8998287d">nEf</a> = 0</td></tr>
 <tr class="memdesc:ae736fdac34664b9d61b1a5bc8998287d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of element face. Used for reading Gambit mesh files.  <a href="classmsh_type.html#ae736fdac34664b9d61b1a5bc8998287d">More...</a><br /></td></tr>
@@ -186,7 +186,7 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><b>dname</b> = &q
 <tr class="memdesc:a222ddc20df07906d425d569089a7f80a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bounds on parameteric coordinates.  <a href="classmsh_type.html#a222ddc20df07906d425d569089a7f80a">More...</a><br /></td></tr>
 <tr class="separator:a222ddc20df07906d425d569089a7f80a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a331cab384a6956d3b74ec98cc8eef418"><td class="memItemLeft" align="right" valign="top">Array&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmsh_type.html#a331cab384a6956d3b74ec98cc8eef418">x</a></td></tr>
-<tr class="memdesc:a331cab384a6956d3b74ec98cc8eef418"><td class="mdescLeft">&#160;</td><td class="mdescRight">Position coordinates.  <a href="classmsh_type.html#a331cab384a6956d3b74ec98cc8eef418">More...</a><br /></td></tr>
+<tr class="memdesc:a331cab384a6956d3b74ec98cc8eef418"><td class="mdescLeft">&#160;</td><td class="mdescRight">Position coordinates (not always, however, as they get overwritten by read_vtu_pdata())  <a href="classmsh_type.html#a331cab384a6956d3b74ec98cc8eef418">More...</a><br /></td></tr>
 <tr class="separator:a331cab384a6956d3b74ec98cc8eef418"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a14952aebe301a67a398b7c46cc5156e8"><td class="memItemLeft" align="right" valign="top">Array&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmsh_type.html#a14952aebe301a67a398b7c46cc5156e8">N</a></td></tr>
 <tr class="memdesc:a14952aebe301a67a398b7c46cc5156e8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parent shape function.  <a href="classmsh_type.html#a14952aebe301a67a398b7c46cc5156e8">More...</a><br /></td></tr>
@@ -473,7 +473,7 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><b>dname</b> = &q
       </table>
 </div><div class="memdoc">
 
-<p>Global number of nodes (control points) </p>
+<p>Global number of nodes (control points) on a single mesh. </p>
 
 </div>
 </div>
@@ -1001,7 +1001,7 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><b>dname</b> = &q
       </table>
 </div><div class="memdoc">
 
-<p>Position coordinates. </p>
+<p>Position coordinates (not always, however, as they get overwritten by read_vtu_pdata()) </p>
 
 </div>
 </div>
