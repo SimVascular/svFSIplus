@@ -120,7 +120,8 @@ SetEquationPropertiesMapType set_equation_props = {
     com_mod.cmmVarWall = true;
 
     if (com_mod.varWallProps.size() == 0) {
-      com_mod.varWallProps.resize(2, com_mod.gtnNo); // varWallProps = array of size 2 x total number of nodes across all meshes and all processors; first column is thickness and second column is elastic modulus
+      // varWallProps = array of size 2 x total number of nodes across all meshes and all processors; first column is thickness and second column is elastic modulus
+      com_mod.varWallProps.resize(2, com_mod.gtnNo);
     }
 
     auto mesh_name = eq_params->variable_wall_properties.mesh_name.value();

@@ -871,14 +871,17 @@ void construct_cmm(ComMod& com_mod, const mshType& lM, const Array<double>& Ag, 
 
     if (cmmInit) {
       pSl = 0.0;
+      
+      // vwp = [thickness, elastic modulus], but averaged over the nodes on the element
       Vector<double> vwp(2);
+      
       for (int a = 0; a < eNoN; a++) {
         pSl = pSl + pS0l.col(a);
         vwp = vwp + vwpl.col(a);
       }
       pSl = pSl / static_cast<double>(eNoN);
       vwp = vwp / static_cast<double>(eNoN);
-      cmmi(com_mod, lM, al, dl, xl, bfl, pSl, vwp, ptr); // vwp = [thickness, elastic modulus], but averaged over the nodes on the element
+      cmmi(com_mod, lM, al, dl, xl, bfl, pSl, vwp, ptr);
 
     // Gauss integration
     //

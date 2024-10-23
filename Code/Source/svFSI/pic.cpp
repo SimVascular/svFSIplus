@@ -155,8 +155,12 @@ void picc(Simulation* simulation)
   } else {
     for (int a = 0; a < tnNo; a++) {
       for (int i = 0; i < e-s+1; i++) {
-        An(i+s,a) = An(i+s,a) - R(i,a); // eqn 94 of Bazilevs 2007 // here, -R contains the acceleration update (obtained from Newton solve))?
-        Yn(i+s,a) = Yn(i+s,a) - R(i,a)*coef[0]; // eqn 95 of Bazilevs 2007
+        // eqn 94 of Bazilevs 2007 // here, -R contains the acceleration update (obtained from Newton solve))?
+        An(i+s,a) = An(i+s,a) - R(i,a);
+        
+        // eqn 95 of Bazilevs 2007
+        Yn(i+s,a) = Yn(i+s,a) - R(i,a)*coef[0];
+        
         Dn(i+s,a) = Dn(i+s,a) - R(i,a)*coef[1];
       }
     }
@@ -550,15 +554,20 @@ void pici(Simulation* simulation, Array<double>& Ag, Array<double>& Yg, Array<do
     } else {
         for (int a = 0; a < tnNo; a++) {
             for (int j = s; j <= e; j++) {
-                Ag(j, a) = Ao(j, a) * coef(0) + An(j, a) * coef(1); // eqn 89 of Bazilevs 2007
-                Yg(j, a) = Yo(j, a) * coef(2) + Yn(j, a) * coef(3); // eqn 90 of Bazilevs 2007
+                // eqn 89 of Bazilevs 2007
+                Ag(j, a) = Ao(j, a) * coef(0) + An(j, a) * coef(1);
+                
+                // eqn 90 of Bazilevs 2007
+                Yg(j, a) = Yo(j, a) * coef(2) + Yn(j, a) * coef(3);
+                
                 Dg(j, a) = Do(j, a) * coef(2) + Dn(j, a) * coef(3);
             }
         }
     }
   }
-
-  if (com_mod.pstEq) { // prestress
+  
+  // prestress
+  if (com_mod.pstEq) {
     com_mod.pSn = 0.0;
     com_mod.pSa = 0.0;
   }
@@ -596,7 +605,9 @@ void picp(Simulation* simulation)
   auto& pS0 = com_mod.pS0;
   auto& pSn = com_mod.pSn;
 
-  auto& Ad = com_mod.Ad; // time derivative of displacement
+  // time derivative of displacement
+  auto& Ad = com_mod.Ad;
+  
   auto& Ao = com_mod.Ao;
   auto& An = com_mod.An;
   auto& Yo = com_mod.Yo;
@@ -663,7 +674,8 @@ void picp(Simulation* simulation)
     double coef = (eq.gam - 1.0) / eq.gam;
     for (int i = s; i <= e; i++) {
       for (int j = 0; j < Ao.ncols(); j++) {
-        An(i,j) = Ao(i,j) * coef; // eqn 87 of Bazilevs 2007
+        // eqn 87 of Bazilevs 2007
+        An(i,j) = Ao(i,j) * coef;
       }
     }
 
@@ -672,7 +684,8 @@ void picp(Simulation* simulation)
       cep_ion::cep_integ(simulation, iEq, e, Do);
     }
 
-    Yn.set_rows(s,e, Yo.rows(s,e)); // eqn 86 of Bazilevs 2007
+    // eqn 86 of Bazilevs 2007
+    Yn.set_rows(s,e, Yo.rows(s,e));
 
     if (com_mod.dFlag) {
 

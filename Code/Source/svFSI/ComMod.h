@@ -849,8 +849,8 @@ class mshType
     /// @brief Global number of elements (knot spans)
     int gnEl = 0;
 
-    /// @brief Global number of nodes (control points)
-    int gnNo = 0; // global number of nodes on a single mesh
+    /// @brief Global number of nodes (control points) on a single mesh
+    int gnNo = 0;
 
     /// @brief Number of element face. Used for reading Gambit mesh files
     int nEf = 0;
@@ -936,8 +936,8 @@ class mshType
     /// @brief Bounds on parameteric coordinates
     Array<double> xib;
 
-    /// @brief Position coordinates
-    Array<double> x; // these are not necessarily position coordinates, as they get overwritten by read_vtu_pdata()
+    /// @brief Position coordinates (not always, however, as they get overwritten by read_vtu_pdata())
+    Array<double> x;
 
     /// @brief Parent shape function
     Array<double> N;
@@ -1418,7 +1418,7 @@ class ComMod {
 
     /// @brief Global total number of nodes, across all meshes (total) and all 
     /// procs (global)
-    int gtnNo = 0; // total number of nodes across all meshes and all processors
+    int gtnNo = 0;
 
     /// @brief Number of equations
     int nEq = 0;
@@ -1456,9 +1456,9 @@ class ComMod {
     /// @brief Total number of degrees of freedom per node
     int tDof = 0;
 
-    /// @brief Total number of nodes (number of nodes on current proc across
+    /// @brief Total number of nodes (total number of nodes on current processor across
     /// all meshes)
-    int tnNo = 0; // total number of nodes across all meshes, but only on current processor
+    int tnNo = 0;
 
     /// @brief Restart Time Step
     int rsTS = 0;
