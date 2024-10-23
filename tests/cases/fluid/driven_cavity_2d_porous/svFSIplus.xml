@@ -51,6 +51,7 @@
    <Backflow_stabilization_coefficient> 0.1 </Backflow_stabilization_coefficient> 
 
    <Domain id="1" >
+      <Equation> fluid </Equation> 
       <Density> 1.0 </Density> 
       <Viscosity model="Constant" >
          <Value> 1.111111111111111e-06 </Value>
@@ -59,6 +60,7 @@
    </Domain>
 
    <Domain id="2" >
+      <Equation> fluid </Equation> 
       <Density> 1.0 </Density> 
       <Viscosity model="Constant" >
          <Value> 1e-06 </Value>
