@@ -755,7 +755,7 @@ void fluid_2d_c(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
   Array<double> ux(2,2); // ux[i, j] = derivative of jth component of velocity with respect to ith component of x = du_j/dx_i
   Array3<double> uxx(2,2,2); // uxx[i, j, k] = 2nd derivative of jth component of velocity with respect to ith component of x and kth component of x = d2(u_j)/(dx_i*dx_k)
 
-  for (int a = 0; a < eNoNw; a++) { // eNoNw is number of basis functions for this element, where fluid_2d_c is called for each element individually // 8/29/24 JP: done checking this section
+  for (int a = 0; a < eNoNw; a++) { // eNoNw is number of basis functions for this element, where fluid_2d_c is called for each element individually
     ud(0) = ud(0) + Nw(a)*(al(0,a)-bfl(0,a)); // a_x - f_x // bfl is body force. why is body force being multiplied by the shape function and summed over all shape functions?
     ud(1) = ud(1) + Nw(a)*(al(1,a)-bfl(1,a)); // a_y - f_y
 
@@ -776,17 +776,17 @@ void fluid_2d_c(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
     uxx(1,1,0) = uxx(1,1,0) + Nwxx(2,a)*yl(1,a); // d2(u_y)/dydx
   }
 
-  double divU = ux(0,0) + ux(1,1); // divergence of velocity // 8/29/24 JP: done checking this line
+  double divU = ux(0,0) + ux(1,1); // divergence of velocity
   
-  uxx(0,0,1) = uxx(1,0,0); // d2(u_x)/dxdy // 8/29/24 JP: done checking this line
-  uxx(0,1,1) = uxx(1,1,0); // d2(u_y)/dxdy // 8/29/24 JP: done checking this line
+  uxx(0,0,1) = uxx(1,0,0); // d2(u_x)/dxdy
+  uxx(0,1,1) = uxx(1,1,0); // d2(u_y)/dxdy
 
-  Vector<double> d2u2(2); // d2u2[j] = laplacian of jth component of velocity // 8/29/24 JP: done checking this section
+  Vector<double> d2u2(2); // d2u2[j] = laplacian of jth component of velocity
   d2u2(0) = uxx(0,0,0) + uxx(1,0,1);
   d2u2(1) = uxx(0,1,0) + uxx(1,1,1);
 
 
-  // Pressure and its gradient // 8/29/24 JP: done checking this section
+  // Pressure and its gradient
   Vector<double> px(2); // px[i] = derivative of pressure with respect to ith component of x = dp/dx_i
   for (int a = 0; a < eNoNq; a++) {
     px(0) = px(0) + Nqx(0,a)*yl(2,a);
@@ -801,7 +801,7 @@ void fluid_2d_c(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
      }
   }
 
-  // 2 * strain rate tensor = 2*e_ij = du_i/dx_j + du_j/dx_i) // 8/29/24 JP: done checking this section
+  // 2 * strain rate tensor = 2*e_ij = du_i/dx_j + du_j/dx_i)
   Array<double> es(2,2);
   es(0,0) = ux(0,0) + ux(0,0);
   es(1,0) = ux(1,0) + ux(0,1);
@@ -817,13 +817,13 @@ void fluid_2d_c(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
   dmsg << "es: " << es;
   #endif
 
-  Array<double> esNx(2,eNoNw); // esNx[i, a] = jth column of (ith row of 2 * strain rate tensor) * derivative of shape function (for element node, a) with respect to x_j, with sum over j = 2 * e_ij * dN_a/dx_j // 8/29/24 JP: done checking this section
+  Array<double> esNx(2,eNoNw); // esNx[i, a] = jth column of (ith row of 2 * strain rate tensor) * derivative of shape function (for element node, a) with respect to x_j, with sum over j = 2 * e_ij * dN_a/dx_j
   for (int a = 0; a < eNoNw; a++) {
     esNx(0,a) = es(0,0)*Nwx(0,a) + es(1,0)*Nwx(1,a);
     esNx(1,a) = es(0,1)*Nwx(0,a) + es(1,1)*Nwx(1,a);
   }
 
-  Array3<double> es_x(2,2,2); // es_x[i, j, k] = derivative of 2 * strain rate tensor with respect to kth component of x = d(2 * e_ij)/d(x_k) // 8/29/24 JP: done checking this section
+  Array3<double> es_x(2,2,2); // es_x[i, j, k] = derivative of 2 * strain rate tensor with respect to kth component of x = d(2 * e_ij)/d(x_k)
   for (int k = 0; k < 2; k++) { 
     es_x(0,0,k) = uxx(0,0,k) + uxx(0,0,k); // d2(u_0)/(dx_0*dx_k) * 2
     es_x(1,1,k) = uxx(1,1,k) + uxx(1,1,k); // d2(u_1)/(dx_1*dx_k) * 2
@@ -831,11 +831,11 @@ void fluid_2d_c(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
     es_x(0,1,k) = es_x(1,0,k); // d2(u_1)/(dx_0*dx_k) + d2(u_0)/(dx_1*dx_k)
   }
 
-  Vector<double> mu_x(2); // mu_x[j] = gamma * derivative of gamma with respect to jth component of x // 8/29/24 JP: done checking this section
+  Vector<double> mu_x(2); // mu_x[j] = gamma * derivative of gamma with respect to jth component of x
   mu_x(0) = (es_x(0,0,0)*es(0,0) + es_x(1,1,0)*es(1,1))*0.50 +  es_x(1,0,0)*es(1,0);
   mu_x(1) = (es_x(0,0,1)*es(0,0) + es_x(1,1,1)*es(1,1))*0.50 +  es_x(1,0,1)*es(1,0);
 
-  // shear rate = gamma = (2*e_ij*e_ij)^0.5 // 8/29/24 JP: done checking this section
+  // shear rate = gamma = (2*e_ij*e_ij)^0.5
   double gam = es(0,0)*es(0,0) + es(1,0)*es(1,0) + es(0,1)*es(0,1) + es(1,1)*es(1,1);
   gam = sqrt(0.50*gam);
 
@@ -849,7 +849,7 @@ void fluid_2d_c(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
   } else {
      mu_g = mu_g / gam; // mu_g = derivative of effective dynamic viscosity with respect to gamma, then divided by gamma
   }
-  std::transform(mu_x.begin(), mu_x.end(), mu_x.begin(), [mu_g](double &v){return mu_g*v;}); // mu_x[j] = derivative of effective dynamic viscosity with respect to jth component of x // 8/29/24 JP: done checking this line
+  std::transform(mu_x.begin(), mu_x.end(), mu_x.begin(), [mu_g](double &v){return mu_g*v;}); // mu_x[j] = derivative of effective dynamic viscosity with respect to jth component of x
   //mu_x(:) = mu_g * mu_x(:)
 
   #ifdef debug_fluid_2d_c 
@@ -879,18 +879,18 @@ void fluid_2d_c(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
     kS = ctC * kS * pow(mu/rho,2.0);
     tauM = 1.0 / (rho * sqrt( kT + kU + kS ));
 
-    Vector<double> rV(2); // rV[i] = ith component of (acceleration + convective term - body force) // 8/29/24 JP: done checking this section
+    Vector<double> rV(2); // rV[i] = ith component of (acceleration + convective term - body force)
     rV(0) = ud(0) + u(0)*ux(0,0) + u(1)*ux(1,0);
     rV(1) = ud(1) + u(0)*ux(0,1) + u(1)*ux(1,1);
 
-    Vector<double> rS(2); // rS[i] = ith component of divergence of (2 * effective dynamic viscosity * strain rate tensor) = d(2 * mu * e_ij)/dx_j // 8/29/24 JP: done checking this section
+    Vector<double> rS(2); // rS[i] = ith component of divergence of (2 * effective dynamic viscosity * strain rate tensor) = d(2 * mu * e_ij)/dx_j
     rS(0) = mu_x(0)*es(0,0) + mu_x(1)*es(1,0) + mu*d2u2(0);
     rS(1) = mu_x(0)*es(0,1) + mu_x(1)*es(1,1) + mu*d2u2(1);
 
-    up(0) = -tauM*(rho*rV(0) + px(0) - rS(0) + mu*K_inverse_darcy_permeability*u(0)); // 8/29/24 JP: done checking this line
-    up(1) = -tauM*(rho*rV(1) + px(1) - rS(1) + mu*K_inverse_darcy_permeability*u(1)); // 8/29/24 JP: done checking this line
+    up(0) = -tauM*(rho*rV(0) + px(0) - rS(0) + mu*K_inverse_darcy_permeability*u(0));
+    up(1) = -tauM*(rho*rV(1) + px(1) - rS(1) + mu*K_inverse_darcy_permeability*u(1));
 
-    for (int a = 0; a < eNoNw; a++) { // 8/29/24 JP: done checking this section
+    for (int a = 0; a < eNoNw; a++) {
       double uNx = u(0)*Nwx(0,a) + u(1)*Nwx(1,a);
       T1 = -rho*uNx + mu*(Nwxx(0,a) + Nwxx(1,a)) + mu_x(0)*Nwx(0,a) + mu_x(1)*Nwx(1,a) - mu*K_inverse_darcy_permeability*Nw(a);
 
@@ -920,14 +920,14 @@ void fluid_2d_c(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
 
   // Local residual
   //
-  for (int a = 0; a < eNoNq; a++) { // 8/29/24 JP: done checking this section
+  for (int a = 0; a < eNoNq; a++) {
     double upNx = up(0)*Nqx(0,a) + up(1)*Nqx(1,a);
     lR(2,a) = lR(2,a) + w*(Nq(a)*divU - upNx); // continuity (weak form) residual
   }
 
   // Tangent (stiffness) matrices
   //
-  for (int b = 0; b < eNoNw; b++) { // 8/29/24 JP: done checking this section
+  for (int b = 0; b < eNoNw; b++) {
     T1 = rho*amd*Nw(b);
 
     for (int a = 0; a < eNoNq; a++) {
@@ -941,7 +941,7 @@ void fluid_2d_c(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
     }
   }
 
-  if (vmsFlag) { // 8/29/24 JP: done checking this section
+  if (vmsFlag) {
     for (int b = 0; b < eNoNq; b++) {
       for (int a = 0; a < eNoNq; a++) {
         // dRc_a/dP_b
@@ -1176,7 +1176,7 @@ void fluid_2d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
   }
 
   // Tangent (stiffness) matrices
-  for (int b = 0; b < eNoNw; b++) { // 8/29/24 JP: done checking this section
+  for (int b = 0; b < eNoNw; b++) {
     for (int a = 0; a < eNoNw; a++) {
       rM(0,0) = Nwx(0,a)*Nwx(0,b);
       rM(1,0) = Nwx(1,a)*Nwx(0,b);
@@ -1206,7 +1206,7 @@ void fluid_2d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
     }
   }
 
-  for (int b = 0; b < eNoNq; b++) { // 8/29/24 JP: done checking this section
+  for (int b = 0; b < eNoNq; b++) {
     for (int a = 0; a < eNoNw; a++) {
       T1 = rho*tauM*uaNx(a);
 
@@ -1220,7 +1220,7 @@ void fluid_2d_m(ComMod& com_mod, const int vmsFlag, const int eNoNw, const int e
   
   // Residual contribution Birkman term 
   // Local residue
-  for (int a = 0; a < eNoNw; a++) { // 8/29/24 JP: done checking this section
+  for (int a = 0; a < eNoNw; a++) {
       lR(0,a) = lR(0,a) + mu*K_inverse_darcy_permeability*w*Nw(a)*(u(0)+up(0));
       lR(1,a) = lR(1,a) + mu*K_inverse_darcy_permeability*w*Nw(a)*(u(1)+up(1));
   }

@@ -397,11 +397,9 @@ void global_eq_assem(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const 
 
   switch (eq.phys) {
       
-    std::cout << "here 31" << std::endl;
     case EquationType::phys_fluid:
       fluid::construct_fluid(com_mod, lM, Ag, Yg);
     break;
-    std::cout << "here 32" << std::endl;
 
     case EquationType::phys_heatF:
       heatf::construct_heatf(com_mod, lM, Ag, Yg);
