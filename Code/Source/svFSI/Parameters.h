@@ -1110,6 +1110,9 @@ class DomainParameters : public ParameterLists
     Parameter<double> solid_density;
     Parameter<double> source_term;
     Parameter<double> time_step_for_integration;
+    
+    // Inverse of Darcy permeability. Default value of 0.0 for Navier-Stokes and non-zero for Navier-Stokes-Brinkman
+    Parameter<double> inverse_darcy_permeability;
 };
 
 /// @brief The RemesherParameters class stores parameters for the 
@@ -1223,6 +1226,9 @@ class EquationParameters : public ParameterLists
 
     Parameter<std::string> type;
     Parameter<bool> use_taylor_hood_type_basis;
+    
+    // Inverse of Darcy permeability. Default value of 0.0 for Navier-Stokes and non-zero for Navier-Stokes-Brinkman
+    Parameter<double> inverse_darcy_permeability;
 
     // Sub-element parameters.
     //

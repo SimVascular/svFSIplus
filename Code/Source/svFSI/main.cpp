@@ -199,11 +199,18 @@ void iterate_solution(Simulation* simulation)
   auto& cm_mod = simulation->cm_mod;
   auto& cm = com_mod.cm;
   auto& cep_mod = simulation->get_cep_mod();
-
+  
+  // number of time steps
   int nTS = com_mod.nTS;
+  
   int stopTS = nTS;
+  
+  // total number of degrees of freedom per node
   int tDof = com_mod.tDof;
+  
+  // total number of nodes across all meshes, but only on current processor
   int tnNo = com_mod.tnNo;
+  
   int nFacesLS = com_mod.nFacesLS;
   int nsd = com_mod.nsd;
 
@@ -230,12 +237,14 @@ void iterate_solution(Simulation* simulation)
   Vector<double> res(nFacesLS); 
   Vector<int> incL(nFacesLS);
 
-  // Outer loop for marching in time. When entring this loop, all old
-  // variables are completely set and satisfy BCs.
-  // 
+  // current time step
   int& cTS = com_mod.cTS;
+  
   int& nITs = com_mod.nITs;
+  
+  // time step size
   double& dt = com_mod.dt;
+  
   #ifdef debug_iterate_solution
   dmsg;
   dmsg << "cTS: " << cTS;
@@ -256,11 +265,11 @@ void iterate_solution(Simulation* simulation)
 
   auto& Ao = com_mod.Ao;      // Old time derivative of variables (acceleration)
   auto& Yo = com_mod.Yo;      // Old variables (velocity)
-  auto& Do = com_mod.Do;      // Old integrated variables (dissplacement)
+  auto& Do = com_mod.Do;      // Old integrated variables (displacement)
 
-  auto& An = com_mod.An;      // New time derivative of variables
+  auto& An = com_mod.An;      // New time derivative of variables (acceleration)
   auto& Yn = com_mod.Yn;      // New variables (velocity)
-  auto& Dn = com_mod.Dn;      // New integrated variables
+  auto& Dn = com_mod.Dn;      // New integrated variables (displacement)
 
   bool l1 = false;
   bool l2 = false;
@@ -277,6 +286,9 @@ void iterate_solution(Simulation* simulation)
   //Array<double>::write_enabled = true;
   //Array3<double>::write_enabled = true;
 
+  // Outer loop for marching in time. When entering this loop, all old
+  // variables are completely set and satisfy BCs.
+  // 
   while (true) {
     #ifdef debug_iterate_solution
     dmsg << "========================================= " << std::endl;
@@ -355,6 +367,7 @@ void iterate_solution(Simulation* simulation)
     int reply;
     int iEqOld;
 
+    // Looping over Newton iterations
     while (true) { 
       #ifdef debug_iterate_solution
       dmsg << "---------- Inner Loop " + std::to_string(inner_count) << " -----------" << std::endl;

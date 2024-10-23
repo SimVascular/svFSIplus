@@ -120,6 +120,7 @@ SetEquationPropertiesMapType set_equation_props = {
     com_mod.cmmVarWall = true;
 
     if (com_mod.varWallProps.size() == 0) {
+      // varWallProps = array of size 2 x total number of nodes across all meshes and all processors; first column is thickness and second column is elastic modulus
       com_mod.varWallProps.resize(2, com_mod.gtnNo);
     }
 
@@ -217,11 +218,12 @@ SetEquationPropertiesMapType set_equation_props = {
 
   propL[0][0] = PhysicalProperyType::fluid_density;
   propL[1][0] = PhysicalProperyType::backflow_stab;
-  propL[2][0] = PhysicalProperyType::f_x;
-  propL[3][0] = PhysicalProperyType::f_y;
+  propL[2][0] = PhysicalProperyType::inverse_darcy_permeability;
+  propL[3][0] = PhysicalProperyType::f_x;
+  propL[4][0] = PhysicalProperyType::f_y;
 
   if (simulation->com_mod.nsd == 3) {
-    propL[4][0] = PhysicalProperyType::f_z;
+    propL[5][0] = PhysicalProperyType::f_z;
   }
 
   // Set fluid domain properties.

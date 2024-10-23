@@ -1036,7 +1036,7 @@ bool OutputParameters::get_output_value(const std::string& name)
 /// @brief The VariableWallPropsParameters class stores parameters for
 /// variable wall properties for the CMM equation.
 ///
-/// Define the XML element name for viscosiity parameters.
+/// Define the XML element name for variable wall parameters.
 const std::string VariableWallPropsParameters::xml_element_name_ = "Variable_wall_properties";
 
 VariableWallPropsParameters::VariableWallPropsParameters()
@@ -1432,6 +1432,8 @@ DomainParameters::DomainParameters()
   set_parameter("Solid_density", 0.5, !required, solid_density);
   set_parameter("Source_term", 0.0, !required, source_term);
   set_parameter("Time_step_for_integration", 0.0, !required, time_step_for_integration);
+
+  set_parameter("Inverse_darcy_permeability", 0.0, !required, inverse_darcy_permeability);
 }
 
 void DomainParameters::print_parameters()
