@@ -10,5 +10,4 @@ jobs:
           id: lfs_check
           uses: ppremk/lfs-warning@v3.2
           with:
-            token: ${{ secrets.GITHUB_TOKEN }}
             filesizelimit: 1MB
