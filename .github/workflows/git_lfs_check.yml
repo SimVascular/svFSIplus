@@ -12,7 +12,3 @@ jobs:
           with:
             token: ${{ secrets.GITHUB_TOKEN }}
             filesizelimit: 1MB
-
-        - name: Notify if large files are found
-          if: steps.lfs_check.outputs.warning != ''
-          run: echo "Warning: The following large files are not tracked by Git LFS: ${{ steps.lfs_check.outputs.warning }}"
