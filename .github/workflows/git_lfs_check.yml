@@ -1,7 +1,7 @@
 name: Check for git lfs
 on: [push, pull_request]
 permissions:
-  contents: write
+  pull-requests: write
 jobs:
   check_git_lfs:
     runs-on: ubuntu-latest
