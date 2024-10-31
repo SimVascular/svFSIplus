@@ -279,9 +279,140 @@ In this case a directory named `4-procs` containing the simulation results outpu
 <!---                             Docker container                                        -->
 <!--- =================================================================================== -->
 
-<h1 id="docker_container">  Docker Container </h1>
+<h1 id="docker_container">  Docker </h1>
+An alternative way with respect to building from source, is the Docker option. To use this option Docker must be installed first. Please refer to [Docker webpage](https://www.docker.com/products/docker-desktop/) to know more about Docker and how to install it on your machine. The following steps describe how to build a Docker image or pull an existent one from DockerHub, and how to run a Docker container. The last section is a brief guide to perform the same steps but in Singularity, since HPC systems usually use Singularity to handle containers.
 
+## Docker image
+A Docker image is a read-only template that may contain dependencies, libraries, and everything needed to run a program. It is like a snapshot of a particular environment. 
+A Docker image can be created directly from a [dockerfile](https://docs.docker.com/reference/dockerfile/#:~:text=A%20Dockerfile%20is%20a%20text,can%20use%20in%20a%20Dockerfile.) or an existent image can be pulled from [DockerHub](https://hub.docker.com), if available. For this repository, both options are available.
+The latest version of svFSIplus program is pre-compiled in a Docker image, built from a dockerfile provided in Docker/solver. The Docker image includes two different type of builds, one where the solver is compiled with Trilinos and the other one where the solver is compiled with PETSc. 
+This Docker image can be downloaded (pulled) from the dockerhub simvascular repository [simvascular/solver](https://registry.hub.docker.com/u/simvascular). To pull an image, run the command:
+```
+docker pull simvascular/solver:latest
+```
+Note that this image was built for AMD64 (x86) architecture, and it will not work on other architectures such as ARM64 (AArch64). In this case, the image has to be built from the provided dockerfile. 
+To create the image from the dockerfile provided in Docker/solver, follow the steps below:
+1) build an Ubuntu-based image containing the whole environment in which svFSIplus program can be compiled. The provided dockerfiles are based on Ubuntu-20.04 and Ubuntu-22.04, but they can be easily adapted to use the latest version of Ubuntu, by changing the following line in Docker/ubuntu20/dockerfile or Docker/ubuntu22/dockerfile: 
+```
+FROM ubuntu:20.04 AS base / FROM ubuntu:22.04 AS base
+```
+to 
+```
+FROM ubuntu:latest AS base
+```
+Build the environmnet Docker image: 
+```
+cd Docker/ubuntu20 or cd Docker/ubuntu22
+```
+```
+docker build -t RepositoryName:tagImage .
+```
+where -t allows the user to set the name for the image created. For example:
+```
+docker build -t libraries:latest .
+```
+2) build the image containing the compiled svFSIplus program. This image will be based on the environment created in the previous step (libraries:latest). In order to do this, open the Docker/solver/dockerfile and modify the following lines:
+```
+FROM simvascular/libraries:ubuntu22 AS builder 
+```
+to
+```
+FROM libraries:latest AS builder
+```
+and 
+```
+FROM simvascular/libraries:ubuntu22 AS final 
+```
+to
+```
+FROM libraries:latest AS final
+```
+Build the solver image:
+```
+cd Docker/solver
+```
+```
+docker build -t solver:latest .
+```
+The image include the PETSc-based svFSIplus executable in:
+```
+/build-petsc/svFSIplus-build/bin/svfsiplus
+```
+and the Trilinos-based svFSIplus executable in:
+```
+/build-trilinos/svFSIplus-build/bin/svfsiplus
+```
 
+## Docker container
+A Docker container is a running instance of a Docker image. It is a lightweight, isolated, and executable unit. 
+Once the image is created, it can be run interactively by running the following command:
+```
+docker run -it -v FolderToUpload:/NameOfFolder solver:latest
+```
+In this command:
+- -it: means run interactively Docker image
+- -v: mounts a directory 'FolderToUpload' from the host machine in the container where the directory has the name '/NameOfFolder'. For example the folder containing the mesh and the input file necessary to run a simulation should be mounted.
+A command can also be run in the container directly without running the container interactively. For example we want to run the solver using the mpirun, we may want to run the following command:
+```
+docker run -v FolderToUpload:/NameOfFolder solver:latest mpirun -n 4 /build-trilinos/svFSIplus-build/bin/svfsiplus svFSIplus.xml
+```
+The previous command will run the solver on 4 processors using the input file svFSIplus.xml and the mesh in the folder 'FolderToUpload' mounted inside the container.
 
+## Containers on HPC: Singularity
+Most of the HPC systems (if not all) are based on AMD64 architecture and the solver image can be directly pulled from [simvascular/solver](https://hub.docker.com/r/simvascular/solver). First of all, make sure the singularity module is loaded on the HPC system. Then, pull the solver image (it is recommended to run the following command on the compute node for example through an interactive job):
+```
+singularity pull docker://simvascular/solver:latest
+``` 
+After the pull is complete, you should have a file with extension .sif (solver image). This image contains the two executables of the svFSIplus program build with PETSc and Trilinos support, respectively. 
+In the following, we provide two example of job submission's scripts that can be used as a reference to run a simulation using the svFSIplus solver on an HPC cluster. 
+1) single-node job script:
+```
+#!/bin/bash
+#SBATCH --job-name
+#SBATCH --output
+#SBATCH --partition
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=
+#SBATCH --mem=0 
+#SBATCH -t 48:00:00
 
+# For single node, no modules should be loaded to avoid incongruences between HPC and containers environments
+module purge
 
+singularity run --bind #mount-the-necessary-folders-the-container-should-have-access-to \
+/PathToTheImage/NameOfImagePulled.sif \
+mpirun -n #TotalNumberOfTasks /build-trilinos/svFSIplus-build/bin/svfsiplus svFSIplus.xml
+```
+
+2) multi-node job script
+```
+#!/bin/bash
+#SBATCH --job-name
+#SBATCH --output
+#SBATCH --partition
+#SBATCH --nodes
+#SBATCH --ntasks-per-node
+#SBATCH --mem
+#SBATCH -t 00:00:00
+
+# The following 'export' may not work on all the HPC systems
+export UCX_TLS=ib
+export PMIX_MCA_gds=hash
+export OMPI_MCA_btl_tcp_if_include=ib0
+
+module purge
+# Load here all the modules necessary to use the HPC MPI, for example: module load openmpi
+
+mpirun -n #TotalNumberOfTasks singularity run --bind #mount-the-necessary-folders-the-container-should-have-access-to \
+/PathToTheImage/NameOfImagePulled.sif \
+/build-trilinos/svFSIplus-build/bin/svfsiplus svFSIplus.xml
+```
+Since the multi-node relies on both MPI, the one on the HPC and the one inside the container, there may be some problems. In the following, we give a solution (workaround) for two common problems:
+- if the HPC OpenMPI was built with cuda support, then it may happen that it is expecting that OpenMPI inside the container to be built with cuda support too, which is not the case. Possible solution is to add --mca mpi_cuda_support 0:
+```
+mpirun --mca mpi_cuda_support 0 -n #TotalNumberOfTasks ... 
+```
+- if for some reason, it is complaining about not finding 'munge' then add --mca psec ^munge:
+```
+mpirun --mca psec ^munge -n #TotalNumberOfTasks ... 
+```
