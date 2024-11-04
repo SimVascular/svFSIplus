@@ -194,8 +194,8 @@ svFSIplus is built using the following steps
 3) Create a build directory and change directories to it
 
    ```
-   mkdir fsiplus-build
-   cd fsiplus-build
+   mkdir build
+   cd build
    ```
    
 4) Execute the build
@@ -206,7 +206,7 @@ svFSIplus is built using the following steps
    ```
    This creates the **svfsiplus** binary executable located in
    ```
-   fsiplus-build/svFSIplus-build/bin/svfsiplus
+   build/svFSIplus-build/bin/svfsiplus
    ```
 
 
