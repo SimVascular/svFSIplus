@@ -1405,12 +1405,6 @@ void get_visc_stress_pot(const double mu, const int eNoN, const Array<double>& N
 
 
     // Required intermediate terms for stress and tangent
-    // double Ft[nsd][nsd] = {0}, vxt[nsd][nsd] = {0}, F_Ft[nsd][nsd] = {0}, Ft_vx[nsd][nsd] = {0}, F_vxt[nsd][nsd] = {0};
-    // mat_fun_carray::transpose<nsd>(F, Ft);
-    // mat_fun_carray::mat_mul<nsd>(F, Ft, F_Ft);
-    // mat_fun_carray::mat_mul<nsd>(Ft, vx, Ft_vx);
-    // mat_fun_carray::transpose<nsd>(vx, vxt);
-    // mat_fun_carray::mat_mul<nsd>(F, vxt, F_vxt);
     auto Ft = transpose(F);
     auto F_Ft = mat_mul(F, Ft);
     auto Ft_vx = mat_mul(Ft, vx);
@@ -1431,13 +1425,6 @@ void get_visc_stress_pot(const double mu, const int eNoN, const Array<double>& N
 
     // 2nd Piola-Kirchhoff stress due to viscosity
     // Svis = mu * 1/2 * ( (F^T * dv/dX) + (F^T * dv/dX)^T )
-    // double Ft_vx_symm[nsd][nsd] = {0};
-    // mat_fun_carray::mat_symm<nsd>(Ft_vx, Ft_vx_symm);
-    // for (int i = 0; i < nsd; i++) {
-    //     for (int j = 0; j < nsd; j++) {
-    //         Svis(i,j) = mu * Ft_vx_symm[i][j];
-    //     }
-    // }
     Svis = mu * mat_symm(Ft_vx, nsd);
 
     // Tangent matrix contributions due to viscosity
@@ -1495,24 +1482,15 @@ void get_visc_stress_newt(const double mu, const int eNoN, const Array<double>& 
     Kvis_v = 0.0;
 
     // Get identity matrix, Jacobian, and F^-1
-    // double Idm[nsd][nsd] = {0};
-    // mat_fun_carray::mat_id<nsd>(Idm);
-    // double J = mat_fun_carray::mat_det<nsd>(F);
-    // double Fi[nsd][nsd] = {0};
-    // mat_fun_carray::mat_inv<nsd>(F, Fi); 
     auto Idm = mat_id(nsd);
     auto J = mat_det(F, nsd);
     auto Fi = mat_inv(F, nsd);
 
     // Required intermediate terms for stress and tangent
-    // double vx_Fi[nsd][nsd] = {0}, vx_Fi_symm[nsd][nsd] = {0}, ddev[nsd][nsd] = {0};
-    // // vx_Fi: Velocity gradient in current configuration          
-    // mat_fun_carray::mat_mul<nsd>(vx, Fi, vx_Fi);        
-    // mat_fun_carray::mat_symm<nsd>(vx_Fi, vx_Fi_symm);
-    // // ddev: Deviatoric part of rate of strain tensor
-    // mat_fun_carray::mat_dev<nsd>(vx_Fi_symm, ddev);
+    // vx_Fi: Velocity gradient in current configuration          
     auto vx_Fi = mat_mul(vx, Fi);
     auto vx_Fi_symm = mat_symm(vx_Fi, nsd);
+    // ddev: Deviatoric part of rate of strain tensor
     auto ddev = mat_dev(vx_Fi_symm, nsd);
     //double Nx_Fi[nsd][eNoN] = {0}, ddev_Nx_Fi[nsd][eNoN] = {0}, vx_Fi_Nx_Fi[nsd][eNoN] = {0};
     Array<double> Nx_Fi(nsd,eNoN), ddev_Nx_Fi(nsd,eNoN), vx_Fi_Nx_Fi(nsd,eNoN);
@@ -1522,29 +1500,12 @@ void get_visc_stress_newt(const double mu, const int eNoN, const Array<double>& 
                 Nx_Fi(i,a) += Nx(j,a) * Fi(j,i);
             }
         }
-        // for (int i = 0; i < nsd; ++i) {
-        //   for (int j = 0; j < nsd; ++j) {
-        //       ddev_Nx_Fi(i,a) += ddev[i][j] * Nx_Fi(j,a);
-        //       vx_Fi_Nx_Fi(i,a) += vx_Fi[j][i] * Nx_Fi(j,a);
-        //   }
-        // }
         ddev_Nx_Fi = mat_mul(ddev, Nx_Fi);
         vx_Fi_Nx_Fi = mat_mul(vx_Fi, Nx_Fi);
     }
 
     // 2nd Piola-Kirchhoff stress due to viscosity
     // Svis = 2 * mu * J * F^-1 * d_dev * F^-T
-    // double Fit[nsd][nsd] = {0};
-    // mat_fun_carray::transpose<nsd>(Fi, Fit);
-    // double ddev_Fit[nsd][nsd] = {0};
-    // mat_fun_carray::mat_mul<nsd>(ddev, Fit, ddev_Fit);
-    // double Fi_ddev_Fit[nsd][nsd] = {0};
-    // mat_fun_carray::mat_mul<nsd>(Fi, ddev_Fit, Fi_ddev_Fit);
-    // for (int i = 0; i < nsd; i++) {
-    //     for (int j = 0; j < nsd; j++) {
-    //         Svis(i,j) = 2.0 * mu * J * Fi_ddev_Fit[i][j];
-    //     }
-    // }
     auto Fit = transpose(Fi);
     auto ddev_Fit = mat_mul(ddev, Fit);
     auto Fi_ddev_Fit = mat_mul(Fi, ddev_Fit);
