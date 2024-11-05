@@ -153,10 +153,11 @@ void get_fib_stress(const ComMod& com_mod, const CepMod& cep_mod, const fibStrsT
  * @param[in] ya Electrophysiology active stress.
  * @param[out] S 2nd Piola-Kirchhoff stress tensor (modified in place).
  * @param[out] Dm Material stiffness tensor (modified in place).
- * @return None, but modifies S and Dm in place.
+ * @param[out] Ja Jacobian for active strain
+ * @return None, but modifies S, Dm, and Ja in place.
  */
 void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn, const Array<double>& F, const int nfd,
-    const Array<double>& fl, const double ya, Array<double>& S, Array<double>& Dm)
+    const Array<double>& fl, const double ya, Array<double>& S, Array<double>& Dm, double& Ja)
 {
   using namespace consts;
   using namespace mat_fun;
@@ -167,6 +168,15 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
   #endif
+
+  // Check that this function is only called for struct, ustruct, or fsi physics
+  if (lDmn.phys != EquationType::phys_struct && lDmn.phys != EquationType::phys_ustruct && lDmn.phys != EquationType::phys_FSI) {
+    throw std::runtime_error("[get_pk2cc] This function is only valid for struct, ustruct, or fsi physics.");
+  }
+
+  // ustruct flag
+  bool ustruct = (lDmn.phys == EquationType::phys_ustruct);
+
 
   int nsd = com_mod.nsd;
   S = 0.0;
@@ -220,9 +230,12 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
   double p  = 0.0;
   double pl = 0.0;
 
-  if (!utils::is_zero(Kp)) {
-    get_svol_p(com_mod, cep_mod, stM, J, p, pl);
+  if (!ustruct) {
+    if (!utils::is_zero(Kp)) {
+      get_svol_p(com_mod, cep_mod, stM, J, p, pl);
+    }
   }
+  
 
   // Now, compute isochoric and total stress, elasticity tensors
   //
@@ -230,6 +243,10 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
 
   switch (stM.isoType) {
     case ConstitutiveModelType::stIso_lin: {
+      if (ustruct) {
+        std::runtime_error("[get_pk2cc] Linear isotropic material model not valid for ustruct physics.");
+      }
+
       double g1 = stM.C10;    // mu
       S = g1*Idm;
       return; 
@@ -237,6 +254,10 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
 
     // St.Venant-Kirchhoff
     case ConstitutiveModelType::stIso_StVK: {
+      if (ustruct) {
+        std::runtime_error("[get_pk2cc] St.Venant-Kirchhoff material model not valid for ustruct physics.");
+      }
+      
       double g1 = stM.C10;         // lambda
       double g2 = stM.C01 * 2.0;   // 2*mu
 
@@ -246,6 +267,10 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
 
     // modified St.Venant-Kirchhoff
     case ConstitutiveModelType::stIso_mStVK: {
+      if (ustruct) {
+        std::runtime_error("[get_pk2cc] Modified St.Venant-Kirchhoff material model not valid for ustruct physics.");
+      }
+
       double g1 = stM.C10; // kappa
       double g2 = stM.C01;  // mu
 
@@ -263,11 +288,7 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
       Sb += Tfa * mat_dyad_prod(fl.col(0), fl.col(0), nsd);
 
       double r1 = g1 * Inv1 / nd;
-      for (int j = 0; j < S.ncols(); j++) {
-        for (int i = 0; i < S.nrows(); i++) {
-          S(i,j) = J2d*Sb(i,j) - r1*Ci(i,j);
-        }
-      }
+      S = J2d*Sb - r1*Ci;
 
       CC = (-2.0/nd) * ( ten_dyad_prod(Ci, S, nsd) + ten_dyad_prod(S, Ci, nsd));
       S += p*J*Ci;
@@ -310,8 +331,8 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
       double Inv4 = J2d*utils::norm(fl.col(0), mat_mul(C, fl.col(0)));
       double Inv6 = J2d*utils::norm(fl.col(1), mat_mul(C, fl.col(1)));
 
-      double Eff = kap*Inv1 + (1.0-3.0*kap)*Inv4 - 1.0;
-      double Ess = kap*Inv1 + (1.0-3.0*kap)*Inv6 - 1.0;
+      double Eff = kap*Inv1 + (1.0 - 3.0*kap)*Inv4 - 1.0;
+      double Ess = kap*Inv1 + (1.0 - 3.0*kap)*Inv6 - 1.0;
 
       auto Hff = mat_dyad_prod(fl.col(0), fl.col(0), nsd);
       Hff = kap*Idm + (1.0-3.0*kap)*Hff;
@@ -545,7 +566,7 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
       // Isochoric stress and stiffness
       double g1 = stM.a * exp(stM.b*(Inv1-3.0));
       auto Sb = g1*Idm;
-      double r1 = J2d/nd*mat_fun::mat_ddot(C, Sb, nsd);
+      double r1 = J2d/nd*mat_ddot(C, Sb, nsd);
 
       g1 = g1*2.0*J4d*stM.b;
       auto CCb = g1 * ten_dyad_prod(Idm, Idm, nsd);
@@ -610,456 +631,456 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
   cc_to_voigt(nsd, CC, Dm);
 }
 
-/**
- * @brief Compute isochoric (deviatoric) component of 2nd Piola-Kirchhoff stress and material stiffness tensors.
- *
- * Reproduces 'SUBROUTINE GETPK2CCdev(lDmn, F, nfd, fl, ya, S, Dm, Ja)'.
- *
- * @param[in] com_mod Object containing global common variables.
- * @param[in] cep_mod Object containing electrophysiology-specific common variables.
- * @param[in] lDmn Domain object.
- * @param[in] F Deformation gradient tensor.
- * @param[in] nfd Number of fiber directions.
- * @param[in] fl Fiber directions.
- * @param[in] ya Electrophysiology active stress.
- * @param[out] S 2nd Piola-Kirchhoff stress tensor (isochoric part).
- * @param[out] Dm Material stiffness tensor (isochoric part).
- * @param[out] Ja Jacobian for active strain.
- * @return None, but modifies S, Dm, and Ja in place.
- */
-void get_pk2cc_dev(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn, const Array<double>& F, const int nfd, 
-    const Array<double>& fl, const double ya, Array<double>& S, Array<double>& Dm, double& Ja)
-{
-  using namespace consts;
-  using namespace mat_fun;
-  using namespace utils;
+// /**
+//  * @brief Compute isochoric (deviatoric) component of 2nd Piola-Kirchhoff stress and material stiffness tensors.
+//  *
+//  * Reproduces 'SUBROUTINE GETPK2CCdev(lDmn, F, nfd, fl, ya, S, Dm, Ja)'.
+//  *
+//  * @param[in] com_mod Object containing global common variables.
+//  * @param[in] cep_mod Object containing electrophysiology-specific common variables.
+//  * @param[in] lDmn Domain object.
+//  * @param[in] F Deformation gradient tensor.
+//  * @param[in] nfd Number of fiber directions.
+//  * @param[in] fl Fiber directions.
+//  * @param[in] ya Electrophysiology active stress.
+//  * @param[out] S 2nd Piola-Kirchhoff stress tensor (isochoric part).
+//  * @param[out] Dm Material stiffness tensor (isochoric part).
+//  * @param[out] Ja Jacobian for active strain.
+//  * @return None, but modifies S, Dm, and Ja in place.
+//  */
+// void get_pk2cc_dev(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn, const Array<double>& F, const int nfd, 
+//     const Array<double>& fl, const double ya, Array<double>& S, Array<double>& Dm, double& Ja)
+// {
+//   using namespace consts;
+//   using namespace mat_fun;
+//   using namespace utils;
 
-  #define n_debug_get_pk2cc_dev 
-  #ifdef debug_get_pk2cc_dev 
-  DebugMsg dmsg(__func__, com_mod.cm.idcm());
-  dmsg.banner();
-  #endif
+//   #define n_debug_get_pk2cc_dev 
+//   #ifdef debug_get_pk2cc_dev 
+//   DebugMsg dmsg(__func__, com_mod.cm.idcm());
+//   dmsg.banner();
+//   #endif
 
-  int nsd = com_mod.nsd;
-  S = 0.0;
-  Dm = 0.0;
+//   int nsd = com_mod.nsd;
+//   S = 0.0;
+//   Dm = 0.0;
 
-  // Some preliminaries
-  auto& stM = lDmn.stM;
-  double nd = static_cast<double>(nsd);
+//   // Some preliminaries
+//   auto& stM = lDmn.stM;
+//   double nd = static_cast<double>(nsd);
 
-  // Fiber-reinforced stress
-  double Tfa = 0.0;
-  get_fib_stress(com_mod, cep_mod, stM.Tf, Tfa);
-  double Tsa = Tfa*stM.Tf.eta_s;
+//   // Fiber-reinforced stress
+//   double Tfa = 0.0;
+//   get_fib_stress(com_mod, cep_mod, stM.Tf, Tfa);
+//   double Tsa = Tfa*stM.Tf.eta_s;
 
-  // Electromechanics coupling - active stress
-  if (cep_mod.cem.aStress) {
-    Tfa = Tfa + ya;
-  }
+//   // Electromechanics coupling - active stress
+//   if (cep_mod.cem.aStress) {
+//     Tfa = Tfa + ya;
+//   }
 
-  // Electromechanics coupling - active strain
-  auto Fe = F;
-  auto Fa = mat_id(nsd);
-  auto Fai = Fa;
+//   // Electromechanics coupling - active strain
+//   auto Fe = F;
+//   auto Fa = mat_id(nsd);
+//   auto Fai = Fa;
 
-  if (cep_mod.cem.aStrain) {
-    actv_strain(com_mod, cep_mod, ya, nfd, fl, Fa);
-    Fai = mat_inv(Fa, nsd);
-    Fe = mat_mul(F, Fai);
-  }
+//   if (cep_mod.cem.aStrain) {
+//     actv_strain(com_mod, cep_mod, ya, nfd, fl, Fa);
+//     Fai = mat_inv(Fa, nsd);
+//     Fe = mat_mul(F, Fai);
+//   }
 
-  #ifdef debug_get_pk2cc_dev 
-  dmsg << "cep_mod.cem.aStress: " << cep_mod.cem.aStress;
-  dmsg << "cep_mod.cem.aStrain: " << cep_mod.cem.aStrain;
-  #endif
+//   #ifdef debug_get_pk2cc_dev 
+//   dmsg << "cep_mod.cem.aStress: " << cep_mod.cem.aStress;
+//   dmsg << "cep_mod.cem.aStrain: " << cep_mod.cem.aStrain;
+//   #endif
 
-  Ja = mat_det(Fa, nsd);
-  double J = mat_det(Fe, nsd);
-  double J2d = pow(J, (-2.0/nd));
-  double J4d = J2d * J2d;
+//   Ja = mat_det(Fa, nsd);
+//   double J = mat_det(Fe, nsd);
+//   double J2d = pow(J, (-2.0/nd));
+//   double J4d = J2d * J2d;
 
-  auto IDm = mat_id(nsd);
-  auto C = mat_mul(transpose(Fe), Fe);
-  auto E = 0.5 * (C - IDm);
-  auto Ci = mat_inv(C, nsd);
+//   auto IDm = mat_id(nsd);
+//   auto C = mat_mul(transpose(Fe), Fe);
+//   auto E = 0.5 * (C - IDm);
+//   auto Ci = mat_inv(C, nsd);
 
-  double trE = mat_trace(E, nsd);
-  double Inv1 = J2d * mat_trace(C,nsd);
-  double Inv2 = 0.5 * (Inv1*Inv1 - J4d*mat_trace(mat_mul(C,C), nsd));
+//   double trE = mat_trace(E, nsd);
+//   double Inv1 = J2d * mat_trace(C,nsd);
+//   double Inv2 = 0.5 * (Inv1*Inv1 - J4d*mat_trace(mat_mul(C,C), nsd));
 
-  // Isochoric part of 2nd Piola-Kirchhoff and elasticity tensors
-  //
-  Tensor4<double> CC(nsd,nsd,nsd,nsd);
+//   // Isochoric part of 2nd Piola-Kirchhoff and elasticity tensors
+//   //
+//   Tensor4<double> CC(nsd,nsd,nsd,nsd);
 
-  switch (stM.isoType) {
+//   switch (stM.isoType) {
 
-    // NeoHookean model
-    //
-    case ConstitutiveModelType::stIso_nHook: {
-      double g1 = 2.0 * stM.C10;
-      auto Sb = g1 * IDm;
+//     // NeoHookean model
+//     //
+//     case ConstitutiveModelType::stIso_nHook: {
+//       double g1 = 2.0 * stM.C10;
+//       auto Sb = g1 * IDm;
 
-      // Fiber reinforcement/active stress
-      auto u = fl.col(0);
-      Sb += Tfa * mat_dyad_prod(u, u, nsd);
+//       // Fiber reinforcement/active stress
+//       auto u = fl.col(0);
+//       Sb += Tfa * mat_dyad_prod(u, u, nsd);
 
-      double r1 = g1 * Inv1 / nd;
-      S = J2d*Sb - r1*Ci;
+//       double r1 = g1 * Inv1 / nd;
+//       S = J2d*Sb - r1*Ci;
 
-      CC = 2.0 * r1 * (ten_symm_prod(Ci, Ci, nsd) - 1.0/nd * ten_dyad_prod(Ci, Ci, nsd)) - 
-                2.0/nd * (ten_dyad_prod(Ci, S, nsd) + ten_dyad_prod(S, Ci, nsd));
+//       CC = 2.0 * r1 * (ten_symm_prod(Ci, Ci, nsd) - 1.0/nd * ten_dyad_prod(Ci, Ci, nsd)) - 
+//                 2.0/nd * (ten_dyad_prod(Ci, S, nsd) + ten_dyad_prod(S, Ci, nsd));
   
-    } break; 
+//     } break; 
 
-    // Mooney-Rivlin model
-    //
-    case ConstitutiveModelType::stIso_MR: {
-      double g1 = 2.0 * (stM.C10 + Inv1*stM.C01);
-      double g2 = -2.0 * stM.C01;
-      auto Sb = g1*IDm + g2*J2d*C;
+//     // Mooney-Rivlin model
+//     //
+//     case ConstitutiveModelType::stIso_MR: {
+//       double g1 = 2.0 * (stM.C10 + Inv1*stM.C01);
+//       double g2 = -2.0 * stM.C01;
+//       auto Sb = g1*IDm + g2*J2d*C;
 
-      // Fiber reinforcement/active stress
-      auto u = fl.col(0);
-      Sb += Tfa * mat_dyad_prod(u, u, nsd);
-      g1 = 4.0 * J4d * stM.C01;
-      auto CCb = g1 * (ten_dyad_prod(IDm, IDm, nsd) - ten_ids(nsd));
+//       // Fiber reinforcement/active stress
+//       auto u = fl.col(0);
+//       Sb += Tfa * mat_dyad_prod(u, u, nsd);
+//       g1 = 4.0 * J4d * stM.C01;
+//       auto CCb = g1 * (ten_dyad_prod(IDm, IDm, nsd) - ten_ids(nsd));
 
-      double r1  = J2d*mat_ddot(C, Sb, nsd) / nd;
-      S = J2d*Sb - r1*Ci;
+//       double r1  = J2d*mat_ddot(C, Sb, nsd) / nd;
+//       S = J2d*Sb - r1*Ci;
 
-      auto PP = ten_ids(nsd) - (1.0/nd) * ten_dyad_prod(Ci, C, nsd);
+//       auto PP = ten_ids(nsd) - (1.0/nd) * ten_dyad_prod(Ci, C, nsd);
 
-      CC = ten_ddot(CCb, PP, nsd);
-      CC = ten_transpose(CC, nsd);
-      CC = ten_ddot(PP, CC, nsd);
+//       CC = ten_ddot(CCb, PP, nsd);
+//       CC = ten_transpose(CC, nsd);
+//       CC = ten_ddot(PP, CC, nsd);
 
-      CC = CC + 2.0 * r1 * (ten_symm_prod(Ci, Ci, nsd) - (1.0/nd) * ten_dyad_prod(Ci, Ci, nsd)) - 
-                (2.0/nd) * (ten_dyad_prod(Ci, S, nsd) + ten_dyad_prod(S, Ci, nsd));
+//       CC = CC + 2.0 * r1 * (ten_symm_prod(Ci, Ci, nsd) - (1.0/nd) * ten_dyad_prod(Ci, Ci, nsd)) - 
+//                 (2.0/nd) * (ten_dyad_prod(Ci, S, nsd) + ten_dyad_prod(S, Ci, nsd));
 
-    } break; 
+//     } break; 
 
-    // HGO (Holzapfel-Gasser-Ogden) model with additive splitting of
-    // the anisotropic fiber-based strain-energy terms
-    //
-    case ConstitutiveModelType::stIso_HGO: {
-      if (nfd != 2) {
-        throw std::runtime_error("[get_pk2cc_dev] Min fiber directions not defined for HGO material model.");
-      }
+//     // HGO (Holzapfel-Gasser-Ogden) model with additive splitting of
+//     // the anisotropic fiber-based strain-energy terms
+//     //
+//     case ConstitutiveModelType::stIso_HGO: {
+//       if (nfd != 2) {
+//         throw std::runtime_error("[get_pk2cc_dev] Min fiber directions not defined for HGO material model.");
+//       }
 
-      double kap = stM.kap;
-      double Inv4 = J2d * norm(fl.col(0), mat_mul(C, fl.col(0)));
-      double Inv6 = J2d * norm(fl.col(1), mat_mul(C, fl.col(1)));
+//       double kap = stM.kap;
+//       double Inv4 = J2d * norm(fl.col(0), mat_mul(C, fl.col(0)));
+//       double Inv6 = J2d * norm(fl.col(1), mat_mul(C, fl.col(1)));
 
-      double Eff = kap*Inv1 + (1.0 - 3.0*kap) * Inv4 - 1.0;
-      double Ess = kap*Inv1 + (1.0 - 3.0*kap) * Inv6 - 1.0;
+//       double Eff = kap*Inv1 + (1.0 - 3.0*kap) * Inv4 - 1.0;
+//       double Ess = kap*Inv1 + (1.0 - 3.0*kap) * Inv6 - 1.0;
 
-      auto Hff = mat_dyad_prod(fl.col(0), fl.col(0), nsd);
-      Hff = kap*IDm + (1.0 - 3.0*kap) * Hff;
+//       auto Hff = mat_dyad_prod(fl.col(0), fl.col(0), nsd);
+//       Hff = kap*IDm + (1.0 - 3.0*kap) * Hff;
 
-      auto Hss = mat_dyad_prod(fl.col(1), fl.col(1), nsd);
-      Hss  = kap*IDm + (1.0 - 3.0*kap) * Hss;
+//       auto Hss = mat_dyad_prod(fl.col(1), fl.col(1), nsd);
+//       Hss  = kap*IDm + (1.0 - 3.0*kap) * Hss;
 
-      double g1 = stM.C10;
-      double g2 = stM.aff * Eff * exp(stM.bff*Eff*Eff);
-      double g3 = stM.ass * Ess * exp(stM.bss*Ess*Ess);
-      auto Sb = 2.0 * (g1*IDm + g2*Hff + g3*Hss);
+//       double g1 = stM.C10;
+//       double g2 = stM.aff * Eff * exp(stM.bff*Eff*Eff);
+//       double g3 = stM.ass * Ess * exp(stM.bss*Ess*Ess);
+//       auto Sb = 2.0 * (g1*IDm + g2*Hff + g3*Hss);
 
-      // Fiber reinforcement/active stress
-      //
-      Sb += Tfa *  mat_dyad_prod(fl.col(0), fl.col(0), nsd); 
+//       // Fiber reinforcement/active stress
+//       //
+//       Sb += Tfa *  mat_dyad_prod(fl.col(0), fl.col(0), nsd); 
 
-      g1 = stM.aff*(1.0 + 2.0*stM.bff*Eff*Eff) * exp(stM.bff*Eff*Eff);
-      g2 = stM.ass*(1.0 + 2.0*stM.bss*Ess*Ess) * exp(stM.bss*Ess*Ess);
-      g1 = 4.0*J4d * g1;
-      g2 = 4.0*J4d * g2;
+//       g1 = stM.aff*(1.0 + 2.0*stM.bff*Eff*Eff) * exp(stM.bff*Eff*Eff);
+//       g2 = stM.ass*(1.0 + 2.0*stM.bss*Ess*Ess) * exp(stM.bss*Ess*Ess);
+//       g1 = 4.0*J4d * g1;
+//       g2 = 4.0*J4d * g2;
 
-      auto CCb = g1 * ten_dyad_prod(Hff, Hff, nsd) + g2 * ten_dyad_prod(Hss, Hss, nsd);
+//       auto CCb = g1 * ten_dyad_prod(Hff, Hff, nsd) + g2 * ten_dyad_prod(Hss, Hss, nsd);
 
-      double r1  = J2d*mat_ddot(C, Sb, nsd) / nd;
-      S = J2d*Sb - r1*Ci;
+//       double r1  = J2d*mat_ddot(C, Sb, nsd) / nd;
+//       S = J2d*Sb - r1*Ci;
 
-      auto PP = ten_ids(nsd) - (1.0/nd) * ten_dyad_prod(Ci, C, nsd);
-      CC = ten_ddot(CCb, PP, nsd);
-      CC = ten_transpose(CC, nsd);
-      CC = ten_ddot(PP, CC, nsd);
+//       auto PP = ten_ids(nsd) - (1.0/nd) * ten_dyad_prod(Ci, C, nsd);
+//       CC = ten_ddot(CCb, PP, nsd);
+//       CC = ten_transpose(CC, nsd);
+//       CC = ten_ddot(PP, CC, nsd);
 
-      CC = CC + 2.0*r1 * (ten_symm_prod(Ci, Ci, nsd) - 1.0/nd * ten_dyad_prod(Ci, Ci, nsd)) - 2.0/nd * (ten_dyad_prod(Ci, S, nsd) +
-          ten_dyad_prod(S, Ci, nsd));
-    } break; 
+//       CC = CC + 2.0*r1 * (ten_symm_prod(Ci, Ci, nsd) - 1.0/nd * ten_dyad_prod(Ci, Ci, nsd)) - 2.0/nd * (ten_dyad_prod(Ci, S, nsd) +
+//           ten_dyad_prod(S, Ci, nsd));
+//     } break; 
 
-    // Guccione (1995) transversely isotropic model
-    //
-    case ConstitutiveModelType::stIso_Gucci: {
-      if (nfd != 2) {
-        throw std::runtime_error("[get_pk2cc_dev] Min fiber directions not defined for Guccione material model.");
-      }
+//     // Guccione (1995) transversely isotropic model
+//     //
+//     case ConstitutiveModelType::stIso_Gucci: {
+//       if (nfd != 2) {
+//         throw std::runtime_error("[get_pk2cc_dev] Min fiber directions not defined for Guccione material model.");
+//       }
 
-      // Compute isochoric component of E
-      auto E = 0.5 * (J2d*C - IDm);
+//       // Compute isochoric component of E
+//       auto E = 0.5 * (J2d*C - IDm);
 
-      // Transform into local orthogonal coordinate system
-      Array<double> Rm(nsd,nsd);
-      Rm.set_col(0, fl.col(0));
-      Rm.set_col(1, fl.col(1));
-      Rm.set_col(2, cross(fl));
+//       // Transform into local orthogonal coordinate system
+//       Array<double> Rm(nsd,nsd);
+//       Rm.set_col(0, fl.col(0));
+//       Rm.set_col(1, fl.col(1));
+//       Rm.set_col(2, cross(fl));
 
-      // Project E to local orthogocal coordinate system
-      auto Es = mat_mul(E, Rm);
-      Es = mat_mul(transpose(Rm), Es);
+//       // Project E to local orthogocal coordinate system
+//       auto Es = mat_mul(E, Rm);
+//       Es = mat_mul(transpose(Rm), Es);
 
-      double g1 = stM.bff;
-      double g2 = stM.bss;
-      double g3 = stM.bfs;
+//       double g1 = stM.bff;
+//       double g2 = stM.bss;
+//       double g3 = stM.bfs;
 
-      auto QQ = g1 *  Es(0,0)*Es(0,0) + 
-                g2 * (Es(1,1)*Es(1,1)  +  Es(2,2)*Es(2,2)  +  Es(1,2)*Es(1,2) + Es(2,1)*Es(2,1)) + 
-                g3 * (Es(0,1)*Es(0,1)  +  Es(1,0)*Es(1,0)  +  Es(0,2)*Es(0,2) + Es(2,0)*Es(2,0));
+//       auto QQ = g1 *  Es(0,0)*Es(0,0) + 
+//                 g2 * (Es(1,1)*Es(1,1)  +  Es(2,2)*Es(2,2)  +  Es(1,2)*Es(1,2) + Es(2,1)*Es(2,1)) + 
+//                 g3 * (Es(0,1)*Es(0,1)  +  Es(1,0)*Es(1,0)  +  Es(0,2)*Es(0,2) + Es(2,0)*Es(2,0));
 
-      auto r2 = stM.C10 * exp(QQ);
+//       auto r2 = stM.C10 * exp(QQ);
 
-      // Fiber stiffness contribution := (dE*_ab / dE_IJ)
-      //
-      Array3<double> RmRm(nsd,nsd,6);
+//       // Fiber stiffness contribution := (dE*_ab / dE_IJ)
+//       //
+//       Array3<double> RmRm(nsd,nsd,6);
 
-      RmRm.set_slice(0, mat_dyad_prod(Rm.col(0), Rm.col(0), nsd));
-      RmRm.set_slice(1, mat_dyad_prod(Rm.col(1), Rm.col(1), nsd));
-      RmRm.set_slice(2, mat_dyad_prod(Rm.col(2), Rm.col(2), nsd));
+//       RmRm.set_slice(0, mat_dyad_prod(Rm.col(0), Rm.col(0), nsd));
+//       RmRm.set_slice(1, mat_dyad_prod(Rm.col(1), Rm.col(1), nsd));
+//       RmRm.set_slice(2, mat_dyad_prod(Rm.col(2), Rm.col(2), nsd));
 
-      RmRm.set_slice(3, mat_symm_prod(Rm.col(0), Rm.col(1), nsd));
-      RmRm.set_slice(4, mat_symm_prod(Rm.col(1), Rm.col(2), nsd));
-      RmRm.set_slice(5, mat_symm_prod(Rm.col(2), Rm.col(0), nsd));
+//       RmRm.set_slice(3, mat_symm_prod(Rm.col(0), Rm.col(1), nsd));
+//       RmRm.set_slice(4, mat_symm_prod(Rm.col(1), Rm.col(2), nsd));
+//       RmRm.set_slice(5, mat_symm_prod(Rm.col(2), Rm.col(0), nsd));
   
-      auto Sb = g1*Es(0,0)*RmRm.slice(0) + 
-               g2*(Es(1,1)*RmRm.slice(1) + Es(2,2)*RmRm.slice(2) + 2.0*Es(1,2)*RmRm.slice(4)) +
-           2.0*g3*(Es(0,1)*RmRm.slice(3) + Es(0,2)*RmRm.slice(5));
+//       auto Sb = g1*Es(0,0)*RmRm.slice(0) + 
+//                g2*(Es(1,1)*RmRm.slice(1) + Es(2,2)*RmRm.slice(2) + 2.0*Es(1,2)*RmRm.slice(4)) +
+//            2.0*g3*(Es(0,1)*RmRm.slice(3) + Es(0,2)*RmRm.slice(5));
 
-      auto CCb = 2.0*ten_dyad_prod(Sb, Sb, nsd);
-      Sb = Sb * r2;
+//       auto CCb = 2.0*ten_dyad_prod(Sb, Sb, nsd);
+//       Sb = Sb * r2;
 
-      // Fiber reinforcement/active stress
-      Sb += Tfa*mat_dyad_prod(fl.col(0), fl.col(0), nsd);
+//       // Fiber reinforcement/active stress
+//       Sb += Tfa*mat_dyad_prod(fl.col(0), fl.col(0), nsd);
 
-      double r1 = J2d*mat_ddot(C, Sb, nsd) / nd;
-      S = J2d*Sb - r1*Ci;
-      r2 = r2*J4d;
+//       double r1 = J2d*mat_ddot(C, Sb, nsd) / nd;
+//       S = J2d*Sb - r1*Ci;
+//       r2 = r2*J4d;
 
-      CCb = r2*(CCb + g1*ten_dyad_prod(RmRm.slice(0), RmRm.slice(0), nsd) + 
-                g2*(ten_dyad_prod(RmRm.slice(1), RmRm.slice(1), nsd) +
-                ten_dyad_prod(RmRm.slice(2), RmRm.slice(2), nsd) +
-                ten_dyad_prod(RmRm.slice(4), RmRm.slice(4), nsd)*2.0) +
-                2.0*g3*(ten_dyad_prod(RmRm.slice(3), RmRm.slice(3), nsd) +
-                ten_dyad_prod(RmRm.slice(5), RmRm.slice(5), nsd)));
+//       CCb = r2*(CCb + g1*ten_dyad_prod(RmRm.slice(0), RmRm.slice(0), nsd) + 
+//                 g2*(ten_dyad_prod(RmRm.slice(1), RmRm.slice(1), nsd) +
+//                 ten_dyad_prod(RmRm.slice(2), RmRm.slice(2), nsd) +
+//                 ten_dyad_prod(RmRm.slice(4), RmRm.slice(4), nsd)*2.0) +
+//                 2.0*g3*(ten_dyad_prod(RmRm.slice(3), RmRm.slice(3), nsd) +
+//                 ten_dyad_prod(RmRm.slice(5), RmRm.slice(5), nsd)));
 
-      auto PP  = ten_ids(nsd) - (1.0/nd) * ten_dyad_prod(Ci, C, nsd);
-      CC  = ten_ddot(CCb, PP, nsd);
-      CC = ten_transpose(CC, nsd);
-      CC = ten_ddot(PP, CC, nsd);
-      CC = CC + 2.0*r1 * (ten_symm_prod(Ci, Ci, nsd) -
-                          1.0/nd * ten_dyad_prod(Ci, Ci, nsd)) - 
-                          2.0/nd * (ten_dyad_prod(Ci, S, nsd) +
-                          ten_dyad_prod(S, Ci, nsd));
-    } break; 
+//       auto PP  = ten_ids(nsd) - (1.0/nd) * ten_dyad_prod(Ci, C, nsd);
+//       CC  = ten_ddot(CCb, PP, nsd);
+//       CC = ten_transpose(CC, nsd);
+//       CC = ten_ddot(PP, CC, nsd);
+//       CC = CC + 2.0*r1 * (ten_symm_prod(Ci, Ci, nsd) -
+//                           1.0/nd * ten_dyad_prod(Ci, Ci, nsd)) - 
+//                           2.0/nd * (ten_dyad_prod(Ci, S, nsd) +
+//                           ten_dyad_prod(S, Ci, nsd));
+//     } break; 
 
-    // HO (Holzapfel-Ogden) model for myocardium (2009)
-    //
-    case ConstitutiveModelType::stIso_HO: {
-      if (nfd != 2) {
-        throw std::runtime_error("[get_pk2cc_dev] Min fiber directions not defined for Holzapfel material model.");
-      }
+//     // HO (Holzapfel-Ogden) model for myocardium (2009)
+//     //
+//     case ConstitutiveModelType::stIso_HO: {
+//       if (nfd != 2) {
+//         throw std::runtime_error("[get_pk2cc_dev] Min fiber directions not defined for Holzapfel material model.");
+//       }
 
-      double Inv4 = J2d*norm(fl.col(0), mat_mul(C, fl.col(0)));
-      double Inv6 = J2d*norm(fl.col(1), mat_mul(C, fl.col(1)));
-      double Inv8 = J2d*norm(fl.col(0), mat_mul(C, fl.col(1)));
+//       double Inv4 = J2d*norm(fl.col(0), mat_mul(C, fl.col(0)));
+//       double Inv6 = J2d*norm(fl.col(1), mat_mul(C, fl.col(1)));
+//       double Inv8 = J2d*norm(fl.col(0), mat_mul(C, fl.col(1)));
 
-      double Eff = Inv4 - 1.0;
-      double Ess = Inv6 - 1.0;
-      double Efs = Inv8;
+//       double Eff = Inv4 - 1.0;
+//       double Ess = Inv6 - 1.0;
+//       double Efs = Inv8;
 
-      // Smoothed Heaviside function: 1 / (1 + exp(-kx)) = 1 - 1 / (1 + exp(kx))
-      double k = stM.khs;
-      double one_over_exp_plus_one_f = 1.0 / (exp(k * Eff) + 1.0);
-      double one_over_exp_plus_one_s = 1.0 / (exp(k * Ess) + 1.0);
-      double c4f  = 1.0 - one_over_exp_plus_one_f;
-      double c4s  = 1.0 - one_over_exp_plus_one_s;
+//       // Smoothed Heaviside function: 1 / (1 + exp(-kx)) = 1 - 1 / (1 + exp(kx))
+//       double k = stM.khs;
+//       double one_over_exp_plus_one_f = 1.0 / (exp(k * Eff) + 1.0);
+//       double one_over_exp_plus_one_s = 1.0 / (exp(k * Ess) + 1.0);
+//       double c4f  = 1.0 - one_over_exp_plus_one_f;
+//       double c4s  = 1.0 - one_over_exp_plus_one_s;
       
-      // Approx. derivative of smoothed heaviside function
-      //double dc4f = 0.25*stM.khs*exp(-stM.khs*abs(Eff));
-      //double dc4s = 0.25*stM.khs*exp(-stM.khs*abs(Ess));
+//       // Approx. derivative of smoothed heaviside function
+//       //double dc4f = 0.25*stM.khs*exp(-stM.khs*abs(Eff));
+//       //double dc4s = 0.25*stM.khs*exp(-stM.khs*abs(Ess));
 
-      // Exact first derivative of smoothed heaviside function (from Wolfram Alpha)
-      double dc4f = k * (one_over_exp_plus_one_f - pow(one_over_exp_plus_one_f,2));
-      double dc4s = k * (one_over_exp_plus_one_s - pow(one_over_exp_plus_one_s,2));
+//       // Exact first derivative of smoothed heaviside function (from Wolfram Alpha)
+//       double dc4f = k * (one_over_exp_plus_one_f - pow(one_over_exp_plus_one_f,2));
+//       double dc4s = k * (one_over_exp_plus_one_s - pow(one_over_exp_plus_one_s,2));
 
-      // Exact second derivative of smoothed heaviside function (from Wolfram Alpha)
-      double ddc4f = pow(k,2) * (-one_over_exp_plus_one_f + 3.0*pow(one_over_exp_plus_one_f,2) - 2.0*pow(one_over_exp_plus_one_f,3));
-      double ddc4s = pow(k,2) * (-one_over_exp_plus_one_s + 3.0*pow(one_over_exp_plus_one_s,2) - 2.0*pow(one_over_exp_plus_one_s,3));
+//       // Exact second derivative of smoothed heaviside function (from Wolfram Alpha)
+//       double ddc4f = pow(k,2) * (-one_over_exp_plus_one_f + 3.0*pow(one_over_exp_plus_one_f,2) - 2.0*pow(one_over_exp_plus_one_f,3));
+//       double ddc4s = pow(k,2) * (-one_over_exp_plus_one_s + 3.0*pow(one_over_exp_plus_one_s,2) - 2.0*pow(one_over_exp_plus_one_s,3));
 
-      // Isotropic + fiber-sheet interaction stress
-      double g1 = stM.a * exp(stM.b*(Inv1-3.0));
-      double g2 = 2.0 * stM.afs * exp(stM.bfs*Efs*Efs);
-      auto Hfs = mat_symm_prod(fl.col(0), fl.col(1), nsd);
-      auto Sb = g1*IDm + g2*Efs*Hfs;
+//       // Isotropic + fiber-sheet interaction stress
+//       double g1 = stM.a * exp(stM.b*(Inv1-3.0));
+//       double g2 = 2.0 * stM.afs * exp(stM.bfs*Efs*Efs);
+//       auto Hfs = mat_symm_prod(fl.col(0), fl.col(1), nsd);
+//       auto Sb = g1*IDm + g2*Efs*Hfs;
 
-      // Isotropic + fiber-sheet interaction stiffness
-      g1 = g1 * 2.0 * J4d * stM.b;
-      g2 = g2 * 2.0 * J4d * (1.0 + 2.0*stM.bfs*Efs*Efs);
-      auto CCb = g1 * ten_dyad_prod(IDm, IDm, nsd) + g2 * ten_dyad_prod(Hfs, Hfs, nsd);
+//       // Isotropic + fiber-sheet interaction stiffness
+//       g1 = g1 * 2.0 * J4d * stM.b;
+//       g2 = g2 * 2.0 * J4d * (1.0 + 2.0*stM.bfs*Efs*Efs);
+//       auto CCb = g1 * ten_dyad_prod(IDm, IDm, nsd) + g2 * ten_dyad_prod(Hfs, Hfs, nsd);
 
 
-      // Fiber-fiber interaction stress + additional reinforcement (Tfa)
-      double rexp = exp(stM.bff*Eff*Eff);
-      g1 = c4f * Eff * rexp;
-      g1 = g1 + (0.5*dc4f/stM.bff) * (rexp - 1.0);
-      g1 = 2.0 * stM.aff * g1 + Tfa;
-      auto Hff = mat_dyad_prod(fl.col(0), fl.col(0), nsd);
-      Sb  = Sb + g1*Hff;
+//       // Fiber-fiber interaction stress + additional reinforcement (Tfa)
+//       double rexp = exp(stM.bff*Eff*Eff);
+//       g1 = c4f * Eff * rexp;
+//       g1 = g1 + (0.5*dc4f/stM.bff) * (rexp - 1.0);
+//       g1 = 2.0 * stM.aff * g1 + Tfa;
+//       auto Hff = mat_dyad_prod(fl.col(0), fl.col(0), nsd);
+//       Sb  = Sb + g1*Hff;
 
-      // Fiber-fiber interaction stiffness
-      g1 = c4f * (1.0 + 2.0*stM.bff*Eff*Eff);
-      g1 = (g1 + 2.0*dc4f*Eff) * rexp;
-      g1 = g1 + (0.5*ddc4f/stM.bff)*(rexp - 1.0);
-      g1 = 4.0 * J4d * stM.aff * g1;
-      CCb = CCb + g1*ten_dyad_prod(Hff, Hff, nsd);
+//       // Fiber-fiber interaction stiffness
+//       g1 = c4f * (1.0 + 2.0*stM.bff*Eff*Eff);
+//       g1 = (g1 + 2.0*dc4f*Eff) * rexp;
+//       g1 = g1 + (0.5*ddc4f/stM.bff)*(rexp - 1.0);
+//       g1 = 4.0 * J4d * stM.aff * g1;
+//       CCb = CCb + g1*ten_dyad_prod(Hff, Hff, nsd);
 
-      // Sheet-sheet interaction stress + additional cross-fiber stress (Tsa)
-      rexp = exp(stM.bss*Ess*Ess);
-      g2 = c4s * Ess * rexp;
-      g2 = g2 + (0.5*dc4s/stM.bss) * (rexp - 1.0);
-      g2 = 2.0 * stM.ass * g2 + Tsa;
-      auto Hss = mat_dyad_prod(fl.col(1), fl.col(1), nsd);
-      Sb  = Sb + g2*Hss;
+//       // Sheet-sheet interaction stress + additional cross-fiber stress (Tsa)
+//       rexp = exp(stM.bss*Ess*Ess);
+//       g2 = c4s * Ess * rexp;
+//       g2 = g2 + (0.5*dc4s/stM.bss) * (rexp - 1.0);
+//       g2 = 2.0 * stM.ass * g2 + Tsa;
+//       auto Hss = mat_dyad_prod(fl.col(1), fl.col(1), nsd);
+//       Sb  = Sb + g2*Hss;
 
-      // Sheet-sheet interaction stiffness
-      g2 = c4s * (1.0 + 2.0*stM.bss*Ess*Ess);
-      g2 = (g2 + 2.0*dc4s*Ess) * rexp;
-      g2 = g2 + (0.5*ddc4s/stM.bss)*(rexp - 1.0);
-      g2 = 4.0 * J4d * stM.ass * g2;
-      CCb = CCb + g2*ten_dyad_prod(Hss, Hss, nsd);
+//       // Sheet-sheet interaction stiffness
+//       g2 = c4s * (1.0 + 2.0*stM.bss*Ess*Ess);
+//       g2 = (g2 + 2.0*dc4s*Ess) * rexp;
+//       g2 = g2 + (0.5*ddc4s/stM.bss)*(rexp - 1.0);
+//       g2 = 4.0 * J4d * stM.ass * g2;
+//       CCb = CCb + g2*ten_dyad_prod(Hss, Hss, nsd);
       
-      // Isochoric 2nd-Piola-Kirchoff stress and stiffness tensors
-      double r1 = J2d*mat_ddot(C, Sb, nsd) / nd;
-      S = J2d*Sb - r1*Ci;
+//       // Isochoric 2nd-Piola-Kirchoff stress and stiffness tensors
+//       double r1 = J2d*mat_ddot(C, Sb, nsd) / nd;
+//       S = J2d*Sb - r1*Ci;
 
-      auto PP = ten_ids(nsd) - (1.0/nd) * ten_dyad_prod(Ci, C, nsd);
-      CC = ten_ddot(CCb, PP, nsd);
-      CC = ten_transpose(CC, nsd);
-      CC = ten_ddot(PP, CC, nsd);
-      CC = CC + 2.0*r1 * (ten_symm_prod(Ci, Ci, nsd) - 1.0/nd * ten_dyad_prod(Ci, Ci, nsd)) -
-                2.0/nd * (ten_dyad_prod(Ci, S, nsd) + ten_dyad_prod(S, Ci, nsd));
+//       auto PP = ten_ids(nsd) - (1.0/nd) * ten_dyad_prod(Ci, C, nsd);
+//       CC = ten_ddot(CCb, PP, nsd);
+//       CC = ten_transpose(CC, nsd);
+//       CC = ten_ddot(PP, CC, nsd);
+//       CC = CC + 2.0*r1 * (ten_symm_prod(Ci, Ci, nsd) - 1.0/nd * ten_dyad_prod(Ci, Ci, nsd)) -
+//                 2.0/nd * (ten_dyad_prod(Ci, S, nsd) + ten_dyad_prod(S, Ci, nsd));
 
-      if (cep_mod.cem.aStrain) {
-        S = mat_fun::mat_mul(Fai, S);
-        S = mat_fun::mat_mul(S, mat_fun::transpose(Fai));
-        CCb = 0.0;
-        CCb = ten_dyad_prod(Fai, Fai, nsd);
-        CC = ten_ddot(CC, CCb, nsd);
-        CC = ten_ddot(CCb, CC, nsd);
-      }
+//       if (cep_mod.cem.aStrain) {
+//         S = mat_fun::mat_mul(Fai, S);
+//         S = mat_fun::mat_mul(S, mat_fun::transpose(Fai));
+//         CCb = 0.0;
+//         CCb = ten_dyad_prod(Fai, Fai, nsd);
+//         CC = ten_ddot(CC, CCb, nsd);
+//         CC = ten_ddot(CCb, CC, nsd);
+//       }
 
-    } break;
+//     } break;
 
-    //  HO (Holzapfel-Ogden)-MA model for myocardium with full invariants for the anisotropy terms (modified-anisotropy)
-    case ConstitutiveModelType::stIso_HO_ma: {
-      if (nfd != 2) {
-        //err = "Min fiber directions not defined for Holzapfel material model (2)"
-      }
-      double Inv4 = norm(fl.col(0), mat_mul(C, fl.col(0)));
-      double Inv6 = norm(fl.col(1), mat_mul(C, fl.col(1)));
-      double Inv8 = norm(fl.col(0), mat_mul(C, fl.col(1)));
+//     //  HO (Holzapfel-Ogden)-MA model for myocardium with full invariants for the anisotropy terms (modified-anisotropy)
+//     case ConstitutiveModelType::stIso_HO_ma: {
+//       if (nfd != 2) {
+//         //err = "Min fiber directions not defined for Holzapfel material model (2)"
+//       }
+//       double Inv4 = norm(fl.col(0), mat_mul(C, fl.col(0)));
+//       double Inv6 = norm(fl.col(1), mat_mul(C, fl.col(1)));
+//       double Inv8 = norm(fl.col(0), mat_mul(C, fl.col(1)));
 
-      //double fds = norm(fl.col(0),fl.col(1));
-      double Eff = Inv4 - 1.0;
-      double Ess = Inv6 - 1.0;
-      double Efs = Inv8;
+//       //double fds = norm(fl.col(0),fl.col(1));
+//       double Eff = Inv4 - 1.0;
+//       double Ess = Inv6 - 1.0;
+//       double Efs = Inv8;
 
-      // Smoothed Heaviside function: 1 / (1 + exp(-kx)) = 1 - 1 / (1 + exp(kx))
-      double k = stM.khs;
-      double one_over_exp_plus_one_f = 1.0 / (exp(k * Eff) + 1.0);
-      double one_over_exp_plus_one_s = 1.0 / (exp(k * Ess) + 1.0);
-      double c4f  = 1.0 - one_over_exp_plus_one_f;
-      double c4s  = 1.0 - one_over_exp_plus_one_s;
+//       // Smoothed Heaviside function: 1 / (1 + exp(-kx)) = 1 - 1 / (1 + exp(kx))
+//       double k = stM.khs;
+//       double one_over_exp_plus_one_f = 1.0 / (exp(k * Eff) + 1.0);
+//       double one_over_exp_plus_one_s = 1.0 / (exp(k * Ess) + 1.0);
+//       double c4f  = 1.0 - one_over_exp_plus_one_f;
+//       double c4s  = 1.0 - one_over_exp_plus_one_s;
       
-      // Approx. derivative of smoothed heaviside function
-      //double dc4f = 0.25*stM.khs*exp(-stM.khs*abs(Eff));
-      //double dc4s = 0.25*stM.khs*exp(-stM.khs*abs(Ess));
+//       // Approx. derivative of smoothed heaviside function
+//       //double dc4f = 0.25*stM.khs*exp(-stM.khs*abs(Eff));
+//       //double dc4s = 0.25*stM.khs*exp(-stM.khs*abs(Ess));
 
-      // Exact first derivative of smoothed heaviside function (from Wolfram Alpha)
-      double dc4f = k * (one_over_exp_plus_one_f - pow(one_over_exp_plus_one_f,2));
-      double dc4s = k * (one_over_exp_plus_one_s - pow(one_over_exp_plus_one_s,2));
+//       // Exact first derivative of smoothed heaviside function (from Wolfram Alpha)
+//       double dc4f = k * (one_over_exp_plus_one_f - pow(one_over_exp_plus_one_f,2));
+//       double dc4s = k * (one_over_exp_plus_one_s - pow(one_over_exp_plus_one_s,2));
 
-      // Exact second derivative of smoothed heaviside function (from Wolfram Alpha)
-      double ddc4f = pow(k,2) * (-one_over_exp_plus_one_f + 3.0*pow(one_over_exp_plus_one_f,2) - 2.0*pow(one_over_exp_plus_one_f,3));
-      double ddc4s = pow(k,2) * (-one_over_exp_plus_one_s + 3.0*pow(one_over_exp_plus_one_s,2) - 2.0*pow(one_over_exp_plus_one_s,3));
+//       // Exact second derivative of smoothed heaviside function (from Wolfram Alpha)
+//       double ddc4f = pow(k,2) * (-one_over_exp_plus_one_f + 3.0*pow(one_over_exp_plus_one_f,2) - 2.0*pow(one_over_exp_plus_one_f,3));
+//       double ddc4s = pow(k,2) * (-one_over_exp_plus_one_s + 3.0*pow(one_over_exp_plus_one_s,2) - 2.0*pow(one_over_exp_plus_one_s,3));
 
-      // Isochoric stress and stiffness
-      double g1 = stM.a * exp(stM.b*(Inv1-3.0));
-      auto Sb = g1*IDm;
-      double r1 = J2d/nd*mat_fun::mat_ddot(C, Sb, nsd);
+//       // Isochoric stress and stiffness
+//       double g1 = stM.a * exp(stM.b*(Inv1-3.0));
+//       auto Sb = g1*IDm;
+//       double r1 = J2d/nd*mat_fun::mat_ddot(C, Sb, nsd);
 
-      g1 = g1*2.0*J4d*stM.b;
-      auto CCb = g1 * ten_dyad_prod(IDm, IDm, nsd);
+//       g1 = g1*2.0*J4d*stM.b;
+//       auto CCb = g1 * ten_dyad_prod(IDm, IDm, nsd);
 
-      // Add isochoric stress and stiffness contribution
-      S = J2d*Sb - r1*Ci;
+//       // Add isochoric stress and stiffness contribution
+//       S = J2d*Sb - r1*Ci;
 
-      auto PP = ten_ids(nsd) - (1.0/nd) * ten_dyad_prod(Ci, C, nsd);
-      CC = ten_ddot(CCb, PP, nsd);
-      CC = ten_transpose(CC, nsd);
-      CC = ten_ddot(PP, CC, nsd);
-      CC = CC + 2.0*r1 * (ten_symm_prod(Ci, Ci, nsd) - 
-                1.0/nd * ten_dyad_prod(Ci, Ci, nsd)) 
-              - 2.0/nd * (ten_dyad_prod(Ci, S, nsd) + ten_dyad_prod(S, Ci, nsd));
+//       auto PP = ten_ids(nsd) - (1.0/nd) * ten_dyad_prod(Ci, C, nsd);
+//       CC = ten_ddot(CCb, PP, nsd);
+//       CC = ten_transpose(CC, nsd);
+//       CC = ten_ddot(PP, CC, nsd);
+//       CC = CC + 2.0*r1 * (ten_symm_prod(Ci, Ci, nsd) - 
+//                 1.0/nd * ten_dyad_prod(Ci, Ci, nsd)) 
+//               - 2.0/nd * (ten_dyad_prod(Ci, S, nsd) + ten_dyad_prod(S, Ci, nsd));
 
-      // Now add aniostropic components
-      // Fiber-sheet interaction terms
-      g1 = 2.0 * stM.afs * exp(stM.bfs*Efs*Efs);
-      auto Hfs = mat_symm_prod(fl.col(0), fl.col(1), nsd);
-      S  = S + g1*Efs*Hfs;
+//       // Now add aniostropic components
+//       // Fiber-sheet interaction terms
+//       g1 = 2.0 * stM.afs * exp(stM.bfs*Efs*Efs);
+//       auto Hfs = mat_symm_prod(fl.col(0), fl.col(1), nsd);
+//       S  = S + g1*Efs*Hfs;
 
-      g1 = g1 * 2.0*(1.0 + 2.0*stM.bfs*Efs*Efs);
+//       g1 = g1 * 2.0*(1.0 + 2.0*stM.bfs*Efs*Efs);
 
-      CC = CC + g1*ten_dyad_prod(Hfs, Hfs, nsd);
+//       CC = CC + g1*ten_dyad_prod(Hfs, Hfs, nsd);
 
-      // Fiber-fiber interaction stress + additional reinforcement (Tfa)
-      double rexp = exp(stM.bff * Eff * Eff);
-      g1 = c4f*Eff*rexp;
-      g1 = g1 + (0.5*dc4f/stM.bff)*(rexp - 1.0);
-      g1 = (2.0*stM.aff*g1) + Tfa;
-      auto Hff = mat_dyad_prod(fl.col(0), fl.col(0), nsd);
-      S  = S + g1*Hff;
+//       // Fiber-fiber interaction stress + additional reinforcement (Tfa)
+//       double rexp = exp(stM.bff * Eff * Eff);
+//       g1 = c4f*Eff*rexp;
+//       g1 = g1 + (0.5*dc4f/stM.bff)*(rexp - 1.0);
+//       g1 = (2.0*stM.aff*g1) + Tfa;
+//       auto Hff = mat_dyad_prod(fl.col(0), fl.col(0), nsd);
+//       S  = S + g1*Hff;
 
-      // Fiber-fiber interaction stiffness
-      g1 = c4f*(1.0 + (2.0*stM.bff*Eff*Eff));
-      g1 = (g1 + (2.0*dc4f*Eff))*rexp;
-      g1 = g1 + (0.5*ddc4f/stM.bff)*(rexp - 1.0);
-      g1 = 4.0*stM.aff*g1;
-      CC = CC + g1*ten_dyad_prod(Hff, Hff, nsd);
+//       // Fiber-fiber interaction stiffness
+//       g1 = c4f*(1.0 + (2.0*stM.bff*Eff*Eff));
+//       g1 = (g1 + (2.0*dc4f*Eff))*rexp;
+//       g1 = g1 + (0.5*ddc4f/stM.bff)*(rexp - 1.0);
+//       g1 = 4.0*stM.aff*g1;
+//       CC = CC + g1*ten_dyad_prod(Hff, Hff, nsd);
 
-      // Sheet-sheet interaction stress + additional cross-fiber stress (Tsa)
-      rexp = exp(stM.bss * Ess * Ess);
-      double g2 = c4s*Ess*rexp;
-      g2 = g2 + (0.5*dc4s/stM.bss)*(rexp - 1.0);
-      g2 = 2.0*stM.ass*g2 + Tsa;
-      auto Hss = mat_dyad_prod(fl.col(1), fl.col(1), nsd);
-      S  = S + g2*Hss;
+//       // Sheet-sheet interaction stress + additional cross-fiber stress (Tsa)
+//       rexp = exp(stM.bss * Ess * Ess);
+//       double g2 = c4s*Ess*rexp;
+//       g2 = g2 + (0.5*dc4s/stM.bss)*(rexp - 1.0);
+//       g2 = 2.0*stM.ass*g2 + Tsa;
+//       auto Hss = mat_dyad_prod(fl.col(1), fl.col(1), nsd);
+//       S  = S + g2*Hss;
 
-      // Sheet-sheet interaction stiffness
-      g2   = c4s*(1.0 + (2.0*stM.bss*Ess*Ess));
-      g2   = (g2 + (2.0*dc4s*Ess))*rexp;
-      g2 = g2 + (0.5*ddc4s/stM.bss)*(rexp - 1.0);
-      g2   = 4.0*stM.ass*g2;
-      CC = CC + g2*ten_dyad_prod(Hss, Hss, nsd);
-    } break;
+//       // Sheet-sheet interaction stiffness
+//       g2   = c4s*(1.0 + (2.0*stM.bss*Ess*Ess));
+//       g2   = (g2 + (2.0*dc4s*Ess))*rexp;
+//       g2 = g2 + (0.5*ddc4s/stM.bss)*(rexp - 1.0);
+//       g2   = 4.0*stM.ass*g2;
+//       CC = CC + g2*ten_dyad_prod(Hss, Hss, nsd);
+//     } break;
 
 
-    default: 
-      throw std::runtime_error("Undefined isochoric material constitutive model.");
-  } 
+//     default: 
+//       throw std::runtime_error("Undefined isochoric material constitutive model.");
+//   } 
 
-  //  Convert to Voigt Notation
-  cc_to_voigt(nsd, CC, Dm);
-}
+//   //  Convert to Voigt Notation
+//   cc_to_voigt(nsd, CC, Dm);
+// }
 
 /// @brief Compute 2nd Piola-Kirchhoff stress and material stiffness tensors
 /// for compressible shell elements.
@@ -1742,6 +1763,247 @@ void g_vol_pen(const ComMod& com_mod, const dmnType& lDmn, const double p,
     default:
     break;
   }
+}
+
+/**
+ * @brief Get the viscous PK2 stress and corresponding tangent matrix contributions for a solid
+ * with a viscous pseudo-potential model.
+ * This is defined by a viscous pseuo-potential
+ * Psi = mu/2 * tr(E_dot^2)
+ * The viscous 2nd Piola-Kirchhoff stress is given by
+ * Svis = dPsi/dE_dot 
+ *   = mu * E_dot
+ *   = mu * 1/2 * F^T * (grad(v) + grad(v)^T) * F
+ *   = mu * 1/2 * ( (F^T * Grad(v)) + (F^T * Grad(v))^T )
+ * 
+ * @tparam nsd Number of spatial dimensions
+ * @param mu Solid viscosity parameter
+ * @param eNoN Number of nodes in an element
+ * @param Nx Shape function gradient w.r.t. reference configuration coordinates (dN/dX)
+ * @param vx Velocity gradient matrix w.r.t reference configuration coordinates (dv/dX)
+ * @param F Deformation gradient matrix
+ * @param Svis Viscous 2nd Piola-Kirchhoff stress matrix
+ * @param Kvis_u Viscous tangent matrix contribution due to displacement
+ * @param Kvis_v Visous tangent matrix contribution due to velocity
+ */
+void get_visc_stress_pot(const double mu, const int eNoN, const Array<double>& Nx, const Array<double>& vx, const Array<double>& F,
+                        Array<double>& Svis, Array3<double>& Kvis_u, Array3<double>& Kvis_v) {
+
+    using namespace consts;
+    using namespace mat_fun;
+    using namespace utils;
+
+    // Number of spatial dimensions
+    int nsd = F.nrows();
+
+    // Initialize Svis, Kvis_u, Kvis_v to zero
+    Svis = 0.0;
+    Kvis_u = 0.0;
+    Kvis_v = 0.0;
+
+
+    // Required intermediate terms for stress and tangent
+    // double Ft[nsd][nsd] = {0}, vxt[nsd][nsd] = {0}, F_Ft[nsd][nsd] = {0}, Ft_vx[nsd][nsd] = {0}, F_vxt[nsd][nsd] = {0};
+    // mat_fun_carray::transpose<nsd>(F, Ft);
+    // mat_fun_carray::mat_mul<nsd>(F, Ft, F_Ft);
+    // mat_fun_carray::mat_mul<nsd>(Ft, vx, Ft_vx);
+    // mat_fun_carray::transpose<nsd>(vx, vxt);
+    // mat_fun_carray::mat_mul<nsd>(F, vxt, F_vxt);
+    auto Ft = transpose(F);
+    auto F_Ft = mat_mul(F, Ft);
+    auto Ft_vx = mat_mul(Ft, vx);
+    auto vxt = transpose(vx);
+    auto F_vxt = mat_mul(F, vxt);
+
+    //double F_Nx[nsd][eNoN] = {0}, vx_Nx[nsd][eNoN] = {0};
+    Array<double> F_Nx(nsd,eNoN), vx_Nx(nsd,eNoN);
+    
+    for (int a = 0; a < eNoN; ++a) {
+        for (int i = 0; i < nsd; ++i) {
+            for (int j = 0; j < nsd; ++j) {
+                F_Nx(i,a) += F(i,j) * Nx(j,a);
+                vx_Nx(i,a) += vx(i,j) * Nx(j,a);
+            }
+        }
+    }
+
+    // 2nd Piola-Kirchhoff stress due to viscosity
+    // Svis = mu * 1/2 * ( (F^T * dv/dX) + (F^T * dv/dX)^T )
+    // double Ft_vx_symm[nsd][nsd] = {0};
+    // mat_fun_carray::mat_symm<nsd>(Ft_vx, Ft_vx_symm);
+    // for (int i = 0; i < nsd; i++) {
+    //     for (int j = 0; j < nsd; j++) {
+    //         Svis(i,j) = mu * Ft_vx_symm[i][j];
+    //     }
+    // }
+    Svis = mu * mat_symm(Ft_vx, nsd);
+
+    // Tangent matrix contributions due to viscosity
+    for (int b = 0; b < eNoN; ++b) {
+        for (int a = 0; a < eNoN; ++a) {
+            double Nx_Nx = 0.0;
+            for (int i = 0; i < nsd; ++i) {
+                Nx_Nx += Nx(i,a) * Nx(i,b);
+            }
+
+            for (int i = 0; i < nsd; ++i) {
+                for (int j = 0; j < nsd; ++j) {
+                    int ii = i * nsd + j;
+                    Kvis_u(ii,a,b) = 0.5 * mu * (F_Nx(i,b) * vx_Nx(j,a) + Nx_Nx * F_vxt(i,j));
+                    Kvis_v(ii,a,b) = 0.5 * mu * (Nx_Nx * F_Ft(i,j) + F_Nx(i,b) * F_Nx(j,a));
+                }
+            }
+        }
+    }
+}
+
+/**
+ * @brief Get the viscous PK2 stress and corresponding tangent matrix contributions for a solid
+ * with a Newtonian fluid-like viscosity model.
+ * The viscous deviatoric Cauchy stress is given by
+ * sigma_vis_dev = 2 * mu * d_dev
+ * where d_dev = 1/2 * (grad(v) + grad(v)^T) - 1/3 * (div(v)) * I
+ * The viscous 2nd Piola-Kirchhoff stress is given by a pull-back operation
+ * Svis = 2 * mu * J * F^-1 * d_dev * F^-T
+ * 
+ * Note, there is likely an error/bug in the tangent contributions that leads to suboptimal nonlinear convergence
+ * 
+ * @tparam nsd Number of spatial dimensions
+ * @param mu Solid viscosity parameter
+ * @param eNoN Number of nodes in an element
+ * @param Nx Shape function gradient w.r.t. reference configuration coordinates (dN/dX)
+ * @param vx Velocity gradient matrix w.r.t reference configuration coordinates (dv/dX)
+ * @param F Deformation gradient matrix
+ * @param Svis Viscous 2nd Piola-Kirchhoff stress matrix
+ * @param Kvis_u Viscous tangent matrix contribution due to displacement
+ * @param Kvis_v Visous tangent matrix contribution due to velocity
+ */
+void get_visc_stress_newt(const double mu, const int eNoN, const Array<double>& Nx, const Array<double>& vx, const Array<double>& F,
+                           Array<double>& Svis, Array3<double>& Kvis_u, Array3<double>& Kvis_v) {
+    using namespace consts;
+    using namespace mat_fun;
+    using namespace utils;
+
+    // Number of spatial dimensions
+    int nsd = F.nrows();
+
+    // Initialize Svis, Kvis_u, Kvis_v to zero
+    Svis = 0.0;
+    Kvis_u = 0.0;
+    Kvis_v = 0.0;
+
+    // Get identity matrix, Jacobian, and F^-1
+    // double Idm[nsd][nsd] = {0};
+    // mat_fun_carray::mat_id<nsd>(Idm);
+    // double J = mat_fun_carray::mat_det<nsd>(F);
+    // double Fi[nsd][nsd] = {0};
+    // mat_fun_carray::mat_inv<nsd>(F, Fi); 
+    auto Idm = mat_id(nsd);
+    auto J = mat_det(F, nsd);
+    auto Fi = mat_inv(F, nsd);
+
+    // Required intermediate terms for stress and tangent
+    // double vx_Fi[nsd][nsd] = {0}, vx_Fi_symm[nsd][nsd] = {0}, ddev[nsd][nsd] = {0};
+    // // vx_Fi: Velocity gradient in current configuration          
+    // mat_fun_carray::mat_mul<nsd>(vx, Fi, vx_Fi);        
+    // mat_fun_carray::mat_symm<nsd>(vx_Fi, vx_Fi_symm);
+    // // ddev: Deviatoric part of rate of strain tensor
+    // mat_fun_carray::mat_dev<nsd>(vx_Fi_symm, ddev);
+    auto vx_Fi = mat_mul(vx, Fi);
+    auto vx_Fi_symm = mat_symm(vx_Fi, nsd);
+    auto ddev = mat_dev(vx_Fi_symm, nsd);
+    //double Nx_Fi[nsd][eNoN] = {0}, ddev_Nx_Fi[nsd][eNoN] = {0}, vx_Fi_Nx_Fi[nsd][eNoN] = {0};
+    Array<double> Nx_Fi(nsd,eNoN), ddev_Nx_Fi(nsd,eNoN), vx_Fi_Nx_Fi(nsd,eNoN);
+    for (int a = 0; a < eNoN; ++a) {
+        for (int i = 0; i < nsd; ++i) {
+            for (int j = 0; j < nsd; ++j) {
+                Nx_Fi(i,a) += Nx(j,a) * Fi(j,i);
+            }
+        }
+        // for (int i = 0; i < nsd; ++i) {
+        //   for (int j = 0; j < nsd; ++j) {
+        //       ddev_Nx_Fi(i,a) += ddev[i][j] * Nx_Fi(j,a);
+        //       vx_Fi_Nx_Fi(i,a) += vx_Fi[j][i] * Nx_Fi(j,a);
+        //   }
+        // }
+        ddev_Nx_Fi = mat_mul(ddev, Nx_Fi);
+        vx_Fi_Nx_Fi = mat_mul(vx_Fi, Nx_Fi);
+    }
+
+    // 2nd Piola-Kirchhoff stress due to viscosity
+    // Svis = 2 * mu * J * F^-1 * d_dev * F^-T
+    // double Fit[nsd][nsd] = {0};
+    // mat_fun_carray::transpose<nsd>(Fi, Fit);
+    // double ddev_Fit[nsd][nsd] = {0};
+    // mat_fun_carray::mat_mul<nsd>(ddev, Fit, ddev_Fit);
+    // double Fi_ddev_Fit[nsd][nsd] = {0};
+    // mat_fun_carray::mat_mul<nsd>(Fi, ddev_Fit, Fi_ddev_Fit);
+    // for (int i = 0; i < nsd; i++) {
+    //     for (int j = 0; j < nsd; j++) {
+    //         Svis(i,j) = 2.0 * mu * J * Fi_ddev_Fit[i][j];
+    //     }
+    // }
+    auto Fit = transpose(Fi);
+    auto ddev_Fit = mat_mul(ddev, Fit);
+    auto Fi_ddev_Fit = mat_mul(Fi, ddev_Fit);
+    Svis = 2.0 * mu * J * Fi_ddev_Fit;
+
+    // Tangent matrix contributions due to viscosity
+    double r2d = 2.0 / nsd;
+    for (int b = 0; b < eNoN; ++b) {
+        for (int a = 0; a < eNoN; ++a) {
+            double Nx_Fi_Nx_Fi = 0.0;
+            for (int i = 0; i < nsd; ++i) {
+                Nx_Fi_Nx_Fi += Nx_Fi(i,a) * Nx_Fi(i,b);
+            }
+
+            for (int i = 0; i < nsd; ++i) {
+                for (int j = 0; j < nsd; ++j) {
+                    int ii = i * nsd + j;
+
+                    // Derivative of the residual w.r.t displacement
+                    Kvis_u(ii,a,b) = mu * J * (2.0 * 
+                                    (ddev_Nx_Fi(i,a) * Nx_Fi(j,b) - ddev_Nx_Fi(i,b) * Nx_Fi(j,a)) -
+                                    (Nx_Fi_Nx_Fi * vx_Fi(i,j) + Nx_Fi(i,b) * vx_Fi_Nx_Fi(j,a) -
+                                    r2d * Nx_Fi(i,a) * vx_Fi_Nx_Fi(j,b)));
+
+                    // Derivative of the residual w.r.t velocity
+                    Kvis_v(ii,a,b) = mu * J * (Nx_Fi_Nx_Fi * Idm(i,j) +
+                                    Nx_Fi(i,b) * Nx_Fi(j,a) - r2d * Nx_Fi(i,a) * Nx_Fi(j,b));
+                }
+            }
+        }
+    }
+}
+
+
+/**
+ * @brief Get the solid viscous PK2 stress and corresponding tangent matrix contributions
+ * Calls the appropriate function based on the viscosity type, either viscous 
+ * pseudo-potential or Newtonian viscosity model.
+ * 
+ * @tparam nsd Number of spatial dimensions
+ * @param[in] lDmn Domain object
+ * @param[in] eNoN Number of nodes in an element
+ * @param[in] Nx Shape function gradient w.r.t. reference configuration coordinates (dN/dX)
+ * @param[in] vx Velocity gradient matrix w.r.t reference configuration coordinates (dv/dX)
+ * @param[in] F Deformation gradient matrix
+ * @param[out] Svis Viscous 2nd Piola-Kirchhoff stress matrix
+ * @param[out] Kvis_u Viscous tangent matrix contribution due to displacement
+ * @param[out] Kvis_v Viscous tangent matrix contribution due to velocity
+ */
+void get_visc_stress_and_tangent(const dmnType& lDmn, const int eNoN, const Array<double>& Nx, const  Array<double>& vx, const  Array<double>& F,
+                                 Array<double>& Svis, Array3<double>& Kvis_u, Array3<double>& Kvis_v) {
+
+    switch (lDmn.solid_visc.viscType) {
+      case consts::SolidViscosityModelType::viscType_Newtonian:
+        get_visc_stress_newt(lDmn.solid_visc.mu, eNoN, Nx, vx, F, Svis, Kvis_u, Kvis_v);
+      break;
+
+      case consts::SolidViscosityModelType::viscType_Potential:
+        get_visc_stress_pot(lDmn.solid_visc.mu, eNoN, Nx, vx, F, Svis, Kvis_u, Kvis_v);
+      break;
+    }
 }
 
 };
