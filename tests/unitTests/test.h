@@ -402,7 +402,7 @@ public:
 
         // Flag to use struct or ustruct material models
         // If struct, calls get_pk2cc() and uses strain energy composed of isochoric and volumetric parts
-        // If ustruct, calls get_pk2cc_dev() and uses strain energy composed of isochoric part only
+        // If ustruct, calls get_pk2cc() and uses strain energy composed of isochoric part only
         ustruct = false;
 
     // Material parameters are set in each derived class
@@ -418,7 +418,7 @@ public:
      * @brief Computes the PK2 stress tensor S and material elasticity tensor Dm for a given deformation gradient F.
      *
      * This function computes the PK2 stress tensor S and the material elasticity tensor Dm from the deformation gradient F.
-     * If `ustruct` is true, the deviatoric part of the PK2 stress tensor is returned using the `get_pk2cc_dev` function.
+     * If `ustruct` is true, the deviatoric part of the PK2 stress tensor is returned using the `get_pk2cc` function.
      *
      * @param[in] F The deformation gradient tensor.
      * @param[out] S The computed PK2 stress tensor.
