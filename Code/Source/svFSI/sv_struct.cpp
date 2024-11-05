@@ -536,13 +536,13 @@ void struct_2d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, 
       // Material stiffness: Bt*D*B
       BmDBm = Bm(0,1,a)*DBm(0,0) + Bm(1,1,a)*DBm(1,0) + Bm(2,1,a)*DBm(2,0);
 
-      lK(dof+0,a,b) = lK(dof+0,a,b) + w*( afu*(BmDBm + Kvis_u(dof+0,a,b)) + afv*Kvis_v(dof+0,a,b) );
+      lK(dof+0,a,b) = lK(dof+0,a,b) + w*( afu*(BmDBm + Kvis_u(2,a,b)) + afv*Kvis_v(2,a,b) );
 
       // dM2/du2
       // Material stiffness: Bt*D*B
       BmDBm = Bm(0,1,a)*DBm(0,1) + Bm(1,1,a)*DBm(1,1) + Bm(2,1,a)*DBm(2,1);
 
-      lK(dof+1,a,b) = lK(dof+1,a,b) + w*( T1 + afu*(BmDBm + Kvis_u(dof+1,a,b)) + afv*Kvis_v(dof+1,a,b) );
+      lK(dof+1,a,b) = lK(dof+1,a,b) + w*( T1 + afu*(BmDBm + Kvis_u(3,a,b)) + afv*Kvis_v(3,a,b) );
     }
   }
 }
@@ -1092,7 +1092,7 @@ void struct_3d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, 
               Bm(2,1,a)*DBm(2,0) + Bm(3,1,a)*DBm(3,0) +
               Bm(4,1,a)*DBm(4,0) + Bm(5,1,a)*DBm(5,0);
 
-      lK(dof+0,a,b) = lK(dof+0,a,b) + w*( afu*(BmDBm + Kvis_u(dof+0,a,b)) + afv*Kvis_v(dof+0,a,b) );
+      lK(dof+0,a,b) = lK(dof+0,a,b) + w*( afu*(BmDBm + Kvis_u(3,a,b)) + afv*Kvis_v(3,a,b) );
 
       // dM2/du2
       // Material stiffness: Bt*D*B
@@ -1100,7 +1100,7 @@ void struct_3d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, 
               Bm(2,1,a)*DBm(2,1) + Bm(3,1,a)*DBm(3,1) +
               Bm(4,1,a)*DBm(4,1) + Bm(5,1,a)*DBm(5,1);
 
-      lK(dof+1,a,b) = lK(dof+1,a,b) + w*(T1 + afu*(BmDBm + Kvis_u(dof+1,a,b)) + afv*Kvis_v(dof+1,a,b) );
+      lK(dof+1,a,b) = lK(dof+1,a,b) + w*(T1 + afu*(BmDBm + Kvis_u(4,a,b)) + afv*Kvis_v(4,a,b) );
 
       // dM2/du3
       // Material stiffness: Bt*D*B
@@ -1108,7 +1108,7 @@ void struct_3d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, 
               Bm(2,1,a)*DBm(2,2) + Bm(3,1,a)*DBm(3,2) +
               Bm(4,1,a)*DBm(4,2) + Bm(5,1,a)*DBm(5,2);
 
-      lK(dof+2,a,b) = lK(dof+2,a,b) + w*( afu*(BmDBm + Kvis_u(dof+2,a,b)) + afv*Kvis_v(dof+2,a,b) );
+      lK(dof+2,a,b) = lK(dof+2,a,b) + w*( afu*(BmDBm + Kvis_u(5,a,b)) + afv*Kvis_v(5,a,b) );
 
       // dM3/du1
       // Material stiffness: Bt*D*B
@@ -1116,7 +1116,7 @@ void struct_3d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, 
               Bm(2,2,a)*DBm(2,0) + Bm(3,2,a)*DBm(3,0) +
               Bm(4,2,a)*DBm(4,0) + Bm(5,2,a)*DBm(5,0);
 
-      lK(2*dof+0,a,b) = lK(2*dof+0,a,b) + w*( afu*(BmDBm + Kvis_u(2*dof+0,a,b)) + afv*Kvis_v(2*dof+0,a,b) );
+      lK(2*dof+0,a,b) = lK(2*dof+0,a,b) + w*( afu*(BmDBm + Kvis_u(6,a,b)) + afv*Kvis_v(6,a,b) );
 
       // dM3/du2
       // Material stiffness: Bt*D*B
@@ -1124,7 +1124,7 @@ void struct_3d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, 
               Bm(2,2,a)*DBm(2,1) + Bm(3,2,a)*DBm(3,1) +
               Bm(4,2,a)*DBm(4,1) + Bm(5,2,a)*DBm(5,1);
 
-     lK(2*dof+1,a,b) = lK(2*dof+1,a,b) + w*( afu*(BmDBm + Kvis_u(2*dof+1,a,b)) + afv*Kvis_v(2*dof+1,a,b) );
+     lK(2*dof+1,a,b) = lK(2*dof+1,a,b) + w*( afu*(BmDBm + Kvis_u(7,a,b)) + afv*Kvis_v(7,a,b) );
 
       // dM3/du3
       // Material stiffness: Bt*D*B
@@ -1132,7 +1132,7 @@ void struct_3d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, 
               Bm(2,2,a)*DBm(2,2) + Bm(3,2,a)*DBm(3,2) +
               Bm(4,2,a)*DBm(4,2) + Bm(5,2,a)*DBm(5,2);
 
-      lK(2*dof+2,a,b) = lK(2*dof+2,a,b) + w*( T1 + afu*(BmDBm + Kvis_u(2*dof+2,a,b)) + afv*Kvis_v(2*dof+2,a,b) );
+      lK(2*dof+2,a,b) = lK(2*dof+2,a,b) + w*( T1 + afu*(BmDBm + Kvis_u(8,a,b)) + afv*Kvis_v(8,a,b) );
     }
   }
 }
