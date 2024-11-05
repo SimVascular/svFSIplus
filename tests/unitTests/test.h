@@ -429,36 +429,39 @@ public:
     void get_pk2cc(const double F[3][3], double S[3][3], double Dm[6][6]) {
         auto &dmn = com_mod.mockEq.mockDmn;
 
-        if (ustruct) {
-            double J = 0; // Jacobian (not used in this function)
-
-            // Cast F, S, and Dm to Array<double> for use in get_pk2cc_dev
-            Array<double> F_arr(3,3);
-            Array<double> S_arr(3,3);
-            Array<double> Dm_arr(6,6);
-            for (int i = 0; i < 3; i++) {
-                for (int J = 0; J < 3; J++) {
+        // Cast F, S, and Dm to Array<double> for use in get_pk2cc
+        Array<double> F_arr(3,3);
+        Array<double> S_arr(3,3);
+        Array<double> Dm_arr(6,6);
+        for (int i = 0; i < 3; i++) {
+            for (int J = 0; J < 3; J++) {
                     F_arr(i, J) = F[i][J];
-                }
             }
-
-            mat_models::get_pk2cc_dev(com_mod, cep_mod, dmn, F_arr, nFn, fN, ya_g, S_arr, Dm_arr, J);
-
-            // Copy data from S_arr and Dm_arr to S and Dm
-            for (int I = 0; I < 3; I++) {
-                for (int J = 0; J < 3; J++) {
-                    S[I][J] = S_arr(I, J);
-                }
-            }
-            for (int I = 0; I < 6; I++) {
-                for (int J = 0; J < 6; J++) {
-                    Dm[I][J] = Dm_arr(I, J);
-                }
-            }
-
-        } else {
-            mat_models_carray::get_pk2cc<3>(com_mod, cep_mod, dmn, F, nFn, fN, ya_g, S, Dm);
         }
+
+        double J = 0; // Jacobian (not used in this testing)
+        
+        if (ustruct) {
+            dmn.phys = consts::EquationType::phys_ustruct;
+        } else {
+            dmn.phys = consts::EquationType::phys_struct;
+        }
+
+        // Call get_pk2cc to compute S and Dm
+        mat_models::get_pk2cc(com_mod, cep_mod, dmn, F_arr, nFn, fN, ya_g, S_arr, Dm_arr, J);
+
+         // Copy data from S_arr and Dm_arr to S and Dm
+        for (int I = 0; I < 3; I++) {
+            for (int J = 0; J < 3; J++) {
+                S[I][J] = S_arr(I, J);
+            }
+        }
+        for (int I = 0; I < 6; I++) {
+            for (int J = 0; J < 6; J++) {
+                Dm[I][J] = Dm_arr(I, J);
+            }
+        }
+
     }
 
        /**
