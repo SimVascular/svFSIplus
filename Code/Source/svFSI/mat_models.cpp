@@ -119,6 +119,55 @@ void cc_to_voigt(const int nsd, const Tensor4<double>& CC, Array<double>& Dm)
   } 
 }
 
+void voigt_to_cc(const int nsd, const Array<double>& Dm, Tensor4<double>& CC)
+{
+  if (nsd == 3) {
+    // Initialize the CC array with zeros
+    CC = 0.0;
+
+    // Voigt indices mapping
+    const int index_map[6][2] = {
+      {0, 0}, {1, 1}, {2, 2}, {0, 1}, {1, 2}, {2, 0}
+    };
+
+    // Fill in the CC array based on the Dm matrix
+    for (int I = 0; I < 6; ++I) {
+      for (int J = 0; J < 6; ++J) {
+        int i = index_map[I][0], j = index_map[I][1];
+        int k = index_map[J][0], l = index_map[J][1];
+        CC(i,j,k,l) = Dm(I,J);
+        CC(j,i,k,l) = Dm(I,J);
+        CC(i,j,l,k) = Dm(I,J);
+        CC(j,i,l,k) = Dm(I,J);
+      }
+    }
+
+  } else if (nsd == 2) { 
+    // Initialize the CC array with zeros
+    CC = 0.0;
+
+    // Voigt indices mapping for 2D
+    const int index_map[3][2] = {
+      {0, 0}, {1, 1}, {0, 1}
+    };
+
+    // Fill in the CC array based on the Dm matrix
+    for (int I = 0; I < 3; ++I) {
+      for (int J = 0; J < 3; ++J) {
+        int i = index_map[I][0], j = index_map[I][1];
+        int k = index_map[J][0], l = index_map[J][1];
+        CC(i,j,k,l) = Dm(I,J);
+        CC(i,j,l,k) = Dm(I,J);
+        CC(j,i,k,l) = Dm(I,J);
+        CC(j,i,l,k) = Dm(I,J);
+      }
+    }
+  }
+}
+
+
+
+
 /// @brief Compute additional fiber-reinforcement stress.
 ///
 /// Reproduces Fortran 'GETFIBSTRESS' subroutine.
@@ -208,6 +257,7 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
     Fe = mat_mul(F, Fai);
   }
 
+  Ja = mat_det(Fe, nsd);
   double J = mat_det(Fe, nsd);
   double J2d = pow(J, (-2.0/nd));
   double J4d = J2d*J2d;
@@ -578,9 +628,11 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
       CC = ten_ddot(CCb, PP, nsd);
       CC = ten_transpose(CC, nsd);
       CC = ten_ddot(PP, CC, nsd);
-      CC = CC + 2.0*r1 * (ten_symm_prod(Ci, Ci, nsd) - 
-                1.0/nd * ten_dyad_prod(Ci, Ci, nsd)) 
-              - 2.0/nd * (ten_dyad_prod(Ci, S, nsd) + ten_dyad_prod(S, Ci, nsd));
+
+      CC  = CC - (2.0/nd) * ( ten_dyad_prod(Ci, S, nsd) + ten_dyad_prod(S, Ci, nsd) );
+
+      S   = S + p*J*Ci;
+      CC  = CC + 2.0*(r1 - p*J) * ten_symm_prod(Ci, Ci, nsd) + (pl*J - 2.0*r1/nd) * ten_dyad_prod(Ci, Ci, nsd);
 
       // Now add aniostropic components
       // Fiber-sheet interaction terms

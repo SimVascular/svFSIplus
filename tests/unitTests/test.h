@@ -59,7 +59,6 @@
 #include "mat_fun.h"
 #include "mat_fun_carray.h"
 #include "mat_models.h"
-#include "mat_models_carray.h"
 
 // --------------------------------------------------------------
 // ---------------------- Helper functions ----------------------
@@ -1069,8 +1068,30 @@ public:
         // Compute CC(F) from get_pk2cc()
         double S[3][3], Dm[6][6];
         get_pk2cc(F, S, Dm);
+        
+        // Convert Dm to Array
+        Array<double> Dm_array(6, 6);
+        for (int i = 0; i < 6; i++) {
+            for (int j = 0; j < 6; j++) {
+                Dm_array(i, j) = Dm[i][j];
+            }
+        }
+        // Create Tensor for CC
+        Tensor4<double> CC_array(3, 3, 3, 3);
+
+        mat_models::voigt_to_cc(3, Dm_array, CC_array);
+
+        // Convert CC to C-array
         double CC[3][3][3][3];
-        mat_models_carray::voigt_to_cc_carray<3>(Dm, CC);
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                for (int k = 0; k < 3; k++) {
+                    for (int l = 0; l < 3; l++) {
+                        CC[i][j][k][l] = CC_array(i, j, k, l);
+                    }
+                }
+            }
+        }
 
         // Compute dE using finite difference, given dF
         double dE[3][3];
@@ -1114,14 +1135,41 @@ public:
         double S[3][3], Dm[6][6];
         get_pk2cc(F, S, Dm); // S from svFSI
 
+        // Convert Dm to Array
+        Array<double> Dm_array(6, 6);
+        for (int i = 0; i < 6; i++) {
+            for (int j = 0; j < 6; j++) {
+                Dm_array(i, j) = Dm[i][j];
+            }
+        }
         // Calculate CC from Dm
+        Tensor4<double> CC_array(3, 3, 3, 3);
+        mat_models::voigt_to_cc(3, Dm_array, CC_array);
+        
+        // Convert CC to C-array
         double CC[3][3][3][3];
-        mat_models_carray::voigt_to_cc_carray<3>(Dm, CC);
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                for (int k = 0; k < 3; k++) {
+                    for (int l = 0; l < 3; l++) {
+                        CC[i][j][k][l] = CC_array(i, j, k, l);
+                    }
+                }
+            }
+        }
     
         // ------- Ancillary test ---------
         // Calculate Dm_check from CC
+        Array<double> Dm_check_array(6, 6);
+        mat_models::cc_to_voigt(3, CC_array, Dm_check_array);
+
+        // Convert Dm_check to C-array
         double Dm_check[6][6];
-        mat_models_carray::cc_to_voigt_carray<3>(CC, Dm_check);
+        for (int i = 0; i < 6; i++) {
+            for (int j = 0; j < 6; j++) {
+                Dm_check[i][j] = Dm_check_array(i, j);
+            }
+        }
     
         // Check that Dm_check = Dm, for sanity
         for (int i = 0; i < 6; i++) {
@@ -1394,10 +1442,30 @@ public:
         // Compute CC(F) from get_pk2cc()
         double S[3][3], Dm[6][6];
         get_pk2cc(F, S, Dm);
-    
+
+        // Convert Dm to Array
+        Array<double> Dm_array(6, 6);
+        for (int i = 0; i < 6; i++) {
+            for (int j = 0; j < 6; j++) {
+                Dm_array(i, j) = Dm[i][j];
+            }
+        }
+
         // Calculate CC from Dm
+        Tensor4<double> CC_array(3, 3, 3, 3);
+        mat_models::voigt_to_cc(3, Dm_array, CC_array);
+
+        // Convert CC to C-array
         double CC[3][3][3][3];
-        mat_models_carray::voigt_to_cc_carray<3>(Dm, CC);
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                for (int k = 0; k < 3; k++) {
+                    for (int l = 0; l < 3; l++) {
+                        CC[i][j][k][l] = CC_array(i, j, k, l);
+                    }
+                }
+            }
+        }
     
         // Compare CC with reference solution
         for (int i = 0; i < 3; i++) {

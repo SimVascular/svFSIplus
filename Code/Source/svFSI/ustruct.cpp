@@ -52,7 +52,6 @@
 #include "fs.h"
 #include "mat_fun.h"
 #include "mat_models.h"
-#include "mat_models_carray.h"
 #include "nn.h"
 #include "utils.h"
 
