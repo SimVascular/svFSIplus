@@ -148,7 +148,7 @@ mpirun --mca psec ^munge -n #TotalNumberOfTasks ...
 <!--- =================================================================================== -->
 
 <h1 id="building"> Building the svFSIplus Program from Source </h1>
-The svFSIplus program can be compiled and linked from the GitHub source using a CMake build process. The build process creates a binary executable file named **svfsiplus**.
+The svFSIplus program can be compiled and linked from the GitHub source using a CMake build process. The build process creates a binary executable file named <b>svfsiplus</b>.
 
 ## Supported Platforms
 
