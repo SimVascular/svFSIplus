@@ -399,7 +399,7 @@ class fluidViscModelType
     // Limiting zero shear-rate viscosity value
     double mu_o = 0.0;
 
-    // Limiting high shear-rate viscosity (asymptotic) value
+    // Limiting high shear-rate viscosity (asymptotic) value (at infinity)
     double mu_i = 0.0;
 
     // Strain-rate tensor multiplier
@@ -849,7 +849,7 @@ class mshType
     /// @brief Global number of elements (knot spans)
     int gnEl = 0;
 
-    /// @brief Global number of nodes (control points)
+    /// @brief Global number of nodes (control points) on a single mesh
     int gnNo = 0;
 
     /// @brief Number of element face. Used for reading Gambit mesh files
@@ -936,7 +936,7 @@ class mshType
     /// @brief Bounds on parameteric coordinates
     Array<double> xib;
 
-    /// @brief Position coordinates
+    /// @brief Position coordinates (not always, however, as they get overwritten by read_vtu_pdata())
     Array<double> x;
 
     /// @brief Parent shape function
@@ -1396,6 +1396,7 @@ class ComMod {
 
     /// @brief Whether to use precomputed state-variable solutions
     bool usePrecomp = false;
+    
     //----- int members -----//
 
     /// @brief Current domain
@@ -1455,7 +1456,7 @@ class ComMod {
     /// @brief Total number of degrees of freedom per node
     int tDof = 0;
 
-    /// @brief Total number of nodes (number of nodes on current proc across
+    /// @brief Total number of nodes (total number of nodes on current processor across
     /// all meshes)
     int tnNo = 0;
 
@@ -1524,16 +1525,16 @@ class ComMod {
     /// @brief IB: iblank used for immersed boundaries (1 => solid, 0 => fluid)
     Vector<int> iblank;
 
-    /// @brief Old time derivative of variables (acceleration)
+    /// @brief Old time derivative of variables (acceleration); known result at current time step
     Array<double>  Ao;
 
-    /// @brief New time derivative of variables
+    /// @brief New time derivative of variables (acceleration); unknown result at next time step
     Array<double>  An;
 
-    /// @brief Old integrated variables (dissplacement)
+    /// @brief Old integrated variables (displacement)
     Array<double>  Do;
 
-    /// @brief New integrated variables
+    /// @brief New integrated variables (displacement)
     Array<double>  Dn;
 
     /// @brief Residual vector
@@ -1545,10 +1546,10 @@ class ComMod {
     /// @brief Position vector of mesh nodes (in ref config)
     Array<double>  x;
 
-    /// @brief Old variables (velocity)
+    /// @brief Old variables (velocity); known result at current time step
     Array<double>  Yo;
 
-    /// @brief New variables
+    /// @brief New variables (velocity); unknown result at next time step
     Array<double>  Yn;
 
     /// @brief Body force

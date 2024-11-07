@@ -1302,6 +1302,10 @@ void read_domain(Simulation* simulation, EquationParameters* eq_params, eqType& 
           case PhysicalProperyType::source_term:
             rtmp = domain_params->source_term.value();
           break;
+
+          case PhysicalProperyType::inverse_darcy_permeability:
+            rtmp = domain_params->inverse_darcy_permeability.value();
+          break;
         }
 
         lEq.dmn[iDmn].prop[prop] = rtmp;
@@ -2927,7 +2931,7 @@ void read_solid_visc_model(Simulation* simulation, EquationParameters* eq_params
 // Read CMM variable wall properties from a file.
 //
 // Modifies:
-//   com_mod.msh[iM.x - seems to use this as a scratch array.
+//   com_mod.msh[iM].x - seems to use this as a scratch array.
 //
 void read_wall_props_ff(ComMod& com_mod, const std::string& file_name, const int iM, const int iFa)
 {

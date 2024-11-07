@@ -60,6 +60,12 @@ def test_driven_cavity_2d(n_proc):
     run_with_reference(base_folder, test_folder, fields, n_proc, t_max)
 
 
+def test_driven_cavity_2d_porous(n_proc):
+    test_folder = "driven_cavity_2d_porous"
+    t_max = 2
+    run_with_reference(base_folder, test_folder, fields, n_proc, t_max)
+
+
 def test_dye_AD(n_proc):
     test_folder = "dye_AD"
     run_with_reference(base_folder, test_folder, fields, n_proc)

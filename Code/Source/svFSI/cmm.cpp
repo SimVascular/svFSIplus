@@ -529,7 +529,10 @@ void cmm_stiffness(ComMod& com_mod, const Array<double>& Nxi, const Array<double
   double ht, elM; 
 
   if (com_mod.cmmVarWall) {
+    // thickness
     ht = vwp[0];
+    
+    // elasticity modulus
     elM = vwp[1];
   } else { 
     ht = eq.dmn[cDmn].prop.at(PhysicalProperyType::shell_thickness);
@@ -871,7 +874,10 @@ void construct_cmm(ComMod& com_mod, const mshType& lM, const Array<double>& Ag, 
 
     if (cmmInit) {
       pSl = 0.0;
+      
+      // vwp = [thickness, elastic modulus], but averaged over the nodes on the element
       Vector<double> vwp(2);
+      
       for (int a = 0; a < eNoN; a++) {
         pSl = pSl + pS0l.col(a);
         vwp = vwp + vwpl.col(a);

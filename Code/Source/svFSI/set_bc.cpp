@@ -640,7 +640,7 @@ void set_bc_cmm_l(ComMod& com_mod, const CmMod& cm_mod, const faceType& lFa, con
 
     Vector<double> pSl(6), vwp(2); 
 
-    for (int a = 0; a < 3; a++) { 
+    for (int a = 0; a < 3; a++) {
       int Ac = lFa.IEN(a,e);
       ptr(a) = Ac;
 
