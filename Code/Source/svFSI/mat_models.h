@@ -38,6 +38,10 @@
 
 #include "mat_fun.h"
 
+#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Dense>
+#include <unsupported/Eigen/CXX11/Tensor>
+
 namespace mat_models {
 
 void actv_strain(const ComMod& com_mod, const CepMod& cep_mod, const double gf, 
@@ -49,8 +53,12 @@ void voigt_to_cc(const int nsd, const Array<double>& Dm, Tensor4<double>& CC);
 
 void get_fib_stress(const ComMod& com_mod, const CepMod& cep_mod, const fibStrsType& Tfl, double& g);
 
-void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn, const Array<double>& F, const int nfd,
-    const Array<double>& fl, const double ya, Array<double>& S, Array<double>& Dm, double& Ja);
+void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn, const Eigen::MatrixXd& F, const int nfd,
+    const Array<double>& fl, const double ya, Eigen::MatrixXd& S, Eigen::MatrixXd& Dm, double& Ja);
+
+template<size_t nsd>
+void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn, const Eigen::Matrix<double, nsd, nsd>& F, const int nfd,
+    const Array<double>& fl, const double ya, Eigen::Matrix<double, nsd, nsd>& S, Eigen::Matrix<double, nsd, nsd>& Dm, double& Ja);
 
 void get_pk2cc_shlc(const ComMod& com_mod, const dmnType& lDmn, const int nfd, const Array<double>& fNa0,
     const Array<double>& gg_0, const Array<double>& gg_x, double& g33, Vector<double>& Sml, Array<double>& Dml);

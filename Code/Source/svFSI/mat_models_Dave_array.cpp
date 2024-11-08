@@ -191,28 +191,32 @@ void get_fib_stress(const ComMod& com_mod, const CepMod& cep_mod, const fibStrsT
  * @brief Helper function to handle different number of spatial dimensions.
  * 
  */
-void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn, const Eigen::MatrixXd& F, const int nfd,
-    const Array<double> fl, const double ya, Eigen::MatrixXd& S, Eigen::MatrixXd& Dm, double& Ja)
+void get_pk2cc(const Eigen::MatrixXd& F, const Eigen::MatrixXd& fl, const double ya, Eigen::MatrixXd& S, Eigen::MatrixXd& Dm, double& Ja)
 {
   // Number of spatial dimensions
   int nsd = F.rows();
 
+  // Number of fiber directions
+  int nfd = fl.cols();
+
   if (nsd == 2) {
     Eigen::Matrix2d F_2D = F.topLeftCorner(2,2);
+    Eigen::Matrix2d fl_2D = fl.topLeftCorner(2,nfd);
     Eigen::Matrix2d S_2D = S.topLeftCorner(2,2);
     Eigen::Matrix2d Dm_2D = Dm.topLeftCorner(3,3);
 
-    _get_pk2cc<2>(com_mod, cep_mod, lDmn, F_2D, nfd, fl, ya, S_2D, Dm_2D, Ja);
+    _get_pk2cc<2>(F_2D, nfd, fl_2D, ya, S_2D, Dm_2D, Ja);
 
     S.topLeftCorner(2,2) = S_2D;
     Dm.topLeftCorner(3,3) = Dm_2D;
   }
   else if (nsd == 3) {
     Eigen::Matrix3d F_3D = F.topLeftCorner(3,3);
+    Eigen::Matrix3d fl_3D = fl.topLeftCorner(3,nfd);
     Eigen::Matrix3d S_3D = S.topLeftCorner(3,3);
     Eigen::Matrix3d Dm_3D = Dm.topLeftCorner(6,6);
 
-    _get_pk2cc<3>(com_mod, cep_mod, lDmn, F_3D, nfd, fl, ya, S_3D, Dm_3D, Ja);
+    _get_pk2cc<3>(F_3D, nfd, fl_3D, ya, S_3D, Dm_3D, Ja);
 
     S.topLeftCorner(3,3) = S_3D;
     Dm.topLeftCorner(6,6) = Dm_3D;
@@ -241,7 +245,7 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
  */
 template<size_t nsd>
 void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn, const Eigen::Matrix<double, nsd, nsd>& F, const int nfd,
-    const Array<double>& fl, const double ya, Eigen::Matrix<double, nsd, nsd>& S, Eigen::Matrix<double, nsd, nsd>& Dm, double& Ja)
+    const Eigen::Matrix& fl, const double ya, Eigen::Matrix<double, nsd, nsd>& S, Eigen::Matrix<double, nsd, nsd>& Dm, double& Ja)
 {
   using namespace consts;
   using namespace mat_fun;
@@ -262,8 +266,9 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
   bool ustruct = (lDmn.phys == EquationType::phys_ustruct);
 
 
-  S.setZero();
-  Dm.setZero();
+  int nsd = com_mod.nsd;
+  S = 0.0;
+  Dm = 0.0;
 
   // Some preliminaries
   const auto& stM = lDmn.stM;
@@ -282,23 +287,33 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
 
   // Electromechanics coupling - active strain
   auto Fe  = F;
-  auto Fa = Eigen::Matrix<double, nsd, nsd>::Identity();
+  auto Fa = mat_id(nsd);
   auto Fai = Fa;
 
+  if (cep_mod.cem.aStrain) {
+    actv_strain(com_mod, cep_mod, ya, nfd, fl, Fa);
+    Fai = mat_inv(Fa, nsd);
+    Fe = mat_mul(F, Fai);
+  }
 
-  Ja = Fa.determinant();
-  double J = Fe.determinant();
+  Ja = mat_det(Fa, nsd);
+  double J = mat_det(Fe, nsd);
   double J2d = pow(J, (-2.0/nd));
   double J4d = J2d*J2d;
 
-  auto Idm = Eigen::Matrix<double, nsd, nsd>::Identity();
-  auto C = Fe.transpose() * Fe;
-  auto E = 0.50 * (C - Idm);
+  auto Idm = mat_id(nsd);
+  auto C = mat_mul(transpose(Fe), Fe);
+  Array<double> E(nsd,nsd);
+  for (int i = 0; i < nsd; i++) {
+    for (int j = 0; j < nsd; j++) {
+      E(i,j) = 0.50 * (C(i,j) - Idm(i,j));
+    }
+  }
 
-  auto Ci = C.inverse();
-  double trE = E.trace();
-  double Inv1 = J2d * C.trace();
-  double Inv2 = 0.50 * (Inv1*Inv1 - J4d * (C*C).trace());
+  auto Ci = mat_inv(C, nsd);
+  double trE = mat_trace(E, nsd);
+  double Inv1 = J2d * mat_trace(C,nsd);
+  double Inv2 = 0.50 * (Inv1*Inv1 - J4d * mat_trace(mat_mul(C,C), nsd));
 
   // Contribution of dilational penalty terms to S and CC
   double p  = 0.0;
@@ -316,6 +331,42 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
   Eigen::Tensor<double, 4> CC(nsd,nsd,nsd,nsd);
 
   switch (stM.isoType) {
+    case ConstitutiveModelType::stIso_lin: {
+      if (ustruct) {
+        std::runtime_error("[get_pk2cc] Linear isotropic material model not valid for ustruct physics.");
+      }
+
+      double g1 = stM.C10;    // mu
+      S = g1*Idm;
+      return; 
+    } break;
+
+    // St.Venant-Kirchhoff
+    case ConstitutiveModelType::stIso_StVK: {
+      if (ustruct) {
+        std::runtime_error("[get_pk2cc] St.Venant-Kirchhoff material model not valid for ustruct physics.");
+      }
+      
+      double g1 = stM.C10;         // lambda
+      double g2 = stM.C01 * 2.0;   // 2*mu
+
+      S = g1*trE*Idm + g2*E;
+      CC = g1 * ten_dyad_prod(Idm, Idm, nsd) + g2*ten_ids(nsd);
+    } break;
+
+    // modified St.Venant-Kirchhoff
+    case ConstitutiveModelType::stIso_mStVK: {
+      if (ustruct) {
+        std::runtime_error("[get_pk2cc] Modified St.Venant-Kirchhoff material model not valid for ustruct physics.");
+      }
+
+      double g1 = stM.C10; // kappa
+      double g2 = stM.C01;  // mu
+
+      S = g1*log(J)*Ci + g2*(C-Idm);
+      CC = g1 * ( -2.0*log(J)*ten_symm_prod(Ci, Ci, nsd) +
+         ten_dyad_prod(Ci, Ci, nsd) ) + 2.0*g2*ten_ids(nsd);
+    } break;
 
     // NeoHookean model
     case ConstitutiveModelType::stIso_nHook: {
@@ -323,25 +374,352 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
       auto Sb = g1*Idm;
 
       // Fiber reinforcement/active stress
-      //Sb += Tfa * mat_dyad_prod(fl.col(0), fl.col(0), nsd);
+      Sb += Tfa * mat_dyad_prod(fl.col(0), fl.col(0), nsd);
 
       double r1 = g1 * Inv1 / nd;
       S = J2d*Sb - r1*Ci;
 
-      //CC = (-2.0/nd) * ( ten_dyad_prod(Ci, S, nsd) + ten_dyad_prod(S, Ci, nsd));
-      CC = (-2.0/nd) * (Ci * S.transpose() + S * Ci.transpose());
+      CC = (-2.0/nd) * ( ten_dyad_prod(Ci, S, nsd) + ten_dyad_prod(S, Ci, nsd));
       S += p*J*Ci;
-      //CC += 2.0*(r1 - p*J) * ten_symm_prod(Ci, Ci, nsd)  +  (pl*J - 2.0*r1/nd) * ten_dyad_prod(Ci, Ci, nsd);
-      //CC += 2.0*(r1 - p*J) * (Ci * Ci.transpose()).symmetricView() + (pl*J - 2.0*r1/nd) * (Ci * Ci.transpose());
+      CC += 2.0*(r1 - p*J) * ten_symm_prod(Ci, Ci, nsd)  +  (pl*J - 2.0*r1/nd) * ten_dyad_prod(Ci, Ci, nsd);
 
     } break;
 
-      default:
+    //  Mooney-Rivlin model
+    case ConstitutiveModelType::stIso_MR: {
+      double g1  = 2.0 * (stM.C10 + Inv1*stM.C01);
+      double g2  = -2.0 * stM.C01;
+      auto Sb = g1*Idm + g2*J2d*C;
+
+      // Fiber reinforcement/active stress
+      Sb = Sb + Tfa*mat_dyad_prod(fl.col(0), fl.col(0), nsd);
+
+      g1  = 4.0*J4d* stM.C01;
+      auto CCb = g1 * (ten_dyad_prod(Idm, Idm, nsd) - ten_ids(nsd));
+
+      double r1  = J2d*mat_ddot(C, Sb, nsd) / nd;
+      S = J2d*Sb - r1*Ci;
+
+      auto PP = ten_ids(nsd) - (1.0/nd) * ten_dyad_prod(Ci, C, nsd);
+      CC = ten_ddot(CCb, PP, nsd);
+      CC = ten_transpose(CC, nsd);
+      CC = ten_ddot(PP, CC, nsd);
+      CC = CC - (2.0/nd) * ( ten_dyad_prod(Ci, S, nsd) + ten_dyad_prod(S, Ci, nsd) );
+
+      S  = S + p*J*Ci;
+      CC = CC + 2.0*(r1 - p*J) * ten_symm_prod(Ci, Ci, nsd) + (pl*J - 2.0*r1/nd) * ten_dyad_prod(Ci, Ci, nsd);
+    } break;
+
+    // HGO (Holzapfel-Gasser-Ogden) model with additive splitting of
+    // the anisotropic fiber-based strain-energy terms
+    case ConstitutiveModelType::stIso_HGO: {
+      if (nfd != 2) {
+        throw std::runtime_error("[get_pk2cc] Min fiber directions not defined for HGO material model.");
+      }
+      double kap = stM.kap;
+      double Inv4 = J2d*utils::norm(fl.col(0), mat_mul(C, fl.col(0)));
+      double Inv6 = J2d*utils::norm(fl.col(1), mat_mul(C, fl.col(1)));
+
+      double Eff = kap*Inv1 + (1.0 - 3.0*kap)*Inv4 - 1.0;
+      double Ess = kap*Inv1 + (1.0 - 3.0*kap)*Inv6 - 1.0;
+
+      auto Hff = mat_dyad_prod(fl.col(0), fl.col(0), nsd);
+      Hff = kap*Idm + (1.0-3.0*kap)*Hff;
+      auto Hss = mat_dyad_prod(fl.col(1), fl.col(1), nsd);
+      Hss = kap*Idm + (1.0-3.0*kap)*Hss;
+
+      double g1 = stM.C10;
+      double g2 = stM.aff * Eff * exp(stM.bff*Eff*Eff);
+      double g3 = stM.ass * Ess * exp(stM.bss*Ess*Ess);
+      auto Sb = 2.0*(g1*Idm + g2*Hff + g3*Hss);
+
+      // Fiber reinforcement/active stress
+      Sb = Sb + Tfa*mat_dyad_prod(fl.col(0), fl.col(0), nsd);
+
+      g1 = stM.aff*(1.0 + 2.0*stM.bff*Eff*Eff)*exp(stM.bff*Eff*Eff);
+      g2 = stM.ass*(1.0 + 2.0*stM.bss*Ess*Ess)*exp(stM.bss*Ess*Ess);
+      g1 = 4.0*J4d*g1;
+      g2 = 4.0*J4d*g2;
+
+      auto CCb = g1 * ten_dyad_prod(Hff, Hff, nsd) + g2 * ten_dyad_prod(Hss, Hss, nsd);
+      double r1  = J2d*mat_ddot(C, Sb, nsd) / nd;
+      S = J2d*Sb - r1*Ci;
+
+      auto PP = ten_ids(nsd) - (1.0/nd) * ten_dyad_prod(Ci, C, nsd);
+      CC = ten_ddot(CCb, PP, nsd);
+      CC = ten_transpose(CC, nsd);
+      CC = ten_ddot(PP, CC, nsd);
+      CC = CC - (2.0/nd) * ( ten_dyad_prod(Ci, S, nsd) + ten_dyad_prod(S, Ci, nsd) );
+
+      S = S + p*J*Ci;
+      CC = CC + 2.0*(r1 - p*J) * ten_symm_prod(Ci, Ci, nsd) + (pl*J - 2.0*r1/nd) * ten_dyad_prod(Ci, Ci, nsd);
+    } break;
+
+    // Guccione (1995) transversely isotropic model
+    case ConstitutiveModelType::stIso_Gucci: {
+      if (nfd != 2) {
+        throw std::runtime_error("[get_pk2cc] Min fiber directions not defined for Guccione material model.");
+      }
+
+      // Compute isochoric component of E
+      auto E = 0.50 * (J2d*C - Idm);
+
+      // Transform into local orthogonal coordinate system
+      Array<double> Rm(nsd,nsd);
+
+      Rm.set_col(0, fl.col(0));
+      Rm.set_col(1, fl.col(1));
+      Rm.set_col(2, cross(fl));
+
+      // Project E to local orthogocal coordinate system
+      auto Es = mat_mul(E, Rm);
+      Es = mat_mul(transpose(Rm), Es);
+
+      double g1 = stM.bff;
+      double g2 = stM.bss;
+      double g3 = stM.bfs;
+
+      double QQ = g1 *  Es(0,0)*Es(0,0) + 
+                  g2 * (Es(1,1)*Es(1,1) + Es(2,2)*Es(2,2) + Es(1,2)*Es(1,2) + Es(2,1)*Es(2,1)) +
+                  g3 * (Es(0,1)*Es(0,1) + Es(1,0)*Es(1,0) + Es(0,2)*Es(0,2) + Es(2,0)*Es(2,0));
+
+      double r2 = stM.C10 * exp(QQ);
+
+      // Fiber stiffness contribution := (dE*_ab / dE_IJ)
+      Array3<double> RmRm(nsd,nsd,6);
+
+      RmRm.set_slice(0, mat_dyad_prod(Rm.col(0), Rm.col(0), nsd));
+      RmRm.set_slice(1, mat_dyad_prod(Rm.col(1), Rm.col(1), nsd));
+      RmRm.set_slice(2, mat_dyad_prod(Rm.col(2), Rm.col(2), nsd));
+
+      RmRm.set_slice(3, mat_symm_prod(Rm.col(0), Rm.col(1), nsd));
+      RmRm.set_slice(4, mat_symm_prod(Rm.col(1), Rm.col(2), nsd));
+      RmRm.set_slice(5, mat_symm_prod(Rm.col(2), Rm.col(0), nsd));
+
+      auto Sb = g1 *  Es(0,0) * RmRm.slice(0) + 
+                g2 * (Es(1,1) * RmRm.slice(1) + Es(2,2)*RmRm.slice(2) + 2.0*Es(1,2)*RmRm.slice(4)) +
+          2.0 * g3 * (Es(0,1) * RmRm.slice(3) + Es(0,2)*RmRm.slice(5));
+
+      auto CCb = 2.0*ten_dyad_prod(Sb, Sb, nsd);
+      Sb = Sb * r2;
+
+      // Fiber reinforcement/active stress
+      Sb = Sb + Tfa*mat_dyad_prod(fl.col(0), fl.col(0), nsd);
+
+      double r1 = J2d*mat_ddot(C, Sb, nsd) / nd;
+      S = J2d*Sb - r1*Ci;
+      r2  = r2*J4d;
+
+      CCb = r2*(CCb + g1 * ten_dyad_prod(RmRm.slice(0), RmRm.slice(0), nsd) + 
+                      g2 * (ten_dyad_prod(RmRm.slice(1), RmRm.slice(1), nsd) +
+                           ten_dyad_prod(RmRm.slice(2), RmRm.slice(2), nsd) +
+                           ten_dyad_prod(RmRm.slice(4), RmRm.slice(4), nsd)*2.0) +
+                2.0 * g3 * (ten_dyad_prod(RmRm.slice(3), RmRm.slice(3), nsd) +
+                ten_dyad_prod(RmRm.slice(5), RmRm.slice(5), nsd)));
+
+      auto PP = ten_ids(nsd) - (1.0/nd) * ten_dyad_prod(Ci, C, nsd);
+      CC = ten_ddot(CCb, PP, nsd);
+      CC  = ten_transpose(CC, nsd);
+      CC  = ten_ddot(PP, CC, nsd);
+      CC  = CC - (2.0/nd) * ( ten_dyad_prod(Ci, S, nsd) + ten_dyad_prod(S, Ci, nsd) );
+
+      S  = S + p*J*Ci;
+      CC = CC + 2.0*(r1 - p*J) * ten_symm_prod(Ci, Ci, nsd) + (pl*J - 2.0*r1/nd) * ten_dyad_prod(Ci, Ci, nsd);
+    } break;
+
+    //  HO (Holzapfel-Ogden) model for myocardium (2009)
+    case ConstitutiveModelType::stIso_HO: {
+      if (nfd != 2) {
+        throw std::runtime_error("[get_pk2cc] Min fiber directions not defined for Holzapfel material model.");
+      }
+      double Inv4 = J2d*utils::norm(fl.col(0), mat_mul(C, fl.col(0)));
+      double Inv6 = J2d*utils::norm(fl.col(1), mat_mul(C, fl.col(1)));
+      double Inv8 = J2d*utils::norm(fl.col(0), mat_mul(C, fl.col(1)));
+
+      double Eff = Inv4 - 1.0;
+      double Ess = Inv6 - 1.0;
+      double Efs = Inv8;
+
+      // Smoothed Heaviside function: 1 / (1 + exp(-kx)) = 1 - 1 / (1 + exp(kx))
+      double k = stM.khs;
+      double one_over_exp_plus_one_f = 1.0 / (exp(k * Eff) + 1.0);
+      double one_over_exp_plus_one_s = 1.0 / (exp(k * Ess) + 1.0);
+      double c4f  = 1.0 - one_over_exp_plus_one_f;
+      double c4s  = 1.0 - one_over_exp_plus_one_s;
+
+      // Exact first derivative of smoothed heaviside function (from Wolfram Alpha)
+      double dc4f = k * (one_over_exp_plus_one_f - pow(one_over_exp_plus_one_f,2));
+      double dc4s = k * (one_over_exp_plus_one_s - pow(one_over_exp_plus_one_s,2));
+
+      // Exact second derivative of smoothed heaviside function (from Wolfram Alpha)
+      double ddc4f = pow(k,2) * (-one_over_exp_plus_one_f + 3.0*pow(one_over_exp_plus_one_f,2) - 2.0*pow(one_over_exp_plus_one_f,3));
+      double ddc4s = pow(k,2) * (-one_over_exp_plus_one_s + 3.0*pow(one_over_exp_plus_one_s,2) - 2.0*pow(one_over_exp_plus_one_s,3));
+      
+      // Isotropic + fiber-sheet interaction stress
+      double g1 = stM.a * exp(stM.b*(Inv1-3.0));
+      double g2 = 2.0 * stM.afs * Efs * exp(stM.bfs*Efs*Efs);
+      auto Hfs = mat_symm_prod(fl.col(0), fl.col(1), nsd);
+      auto Sb = g1*Idm + g2*Hfs;
+
+      // Isotropic + fiber-sheet interaction stiffness
+      g1 = 2.0*J4d*stM.b*g1;
+      g2 = 4.0*J4d*stM.afs*(1.0 + 2.0*stM.bfs*Efs*Efs)* exp(stM.bfs*Efs*Efs);
+      auto CCb  = g1 * ten_dyad_prod(Idm, Idm, nsd) + g2 * ten_dyad_prod(Hfs, Hfs, nsd);
+
+      //  Fiber-fiber interaction stress + additional reinforcement (Tfa)
+      double rexp = exp(stM.bff*Eff*Eff);
+      g1 = c4f * Eff * rexp;
+      g1 = g1 + (0.5*dc4f/stM.bff) * (rexp - 1.0);
+      g1 = 2.0 * stM.aff * g1 + Tfa;
+      auto Hff = mat_dyad_prod(fl.col(0), fl.col(0), nsd);
+      Sb  = Sb + g1*Hff;
+
+      // Fiber-fiber interaction stiffness
+      g1 = c4f * (1.0 + 2.0*stM.bff*Eff*Eff);
+      g1 = (g1 + 2.0*dc4f*Eff) * rexp;
+      g1 = g1 + (0.5*ddc4f/stM.bff)*(rexp - 1.0);
+      g1 = 4.0 * J4d * stM.aff * g1;
+      CCb = CCb + g1*ten_dyad_prod(Hff, Hff, nsd);
+
+      // Sheet-sheet interaction stress + additional cross-fiber stress
+      rexp = exp(stM.bss*Ess*Ess);
+      g2 = c4s * Ess * rexp;
+      g2 = g2 + (0.5*dc4s/stM.bss) * (rexp - 1.0);
+      g2 = 2.0 * stM.ass * g2 + Tsa;
+      auto Hss = mat_dyad_prod(fl.col(1), fl.col(1), nsd);
+      Sb = Sb + g2 * Hss;
+
+      // Sheet-sheet interaction stiffness
+      g2 = c4s * (1.0 + 2.0 * stM.bss * Ess * Ess);
+      g2 = (g2 + 2.0*dc4s*Ess) * rexp;
+      g2 = g2 + (0.5*ddc4s/stM.bss)*(rexp - 1.0);
+      g2 = 4.0 * J4d * stM.ass * g2;
+      CCb = CCb + g2*ten_dyad_prod(Hss, Hss, nsd);
+
+      // Isochoric 2nd-Piola-Kirchhoff stress and stiffness tensors
+      double r1 = J2d*mat_ddot(C, Sb, nsd) / nd;
+      S  = J2d*Sb - r1*Ci;
+      auto PP = ten_ids(nsd) - (1.0/nd) * ten_dyad_prod(Ci, C, nsd);
+      
+      CC = ten_ddot(CCb, PP, nsd);
+      CC  = ten_transpose(CC, nsd);
+      CC  = ten_ddot(PP, CC, nsd);
+      CC  = CC - (2.0/nd) * ( ten_dyad_prod(Ci, S, nsd) + ten_dyad_prod(S, Ci, nsd) );
+
+      S   = S + p*J*Ci;
+      CC  = CC + 2.0*(r1 - p*J) * ten_symm_prod(Ci, Ci, nsd) + (pl*J - 2.0*r1/nd) * ten_dyad_prod(Ci, Ci, nsd);
+
+      if (cep_mod.cem.aStrain) {
+        S = mat_mul(Fai, S);
+        S = mat_mul(S, transpose(Fai));
+        CCb = 0.0;
+        CCb = ten_dyad_prod(Fai, Fai, nsd);
+        CC = ten_ddot_3424(CC, CCb, nsd);
+        CC = ten_ddot_2412(CCb, CC, nsd);
+      }
+    } break;
+
+    //  HO (Holzapfel-Ogden)-MA model for myocardium with full invariants for the anisotropy terms (modified-anisotropy)
+    case ConstitutiveModelType::stIso_HO_ma: {
+      if (nfd != 2) {
+        //err = "Min fiber directions not defined for Holzapfel material model (2)"
+      }
+      double Inv4 = norm(fl.col(0), mat_mul(C, fl.col(0)));
+      double Inv6 = norm(fl.col(1), mat_mul(C, fl.col(1)));
+      double Inv8 = norm(fl.col(0), mat_mul(C, fl.col(1)));
+
+      //double fds = norm(fl.col(0),fl.col(1));
+      double Eff = Inv4 - 1.0;
+      double Ess = Inv6 - 1.0;
+      double Efs = Inv8;
+
+      // Smoothed Heaviside function: 1 / (1 + exp(-kx)) = 1 - 1 / (1 + exp(kx))
+      double k = stM.khs;
+      double one_over_exp_plus_one_f = 1.0 / (exp(k * Eff) + 1.0);
+      double one_over_exp_plus_one_s = 1.0 / (exp(k * Ess) + 1.0);
+      double c4f  = 1.0 - one_over_exp_plus_one_f;
+      double c4s  = 1.0 - one_over_exp_plus_one_s;
+      
+      // Approx. derivative of smoothed heaviside function
+      //double dc4f = 0.25*stM.khs*exp(-stM.khs*abs(Eff));
+      //double dc4s = 0.25*stM.khs*exp(-stM.khs*abs(Ess));
+
+      // Exact first derivative of smoothed heaviside function (from Wolfram Alpha)
+      double dc4f = k * (one_over_exp_plus_one_f - pow(one_over_exp_plus_one_f,2));
+      double dc4s = k * (one_over_exp_plus_one_s - pow(one_over_exp_plus_one_s,2));
+
+      // Exact second derivative of smoothed heaviside function (from Wolfram Alpha)
+      double ddc4f = pow(k,2) * (-one_over_exp_plus_one_f + 3.0*pow(one_over_exp_plus_one_f,2) - 2.0*pow(one_over_exp_plus_one_f,3));
+      double ddc4s = pow(k,2) * (-one_over_exp_plus_one_s + 3.0*pow(one_over_exp_plus_one_s,2) - 2.0*pow(one_over_exp_plus_one_s,3));
+
+      // Isochoric stress and stiffness
+      double g1 = stM.a * exp(stM.b*(Inv1-3.0));
+      auto Sb = g1*Idm;
+      double r1 = J2d/nd*mat_ddot(C, Sb, nsd);
+
+      g1 = g1*2.0*J4d*stM.b;
+      auto CCb = g1 * ten_dyad_prod(Idm, Idm, nsd);
+
+      // Add isochoric stress and stiffness contribution
+      S = J2d*Sb - r1*Ci;
+
+      auto PP = ten_ids(nsd) - (1.0/nd) * ten_dyad_prod(Ci, C, nsd);
+      CC = ten_ddot(CCb, PP, nsd);
+      CC = ten_transpose(CC, nsd);
+      CC = ten_ddot(PP, CC, nsd);
+
+      CC  = CC - (2.0/nd) * ( ten_dyad_prod(Ci, S, nsd) + ten_dyad_prod(S, Ci, nsd) );
+
+      S   = S + p*J*Ci;
+      CC  = CC + 2.0*(r1 - p*J) * ten_symm_prod(Ci, Ci, nsd) + (pl*J - 2.0*r1/nd) * ten_dyad_prod(Ci, Ci, nsd);
+
+      // Now add aniostropic components
+      // Fiber-sheet interaction terms
+      g1 = 2.0 * stM.afs * exp(stM.bfs*Efs*Efs);
+      auto Hfs = mat_symm_prod(fl.col(0), fl.col(1), nsd);
+      S  = S + g1*Efs*Hfs;
+
+      g1 = g1 * 2.0*(1.0 + 2.0*stM.bfs*Efs*Efs);
+
+      CC = CC + g1*ten_dyad_prod(Hfs, Hfs, nsd);
+
+      // Fiber-fiber interaction stress + additional reinforcement (Tfa)
+      double rexp = exp(stM.bff * Eff * Eff);
+      g1 = c4f*Eff*rexp;
+      g1 = g1 + (0.5*dc4f/stM.bff)*(rexp - 1.0);
+      g1 = (2.0*stM.aff*g1) + Tfa;
+      auto Hff = mat_dyad_prod(fl.col(0), fl.col(0), nsd);
+      S  = S + g1*Hff;
+
+      // Fiber-fiber interaction stiffness
+      g1 = c4f*(1.0 + (2.0*stM.bff*Eff*Eff));
+      g1 = (g1 + (2.0*dc4f*Eff))*rexp;
+      g1 = g1 + (0.5*ddc4f/stM.bff)*(rexp - 1.0);
+      g1 = 4.0*stM.aff*g1;
+      CC = CC + g1*ten_dyad_prod(Hff, Hff, nsd);
+
+      // Sheet-sheet interaction stress + additional cross-fiber stress (Tsa)
+      rexp = exp(stM.bss * Ess * Ess);
+      double g2 = c4s*Ess*rexp;
+      g2 = g2 + (0.5*dc4s/stM.bss)*(rexp - 1.0);
+      g2 = 2.0*stM.ass*g2 + Tsa;
+      auto Hss = mat_dyad_prod(fl.col(1), fl.col(1), nsd);
+      S  = S + g2*Hss;
+
+      // Sheet-sheet interaction stiffness
+      g2   = c4s*(1.0 + (2.0*stM.bss*Ess*Ess));
+      g2   = (g2 + (2.0*dc4s*Ess))*rexp;
+      g2 = g2 + (0.5*ddc4s/stM.bss)*(rexp - 1.0);
+      g2   = 4.0*stM.ass*g2;
+      CC = CC + g2*ten_dyad_prod(Hss, Hss, nsd);
+    } break;
+
+    default:
       throw std::runtime_error("Undefined material constitutive model.");
   } 
 
   // Convert to Voigt Notation
-  //cc_to_voigt(nsd, CC, Dm);
+  cc_to_voigt(nsd, CC, Dm);
 }
 
 
