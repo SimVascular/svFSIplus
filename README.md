@@ -1,7 +1,7 @@
 # svFSIplus
 
 [![Build Status (Ubuntu)](https://github.com/SimVascular/svFSIplus/actions/workflows/test_ubuntu.yml/badge.svg)](https://github.com/SimVascular/svFSIplus/actions)
-[![Build Status (macOS)](https://github.com/SimVascular/svFSIplus/actions/workflows/test_macOS.yml/badge.svg)](https://github.com/SimVascular/svFSIplus/actions)
+[![Build Status (macOS)](https://github.com/SimVascular/svFSIplus/actions/workflows/test_macos.yml/badge.svg)](https://github.com/SimVascular/svFSIplus/actions)
 [![codecov](https://codecov.io/github/SimVascular/svFSIplus/graph/badge.svg?token=I848DNIHSP)](https://codecov.io/github/SimVascular/svFSIplus)
 ![Latest Release](https://img.shields.io/github/v/release/SimVascular/svFSIplus?label=latest)
 ![Platform](https://img.shields.io/badge/platform-macOS%20|%20linux-blue)
