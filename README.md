@@ -1,6 +1,7 @@
 # svFSIplus
 
-[![Build Status](https://github.com/SimVascular/svFSIplus/actions/workflows/test.yml/badge.svg)](https://github.com/SimVascular/svFSIplus/actions)
+[![Build Status (Ubuntu)](https://github.com/SimVascular/svFSIplus/actions/workflows/test_ubuntu.yml/badge.svg)](https://github.com/SimVascular/svFSIplus/actions)
+[![Build Status (macOS)](https://github.com/SimVascular/svFSIplus/actions/workflows/test_macOS.yml/badge.svg)](https://github.com/SimVascular/svFSIplus/actions)
 [![codecov](https://codecov.io/github/SimVascular/svFSIplus/graph/badge.svg?token=I848DNIHSP)](https://codecov.io/github/SimVascular/svFSIplus)
 ![Latest Release](https://img.shields.io/github/v/release/SimVascular/svFSIplus?label=latest)
 ![Platform](https://img.shields.io/badge/platform-macOS%20|%20linux-blue)
@@ -34,7 +35,7 @@ The [svFSIplus Internal Code Documentation](https://simvascular.github.io/svfsip
 <!--- =================================================================================== -->
 
 <h1 id="docker_container">  Docker </h1>
-The preferred way to use svFSIplus, is to take advantage of the provided Docker container, which include the latest version of svFSIplus pre-compiled. To use this option, Docker must be installed first. Please refer to [Docker webpage](https://www.docker.com/products/docker-desktop/) to know more about Docker and how to install it on your machine. The following steps describe how to build a Docker image or pull an existent one from DockerHub, and how to run a Docker container. The last section is a brief guide to perform the same steps but in Singularity, since HPC systems usually use Singularity to handle containers.
+The preferred way to use svFSIplus on an HPC system, is to take advantage of the provided Docker container, which include the latest version of svFSIplus pre-compiled. To use this option, Docker must be installed first. Please refer to [Docker webpage](https://www.docker.com/products/docker-desktop/) to know more about Docker and how to install it on your machine. The following steps describe how to build a Docker image or pull an existent one from DockerHub, and how to run a Docker container. The last section is a brief guide to perform the same steps but in Singularity, since HPC systems usually use Singularity to handle containers.
 
 ## Docker image
 A Docker image is a read-only template that may contain dependencies, libraries, and everything needed to run a program. It is like a snapshot of a particular environment. 
