@@ -36,6 +36,7 @@
 */
 
 #include "consts.h"
+
 #include "utils.h"
 
 #include <math.h>
@@ -828,6 +829,23 @@ ten_dyad_prod(const Array<double>& A, const Array<double>& B, const int nd)
   return C;
 }
 
+
+Eigen::Tensor<double, 4> ten_dyad_prod_eigen(const Eigen::Tensor<double, 2>& A, const Eigen::Tensor<double, 2>& B, const int nsd) {
+
+    Eigen::Tensor<double, 4> C(nsd, nsd, nsd, nsd);
+    
+    for (int i = 0; i < nsd; ++i) {
+        for (int j = 0; j < nsd; ++j) {
+            for (int k = 0; k < nsd; ++k) {
+                for (int l = 0; l < nsd; ++l) {
+                    C(i, j, k, l) = A(i, j) * B(k, l);
+                }
+            }
+        }
+    }
+    
+    return C;
+}
 /// @brief Create a 4th order order symmetric identity tensor
 //
 Tensor4<double>

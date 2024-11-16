@@ -30,6 +30,9 @@
 
 #ifndef MAT_FUN_H 
 #define MAT_FUN_H 
+#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Dense>
+#include <unsupported/Eigen/CXX11/Tensor>
 
 #include "Array.h"
 #include "Tensor4.h"
@@ -69,6 +72,7 @@ namespace mat_fun {
     Tensor4<double> ten_ddot_3424(const Tensor4<double>& A, const Tensor4<double>& B, const int nd);
 
     Tensor4<double> ten_dyad_prod(const Array<double>& A, const Array<double>& B, const int nd);
+    Eigen::Tensor<double, 4> ten_dyad_prod_eigen(const Eigen::Tensor<double, 2>& A, const Eigen::Tensor<double, 2>& B, const int nsd);
     Tensor4<double> ten_ids(const int nd);
     Array<double> ten_mddot(const Tensor4<double>& A, const Array<double>& B, const int nd);
 
