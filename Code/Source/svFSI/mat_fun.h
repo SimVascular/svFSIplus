@@ -30,9 +30,9 @@
 
 #ifndef MAT_FUN_H 
 #define MAT_FUN_H 
-#include <eigen3/Eigen/Core>
-#include <eigen3/Eigen/Dense>
-#include <unsupported/Eigen/CXX11/Tensor>
+#include "eigen3/Eigen/Core"
+#include "eigen3/Eigen/Dense"
+#include "eigen3/unsupported/Eigen/CXX11/Tensor"
 #include <stdexcept>
 
 #include "Array.h"
