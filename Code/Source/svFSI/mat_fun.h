@@ -33,6 +33,7 @@
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/Dense>
 #include <unsupported/Eigen/CXX11/Tensor>
+#include <stdexcept>
 
 #include "Array.h"
 #include "Tensor4.h"
@@ -46,6 +47,32 @@
 /// \todo [TODO:DaveP] this should just be a namespace?
 //
 namespace mat_fun {
+    // Helper function to convert Array<double> to Eigen::Matrix
+    template <typename MatrixType>
+    MatrixType toEigenMatrix(const Array<double>& src) {
+        MatrixType mat;
+        for (int i = 0; i < mat.rows(); ++i)
+            for (int j = 0; j < mat.cols(); ++j)
+                mat(i, j) = src(i, j);
+        return mat;
+    }
+
+    // Helper function to convert Eigen::Matrix to Array<double>
+    template <typename MatrixType>
+    void toArray(const MatrixType& mat, Array<double>& dest) {
+        for (int i = 0; i < mat.rows(); ++i)
+            for (int j = 0; j < mat.cols(); ++j)
+                dest(i, j) = mat(i, j);
+    }
+
+    // Helper function to convert a higher-dimensional array like Dm
+    template <typename MatrixType>
+    void copyDm(const MatrixType& mat, Array<double>& dest, int rows, int cols) {
+        for (int i = 0; i < rows; ++i)
+            for (int j = 0; j < cols; ++j)
+                dest(i, j) = mat(i, j);
+    }
+
     double mat_ddot(const Array<double>& A, const Array<double>& B, const int nd);
     double mat_det(const Array<double>& A, const int nd);
     Array<double> mat_dev(const Array<double>& A, const int nd);
@@ -72,11 +99,56 @@ namespace mat_fun {
     Tensor4<double> ten_ddot_3424(const Tensor4<double>& A, const Tensor4<double>& B, const int nd);
 
     Tensor4<double> ten_dyad_prod(const Array<double>& A, const Array<double>& B, const int nd);
-    Eigen::Tensor<double, 4> ten_dyad_prod_eigen(const Eigen::Tensor<double, 2>& A, const Eigen::Tensor<double, 2>& B, const int nsd);
+    
+    template <int nsd>
+    Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>> 
+    ten_dyad_prod_eigen(const Eigen::Matrix<double, nsd, nsd>& A, const Eigen::Matrix<double, nsd, nsd>& B) {
+        // Create a fixed-size tensor to store the result
+        Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>> C;
+
+        // Perform the dyadic product (outer product) and assign values to the tensor
+        for (int i = 0; i < nsd; ++i) {
+            for (int j = 0; j < nsd; ++j) {
+                for (int k = 0; k < nsd; ++k) {
+                    for (int l = 0; l < nsd; ++l) {
+                        C(i, j, k, l) = A(i, j) * B(k, l);
+                    }
+                }
+            }
+        }
+
+        return C;
+    }
+
     Tensor4<double> ten_ids(const int nd);
     Array<double> ten_mddot(const Tensor4<double>& A, const Array<double>& B, const int nd);
 
     Tensor4<double> ten_symm_prod(const Array<double>& A, const Array<double>& B, const int nd);
+    
+    /// @brief Create a 4th order tensor from symmetric outer product of two matrices.
+    ///
+    /// Reproduces 'FUNCTION TEN_SYMMPROD(A, B, nd) RESULT(C)'.
+    //
+    template <int nsd>
+    Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>>
+    ten_symm_prod_eigen(const Eigen::Matrix<double, nsd, nsd>& A, const Eigen::Matrix<double, nsd, nsd>& B) {
+        // Create a fixed-size tensor to store the result
+        Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>> C;
+
+        // Perform the symmetric product and assign values to the tensor
+        for (int i = 0; i < nsd; ++i) {
+            for (int j = 0; j < nsd; ++j) {
+                for (int k = 0; k < nsd; ++k) {
+                    for (int l = 0; l < nsd; ++l) {
+                        C(i, j, k, l) = 0.5 * (A(i, k) * B(j, l) + A(i, l) * B(j, k));
+                    }
+                }
+            }
+        }
+
+        return C;
+    }
+
     Tensor4<double> ten_transpose(const Tensor4<double>& A, const int nd);
 
     Array<double> transpose(const Array<double>& A);

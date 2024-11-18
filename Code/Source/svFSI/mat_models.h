@@ -56,10 +56,6 @@ void get_fib_stress(const ComMod& com_mod, const CepMod& cep_mod, const fibStrsT
 void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn, const Array<double>& F, const int nfd,
     const Array<double>& fl, const double ya, Array<double>& S, Array<double>& Dm, double& Ja);
 
-template<size_t nsd>
-void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn, const Eigen::TensorFixedSize<double, Eigen::Sizes<nsd,nsd>>& F, const int nfd,
-    const Array<double>& fl, const double ya, Eigen::TensorFixedSize<double, Eigen::Sizes<nsd,nsd>>& S, Eigen::TensorFixedSize<double, Eigen::Sizes<2*nsd,2*nsd>>& Dm, double& Ja);
-
 void get_pk2cc_shlc(const ComMod& com_mod, const dmnType& lDmn, const int nfd, const Array<double>& fNa0,
     const Array<double>& gg_0, const Array<double>& gg_x, double& g33, Vector<double>& Sml, Array<double>& Dml);
 

@@ -119,6 +119,59 @@ void cc_to_voigt(const int nsd, const Tensor4<double>& CC, Array<double>& Dm)
   } 
 }
 
+template <int nsd>
+void cc_to_voigt_eigen(const Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>>& CC, Eigen::Matrix<double, 2*nsd, 2*nsd>& Dm)
+{
+  if (nsd == 3) {
+    Dm(0,0) = CC(0,0,0,0);
+    Dm(0,1) = CC(0,0,1,1);
+    Dm(0,2) = CC(0,0,2,2);
+    Dm(0,3) = CC(0,0,0,1);
+    Dm(0,4) = CC(0,0,1,2);
+    Dm(0,5) = CC(0,0,2,0);
+
+    Dm(1,1) = CC(1,1,1,1);
+    Dm(1,2) = CC(1,1,2,2);
+    Dm(1,3) = CC(1,1,0,1);
+    Dm(1,4) = CC(1,1,1,2);
+    Dm(1,5) = CC(1,1,2,0);
+
+    Dm(2,2) = CC(2,2,2,2);
+    Dm(2,3) = CC(2,2,0,1);
+    Dm(2,4) = CC(2,2,1,2);
+    Dm(2,5) = CC(2,2,2,0);
+
+    Dm(3,3) = CC(0,1,0,1);
+    Dm(3,4) = CC(0,1,1,2);
+    Dm(3,5) = CC(0,1,2,0);
+
+    Dm(4,4) = CC(1,2,1,2);
+    Dm(4,5) = CC(1,2,2,0);
+
+    Dm(5,5) = CC(2,0,2,0);
+
+    for (int i = 1; i < 6; i++) {
+      for (int j = 0; j <= i-1; j++) {
+        Dm(i,j) = Dm(j,i);
+      }
+    }
+
+  } else if (nsd == 2) {
+    Dm(0,0) = CC(0,0,0,0);
+    Dm(0,1) = CC(0,0,1,1);
+    Dm(0,2) = CC(0,0,0,1);
+
+    Dm(1,1) = CC(1,1,1,1);
+    Dm(1,2) = CC(1,1,0,1);
+
+    Dm(2,2) = CC(0,1,0,1);
+
+    Dm(1,0) = Dm(0,1);
+    Dm(2,0) = Dm(0,2);
+    Dm(2,1) = Dm(1,2);
+  }
+}
+
 void voigt_to_cc(const int nsd, const Array<double>& Dm, Tensor4<double>& CC)
 {
   if (nsd == 3) {
@@ -187,67 +240,7 @@ void get_fib_stress(const ComMod& com_mod, const CepMod& cep_mod, const fibStrsT
   }
 }
 
-/**
- * @brief Helper function to handle different number of spatial dimensions.
- * 
- */
-void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn, const Array<double>& F, const int nfd,
-    const Array<double> fl, const double ya, Array<double>& S, Array<double>& Dm, double& Ja)
-{
-  // Number of spatial dimensions
-  int nsd = com_mod.nsd;
 
-  if (nsd == 2) {
-    Eigen::TensorFixedSize<double,Eigen::Sizes<2,2>> F_2D;
-    F_2D.setValues( {{F(0,0), F(0,1)},{F(1,0), F(1,1)} });
-
-    Eigen::TensorFixedSize<double,Eigen::Sizes<2,2>> S_2D;
-    S_2D.setValues( {{S(0,0), S(0,1)},{S(1,0), S(1,1)} });
-
-    Eigen::TensorFixedSize<double,Eigen::Sizes<4,4>> Dm_2D;
-    Dm_2D.setValues( {{Dm(0,0), Dm(0,1), Dm(0,2), Dm(0,3)},
-                      {Dm(1,0), Dm(1,1), Dm(1,2), Dm(1,3)},
-                      {Dm(2,0), Dm(2,1), Dm(2,2), Dm(2,3)},
-                      {Dm(3,0), Dm(3,1), Dm(3,2), Dm(3,3)} });
-
-    _get_pk2cc<2>(com_mod, cep_mod, lDmn, F_2D, nfd, fl, ya, S_2D, Dm_2D, Ja);
-
-    S(0,0) = S_2D(0,0); S(0,1) = S_2D(0,1);
-    S(1,0) = S_2D(1,0); S(1,1) = S_2D(1,1);
-
-    Dm(0,0) = Dm_2D(0,0); Dm(0,1) = Dm_2D(0,1);
-    Dm(1,0) = Dm_2D(1,0); Dm(1,1) = Dm_2D(1,1);
-  }
-else if (nsd == 3) {
-    Eigen::TensorFixedSize<double,Eigen::Sizes<3,3>>F_3D;
-    F_3D.setValues( {{F(0,0), F(0,1), F(0,2)},
-                     {F(1,0), F(1,1), F(1,2)},
-                     {F(2,0), F(2,1), F(2,2)} });
-
-    Eigen::TensorFixedSize<double,Eigen::Sizes<3,3>> S_3D;
-    S_3D.setValues( {{S(0,0), S(0,1), S(0,2)},
-                     {S(1,0), S(1,1), S(1,2)},
-                     {S(2,0), S(2,1), S(2,2)} });
-    Eigen::TensorFixedSize<double,Eigen::Sizes<6,6>>Dm_3D;
-    Dm_3D.setValues( {{Dm(0,0), Dm(0,1), Dm(0,2), Dm(0,3), Dm(0,4), Dm(0,5)},
-                      {Dm(1,0), Dm(1,1), Dm(1,2), Dm(1,3), Dm(1,4), Dm(1,5)},
-                      {Dm(2,0), Dm(2,1), Dm(2,2), Dm(2,3), Dm(2,4), Dm(2,5)},
-                      {Dm(3,0), Dm(3,1), Dm(3,2), Dm(3,3), Dm(3,4), Dm(3,5)},
-                      {Dm(4,0), Dm(4,1), Dm(4,2), Dm(4,3), Dm(4,4), Dm(4,5)},
-                      {Dm(5,0), Dm(5,1), Dm(5,2), Dm(5,3), Dm(5,4), Dm(5,5)} });
-
-    _get_pk2cc<3>(com_mod, cep_mod, lDmn, F_3D, nfd, fl, ya, S_3D, Dm_3D, Ja);
-
-    S(0,0) = S_3D(0,0); S(0,1) = S_3D(0,1); S(0,2) = S_3D(0,2);
-    S(1,0) = S_3D(1,0); S(1,1) = S_3D(1,1); S(1,2) = S_3D(1,2);
-    S(2,0) = S_3D(2,0); S(2,1) = S_3D(2,1); S(2,2) = S_3D(2,2);
-
-    Dm(0,0) = Dm_3D(0,0); Dm(0,1) = Dm_3D(0,1); Dm(0,2) = Dm_3D(0,2);
-    Dm(1,0) = Dm_3D(1,0); Dm(1,1) = Dm_3D(1,1); Dm(1,2) = Dm_3D(1,2);
-    Dm(2,0) = Dm_3D(2,0); Dm(2,1) = Dm_3D(2,1); Dm(2,2) = Dm_3D(2,2);
-}
-
-}
 
 
 /**
@@ -269,8 +262,8 @@ else if (nsd == 3) {
  * @return None, but modifies S, Dm, and Ja in place.
  */
 template<size_t nsd>
-void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn, const Eigen::TensorFixedSize<double, Eigen::Sizes<nsd,nsd>>& F, const int nfd,
-    const Array<double>& fl, const double ya, Eigen::TensorFixedSize<double, Eigen::Sizes<nsd,nsd>>& S, Eigen::TensorFixedSize<double, Eigen::Sizes<2*nsd,2*nsd>>& Dm, double& Ja)
+void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn, const Eigen::Matrix<double, nsd, nsd>& F, const int nfd,
+    const Eigen::Matrix<double, nsd, Eigen::Dynamic> fl, const double ya, Eigen::Matrix<double, nsd, nsd>& S, Eigen::Matrix<double, 2*nsd, 2*nsd>& Dm, double& Ja)
 {
   using namespace consts;
   using namespace mat_fun;
@@ -289,7 +282,6 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
 
   // ustruct flag
   bool ustruct = (lDmn.phys == EquationType::phys_ustruct);
-
 
   S.setZero();
   Dm.setZero();
@@ -313,7 +305,12 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
   auto Fe  = F;
   auto Fa = Eigen::Matrix<double, nsd, nsd>::Identity();
   auto Fai = Fa;
-  
+
+  // if (cep_mod.cem.aStrain) {
+  //   actv_strain(com_mod, cep_mod, ya, nfd, fl, Fa);
+  //   Fai = Fa.inverse();
+  //   Fe = F * Fai;
+  // }
 
   Ja = Fa.determinant();
   double J = Fe.determinant();
@@ -342,27 +339,24 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
 
   // Now, compute isochoric and total stress, elasticity tensors
   //
-  Eigen::Tensor<double, 4> CC(nsd,nsd,nsd,nsd);
+  Eigen::TensorFixedSize<double, Eigen::Sizes<nsd,nsd,nsd,nsd>> CC;
 
   switch (stM.isoType) {
 
     // NeoHookean model
     case ConstitutiveModelType::stIso_nHook: {
       double g1 = 2.0 * stM.C10;
-      auto Sb = g1*Idm;
+      Eigen::Matrix<double, nsd, nsd> Sb = g1*Idm;
 
       // Fiber reinforcement/active stress
-      //Sb += Tfa * mat_dyad_prod(fl.col(0), fl.col(0), nsd);
+      Sb += Tfa * (fl.col(0) * fl.col(0).transpose());
 
       double r1 = g1 * Inv1 / nd;
       S = J2d*Sb - r1*Ci;
 
-      //CC = ten_dyad_prod_eigen(Ci, S, nsd);
-      CC = (-2.0/nd) * ( ten_dyad_prod_eigen(Ci, S, nsd)  + ten_dyad_prod_eigen(S, Ci, nsd));
-      //CC = (-2.0/nd) * (Eigen::kroneckerProduct(Ci, S.transpose()) + Eigen::kroneckerProduct(S , Ci.transpose()));
+      CC = (-2.0/nd) * ( ten_dyad_prod_eigen<nsd>(Ci, S)  + ten_dyad_prod_eigen<nsd>(S, Ci));
       S += p*J*Ci;
-      //CC += 2.0*(r1 - p*J) * ten_symm_prod(Ci, Ci, nsd)  +  (pl*J - 2.0*r1/nd) * ten_dyad_prod(Ci, Ci, nsd);
-      //CC += 2.0*(r1 - p*J) * (Ci * Ci.transpose()).symmetricView() + (pl*J - 2.0*r1/nd) * (Ci * Ci.transpose());
+      CC += 2.0*(r1 - p*J) * ten_symm_prod_eigen<nsd>(Ci, Ci)  +  (pl*J - 2.0*r1/nd) * ten_dyad_prod_eigen<nsd>(Ci, Ci);
 
     } break;
 
@@ -371,9 +365,68 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
   } 
 
   // Convert to Voigt Notation
-  //cc_to_voigt(nsd, CC, Dm);
+  cc_to_voigt_eigen<nsd>(CC, Dm);
 }
 
+/**
+ * @brief Get the 2nd Piola-Kirchhoff stress tensor and material elasticity tensor.
+ * 
+ * This is a wrapper function for the templated function _get_pk2cc.
+ * 
+ */
+void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn, const Array<double>& F, const int nfd,
+    const Array<double>& fl, const double ya, Array<double>& S, Array<double>& Dm, double& Ja)
+{
+    // Number of spatial dimensions
+    int nsd = com_mod.nsd;
+
+    if (nsd == 2) {
+        // Copy deformation gradient to Eigen matrix
+        auto F_2D = mat_fun::toEigenMatrix<Eigen::Matrix2d>(F);
+        
+        // Copy fiber directions to Eigen matrix
+        Eigen::Matrix<double, 2, Eigen::Dynamic> fl_2D(2, nfd);
+        for (int i = 0; i < nfd; i++) {
+            fl_2D(0, i) = fl(0, i);
+            fl_2D(1, i) = fl(1, i);
+        }
+
+        // Initialize stress and elasticity tensors
+        Eigen::Matrix2d S_2D = Eigen::Matrix2d::Zero();
+        Eigen::Matrix4d Dm_2D = Eigen::Matrix4d::Zero();
+
+        // Call templated function
+        _get_pk2cc<2>(com_mod, cep_mod, lDmn, F_2D, nfd, fl_2D, ya, S_2D, Dm_2D, Ja);
+
+        // Copy results back
+        mat_fun::toArray(S_2D, S);
+        mat_fun::copyDm(Dm_2D, Dm, 4, 4);
+
+    } else if (nsd == 3) {
+        // Copy deformation gradient to Eigen matrix
+        auto F_3D = mat_fun::toEigenMatrix<Eigen::Matrix3d>(F);
+
+        // Copy fiber directions to Eigen matrix
+        Eigen::Matrix<double, 3, Eigen::Dynamic> fl_3D(3, nfd);
+        for (int i = 0; i < nfd; i++) {
+            fl_3D(0, i) = fl(0, i);
+            fl_3D(1, i) = fl(1, i);
+            fl_3D(2, i) = fl(2, i);
+        }
+
+        // Initialize stress and elasticity tensors
+        Eigen::Matrix3d S_3D = Eigen::Matrix3d::Zero();
+        Eigen::Matrix<double, 6, 6> Dm_3D;
+        Dm_3D.setZero();
+
+        // Call templated function
+        _get_pk2cc<3>(com_mod, cep_mod, lDmn, F_3D, nfd, fl_3D, ya, S_3D, Dm_3D, Ja);
+
+        // Copy results back
+        mat_fun::toArray(S_3D, S);
+        mat_fun::copyDm(Dm_3D, Dm, 6, 6);
+    }
+}
 
 /// @brief Compute 2nd Piola-Kirchhoff stress and material stiffness tensors
 /// for compressible shell elements.
