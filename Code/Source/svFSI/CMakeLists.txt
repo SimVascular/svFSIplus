@@ -75,7 +75,7 @@ if(SV_USE_TRILINOS)
 
     set(USE_TRILINOS 1)
   ELSE()
-    MESSAGE(WARNING "Could not find Trilinos. Compiling svFSI without Trilinos.")
+    MESSAGE(WARNING "Could not find Trilinos. Compiling svMultiPhysics without Trilinos.")
   ENDIF()
 
 endif()
@@ -128,7 +128,7 @@ if(ENABLE_ARRAY_INDEX_CHECKING)
   ADD_DEFINITIONS(-DENABLE_ARRAY_INDEX_CHECKING)
 endif()
 
-# svFSI requires LAPACK
+# svMultiPhysics requires LAPACK
 find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
 
@@ -238,14 +238,14 @@ if(USE_TRILINOS)
   link_directories(${Trilinos_TPL_LIBRARY_DIRS})
 endif()
 
-simvascular_add_executable(${SV_SVFSI_EXE}
+simvascular_add_executable(${SV_MULTIPHYSICS_EXE}
   SRCS ${CSRCS}
-  DEV_SCRIPT_NAME "mysvfsi"
-  INSTALL_SCRIPT_NAME "svfsi"
+  DEV_SCRIPT_NAME "mysvmultiphysics"
+  INSTALL_SCRIPT_NAME "svmultiphysics"
   INSTALL_COMP CoreExecutables
   INSTALL_DESTINATION ${SV_INSTALL_RUNTIME_DIR})
 
-target_link_libraries(${SV_SVFSI_EXE}
+target_link_libraries(${SV_MULTIPHYSICS_EXE}
   ${GLOBAL_LIBRARIES}
   ${INTELRUNTIME_LIBRARIES}
   ${ZLIB_LIBRARY}
@@ -261,15 +261,15 @@ target_link_libraries(${SV_SVFSI_EXE}
 
 # extra MPI libraries only if there are not set to NOT_FOUND or other null
 if(SV_MPI_EXTRA_LIBRARY)
-  target_link_libraries(${SV_SVFSI_EXE} ${SV_MPI_EXTRA_LIBRARY})
+  target_link_libraries(${SV_MULTIPHYSICS_EXE} ${SV_MPI_EXTRA_LIBRARY})
 endif()
 
 if(USE_TRILINOS)
-  target_link_libraries(${SV_SVFSI_EXE} ${Trilinos_LIBRARIES} ${Trilinos_TPL_LIBRARIES})
+  target_link_libraries(${SV_MULTIPHYSICS_EXE} ${Trilinos_LIBRARIES} ${Trilinos_TPL_LIBRARIES})
 endif()
 
 if(USE_PETSC)
-  target_link_libraries(${SV_SVFSI_EXE} ${PETSC_LIBRARY_DIRS})
+  target_link_libraries(${SV_MULTIPHYSICS_EXE} ${PETSC_LIBRARY_DIRS})
 endif()
 
 # coverage
@@ -319,7 +319,7 @@ if(ENABLE_UNIT_TEST)
   list(REMOVE_ITEM CSRCS "main.cpp")
   list(APPEND CSRCS ${TEST_SOURCES})
 
-  # include source files (same as what svFSI does except for main.cpp)
+  # include source files (same as what svMultiPhysics does except for main.cpp)
   add_executable(run_all_unit_tests ${CSRCS})
   
   if(USE_TRILINOS)

@@ -118,16 +118,17 @@ ExternalProject_Add(Externals
     ${SV_EXTERNALS_APPLE_CMAKE_ARGS}
     ${SV_EXTERNALS_ADDITIONAL_CMAKE_ARGS}
     )
-set(SV_EXTERNALS_TOPLEVEL_DIR "${CMAKE_BINARY_DIR}/Externals-build/sv_externals")
-#-----------------------------------------------------------------------------
 
-#-----------------------------------------------------------------------------
-# svFSIplus solver.
+set(SV_EXTERNALS_TOPLEVEL_DIR "${CMAKE_BINARY_DIR}/Externals-build/sv_externals")
+
+# svMultiPhysics 
+#
 set(SV_ADDITIONAL_CMAKE_ARGS "" CACHE STRING "If more options want to be provided to the sv_externals build, they can be with this string")
 set(SV_APPLE_CMAKE_ARGS)
-ExternalProject_Add(svFSIplus
+
+ExternalProject_Add(svMultiPhysics
   SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Code
-  BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/svFSIplus-build
+  BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/svMultiPhysics-build
   DEPENDS Externals
   DOWNLOAD_COMMAND ""
   UPDATE_COMMAND ""
