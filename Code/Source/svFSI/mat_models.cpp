@@ -269,6 +269,9 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
   using namespace mat_fun;
   using namespace utils;
 
+  using EigenMatrix = Eigen::Matrix<double, nsd, nsd>;
+  using EigenTensor = Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>>;
+
   #define n_debug_get_pk2cc
   #ifdef debug_get_pk2cc
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
@@ -326,37 +329,39 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
   double Inv1 = J2d * C.trace();
   double Inv2 = 0.50 * (Inv1*Inv1 - J4d * (C*C).trace());
 
-  // Contribution of dilational penalty terms to S and CC
-  double p  = 0.0;
-  double pl = 0.0;
 
+  // Initialize elasticity tensor
+  Eigen::TensorFixedSize<double, Eigen::Sizes<nsd,nsd,nsd,nsd>> CC;
+  CC.setZero();
+
+  // Add volumetric stress and elasticity tensor if not ustruct and volumetric
+  // penalty parameter is non-zero
   if (!ustruct) {
     if (!utils::is_zero(Kp)) {
+      double p  = 0.0;
+      double pl = 0.0;
       get_svol_p(com_mod, cep_mod, stM, J, p, pl);
+      S += p * J * Ci;
+      CC += -2.0 * p * J * ten_dyad_prod_eigen<nsd>(Ci, Ci) + pl * J * ten_dyad_prod_eigen<nsd>(Ci, Ci);
     }
   }
-  
 
-  // Now, compute isochoric and total stress, elasticity tensors
-  //
-  Eigen::TensorFixedSize<double, Eigen::Sizes<nsd,nsd,nsd,nsd>> CC;
-
+  // Now, add isochoric and total stress, elasticity tensors
   switch (stM.isoType) {
 
     // NeoHookean model
     case ConstitutiveModelType::stIso_nHook: {
       double g1 = 2.0 * stM.C10;
-      Eigen::Matrix<double, nsd, nsd> Sb = g1*Idm;
+      EigenMatrix Sb = g1*Idm;
 
       // Fiber reinforcement/active stress
       Sb += Tfa * (fl.col(0) * fl.col(0).transpose());
 
       double r1 = g1 * Inv1 / nd;
-      S = J2d*Sb - r1*Ci;
+      S += J2d*Sb - r1*Ci;
 
-      CC = (-2.0/nd) * ( ten_dyad_prod_eigen<nsd>(Ci, S)  + ten_dyad_prod_eigen<nsd>(S, Ci));
-      S += p*J*Ci;
-      CC += 2.0*(r1 - p*J) * ten_symm_prod_eigen<nsd>(Ci, Ci)  +  (pl*J - 2.0*r1/nd) * ten_dyad_prod_eigen<nsd>(Ci, Ci);
+      CC += (-2.0/nd) * (ten_dyad_prod_eigen<nsd>(Ci, S)  + ten_dyad_prod_eigen<nsd>(S, Ci));
+      CC += 2.0 * r1 * ten_symm_prod_eigen<nsd>(Ci, Ci)  +  (- 2.0*r1/nd) * ten_dyad_prod_eigen<nsd>(Ci, Ci);
 
     } break;
 
