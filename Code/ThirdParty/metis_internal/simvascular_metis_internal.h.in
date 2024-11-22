@@ -28,10 +28,10 @@
  *
  *=========================================================================*/
  
-#ifndef __simvascular_metis_svfsi_h
-#define __simvascular_metis_svfsi_h
+#ifndef __simvascular_metis_internal_h
+#define __simvascular_metis_internal_h
 
 # hardcoded to build, update if want to allow system version
-#include <simvascular_metis_svfsi/METISLib/metis.h>
+#include <simvascular_metis_internal/METISLib/metis.h>
 
 #endif

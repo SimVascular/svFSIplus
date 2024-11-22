@@ -1,7 +1,7 @@
 
 #include_directories(./)
 #include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../gklib_internal/simvascular_gklib_internal)
-#include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../metis_svfsi/simvascular_metis_svfsi/METISLib)
+#include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../metis_internal/simvascular_metis_internal/METISLib)
 #include_directories(${MPI_C_INCLUDE_PATH})
 
 set(CSRCS akwayfm.c ametis.c balancemylink.c comm.c
@@ -22,7 +22,7 @@ endif()
 set(third_party_dir ${CMAKE_CURRENT_SOURCE_DIR}/../../..)
 target_include_directories(${PARMETIS_INTERNAL_LIBRARY_NAME} PUBLIC ./)
 target_include_directories(${PARMETIS_INTERNAL_LIBRARY_NAME} PUBLIC ${third_party_dir}/gklib_internal/simvascular_gklib_internal)
-target_include_directories(${PARMETIS_INTERNAL_LIBRARY_NAME} PUBLIC ${third_party_dir}/metis_svfsi/simvascular_metis_svfsi/METISLib)
+target_include_directories(${PARMETIS_INTERNAL_LIBRARY_NAME} PUBLIC ${third_party_dir}/metis_internal/simvascular_metis_internal/METISLib)
 target_include_directories(${PARMETIS_INTERNAL_LIBRARY_NAME} PUBLIC ${MPI_C_INCLUDE_PATH}) 
 
 
@@ -44,44 +44,44 @@ if(SV_INSTALL_HEADERS)
   file(READ "parmetislib.h" METIS_H_TEMP)
 
   set(filename "macros.h")
-  install(FILES ${filename} DESTINATION ${SV_INSTALL_INCLUDE_DIR}/thirdparty/parmetis_svfsi RENAME parmetis_svfsi_${filename}
+  install(FILES ${filename} DESTINATION ${SV_INSTALL_INCLUDE_DIR}/thirdparty/parmetis_internal RENAME parmetis_internal_${filename}
     COMPONENT ThirdPartyHeaders)
-  string(REGEX REPLACE ${filename} parmetis_svfsi_${filename} METIS_H_TEMP ${METIS_H_TEMP})
+  string(REGEX REPLACE ${filename} parmetis_internal_${filename} METIS_H_TEMP ${METIS_H_TEMP})
 
   set(filename "defs.h")
   file(COPY ${filename} DESTINATION ${TEMP_DIR})
   file(RENAME ${TEMP_DIR}/${filename}
        ${TEMP_DIR}/metis_${filename} )
-  string(REGEX REPLACE ${filename} parmetis_svfsi_${filename} METIS_H_TEMP ${METIS_H_TEMP})
+  string(REGEX REPLACE ${filename} parmetis_internal_${filename} METIS_H_TEMP ${METIS_H_TEMP})
 
   set(filename "proto.h")
-  install(FILES ${filename} DESTINATION ${SV_INSTALL_INCLUDE_DIR}/thirdparty/parmetis_svfsi RENAME parmetis_svfsi_${filename}
+  install(FILES ${filename} DESTINATION ${SV_INSTALL_INCLUDE_DIR}/thirdparty/parmetis_internal RENAME parmetis_internal_${filename}
     COMPONENT ThirdPartyHeaders)
-  string(REGEX REPLACE ${filename} parmetis_svfsi_${filename} METIS_H_TEMP ${METIS_H_TEMP})
+  string(REGEX REPLACE ${filename} parmetis_internal_${filename} METIS_H_TEMP ${METIS_H_TEMP})
 
   set(filename "rename.h")
-  install(FILES ${filename} DESTINATION ${SV_INSTALL_INCLUDE_DIR}/thirdparty/parmetis_svfsi RENAME parmetis_svfsi_${filename}
+  install(FILES ${filename} DESTINATION ${SV_INSTALL_INCLUDE_DIR}/thirdparty/parmetis_internal RENAME parmetis_internal_${filename}
     COMPONENT ThirdPartyHeaders)
-  string(REGEX REPLACE ${filename} parmetis_svfsi_${filename} METIS_H_TEMP ${METIS_H_TEMP})
+  string(REGEX REPLACE ${filename} parmetis_internal_${filename} METIS_H_TEMP ${METIS_H_TEMP})
 
   set(filename "stdheaders.h")
-  install(FILES ${filename} DESTINATION ${SV_INSTALL_INCLUDE_DIR}/thirdparty/parmetis_svfsi RENAME parmetis_svfsi_${filename}
+  install(FILES ${filename} DESTINATION ${SV_INSTALL_INCLUDE_DIR}/thirdparty/parmetis_internal RENAME parmetis_internal_${filename}
     COMPONENT ThirdPartyHeaders)
-  string(REGEX REPLACE ${filename} parmetis_svfsi_${filename} METIS_H_TEMP ${METIS_H_TEMP})
+  string(REGEX REPLACE ${filename} parmetis_internal_${filename} METIS_H_TEMP ${METIS_H_TEMP})
 
   set(filename "struct.h")
-  install(FILES ${filename} DESTINATION ${SV_INSTALL_INCLUDE_DIR}/thirdparty/parmetis_svfsi RENAME parmetis_svfsi_${filename}
+  install(FILES ${filename} DESTINATION ${SV_INSTALL_INCLUDE_DIR}/thirdparty/parmetis_internal RENAME parmetis_internal_${filename}
     COMPONENT ThirdPartyHeaders)
-  string(REGEX REPLACE ${filename} parmetis_svfsi_${filename} METIS_H_TEMP ${METIS_H_TEMP})
+  string(REGEX REPLACE ${filename} parmetis_internal_${filename} METIS_H_TEMP ${METIS_H_TEMP})
 
   set(filename "parmetis.h")
-  install(FILES ${filename} DESTINATION ${SV_INSTALL_INCLUDE_DIR}/thirdparty/parmetis_svfsi RENAME parmetis_svfsi_${filename}
+  install(FILES ${filename} DESTINATION ${SV_INSTALL_INCLUDE_DIR}/thirdparty/parmetis_internal RENAME parmetis_internal_${filename}
     COMPONENT ThirdPartyHeaders)
-  string(REGEX REPLACE ${filename} parmetis_svfsi_${filename} METIS_H_TEMP ${METIS_H_TEMP})
+  string(REGEX REPLACE ${filename} parmetis_internal_${filename} METIS_H_TEMP ${METIS_H_TEMP})
 
   set(filename ${TEMP_DIR}/parmetislib.h)
   file(WRITE ${filename} ${METIS_H_TEMP})
-  install(FILES ${filename} DESTINATION ${SV_INSTALL_INCLUDE_DIR}/thirdparty/parmetis_svfsi
+  install(FILES ${filename} DESTINATION ${SV_INSTALL_INCLUDE_DIR}/thirdparty/parmetis_internal
     COMPONENT ThirdPartyHeaders)
 
 endif()

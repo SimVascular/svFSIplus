@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 2.8.8)
 
-project(METIS_SVFSI)
+project(METIS_INTERNAL)
 
-if (NOT METIS_SVFSI_LIBRARY_NAME)
-  set(METIS_SVFSI_LIBRARY_NAME metis_svfsi)
+if (NOT METIS_INTERNAL_LIBRARY_NAME)
+  set(METIS_SVFSI_LIBRARY_NAME metis_internal)
 endif()
 
 if (NOT PARMETIS_SV_LIBRARY_NAME)

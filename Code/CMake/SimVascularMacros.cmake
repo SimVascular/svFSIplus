@@ -180,7 +180,9 @@ macro(simvascular_third_party _pkg)
 
   configure_file(${SV_SOURCE_DIR}/${${_upper}_SUBDIR}/simvascular_${_lower}.h.in
     ${SV_BINARY_DIR}/${${_upper}_SUBDIR}/simvascular_${_lower}.h)
+
   include_directories(BEFORE ${SV_BINARY_DIR}/${${_upper}_SUBDIR} ${SV_SOURCE_DIR}/${${_upper}_SUBDIR})
+
   if(SV_USE_SYSTEM_${_upper})
     set(${_upper}_LIBRARIES)
     set(${_upper}_LIBRARY)
