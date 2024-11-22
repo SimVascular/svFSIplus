@@ -1,6 +1,6 @@
 
 #include_directories(./)
-#include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../gklib_svfsi/simvascular_gklib_svfsi)
+#include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../gklib_internal/simvascular_gklib_internal)
 #include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../metis_svfsi/simvascular_metis_svfsi/METISLib)
 #include_directories(${MPI_C_INCLUDE_PATH})
 
@@ -21,12 +21,12 @@ endif()
 
 set(third_party_dir ${CMAKE_CURRENT_SOURCE_DIR}/../../..)
 target_include_directories(${PARMETIS_INTERNAL_LIBRARY_NAME} PUBLIC ./)
-target_include_directories(${PARMETIS_INTERNAL_LIBRARY_NAME} PUBLIC ${third_party_dir}/gklib_svfsi/simvascular_gklib_svfsi)
+target_include_directories(${PARMETIS_INTERNAL_LIBRARY_NAME} PUBLIC ${third_party_dir}/gklib_internal/simvascular_gklib_internal)
 target_include_directories(${PARMETIS_INTERNAL_LIBRARY_NAME} PUBLIC ${third_party_dir}/metis_svfsi/simvascular_metis_svfsi/METISLib)
 target_include_directories(${PARMETIS_INTERNAL_LIBRARY_NAME} PUBLIC ${MPI_C_INCLUDE_PATH}) 
 
 
-target_link_libraries(${PARMETIS_INTERNAL_LIBRARY_NAME} ${METIS_SVFSI_LIBRARY_NAME}  ${GKLIB_SVFSI_LIBRARY_NAME})
+target_link_libraries(${PARMETIS_INTERNAL_LIBRARY_NAME} ${METIS_SVFSI_LIBRARY_NAME}  ${GKLIB_INTERNAL_LIBRARY_NAME})
 
 if(SV_INSTALL_LIBS)
   install(TARGETS ${PARMETIS_SV_LIBRARY_NAME}

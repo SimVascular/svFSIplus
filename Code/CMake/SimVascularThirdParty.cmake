@@ -2,9 +2,9 @@
 # GKLIB_SVFSI
 if(SV_USE_GKLIB_SVFSI)
   set(USE_GKLIB_SVFSI ON)
-  simvascular_third_party(gklib_svfsi)
+  simvascular_third_party(gklib_internal)
   # require to be built here
-  set(GKLIB__SVFSI_LIBRARY ${SV_LIB_THIRDPARTY_GKLIB_SVFSI_NAME})
+  set(GKLIB__SVFSI_LIBRARY ${SV_LIB_THIRDPARTY_GKLIB_INTERNAL_NAME})
 endif()
 
 # METIS_SVFSI

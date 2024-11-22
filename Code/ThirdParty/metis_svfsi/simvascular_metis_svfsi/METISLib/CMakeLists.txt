@@ -1,5 +1,5 @@
 include_directories(./)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../gklib_svfsi/simvascular_gklib_svfsi)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../gklib_internal/simvascular_gklib_internal)
 include_directories(${MPI_C_INCLUDE_PATH})
 
 set(CSRCS auxapi.c balance.c bucketsort.c checkgraph.c coarsen.c

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.8)
 
-project(GKLIB_SVFSI)
+project(GKLIB_INTERNAL)
 
 #set default build type to relwithdebinfo, also sets flags O2 on linux
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -27,13 +27,13 @@ set(CSRCS b64.c blas.c cache.c csr.c error.c evaluate.c
 )
 
 if(SV_USE_THIRDPARTY_SHARED_LIBRARIES)
-  add_library(${GKLIB_SVFSI_LIBRARY_NAME} SHARED ${CSRCS})
+  add_library(${GKLIB_INTERNAL_LIBRARY_NAME} SHARED ${CSRCS})
 else()
-  add_library(${GKLIB_SVFSI_LIBRARY_NAME} STATIC ${CSRCS})
+  add_library(${GKLIB_INTERNAL_LIBRARY_NAME} STATIC ${CSRCS})
 endif()
 
 if(SV_INSTALL_LIBS)
-  install(TARGETS ${GKLIB_SVFSI_LIBRARY_NAME}
+  install(TARGETS ${GKLIB_INTERNAL_LIBRARY_NAME}
   RUNTIME DESTINATION ${SV_INSTALL_RUNTIME_DIR} COMPONENT ThirdPartyExecutables
   LIBRARY DESTINATION ${SV_INSTALL_LIBRARY_DIR} COMPONENT ThirdPartyLibraries
   ARCHIVE DESTINATION ${SV_INSTALL_ARCHIVE_DIR} COMPONENT ThirdPartyLibraries)
