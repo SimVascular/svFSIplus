@@ -19,9 +19,9 @@ endif()
 # PARMETIS_SVFSI
 if(SV_USE_PARMETIS_SVFSI)
   set(USE_PARMETIS_SVFSI ON)
-  simvascular_third_party(parmetis_svfsi)
+  simvascular_third_party(parmetis_internal)
   # require to be built here 
-  set(PARMETIS_SVFSI_LIBRARY ${SV_LIB_THIRDPARTY_PARMETIS_SVFSI_NAME})
+  set(PARMETIS_INTERNAL_LIBRARY ${SV_LIB_THIRDPARTY_PARMETIS_INTERNAL_NAME})
 endif()
 
 #-----------------------------------------------------------------------------

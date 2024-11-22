@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.8)
 
-if (NOT PARMETIS_SVFSI_LIBRARY_NAME)
-  set(PARMETIS_SVFSI_LIBRARY_NAME parmetis_svfsi)
+if (NOT PARMETIS_INTERNAL_LIBRARY_NAME)
+  set(PARMETIS_INTERNAL_LIBRARY_NAME parmetis_internal)
 endif()
 
 #set default build type to relwithdebinfo, also sets flags O2 on linux

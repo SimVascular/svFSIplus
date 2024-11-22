@@ -26,7 +26,7 @@
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-include_directories(${SV_SOURCE_DIR}/ThirdParty/parmetis_svfsi/simvascular_parmetis_svfsi/ParMETISLib)
+include_directories(${SV_SOURCE_DIR}/ThirdParty/parmetis_internal/simvascular_parmetis_internal/ParMETISLib)
 include_directories(${SV_SOURCE_DIR}/ThirdParty/tetgen/simvascular_tetgen)
 include_directories(${SV_SOURCE_DIR}/ThirdParty/tinyxml/simvascular_tinyxml)
 include_directories(${MPI_C_INCLUDE_PATH})
@@ -252,7 +252,7 @@ target_link_libraries(${SV_MULTIPHYSICS_EXE}
   ${BLAS_LIBRARIES}
   ${LAPACK_LIBRARIES}
   ${METIS_SVFSI_LIBRARY_NAME}
-  ${PARMETIS_SVFSI_LIBRARY_NAME}
+  ${PARMETIS_INTERNAL_LIBRARY_NAME}
   ${TETGEN_LIBRARY_NAME}
   ${TINYXML_LIBRARY_NAME}
   ${SV_LIB_SVFSILS_NAME}${SV_MPI_NAME_EXT}
@@ -338,7 +338,7 @@ if(ENABLE_UNIT_TEST)
     ${BLAS_LIBRARIES}
     ${LAPACK_LIBRARIES}
     ${METIS_SVFSI_LIBRARY_NAME}
-    ${PARMETIS_SVFSI_LIBRARY_NAME}
+    ${PARMETIS_INTERNAL_LIBRARY_NAME}
     ${TETGEN_LIBRARY_NAME}
     ${TINYXML_LIBRARY_NAME}
     ${SV_LIB_SVFSILS_NAME}${SV_MPI_NAME_EXT}

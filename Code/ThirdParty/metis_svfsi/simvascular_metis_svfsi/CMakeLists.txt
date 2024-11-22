@@ -4,8 +4,8 @@ if (NOT METIS_SVFSI_LIBRARY_NAME)
   set(METIS_SVFSI_LIBRARY_NAME metis_svfsi)
 endif()
 
-if (NOT PARMETIS_SVFSI_LIBRARY_NAME)
-  set(PARMETIS_SVFSI_LIBRARY_NAME parmetis_svfsi)
+if (NOT PARMETIS_SV_LIBRARY_NAME)
+  set(PARMETIS_SV_LIBRARY_NAME parmetis_sv)
 endif()
 
 #set default build type to relwithdebinfo, also sets flags O2 on linux

@@ -14,22 +14,22 @@ set(CSRCS akwayfm.c ametis.c balancemylink.c comm.c
 )
 
 if(SV_USE_THIRDPARTY_SHARED_LIBRARIES)
-  add_library(${PARMETIS_SVFSI_LIBRARY_NAME} SHARED ${CSRCS})
+  add_library(${PARMETIS_INTERNAL_LIBRARY_NAME} SHARED ${CSRCS})
 else()
-  add_library(${PARMETIS_SVFSI_LIBRARY_NAME} STATIC ${CSRCS})
+  add_library(${PARMETIS_INTERNAL_LIBRARY_NAME} STATIC ${CSRCS})
 endif()
 
 set(third_party_dir ${CMAKE_CURRENT_SOURCE_DIR}/../../..)
-target_include_directories(${PARMETIS_SVFSI_LIBRARY_NAME} PUBLIC ./)
-target_include_directories(${PARMETIS_SVFSI_LIBRARY_NAME} PUBLIC ${third_party_dir}/gklib_svfsi/simvascular_gklib_svfsi)
-target_include_directories(${PARMETIS_SVFSI_LIBRARY_NAME} PUBLIC ${third_party_dir}/metis_svfsi/simvascular_metis_svfsi/METISLib)
-target_include_directories(${PARMETIS_SVFSI_LIBRARY_NAME} PUBLIC ${MPI_C_INCLUDE_PATH}) 
+target_include_directories(${PARMETIS_INTERNAL_LIBRARY_NAME} PUBLIC ./)
+target_include_directories(${PARMETIS_INTERNAL_LIBRARY_NAME} PUBLIC ${third_party_dir}/gklib_svfsi/simvascular_gklib_svfsi)
+target_include_directories(${PARMETIS_INTERNAL_LIBRARY_NAME} PUBLIC ${third_party_dir}/metis_svfsi/simvascular_metis_svfsi/METISLib)
+target_include_directories(${PARMETIS_INTERNAL_LIBRARY_NAME} PUBLIC ${MPI_C_INCLUDE_PATH}) 
 
 
-target_link_libraries(${PARMETIS_SVFSI_LIBRARY_NAME} ${METIS_SVFSI_LIBRARY_NAME}  ${GKLIB_SVFSI_LIBRARY_NAME})
+target_link_libraries(${PARMETIS_INTERNAL_LIBRARY_NAME} ${METIS_SVFSI_LIBRARY_NAME}  ${GKLIB_SVFSI_LIBRARY_NAME})
 
 if(SV_INSTALL_LIBS)
-  install(TARGETS ${PARMETIS_SVFSI_LIBRARY_NAME}
+  install(TARGETS ${PARMETIS_SV_LIBRARY_NAME}
   RUNTIME DESTINATION ${SV_INSTALL_RUNTIME_DIR} COMPONENT ThirdPartyExecutables
   LIBRARY DESTINATION ${SV_INSTALL_LIBRARY_DIR} COMPONENT ThirdPartyLibraries
   ARCHIVE DESTINATION ${SV_INSTALL_ARCHIVE_DIR} COMPONENT ThirdPartyLibraries)
