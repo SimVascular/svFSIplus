@@ -155,6 +155,12 @@ endmacro()
 #-----------------------------------------------------------------------------
 # simvascular_third_party
 #
+# This adds a package defined in the Code/ThirdParty directory to the build. 
+#
+# 1) Creates an include file
+# 2) Adds the package directory to the build
+# 3) Creates the <package>_LIBRARY_NAME variable
+#
 macro(simvascular_third_party _pkg)
   string(TOLOWER "${_pkg}" _lower)
   string(TOUPPER "${_pkg}" _upper)
@@ -163,13 +169,16 @@ macro(simvascular_third_party _pkg)
     DOWNLOADABLE SYSTEM_DEFAULT
     SVEXTERN_CONFIG ADD_INSTALL
     )
+
   set(oneValueArgs VERSION)
   set(multiValueArgs PATHS HINTS COMPONENTS)
 
   cmake_parse_arguments("simvascular_third_party"
     "${options}"
     "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
+
   set(${_upper}_SUBDIR ThirdParty/${_pkg})
+
   if(simvascular_third_party_SYSTEM_DEFAULT)
     option(SV_USE_SYSTEM_${_upper} "Use system ${_pkg}" ON)
   else()
@@ -178,11 +187,15 @@ macro(simvascular_third_party _pkg)
 
   mark_as_advanced(SV_USE_SYSTEM_${_upper})
 
+  # Create a package include file and to be used in the build.
+  #
   configure_file(${SV_SOURCE_DIR}/${${_upper}_SUBDIR}/simvascular_${_lower}.h.in
     ${SV_BINARY_DIR}/${${_upper}_SUBDIR}/simvascular_${_lower}.h)
 
   include_directories(BEFORE ${SV_BINARY_DIR}/${${_upper}_SUBDIR} ${SV_SOURCE_DIR}/${${_upper}_SUBDIR})
 
+  # Add the package to the build.
+  #
   if(SV_USE_SYSTEM_${_upper})
     set(${_upper}_LIBRARIES)
     set(${_upper}_LIBRARY)
@@ -193,6 +206,7 @@ macro(simvascular_third_party _pkg)
     endif()
   endif()
 endmacro()
+
 #-----------------------------------------------------------------------------
 # print_vars - THis is a simple marco to print out a list of variables
 # with their names and value, used mostly for debugging
