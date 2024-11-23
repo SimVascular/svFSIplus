@@ -38,8 +38,16 @@
 #include "utils.h"
 
 #include <math.h>
+#include <utility> // std::pair
 
 namespace mat_models {
+
+// Define type aliases as templates in the global scope
+template<size_t nsd>
+using EigenMatrix = Eigen::Matrix<double, nsd, nsd>;
+
+template<size_t nsd>
+using EigenTensor = Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>>;
 
 /// @brief Compute active component of deformation gradient tensor for
 /// electromechanics coupling based on active strain formulation
@@ -241,6 +249,54 @@ void get_fib_stress(const ComMod& com_mod, const CepMod& cep_mod, const fibStrsT
 }
 
 
+/**
+ * @brief Perform the necessary tensor operations to calculate S_iso (isochoric
+ * 2nd PK stress) from its fictitious counterpart S_bar, and CC_iso (isochoric
+ * material elasticity tensor) from its fictitious counterpart CC_bar.
+ * 
+ * In particular, performs the following calculations:
+ * 
+ * S_iso = J^(-2/nsd) * P : S_bar
+ * where P is the 4th order projection tensor
+ * P = I - 1/3 * C^-1 ⊗ C
+ * where I is the 4th order identity tensor, C is the right Cauchy-Green tensor
+ * More efficiently, we can write
+ * S_iso = J^(-2/nsd) * S_bar - r1 * C^-1
+ * 
+ * CC_iso = P : CC_bar : P^T  
+ *        + 2/nsd * (C^-1 ⊗ S_iso + S_iso ⊗ C^-1) 
+ *        + 2 * r1 * sym(C^-1 ⊗ C^-1) - 2 * r1/nsd * (C^-1 ⊗ C^-1)
+ * 
+ * where r1 = J^(-2/nsd) * C : S_bar / nsd
+ * 
+ * Follows theory from "A General Approach to Derive Stress and Elasticity Tensors
+ * for Hyperelastic Isotropic and Anisotropic Materials" by Cheng and Zhang.
+ * 
+ */
+template<size_t nsd>
+std::pair<EigenMatrix<nsd>, EigenTensor<nsd>> bar_to_iso(
+  const EigenMatrix<nsd>& S_bar, const EigenTensor<nsd> &CC_bar, 
+  const double J2d, const EigenMatrix<nsd>& C, const EigenMatrix<nsd>& Ci) 
+  {
+
+  using namespace mat_fun;
+
+  // Useful scalar
+  double r1  = J2d * mat_ddot_eigen<nsd>(C, S_bar) / nsd;
+
+  // Compute isochoric 2nd Piola-Kirchhoff stress
+  auto S_iso = J2d*S_bar - r1*Ci;
+
+  // Compute isochoric material elasticity tensor
+  auto PP = ten_ids_eigen<nsd>() - (1.0/nsd) * ten_dyad_prod_eigen<nsd>(Ci, C);
+  auto CC_iso = ten_ddot_eigen<nsd>(CC_bar, PP);
+  CC_iso = ten_transpose_eigen<nsd>(CC_iso);
+  CC_iso = ten_ddot_eigen<nsd>(PP, CC_iso);
+  CC_iso += (-2.0/nsd) * (ten_dyad_prod_eigen<nsd>(Ci, S_iso)  + ten_dyad_prod_eigen<nsd>(S_iso, Ci));
+  CC_iso += 2.0 * r1 * ten_symm_prod_eigen<nsd>(Ci, Ci)  +  (- 2.0*r1/nsd) * ten_dyad_prod_eigen<nsd>(Ci, Ci);
+
+  return std::make_pair(S_iso, CC_iso);
+}
 
 
 /**
@@ -262,15 +318,12 @@ void get_fib_stress(const ComMod& com_mod, const CepMod& cep_mod, const fibStrsT
  * @return None, but modifies S, Dm, and Ja in place.
  */
 template<size_t nsd>
-void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn, const Eigen::Matrix<double, nsd, nsd>& F, const int nfd,
-    const Eigen::Matrix<double, nsd, Eigen::Dynamic> fl, const double ya, Eigen::Matrix<double, nsd, nsd>& S, Eigen::Matrix<double, 2*nsd, 2*nsd>& Dm, double& Ja)
+void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn, const EigenMatrix<nsd>& F, const int nfd,
+    const Eigen::Matrix<double, nsd, Eigen::Dynamic> fl, const double ya, EigenMatrix<nsd>& S, EigenMatrix<2*nsd>& Dm, double& Ja)
 {
   using namespace consts;
   using namespace mat_fun;
   using namespace utils;
-
-  using EigenMatrix = Eigen::Matrix<double, nsd, nsd>;
-  using EigenTensor = Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>>;
 
   #define n_debug_get_pk2cc
   #ifdef debug_get_pk2cc
@@ -306,7 +359,7 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
 
   // Electromechanics coupling - active strain
   auto Fe  = F;
-  auto Fa = Eigen::Matrix<double, nsd, nsd>::Identity();
+  auto Fa = EigenMatrix<nsd>::Identity();
   auto Fai = Fa;
 
   // if (cep_mod.cem.aStrain) {
@@ -320,7 +373,7 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
   double J2d = pow(J, (-2.0/nd));
   double J4d = J2d*J2d;
 
-  auto Idm = Eigen::Matrix<double, nsd, nsd>::Identity();
+  auto Idm = EigenMatrix<nsd>::Identity();
   auto C = Fe.transpose() * Fe;
   auto E = 0.50 * (C - Idm);
 
@@ -331,7 +384,7 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
 
 
   // Initialize elasticity tensor
-  Eigen::TensorFixedSize<double, Eigen::Sizes<nsd,nsd,nsd,nsd>> CC;
+  EigenTensor<nsd> CC;
   CC.setZero();
 
   // Add volumetric stress and elasticity tensor if not ustruct and volumetric
@@ -351,17 +404,18 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
 
     // NeoHookean model
     case ConstitutiveModelType::stIso_nHook: {
-      double g1 = 2.0 * stM.C10;
-      EigenMatrix Sb = g1*Idm;
 
-      // Fiber reinforcement/active stress
-      Sb += Tfa * (fl.col(0) * fl.col(0).transpose());
+      // Compute fictious stress and elasticity tensor
+      EigenMatrix<nsd> S_bar = 2.0 * stM.C10 * Idm;
+      EigenTensor<nsd> CC_bar; CC_bar.setZero();
 
-      double r1 = g1 * Inv1 / nd;
-      S += J2d*Sb - r1*Ci;
+      // Add fiber reinforcement/active stress
+      S_bar += Tfa * (fl.col(0) * fl.col(0).transpose());
 
-      CC += (-2.0/nd) * (ten_dyad_prod_eigen<nsd>(Ci, S)  + ten_dyad_prod_eigen<nsd>(S, Ci));
-      CC += 2.0 * r1 * ten_symm_prod_eigen<nsd>(Ci, Ci)  +  (- 2.0*r1/nd) * ten_dyad_prod_eigen<nsd>(Ci, Ci);
+      // Compute and add isochoric stress and elasticity tensor
+      auto [S_iso, CC_iso] = bar_to_iso<nsd>(S_bar, CC_bar, J2d, C, Ci);
+      S += S_iso;
+      CC += CC_iso;
 
     } break;
 

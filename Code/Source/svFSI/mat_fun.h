@@ -74,6 +74,12 @@ namespace mat_fun {
     }
 
     double mat_ddot(const Array<double>& A, const Array<double>& B, const int nd);
+    
+    template <int nsd>
+    double mat_ddot_eigen(const Eigen::Matrix<double, nsd, nsd>& A, const Eigen::Matrix<double, nsd, nsd>& B) {
+        return A.cwiseProduct(B).sum();
+    }
+    
     double mat_det(const Array<double>& A, const int nd);
     Array<double> mat_dev(const Array<double>& A, const int nd);
 
@@ -98,6 +104,21 @@ namespace mat_fun {
     Tensor4<double> ten_ddot_2412(const Tensor4<double>& A, const Tensor4<double>& B, const int nd);
     Tensor4<double> ten_ddot_3424(const Tensor4<double>& A, const Tensor4<double>& B, const int nd);
 
+    template <int nsd>
+    Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>>
+    ten_ddot_eigen(const Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>>& A, 
+                    const Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>>& B) 
+    {
+        // Define the contraction dimensions
+        Eigen::array<Eigen::IndexPair<int>, 2> contractionDims = {
+            Eigen::IndexPair<int>(2, 2), // Contract A's 3rd dimension with B's 3rd
+            Eigen::IndexPair<int>(3, 3)  // Contract A's 4th dimension with B's 4th
+        };
+
+        // Return the double dot product
+        return A.contract(B, contractionDims);
+    }
+
     Tensor4<double> ten_dyad_prod(const Array<double>& A, const Array<double>& B, const int nd);
     
     template <int nsd>
@@ -121,6 +142,31 @@ namespace mat_fun {
     }
 
     Tensor4<double> ten_ids(const int nd);
+
+    /**
+     * @brief Create a 4th order identity tensor:
+     * I_{ijkl} = 0.5 * (δ_{ik} * δ_{jl} + δ_{il} * δ_{jk})
+     * 
+     * @tparam nsd, the number of spatial dimensions
+     * @return Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>> 
+     */
+    template <int nsd>
+    Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>> ten_ids_eigen() {
+        // Initialize as zero
+        Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>> I;
+        I.setZero();
+
+        // Set only non-zero entries
+        for (int i = 0; i < nsd; ++i) {
+            for (int j = 0; j < nsd; ++j) {
+                I(i,j,i,j) += 0.5;
+                I(i,j,j,i) += 0.5;
+            }
+        }
+
+        return I;
+    }
+
     Array<double> ten_mddot(const Tensor4<double>& A, const Array<double>& B, const int nd);
 
     Tensor4<double> ten_symm_prod(const Array<double>& A, const Array<double>& B, const int nd);
@@ -150,6 +196,16 @@ namespace mat_fun {
     }
 
     Tensor4<double> ten_transpose(const Tensor4<double>& A, const int nd);
+
+    template <int nsd>
+    Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>>
+    ten_transpose_eigen(const Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>>& A) {
+        // Permutation order: (2, 3, 0, 1)
+        Eigen::array<int, 4> perm = {2, 3, 0, 1};
+
+        // Return the permuted tensor
+        return A.shuffle(perm);
+    }
 
     Array<double> transpose(const Array<double>& A);
 
