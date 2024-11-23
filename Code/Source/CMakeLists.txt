@@ -34,7 +34,7 @@ set(INDENTS "${INDENTS}    ")
 # svFSI
 #-----------------------------------------------------------------------------
 if(SV_USE_DUMMY_MPI)
-    message(FATAL_ERROR "svFSI requires MPI (not dummyMPI) and SV_USE_DUMMY_MPI \
+    message(FATAL_ERROR "svMultiPhysics requires MPI (not dummyMPI) and SV_USE_DUMMY_MPI \
             is set to true.")
 endif()
 

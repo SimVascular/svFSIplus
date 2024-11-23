@@ -1,20 +1,22 @@
 
-if(SV_USE_GKLIB_SVFSI)
-  set(USE_GKLIB_SVFSI ON)
+# These variables are set in SimVascularOptions.cmake.
+#
+if(SV_USE_INTERNAL_GKLIB)
+  set(USE_INTERNAL_GKLIB ON)
   simvascular_third_party(gklib_internal)
   # require to be built here
-  set(GKLIB__SVFSI_LIBRARY ${SV_LIB_THIRDPARTY_GKLIB_INTERNAL_NAME})
+  set(GKLIB__LIBRARY ${SV_LIB_THIRDPARTY_GKLIB_INTERNAL_NAME})
 endif()
 
-if(SV_USE_METIS_SVFSI)
-  set(USE_METIS_SVFSI ON)
+if(SV_USE_INTERNAL_METIS)
+  set(USE_INTERNAL_METIS ON)
   simvascular_third_party(metis_internal)
   # require to be built here
   set(METIS_INTERNAL_LIBRARY ${SV_LIB_THIRDPARTY_METIS_INTERNAL_NAME})
 endif()
 
-if(SV_USE_PARMETIS_SVFSI)
-  set(USE_PARMETIS_SVFSI ON)
+if(SV_USE_INTERNAL_PARMETIS)
+  set(USE_INTERNAL_PARMETIS ON)
   simvascular_third_party(parmetis_internal)
   # require to be built here 
   set(PARMETIS_INTERNAL_LIBRARY ${SV_LIB_THIRDPARTY_PARMETIS_INTERNAL_NAME})
