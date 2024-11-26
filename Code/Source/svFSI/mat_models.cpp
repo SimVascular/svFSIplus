@@ -476,6 +476,47 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
 
     } break;
 
+    // HGO (Holzapfel-Gasser-Ogden) model with additive splitting of
+    // the anisotropic fiber-based strain-energy terms
+    case ConstitutiveModelType::stIso_HGO: {
+      if (nfd != 2) {
+        throw std::runtime_error("[get_pk2cc] Min fiber directions not defined for HGO material model.");
+      }
+
+      // Compute preliminary quantities
+      double kap = stM.kap;
+
+      double Inv4 = J2d * (fl.col(0).dot(C * fl.col(0)));
+      double Inv6 = J2d * (fl.col(1).dot(C * fl.col(1)));
+
+      double Eff = kap*Inv1 + (1.0 - 3.0*kap)*Inv4 - 1.0;
+      double Ess = kap*Inv1 + (1.0 - 3.0*kap)*Inv6 - 1.0;
+
+      EigenMatrix<nsd> Hff = kap*Idm + (1.0-3.0*kap) * (fl.col(0) * fl.col(0).transpose());
+      EigenMatrix<nsd> Hss = kap*Idm + (1.0-3.0*kap) * (fl.col(1) * fl.col(1).transpose());
+
+      // Compute fictious stress and elasticity tensor
+      double g1 = stM.C10;
+      double g2 = stM.aff * Eff * exp(stM.bff*Eff*Eff);
+      double g3 = stM.ass * Ess * exp(stM.bss*Ess*Ess);
+      EigenMatrix<nsd> S_bar = 2.0*(g1*Idm + g2*Hff + g3*Hss);
+
+      g1 = stM.aff*(1.0 + 2.0*stM.bff*Eff*Eff)*exp(stM.bff*Eff*Eff);
+      g2 = stM.ass*(1.0 + 2.0*stM.bss*Ess*Ess)*exp(stM.bss*Ess*Ess);
+      g1 = 4.0*J4d*g1;
+      g2 = 4.0*J4d*g2;
+      EigenTensor<nsd> CC_bar = g1 * ten_dyad_prod_eigen<nsd>(Hff, Hff) + g2 * ten_dyad_prod_eigen<nsd>(Hss, Hss);
+      
+      // Add fiber reinforcement/active stress
+      S_bar += Tfa * (fl.col(0) * fl.col(0).transpose());
+      
+      // Compute and add isochoric stress and elasticity tensor
+      auto [S_iso, CC_iso] = bar_to_iso<nsd>(S_bar, CC_bar, J2d, C, Ci);
+      S += S_iso;
+      CC += CC_iso;
+
+    } break;
+
       default:
       throw std::runtime_error("Undefined material constitutive model.");
   } 
