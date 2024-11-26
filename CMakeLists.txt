@@ -81,7 +81,7 @@ include(SimVascularFunctionCheckCompilerFlags)
 
 # Add additional variables that can be set from the cmake gui or from the command line.
 #
-# These variables must later be add to 'ExternalProject_Add(svFSI' as -D options. 
+# These variables must later be add to 'ExternalProject_Add(svMultiPhysics' as -D options. 
 #
 set(SV_USE_TRILINOS OFF CACHE BOOL "Build with the Trilinos linear algebra package")
 #set(SV_USE_PETSC OFF CACHE BOOL "Build with the PETSc linear algebra package")

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<svFSIFile version="0.1">
+<svMultiPhysicsFile version="0.1">
 
 <GeneralSimulationParameters>
   <Continue_previous_simulation> false </Continue_previous_simulation>
@@ -120,6 +120,6 @@
 
 </Add_equation>
 
-</svFSIFile>
+</svMultiPhysicsFile>
 
 

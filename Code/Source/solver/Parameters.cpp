@@ -104,7 +104,7 @@ void xml_util_set_parameters( std::function<void(const std::string&, const std::
 //                   Parameters                         //
 //////////////////////////////////////////////////////////
 
-const std::string Parameters::FSI_FILE = "svFSIFile";
+const std::string Parameters::FSI_FILE = "svMultiPhysicsFile";
 
 const std::set<std::string> Parameters::constitutive_model_names = {
   "none",
