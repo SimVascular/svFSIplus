@@ -421,6 +421,25 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
 
     } break;
 
+    // Mooney-Rivlin model
+    case ConstitutiveModelType::stIso_MR: {
+
+      // Compute fictious stress and elasticity tensor
+      EigenMatrix<nsd> S_bar = 2.0 * (stM.C10 + Inv1 * stM.C01) * Idm 
+                              -2.0 * stM.C01 * J2d * C;
+
+      EigenTensor<nsd> CC_bar = 4.0 * J4d * stM.C01 * (ten_dyad_prod_eigen<nsd>(Idm, Idm) - ten_ids_eigen<nsd>());
+
+      // Add fiber reinforcement/active stress
+      S_bar += Tfa * (fl.col(0) * fl.col(0).transpose());
+
+      // Compute and add isochoric stress and elasticity tensor
+      auto [S_iso, CC_iso] = bar_to_iso<nsd>(S_bar, CC_bar, J2d, C, Ci);
+      S += S_iso;
+      CC += CC_iso;
+
+    } break;
+
       default:
       throw std::runtime_error("Undefined material constitutive model.");
   } 
