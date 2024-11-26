@@ -42,12 +42,14 @@
 
 namespace mat_models {
 
-// Define type aliases as templates in the global scope
+// Define templated type aliases for Eigen matrices and tensors for convenience
 template<size_t nsd>
 using EigenMatrix = Eigen::Matrix<double, nsd, nsd>;
 
 template<size_t nsd>
 using EigenTensor = Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>>;
+
+
 
 /// @brief Compute active component of deformation gradient tensor for
 /// electromechanics coupling based on active strain formulation
@@ -288,7 +290,7 @@ std::pair<EigenMatrix<nsd>, EigenTensor<nsd>> bar_to_iso(
   auto S_iso = J2d*S_bar - r1*Ci;
 
   // Compute isochoric material elasticity tensor
-  auto PP = ten_ids_eigen<nsd>() - (1.0/nsd) * ten_dyad_prod_eigen<nsd>(Ci, C);
+  EigenTensor<nsd> PP = ten_ids_eigen<nsd>() - (1.0/nsd) * ten_dyad_prod_eigen<nsd>(Ci, C); // Important: using auto here causes tests to fail
   auto CC_iso = ten_ddot_eigen<nsd>(CC_bar, PP);
   CC_iso = ten_transpose_eigen<nsd>(CC_iso);
   CC_iso = ten_ddot_eigen<nsd>(PP, CC_iso);
@@ -395,7 +397,7 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
       double pl = 0.0;
       get_svol_p(com_mod, cep_mod, stM, J, p, pl);
       S += p * J * Ci;
-      CC += -2.0 * p * J * ten_dyad_prod_eigen<nsd>(Ci, Ci) + pl * J * ten_dyad_prod_eigen<nsd>(Ci, Ci);
+      CC += -2.0 * p * J * ten_symm_prod_eigen<nsd>(Ci, Ci) + pl * J * ten_dyad_prod_eigen<nsd>(Ci, Ci);
     }
   }
 
