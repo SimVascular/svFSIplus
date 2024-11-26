@@ -403,6 +403,42 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
 
   // Now, add isochoric and total stress, elasticity tensors
   switch (stM.isoType) {
+    case ConstitutiveModelType::stIso_lin: {
+      if (ustruct) {
+        std::runtime_error("[get_pk2cc] Linear isotropic material model not valid for ustruct physics.");
+      }
+
+      double g1 = stM.C10;    // mu
+      S += g1*Idm;
+      return; 
+    } break;
+
+    // St.Venant-Kirchhoff
+    case ConstitutiveModelType::stIso_StVK: {
+      if (ustruct) {
+        std::runtime_error("[get_pk2cc] St.Venant-Kirchhoff material model not valid for ustruct physics.");
+      }
+      
+      double g1 = stM.C10;         // lambda
+      double g2 = stM.C01 * 2.0;   // 2*mu
+
+      S += g1*trE*Idm + g2*E;
+      CC += g1 * ten_dyad_prod_eigen<nsd>(Idm, Idm) + g2*ten_ids_eigen<nsd>();
+    } break;
+
+    // modified St.Venant-Kirchhoff
+    case ConstitutiveModelType::stIso_mStVK: {
+      if (ustruct) {
+        std::runtime_error("[get_pk2cc] Modified St.Venant-Kirchhoff material model not valid for ustruct physics.");
+      }
+
+      double g1 = stM.C10; // kappa
+      double g2 = stM.C01;  // mu
+
+      S += g1*log(J)*Ci + g2*(C-Idm);
+      CC += g1 * ( -2.0*log(J)*ten_symm_prod_eigen<nsd>(Ci, Ci) +
+         ten_dyad_prod_eigen<nsd>(Ci, Ci) ) + 2.0*g2*ten_ids_eigen<nsd>();
+    } break;
 
     // NeoHookean model
     case ConstitutiveModelType::stIso_nHook: {
