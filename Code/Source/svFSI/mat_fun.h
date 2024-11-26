@@ -121,37 +121,42 @@ namespace mat_fun {
 
     Tensor4<double> ten_dyad_prod(const Array<double>& A, const Array<double>& B, const int nd);
     
+    /**
+     * @brief Compute the dyadic product of two 2nd order tensors A and B, C_ijkl = A_ij * B_kl
+     * 
+     * @tparam nsd, the number of spatial dimensions
+     * @param A, the first 2nd order tensor
+     * @param B, the second 2nd order tensor
+     * @return Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>> 
+     */
     template <int nsd>
     Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>> 
     ten_dyad_prod_eigen(const Eigen::Matrix<double, nsd, nsd>& A, const Eigen::Matrix<double, nsd, nsd>& B) {
-        // Create a fixed-size tensor to store the result
-        Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>> C;
+       
+        // Create empty contraction dimensions
+        Eigen::array<Eigen::IndexPair<int>, 0> contractionDims = {};
 
-        // Perform the dyadic product (outer product) and assign values to the tensor
-        for (int i = 0; i < nsd; ++i) {
-            for (int j = 0; j < nsd; ++j) {
-                for (int k = 0; k < nsd; ++k) {
-                    for (int l = 0; l < nsd; ++l) {
-                        C(i, j, k, l) = A(i, j) * B(k, l);
-                    }
-                }
-            }
-        }
+        // Convert the input matrices to Eigen::TensorFixedSize so we can use the contract method
+        Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd>> A_tensor = Eigen::TensorMap<const Eigen::Tensor<const double, 2>>(A.data(), nsd, nsd);
+        Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd>> B_tensor = Eigen::TensorMap<const Eigen::Tensor<const double, 2>>(B.data(), nsd, nsd);
 
-        return C;
+        // The contraction of A and B with no dimensions specified is the outer product
+        // of the two matrices, C_ijkl = A_ij * B_kl
+        return A_tensor.contract(B_tensor, contractionDims);
     }
 
     Tensor4<double> ten_ids(const int nd);
 
     /**
      * @brief Create a 4th order identity tensor:
-     * I_{ijkl} = 0.5 * (δ_{ik} * δ_{jl} + δ_{il} * δ_{jk})
+     * I_ijkl = 0.5 * (δ_ik * δ_jl + δ_il * δ_jk)
      * 
      * @tparam nsd, the number of spatial dimensions
      * @return Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>> 
      */
     template <int nsd>
-    Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>> ten_ids_eigen() {
+    Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>> 
+    ten_ids_eigen() {
         // Initialize as zero
         Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>> I;
         I.setZero();
@@ -171,40 +176,58 @@ namespace mat_fun {
 
     Tensor4<double> ten_symm_prod(const Array<double>& A, const Array<double>& B, const int nd);
     
-    /// @brief Create a 4th order tensor from symmetric outer product of two matrices.
+    /// @brief Create a 4th order tensor from symmetric outer product of two matrices: C_ijkl = 0.5 * (A_ik * B_jl + A_il * B_jk)
     ///
     /// Reproduces 'FUNCTION TEN_SYMMPROD(A, B, nd) RESULT(C)'.
     //
     template <int nsd>
     Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>>
     ten_symm_prod_eigen(const Eigen::Matrix<double, nsd, nsd>& A, const Eigen::Matrix<double, nsd, nsd>& B) {
-        // Create a fixed-size tensor to store the result
-        Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>> C;
+        
+        // Create empty contraction dimensions
+        Eigen::array<Eigen::IndexPair<int>, 0> contractionDims = {};
 
-        // Perform the symmetric product and assign values to the tensor
-        for (int i = 0; i < nsd; ++i) {
-            for (int j = 0; j < nsd; ++j) {
-                for (int k = 0; k < nsd; ++k) {
-                    for (int l = 0; l < nsd; ++l) {
-                        C(i, j, k, l) = 0.5 * (A(i, k) * B(j, l) + A(i, l) * B(j, k));
-                    }
-                }
-            }
-        }
+        // Convert the input matrices to Eigen::TensorFixedSize so we can use the contract method
+        Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd>> A_tensor = Eigen::TensorMap<const Eigen::Tensor<const double, 2>>(A.data(), nsd, nsd);
+        Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd>> B_tensor = Eigen::TensorMap<const Eigen::Tensor<const double, 2>>(B.data(), nsd, nsd);
 
+
+        // Compute the outer product of A and B, A_ij * B_kl
+        // The contraction of A and B with no dimensions specified is the outer product
+        Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>> AB = A_tensor.contract(B_tensor, contractionDims); // A_{ij} * B_{kl}
+
+        // Compute the product term1 = A_ik * B_jl and term2 = A_il * B_jk by shuffling the indices
+        Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>> term1, term2;
+        term1.shuffle(Eigen::array<int, 4>{0, 2, 1, 3}) = AB; // A_{ik} * B_{jl}
+        term2.shuffle(Eigen::array<int, 4>{0, 3, 1, 2}) = AB; // A_{il} * B_{jk}
+
+        // Compute the symmetric product: C_{ijkl} = 0.5 * (A_{ik} * B_{jl} + A_{il} * B_{jk})
+        Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>> C = 0.5 * (term1 + term2);
+
+        // Return the symmetric product
         return C;
     }
 
     Tensor4<double> ten_transpose(const Tensor4<double>& A, const int nd);
 
+    /**
+     * @brief Performs a tensor transpose operation on a 4th order tensor A, B_ijkl = A_klij
+     * 
+     * @tparam nsd, the number of spatial dimensions
+     * @param A, the input 4th order tensor
+     * @return Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>> 
+     */
     template <int nsd>
     Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>>
     ten_transpose_eigen(const Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>>& A) {
-        // Permutation order: (2, 3, 0, 1)
-        Eigen::array<int, 4> perm = {2, 3, 0, 1};
 
-        // Return the permuted tensor
-        return A.shuffle(perm);
+        // Initialize the result tensor
+        Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>> B;
+
+        // Permute the tensor indices to perform the transpose operation
+        B.shuffle(Eigen::array<int, 4>{2, 3, 0, 1}) = A;
+
+        return B;
     }
 
     Array<double> transpose(const Array<double>& A);
