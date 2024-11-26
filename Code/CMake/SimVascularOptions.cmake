@@ -76,10 +76,10 @@ option(SV_EXTERNALS_USE_TOPLEVEL_DIR "If ON, SV_EXTERNALS_TOPLEVEL_DIR will be u
 
 
 #-----------------------------------------------------------------------------
-# SVFSILS linear solver is always on 
+# The internal linear solver is always on 
 #-----------------------------------------------------------------------------
-set(USE_SVFSILS 1)
-set(SVFSILS_BUILD_TYPE "Source")
+set(USE_LINEAR_SOLVER 1)
+set(LINEAR_SOLVER_BUILD_TYPE "Source")
 
 #-----------------------------------------------------------------------------
 # WIN32

@@ -19,7 +19,7 @@ endif()
 #find_package(VTK REQUIRED)
 #include(${VTK_USE_FILE})
 
-set(lib ${SV_LIB_SVFSILS_NAME})
+set(lib ${SV_LIB_LINEAR_SOLVER_NAME})
 
 set(CSRCS 
   add_bc_mul.h add_bc_mul.cpp
