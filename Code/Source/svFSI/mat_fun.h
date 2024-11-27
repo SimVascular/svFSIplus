@@ -73,6 +73,19 @@ namespace mat_fun {
                 dest(i, j) = mat(i, j);
     }
 
+    template <int nsd>
+    Eigen::Matrix<double, nsd, 1> cross_eigen(const Eigen::Matrix<double, nsd, 1>& u, const Eigen::Matrix<double, nsd, 1>& v) {
+        if constexpr (nsd == 2) {
+            return Eigen::Matrix<double, 2, 1>(v(1), - v(0));
+        }
+        else if constexpr (nsd == 3) {
+            return u.cross(v);
+        }
+        else {
+            throw std::runtime_error("Invalid number of spatial dimensions");
+        }
+    }
+
     double mat_ddot(const Array<double>& A, const Array<double>& B, const int nd);
     
     template <int nsd>
@@ -84,6 +97,11 @@ namespace mat_fun {
     Array<double> mat_dev(const Array<double>& A, const int nd);
 
     Array<double> mat_dyad_prod(const Vector<double>& u, const Vector<double>& v, const int nd);
+
+    template <int nsd>
+    Eigen::Matrix<double, nsd, nsd> mat_dyad_prod_eigen(const Eigen::Matrix<double, nsd, 1>& u, const Eigen::Matrix<double, nsd, 1>& v) {
+        return u * v.transpose();
+    }
 
     Array<double> mat_id(const int nsd);
     Array<double> mat_inv(const Array<double>& A, const int nd, bool debug = false);
@@ -97,6 +115,12 @@ namespace mat_fun {
 
     Array<double> mat_symm(const Array<double>& A, const int nd);
     Array<double> mat_symm_prod(const Vector<double>& u, const Vector<double>& v, const int nd);
+
+    template <int nsd>
+    Eigen::Matrix<double, nsd, nsd> mat_symm_prod_eigen(const Eigen::Matrix<double, nsd, 1>& u, const Eigen::Matrix<double, nsd, 1>& v) {
+        return 0.5 * (u * v.transpose() + v * u.transpose());
+    }
+
     double mat_trace(const Array<double>& A, const int nd);
 
     Tensor4<double> ten_asym_prod12(const Array<double>& A, const Array<double>& B, const int nd);

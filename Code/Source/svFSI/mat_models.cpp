@@ -284,7 +284,7 @@ std::pair<EigenMatrix<nsd>, EigenTensor<nsd>> bar_to_iso(
   using namespace mat_fun;
 
   // Useful scalar
-  double r1  = J2d * mat_ddot_eigen<nsd>(C, S_bar) / nsd;
+  double r1 = J2d * mat_ddot_eigen<nsd>(C, S_bar) / nsd;
 
   // Compute isochoric 2nd Piola-Kirchhoff stress
   auto S_iso = J2d*S_bar - r1*Ci;
@@ -515,6 +515,69 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
       S += S_iso;
       CC += CC_iso;
 
+    } break;
+
+    // Guccione (1995) transversely isotropic model
+    case ConstitutiveModelType::stIso_Gucci: {
+      if (nfd != 2) {
+        throw std::runtime_error("[get_pk2cc] Min fiber directions not defined for Guccione material model.");
+      }
+
+      // Compute isochoric component of E
+      auto E = 0.50 * (J2d*C - Idm);
+
+      // Construct local orthogonal coordinate system
+      EigenMatrix<nsd> Rm;
+      Rm.col(0) = fl.col(0);
+      Rm.col(1) = fl.col(1);
+      Rm.col(2) = cross_eigen<nsd>(fl.col(0), fl.col(1));
+
+      // Project E to local orthogonal coordinate system
+      auto Es = Rm.transpose() * E * Rm;
+
+      // Compute preliminary quantities
+      double g1 = stM.bff;
+      double g2 = stM.bss;
+      double g3 = stM.bfs;
+
+      double QQ = g1 *  Es(0,0)*Es(0,0) + 
+                  g2 * (Es(1,1)*Es(1,1) + Es(2,2)*Es(2,2) + Es(1,2)*Es(1,2) + Es(2,1)*Es(2,1)) +
+                  g3 * (Es(0,1)*Es(0,1) + Es(1,0)*Es(1,0) + Es(0,2)*Es(0,2) + Es(2,0)*Es(2,0));
+
+      double r2 = stM.C10 * exp(QQ);
+
+      auto RmRm_00 = mat_dyad_prod_eigen<nsd>(Rm.col(0), Rm.col(0));
+      auto RmRm_11 = mat_dyad_prod_eigen<nsd>(Rm.col(1), Rm.col(1));
+      auto RmRm_22 = mat_dyad_prod_eigen<nsd>(Rm.col(2), Rm.col(2));
+      auto RmRm_01 = mat_symm_prod_eigen<nsd>(Rm.col(0), Rm.col(1));
+      auto RmRm_12 = mat_symm_prod_eigen<nsd>(Rm.col(1), Rm.col(2));
+      auto RmRm_20 = mat_symm_prod_eigen<nsd>(Rm.col(2), Rm.col(0));
+
+      // Compute fictious stress and elasticity tensor
+      EigenMatrix<nsd> S_bar = g1 *  Es(0,0) * RmRm_00 + 
+                               g2 * (Es(1,1) * RmRm_11 + Es(2,2)*RmRm_22 + 2.0*Es(1,2)*RmRm_12) +
+                         2.0 * g3 * (Es(0,1) * RmRm_01 + Es(0,2)*RmRm_20);
+
+      EigenTensor<nsd> CC_bar = 2.0*ten_dyad_prod_eigen<nsd>(S_bar, S_bar);
+
+      S_bar = S_bar * r2;
+
+      r2  = r2*J4d;
+      CC_bar += g1 * ten_dyad_prod_eigen<nsd>(RmRm_00, RmRm_00) + 
+                g2 * (ten_dyad_prod_eigen<nsd>(RmRm_11, RmRm_11) +
+                      ten_dyad_prod_eigen<nsd>(RmRm_22, RmRm_22) +
+                2.0 * ten_dyad_prod_eigen<nsd>(RmRm_12, RmRm_12)) +
+          2.0 * g3 * (ten_dyad_prod_eigen<nsd>(RmRm_01, RmRm_01) +
+                      ten_dyad_prod_eigen<nsd>(RmRm_20, RmRm_20));
+      CC_bar = r2 * CC_bar;
+
+      // Add fiber reinforcement/active stress
+      S_bar += Tfa * (fl.col(0) * fl.col(0).transpose());
+
+      // Compute and add isochoric stress and elasticity tensor
+      auto [S_iso, CC_iso] = bar_to_iso<nsd>(S_bar, CC_bar, J2d, C, Ci);
+      S += S_iso;
+      CC += CC_iso;
     } break;
 
       default:
