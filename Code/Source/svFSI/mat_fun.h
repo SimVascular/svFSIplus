@@ -128,6 +128,14 @@ namespace mat_fun {
     Tensor4<double> ten_ddot_2412(const Tensor4<double>& A, const Tensor4<double>& B, const int nd);
     Tensor4<double> ten_ddot_3424(const Tensor4<double>& A, const Tensor4<double>& B, const int nd);
 
+    /**
+     * @brief Contracts two 4th order tensors A and B, C_ijkl = A_ijmn * B_klmn over the last two dimensions
+     * 
+     * @tparam nsd, the number of spatial dimensions
+     * @param A, the first 4th order tensor
+     * @param B, the second 4th order tensor
+     * @return Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>> 
+     */
     template <int nsd>
     Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>>
     ten_ddot_eigen(const Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>>& A, 
@@ -135,8 +143,54 @@ namespace mat_fun {
     {
         // Define the contraction dimensions
         Eigen::array<Eigen::IndexPair<int>, 2> contractionDims = {
-            Eigen::IndexPair<int>(2, 2), // Contract A's 3rd dimension with B's 3rd
-            Eigen::IndexPair<int>(3, 3)  // Contract A's 4th dimension with B's 4th
+            Eigen::IndexPair<int>(2, 2), // Contract A's 2nd dimension with B's 2nd
+            Eigen::IndexPair<int>(3, 3)  // Contract A's 3rd dimension with B's 3rd
+        };
+
+        // Return the double dot product
+        return A.contract(B, contractionDims);
+    }
+
+    /**
+     * @brief Contracts two 4th order tensors A and B, C_ijkl = A_imjn * B_mnkl over the 1st and 3rd dimensions of A and 0th and 2nd dimensions of B
+     * 
+     * @tparam nsd, the number of spatial dimensions
+     * @param A, the first 4th order tensor
+     * @param B, the second 4th order tensor
+     * @return Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>> 
+     */
+    template <int nsd>
+    Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>>
+    ten_ddot_2412_eigen(const Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>>& A, 
+                         const Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>>& B) 
+    {
+        // Define the contraction dimensions
+        Eigen::array<Eigen::IndexPair<int>, 2> contractionDims = {
+            Eigen::IndexPair<int>(1, 0), // Contract A's 1st dimension with B's 0th
+            Eigen::IndexPair<int>(3, 1)  // Contract A's 3rd dimension with B's 1st
+        };
+
+        // Return the double dot product
+        return A.contract(B, contractionDims);
+    }
+
+    /**
+     * @brief Contracts two 4th order tensors A and B, C_ijkl = A_ijmn * B_kmln over the 2nd and 3rd dimensions of A and 1st and 3rd dimensions of B
+     * 
+     * @tparam nsd, the number of spatial dimensions
+     * @param A, the first 4th order tensor
+     * @param B, the second 4th order tensor
+     * @return Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>> 
+     */
+    template <int nsd>
+    Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>>
+    ten_ddot_3424_eigen(const Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>>& A, 
+                         const Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>>& B) 
+    {
+        // Define the contraction dimensions
+        Eigen::array<Eigen::IndexPair<int>, 2> contractionDims = {
+            Eigen::IndexPair<int>(2, 1), // Contract A's 2nd dimension with B's 1st
+            Eigen::IndexPair<int>(3, 3)  // Contract A's 3rd dimension with B's 3rd
         };
 
         // Return the double dot product
