@@ -360,9 +360,9 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
   }
 
   // Electromechanics coupling - active strain
-  auto Fe  = F;
-  auto Fa = EigenMatrix<nsd>::Identity();
-  auto Fai = Fa;
+  EigenMatrix<nsd> Fe  = F;
+  EigenMatrix<nsd> Fa = EigenMatrix<nsd>::Identity();
+  EigenMatrix<nsd> Fai = Fa;
 
   // if (cep_mod.cem.aStrain) {
   //   actv_strain(com_mod, cep_mod, ya, nfd, fl, Fa);
@@ -375,11 +375,11 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
   double J2d = pow(J, (-2.0/nd));
   double J4d = J2d*J2d;
 
-  auto Idm = EigenMatrix<nsd>::Identity();
-  auto C = Fe.transpose() * Fe;
-  auto E = 0.50 * (C - Idm);
+  EigenMatrix<nsd> Idm = EigenMatrix<nsd>::Identity();
+  EigenMatrix<nsd> C = Fe.transpose() * Fe;
+  EigenMatrix<nsd> E = 0.50 * (C - Idm);
 
-  auto Ci = C.inverse();
+  EigenMatrix<nsd> Ci = C.inverse();
   double trE = E.trace();
   double Inv1 = J2d * C.trace();
   double Inv2 = 0.50 * (Inv1*Inv1 - J4d * (C*C).trace());
@@ -524,7 +524,7 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
       }
 
       // Compute isochoric component of E
-      auto E = 0.50 * (J2d*C - Idm);
+      EigenMatrix<nsd> E = 0.50 * (J2d*C - Idm);
 
       // Construct local orthogonal coordinate system
       EigenMatrix<nsd> Rm;
@@ -533,7 +533,7 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
       Rm.col(2) = cross_eigen<nsd>(fl.col(0), fl.col(1));
 
       // Project E to local orthogonal coordinate system
-      auto Es = Rm.transpose() * E * Rm;
+      EigenMatrix<nsd> Es = Rm.transpose() * E * Rm;
 
       // Compute preliminary quantities
       double g1 = stM.bff;
@@ -546,12 +546,12 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
 
       double r2 = stM.C10 * exp(QQ);
 
-      auto RmRm_00 = mat_dyad_prod_eigen<nsd>(Rm.col(0), Rm.col(0));
-      auto RmRm_11 = mat_dyad_prod_eigen<nsd>(Rm.col(1), Rm.col(1));
-      auto RmRm_22 = mat_dyad_prod_eigen<nsd>(Rm.col(2), Rm.col(2));
-      auto RmRm_01 = mat_symm_prod_eigen<nsd>(Rm.col(0), Rm.col(1));
-      auto RmRm_12 = mat_symm_prod_eigen<nsd>(Rm.col(1), Rm.col(2));
-      auto RmRm_20 = mat_symm_prod_eigen<nsd>(Rm.col(2), Rm.col(0));
+      EigenMatrix<nsd> RmRm_00 = mat_dyad_prod_eigen<nsd>(Rm.col(0), Rm.col(0));
+      EigenMatrix<nsd> RmRm_11 = mat_dyad_prod_eigen<nsd>(Rm.col(1), Rm.col(1));
+      EigenMatrix<nsd> RmRm_22 = mat_dyad_prod_eigen<nsd>(Rm.col(2), Rm.col(2));
+      EigenMatrix<nsd> RmRm_01 = mat_symm_prod_eigen<nsd>(Rm.col(0), Rm.col(1));
+      EigenMatrix<nsd> RmRm_12 = mat_symm_prod_eigen<nsd>(Rm.col(1), Rm.col(2));
+      EigenMatrix<nsd> RmRm_20 = mat_symm_prod_eigen<nsd>(Rm.col(2), Rm.col(0));
 
       // Compute fictious stress and elasticity tensor
       EigenMatrix<nsd> S_bar = g1 *  Es(0,0) * RmRm_00 + 
@@ -616,7 +616,7 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
       // 1.S) Add isotropic + fiber-sheet interaction stress
       double g1 = stM.a * exp(stM.b*(Inv1-3.0));
       double g2 = 2.0 * stM.afs * Efs * exp(stM.bfs*Efs*Efs);
-      auto Hfs = mat_symm_prod_eigen<nsd>(fl.col(0), fl.col(1));
+      EigenMatrix<nsd> Hfs = mat_symm_prod_eigen<nsd>(fl.col(0), fl.col(1));
       EigenMatrix<nsd> S_bar = g1*Idm + g2*Hfs;
 
       // 1.CC) Add isotropic + fiber-sheet interaction stiffness
@@ -629,7 +629,7 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
       g1 = c4f * Eff * rexp;
       g1 = g1 + (0.5*dc4f/stM.bff) * (rexp - 1.0);
       g1 = 2.0 * stM.aff * g1 + Tfa;
-      auto Hff = mat_dyad_prod_eigen<nsd>(fl.col(0), fl.col(0));
+      EigenMatrix<nsd> Hff = mat_dyad_prod_eigen<nsd>(fl.col(0), fl.col(0));
       S_bar += g1*Hff;
 
       // 2.CC) Add fiber-fiber interaction stiffness
@@ -644,7 +644,7 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
       g2 = c4s * Ess * rexp;
       g2 = g2 + (0.5*dc4s/stM.bss) * (rexp - 1.0);
       g2 = 2.0 * stM.ass * g2 + Tsa;
-      auto Hss = mat_dyad_prod_eigen<nsd>(fl.col(1), fl.col(1));
+      EigenMatrix<nsd> Hss = mat_dyad_prod_eigen<nsd>(fl.col(1), fl.col(1));
       S_bar += g2 * Hss;
 
       // 3.CC) Add sheet-sheet interaction stiffness
@@ -718,7 +718,7 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
       // Now add aniostropic components to stress and elasticity tensor (in steps)
 
       // 1.S) Add fiber-sheet interaction stress
-      auto Hfs = mat_symm_prod_eigen<nsd>(fl.col(0), fl.col(1));
+      EigenMatrix<nsd> Hfs = mat_symm_prod_eigen<nsd>(fl.col(0), fl.col(1));
       g1 = 2.0 * stM.afs * exp(stM.bfs*Efs*Efs);
       S += g1*Efs*Hfs;
 
@@ -731,7 +731,7 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
       g1 = c4f*Eff*rexp;
       g1 = g1 + (0.5*dc4f/stM.bff)*(rexp - 1.0);
       g1 = (2.0*stM.aff*g1) + Tfa;
-      auto Hff = mat_dyad_prod_eigen<nsd>(fl.col(0), fl.col(0));
+      EigenMatrix<nsd> Hff = mat_dyad_prod_eigen<nsd>(fl.col(0), fl.col(0));
       S += g1*Hff;
 
       // 2.CC) Add fiber-fiber interaction stiffness
@@ -746,7 +746,7 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
       double g2 = c4s*Ess*rexp;
       g2 = g2 + (0.5*dc4s/stM.bss)*(rexp - 1.0);
       g2 = 2.0*stM.ass*g2 + Tsa;
-      auto Hss = mat_dyad_prod_eigen<nsd>(fl.col(1), fl.col(1));
+      EigenMatrix<nsd> Hss = mat_dyad_prod_eigen<nsd>(fl.col(1), fl.col(1));
       S  += g2*Hss;
 
       // 3.CC) Add sheet-sheet interaction stiffness
