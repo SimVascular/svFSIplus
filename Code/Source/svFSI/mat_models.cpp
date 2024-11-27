@@ -639,7 +639,7 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
       g1 = 4.0 * J4d * stM.aff * g1;
       CC_bar += g1*ten_dyad_prod_eigen<nsd>(Hff, Hff);
 
-      // 3.S) Add sheet-sheet interaction stress + additional cross-fiber active stress
+      // 3.S) Add sheet-sheet interaction stress + additional cross-fiber active stress (Tsa)
       rexp = exp(stM.bss*Ess*Ess);
       g2 = c4s * Ess * rexp;
       g2 = g2 + (0.5*dc4s/stM.bss) * (rexp - 1.0);
@@ -668,6 +668,93 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
         CC = ten_ddot_3424_eigen<nsd>(CC, CC_bar);
         CC = ten_ddot_2412_eigen<nsd>(CC_bar, CC);
       }
+    } break;
+
+    //  HO (Holzapfel-Ogden)-MA model for myocardium with full invariants for the anisotropy terms (modified-anisotropy)
+    case ConstitutiveModelType::stIso_HO_ma: {
+      if (nfd != 2) {
+        //err = "Min fiber directions not defined for Holzapfel material model (2)"
+      }
+
+      // Compute full (not isochoric) anisotropic invariants
+      double Inv4 = fl.col(0).dot(C * fl.col(0));
+      double Inv6 = fl.col(1).dot(C * fl.col(1));
+      double Inv8 = fl.col(0).dot(C * fl.col(1));
+
+      // Compute fiber, stress, and fiber-sheet stretches
+      double Eff = Inv4 - 1.0;
+      double Ess = Inv6 - 1.0;
+      double Efs = Inv8;
+
+      // Smoothed Heaviside function: 1 / (1 + exp(-kx)) = 1 - 1 / (1 + exp(kx))
+      double k = stM.khs;
+      double one_over_exp_plus_one_f = 1.0 / (exp(k * Eff) + 1.0);
+      double one_over_exp_plus_one_s = 1.0 / (exp(k * Ess) + 1.0);
+      double c4f  = 1.0 - one_over_exp_plus_one_f;
+      double c4s  = 1.0 - one_over_exp_plus_one_s;
+
+      // Exact first derivative of smoothed heaviside function (from Wolfram Alpha)
+      double dc4f = k * (one_over_exp_plus_one_f - pow(one_over_exp_plus_one_f,2));
+      double dc4s = k * (one_over_exp_plus_one_s - pow(one_over_exp_plus_one_s,2));
+
+      // Exact second derivative of smoothed heaviside function (from Wolfram Alpha)
+      double ddc4f = pow(k,2) * (-one_over_exp_plus_one_f + 3.0*pow(one_over_exp_plus_one_f,2) - 2.0*pow(one_over_exp_plus_one_f,3));
+      double ddc4s = pow(k,2) * (-one_over_exp_plus_one_s + 3.0*pow(one_over_exp_plus_one_s,2) - 2.0*pow(one_over_exp_plus_one_s,3));
+
+      // Compute fictious stress and elasticity tensor for isotropic component only
+      // Add isotropic stress
+      double g1 = stM.a * exp(stM.b*(Inv1-3.0));
+      EigenMatrix<nsd> S_bar = g1*Idm;
+
+      // 1.CC) Add isotropic stiffness
+      g1 = g1*2.0*J4d*stM.b;
+      EigenTensor<nsd> CC_bar = g1 * ten_dyad_prod_eigen<nsd>(Idm, Idm);
+
+      // Compute and add isochoric isotropic stress and elasticity tensor
+      auto [S_iso, CC_iso] = bar_to_iso<nsd>(S_bar, CC_bar, J2d, C, Ci);
+      S += S_iso;
+      CC += CC_iso;
+      
+      // Now add aniostropic components to stress and elasticity tensor (in steps)
+
+      // 1.S) Add fiber-sheet interaction stress
+      auto Hfs = mat_symm_prod_eigen<nsd>(fl.col(0), fl.col(1));
+      g1 = 2.0 * stM.afs * exp(stM.bfs*Efs*Efs);
+      S += g1*Efs*Hfs;
+
+      // 1.CC) Add fiber-sheet interaction stiffness
+      g1 = g1 * 2.0*(1.0 + 2.0*stM.bfs*Efs*Efs);
+      CC += g1*ten_dyad_prod_eigen<nsd>(Hfs, Hfs);
+
+      // 2.S) Add fiber-fiber interaction stress + additional reinforcement/active stress (Tfa)
+      double rexp = exp(stM.bff * Eff * Eff);
+      g1 = c4f*Eff*rexp;
+      g1 = g1 + (0.5*dc4f/stM.bff)*(rexp - 1.0);
+      g1 = (2.0*stM.aff*g1) + Tfa;
+      auto Hff = mat_dyad_prod_eigen<nsd>(fl.col(0), fl.col(0));
+      S += g1*Hff;
+
+      // 2.CC) Add fiber-fiber interaction stiffness
+      g1 = c4f*(1.0 + (2.0*stM.bff*Eff*Eff));
+      g1 = (g1 + (2.0*dc4f*Eff))*rexp;
+      g1 = g1 + (0.5*ddc4f/stM.bff)*(rexp - 1.0);
+      g1 = 4.0*stM.aff*g1;
+      CC += g1*ten_dyad_prod_eigen<nsd>(Hff, Hff);
+
+      // 3.S) Add sheet-sheet interaction stress + additional cross-fiber active stress (Tsa)
+      rexp = exp(stM.bss * Ess * Ess);
+      double g2 = c4s*Ess*rexp;
+      g2 = g2 + (0.5*dc4s/stM.bss)*(rexp - 1.0);
+      g2 = 2.0*stM.ass*g2 + Tsa;
+      auto Hss = mat_dyad_prod_eigen<nsd>(fl.col(1), fl.col(1));
+      S  += g2*Hss;
+
+      // 3.CC) Add sheet-sheet interaction stiffness
+      g2   = c4s*(1.0 + (2.0*stM.bss*Ess*Ess));
+      g2   = (g2 + (2.0*dc4s*Ess))*rexp;
+      g2 = g2 + (0.5*ddc4s/stM.bss)*(rexp - 1.0);
+      g2   = 4.0*stM.ass*g2;
+      CC += g2*ten_dyad_prod_eigen<nsd>(Hss, Hss);
     } break;
 
 
