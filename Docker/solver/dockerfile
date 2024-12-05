@@ -5,7 +5,7 @@ FROM simvascular/libraries:ubuntu22 AS builder
 RUN git clone https://github.com/SimVascular/svMultiPhysics.git
 
 # Trilinos build
-WORKDIR /svMultiPhysicsbuild-trilinos
+WORKDIR /svMultiPhysics/build-trilinos
 RUN cmake -DSV_USE_TRILINOS:BOOL=ON .. &&\
     make -j4
 
