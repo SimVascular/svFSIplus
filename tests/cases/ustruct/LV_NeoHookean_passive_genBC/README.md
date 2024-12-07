@@ -2,7 +2,7 @@ This test case simulates an idealized left ventricle (LV) with a NeoHookean mate
 coupled to a lumped-parameter network (LPN), implemented in genBC. The LPN consists of a large pressure source and large resistor, which together produce an approximately constant flowrate into
 the LV. This inflates the LV at an approximately constant rate of change of volume.
 
-Before running svFSIplus, genBC_svFSIplus must be compiled. Navigate to genBC_svFSIplus
+Before running svMultiPhysics, genBC_svMultiPhysics must be compiled. Navigate to genBC_svMultiPhysics
 and run `make clean` then `make`.
 
 The results can be post-processed by running `process_results.py`. If run for 100

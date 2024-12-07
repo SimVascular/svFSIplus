@@ -12,8 +12,8 @@ In the folder Docker/ there are three subfolders solver/, ubuntu20/, ubuntu22/ c
 For more details about the dockerfiles created in this work, refer to the [simvascular DockerHub page](https://registry.hub.docker.com/u/simvascular).
 
 ## Build a container
-In this section the steps to build the image with a pre-compiled svFSIplus solver are briefly described. To create the image from the dockerfile provided in Docker/solver, follow the steps below:
-1) build an Ubuntu-based image containing the whole environment in which svFSIplus program can be compiled. The provided dockerfiles are based on Ubuntu-20.04 and Ubuntu-22.04, but they can be easily adapted to use the latest version of Ubuntu, by changing the following line in Docker/ubuntu20/dockerfile or Docker/ubuntu22/dockerfile: 
+In this section the steps to build the image with a pre-compiled svMultiPhysics solver are briefly described. To create the image from the dockerfile provided in Docker/solver, follow the steps below:
+1) build an Ubuntu-based image containing the whole environment in which svMultiPhysics program can be compiled. The provided dockerfiles are based on Ubuntu-20.04 and Ubuntu-22.04, but they can be easily adapted to use the latest version of Ubuntu, by changing the following line in Docker/ubuntu20/dockerfile or Docker/ubuntu22/dockerfile: 
 ```
 FROM ubuntu:20.04 AS base / FROM ubuntu:22.04 AS base
 ```
@@ -32,7 +32,7 @@ where -t allows the user to set the name for the image created. For example:
 ```
 docker build -t libraries:latest .
 ```
-2) build the image containing the compiled svFSIplus program. This image will be based on the environment created in the previous step (libraries:latest). In order to do this, open the Docker/solver/dockerfile and modify the following lines:
+2) build the image containing the compiled svMultiPhysics program. This image will be based on the environment created in the previous step (libraries:latest). In order to do this, open the Docker/solver/dockerfile and modify the following lines:
 ```
 FROM simvascular/libraries:ubuntu22 AS builder 
 ```
@@ -55,13 +55,13 @@ cd Docker/solver
 ```
 docker build -t solver:latest .
 ```
-The image include the PETSc-based svFSIplus executable in:
+The image include the PETSc-based svMultiPhysics executable in:
 ```
-/build-petsc/svFSIplus-build/bin/svfsiplus
+/build-petsc/svMultiPhysics-build/bin/svmultiphysics
 ```
-and the Trilinos-based svFSIplus executable in:
+and the Trilinos-based svMultiPhysics executable in:
 ```
-/build-trilinos/svFSIplus-build/bin/svfsiplus
+/build-trilinos/svMultiPhysics-build/bin/svmultiphysics
 ```
 ## Run a container
 Once the image is created, it can be run interactively by running the following command:

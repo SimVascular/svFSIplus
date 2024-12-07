@@ -31,15 +31,15 @@
 set(INDENTS "${INDENTS}    ")
 
 #-----------------------------------------------------------------------------
-# svFSI
+# solver solver
 #-----------------------------------------------------------------------------
 if(SV_USE_DUMMY_MPI)
-    message(FATAL_ERROR "svFSI requires MPI (not dummyMPI) and SV_USE_DUMMY_MPI \
+    message(FATAL_ERROR "svMultiPhysics requires MPI (not dummyMPI) and SV_USE_DUMMY_MPI \
             is set to true.")
 endif()
 
-set(FLOWSOLVER_SUBDIRS ${FLOWSOLVER_SUBDIRS} svFSILS)
-set(FLOWSOLVER_SUBDIRS ${FLOWSOLVER_SUBDIRS} svFSI)
+set(FLOWSOLVER_SUBDIRS ${FLOWSOLVER_SUBDIRS} liner_solver)
+set(FLOWSOLVER_SUBDIRS ${FLOWSOLVER_SUBDIRS} solver)
 
 #-----------------------------------------------------------------------------
 # Optional header path

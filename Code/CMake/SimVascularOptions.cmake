@@ -56,13 +56,11 @@ option(SV_USE_NOTIMER "Use notimer" ON)
 
 #-----------------------------------------------------------------------------
 # Solver Build Options (Modules)
-option(SV_USE_EIGEN_SVFSI "Use Eigen headers" ON)
-option(SV_USE_METIS_SVFSI "Use metis_svfsi Library" ON)
-option(SV_USE_GKLIB_SVFSI "Use GKlib_svfsi Library" ON)
-option(SV_USE_PARMETIS_SVFSI "Use parmetis_svfsi Library" ON)
-option(SV_USE_TETGEN "Use tetgen Library" ON)
-
-#-----------------------------------------------------------------------------
+option(SV_USE_INTERNAL_EIGEN "Use Eigen headers" ON)
+option(SV_USE_INTERNAL_METIS "Use the internal metis library" ON)
+option(SV_USE_INTERNAL_GKLIB "Use the internal GKlib library" ON)
+option(SV_USE_INTERNAL_PARMETIS "Use the internal parmetis library" ON)
+option(SV_USE_TETGEN "Use tetgen library" ON)
 
 #-----------------------------------------------------------------------------
 # Externals
@@ -78,10 +76,10 @@ option(SV_EXTERNALS_USE_TOPLEVEL_DIR "If ON, SV_EXTERNALS_TOPLEVEL_DIR will be u
 
 
 #-----------------------------------------------------------------------------
-# SVFSILS linear solver is always on 
+# The internal linear solver is always on 
 #-----------------------------------------------------------------------------
-set(USE_SVFSILS 1)
-set(SVFSILS_BUILD_TYPE "Source")
+set(USE_LINEAR_SOLVER 1)
+set(LINEAR_SOLVER_BUILD_TYPE "Source")
 
 #-----------------------------------------------------------------------------
 # WIN32

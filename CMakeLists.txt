@@ -81,7 +81,7 @@ include(SimVascularFunctionCheckCompilerFlags)
 
 # Add additional variables that can be set from the cmake gui or from the command line.
 #
-# These variables must later be add to 'ExternalProject_Add(svFSI' as -D options. 
+# These variables must later be add to 'ExternalProject_Add(svMultiPhysics' as -D options. 
 #
 set(SV_USE_TRILINOS OFF CACHE BOOL "Build with the Trilinos linear algebra package")
 #set(SV_USE_PETSC OFF CACHE BOOL "Build with the PETSc linear algebra package")
@@ -118,16 +118,17 @@ ExternalProject_Add(Externals
     ${SV_EXTERNALS_APPLE_CMAKE_ARGS}
     ${SV_EXTERNALS_ADDITIONAL_CMAKE_ARGS}
     )
-set(SV_EXTERNALS_TOPLEVEL_DIR "${CMAKE_BINARY_DIR}/Externals-build/sv_externals")
-#-----------------------------------------------------------------------------
 
-#-----------------------------------------------------------------------------
-# svFSIplus solver.
+set(SV_EXTERNALS_TOPLEVEL_DIR "${CMAKE_BINARY_DIR}/Externals-build/sv_externals")
+
+# svMultiPhysics 
+#
 set(SV_ADDITIONAL_CMAKE_ARGS "" CACHE STRING "If more options want to be provided to the sv_externals build, they can be with this string")
 set(SV_APPLE_CMAKE_ARGS)
-ExternalProject_Add(svFSIplus
+
+ExternalProject_Add(svMultiPhysics
   SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Code
-  BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/svFSIplus-build
+  BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/svMultiPhysics-build
   DEPENDS Externals
   DOWNLOAD_COMMAND ""
   UPDATE_COMMAND ""

@@ -44,7 +44,7 @@ def test_purkinje(n_proc):
 def test_niederer_benchmark_ECGs_quadrature(confs_ecgs, n_proc):
     test_folder = "niederer_benchmark_ECGs_quadrature"
     t_max = 1
-    name_inp = "svFSI_" + confs_ecgs[0] + ".xml"
+    name_inp = "solver_" + confs_ecgs[0] + ".xml"
     name_ref = "result_" + confs_ecgs[0] + "_" + str(t_max).zfill(3) + ".vtu"
     run_with_reference(
         base_folder, test_folder, fields, n_proc, t_max, name_ref, name_inp

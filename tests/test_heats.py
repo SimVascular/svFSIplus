@@ -15,5 +15,5 @@ fields = ["Temperature"]
 @pytest.mark.parametrize("linear_solver", ["CG", "BICG", "GMRES"])
 def test_diffusion_line_source(linear_solver, n_proc):
     test_folder = "diffusion_line_source"
-    name_inp = "svFSI_" + linear_solver + ".xml"
+    name_inp = "solver_" + linear_solver + ".xml"
     run_with_reference(base_folder, test_folder, fields, n_proc, 2, name_inp=name_inp)
