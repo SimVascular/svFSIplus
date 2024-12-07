@@ -13,7 +13,7 @@ jobs:
               version: ubuntu-22.04
               image: ubuntu22
       runs-on: ${{ matrix.version }}
-      container: dcodoni/lib:${{ matrix.image }}
+      container: simvascular/libraries:${{ matrix.image }}
       steps:
         - uses: actions/checkout@v3
         - name: Build svZeroDSolver
