@@ -1,18 +1,32 @@
-This directory contains the source for external applications used by svFSIplus. The applications are compiled and liked with svFSIplus. 
+This directory contains the source for external applications used by svFSIplus. The applications are compiled and liked with svMultiPhysics. 
 
 Each application has its own license agreement.
 
+------------
 Applications
+------------
 
 eigen - A header-only application for matrix objects.
 
-gklib_svfsi - A library used by METIS and ParMETIS applications.
+gklib_internal - A library used by METIS and ParMETIS applications.
 
-metis_svfsi - The METIS mesh partitioning application used by ParMETIS.
+metis_internal - The METIS mesh partitioning application used by ParMETIS.
 
-parmetis_svfsi - The ParMETIS parallel mesh partitioning application.
+parmetis_internal - The ParMETIS parallel mesh partitioning application.
 
 tetgen - A mesh generatin application.
 
 tinyxml - A header-only application used to read and write XML files.
+
+---------
+IMPORTANT
+---------
+
+The *_internal directory names must agree with the names given in 
+
+ Code/CMake/SimVascularInternals.cmake
+ Code/CMake/SimVascularThirdParty.cmake 
+
+They are also referenced in ThirdParty and the solver/CMakeLists.txt file.
+
 

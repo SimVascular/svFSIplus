@@ -54,7 +54,7 @@ def test_LV_NeoHookean_passive_genBC(n_proc):
             os.remove(name)
 
     # Compile genBC
-    os.chdir("genBC_svFSIplus")
+    os.chdir("genBC_svMultiPhysics")
     subprocess.run(["make", "clean"], check=True)
     subprocess.run(["make"], check=True)
 
