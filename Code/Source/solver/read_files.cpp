@@ -2243,35 +2243,37 @@ void read_outputs(Simulation* simulation, EquationParameters* eq_params, eqType&
   // 
   for (int j = 0; j < 3; j++) {
     for (int k = 0; k < nDOP[j+1]; k++) {
-      lEq.output[k].wtn[j] = true;
+      lEq.output[k].options.boundary_integral = true;
+      lEq.output[k].options.spatial = true;
+      lEq.output[k].options.volume_integral = true;
     }
   } 
 
   // First reading the outputs for VTK files and then for boundaries and last for the volume
   //
   int nOut = eq_params->outputs.size();
-  std::map<std::string,int> output_types = { {"Spatial", 0}, {"B_INT", 1}, {"Boundary_integral",1}, 
-     {"V_INT", 2}, {"Volume_integral", 2}};
-  int j = 0;
+  OutputType output_type;
+
   for (int iOut = 0; iOut < nOut; iOut++) { 
     auto& output_params = eq_params->outputs[iOut];
-    auto output_type = output_params->type.value();
-    if (output_type == "Alias") { 
+    auto output_type_str = output_params->type.value();
+    if (output_type_str == "Alias") { 
       continue;
     }
+
     try {
-      j = output_types.at(output_type);
+      output_type = output_type_name_to_type.at(output_type_str);
     } catch (const std::out_of_range& exception) { 
-      throw std::runtime_error("Unknown output type '" + output_type + "'.");
+      throw std::runtime_error("Unknown output type '" + output_type_str + "'.");
     }
 
     auto& output_list = output_params->output_list;
 
     for (int i = 0; i < lEq.nOutput; i++) {
-      lEq.output[i].wtn[j] = output_params->get_output_value(lEq.output[i].name);
+      lEq.output[i].options.set_option(output_type, output_params->get_output_value(lEq.output[i].name));
       if (lEq.output[i].name == "Vortex") {
         if (nsd != maxNSD) {
-          lEq.output[i].wtn[j] = false;
+          lEq.output[i].options.set_option(output_type, false);
         }
       }
     }
