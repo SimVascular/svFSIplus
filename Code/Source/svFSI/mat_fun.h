@@ -149,6 +149,29 @@ namespace mat_fun {
 
         // Return the double dot product
         return A.contract(B, contractionDims);
+
+        // For some reason, the Eigen::Tensor contract function above is faster than the manual implementation below
+
+        // // Initialize the result tensor
+        // Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>> C;
+
+        // // Compute the double dot product: C_ijkl = A_ijmn * B_klmn
+        // for (int i = 0; i < nsd; ++i) {
+        //     for (int j = 0; j < nsd; ++j) {
+        //         for (int k = 0; k < nsd; ++k) {
+        //             for (int l = 0; l < nsd; ++l) {
+        //                 C(i,j,k,l) = 0.0;
+        //                 for (int m = 0; m < nsd; ++m) {
+        //                     for (int n = 0; n < nsd; ++n) {
+        //                         C(i,j,k,l) += A(i,j,m,n) * B(k,l,m,n);
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+
+        // return C;
     }
 
     /**
@@ -172,6 +195,27 @@ namespace mat_fun {
 
         // Return the double dot product
         return A.contract(B, contractionDims);
+
+        // // Initialize the result tensor
+        // Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>> C;
+
+        // // Compute the double dot product: C_ijkl = A_imjn * B_mnkl
+        // for (int i = 0; i < nsd; ++i) {
+        //     for (int j = 0; j < nsd; ++j) {
+        //         for (int k = 0; k < nsd; ++k) {
+        //             for (int l = 0; l < nsd; ++l) {
+        //                 C(i,j,k,l) = 0.0;
+        //                 for (int m = 0; m < nsd; ++m) {
+        //                     for (int n = 0; n < nsd; ++n) {
+        //                         C(i,j,k,l) += A(i,m,j,n) * B(m,n,k,l);
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+
+        // return C;
     }
 
     /**
@@ -195,6 +239,27 @@ namespace mat_fun {
 
         // Return the double dot product
         return A.contract(B, contractionDims);
+
+        // // Initialize the result tensor
+        // Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>> C;
+
+        // // Compute the double dot product: C_ijkl = A_ijmn * B_kmln
+        // for (int i = 0; i < nsd; ++i) {
+        //     for (int j = 0; j < nsd; ++j) {
+        //         for (int k = 0; k < nsd; ++k) {
+        //             for (int l = 0; l < nsd; ++l) {
+        //                 C(i,j,k,l) = 0.0;
+        //                 for (int m = 0; m < nsd; ++m) {
+        //                     for (int n = 0; n < nsd; ++n) {
+        //                         C(i,j,k,l) += A(i,j,m,n) * B(k,m,l,n);
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+
+        // return C;
     }
 
     Tensor4<double> ten_dyad_prod(const Array<double>& A, const Array<double>& B, const int nd);
@@ -211,16 +276,34 @@ namespace mat_fun {
     Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>> 
     ten_dyad_prod_eigen(const Eigen::Matrix<double, nsd, nsd>& A, const Eigen::Matrix<double, nsd, nsd>& B) {
        
-        // Create empty contraction dimensions
-        Eigen::array<Eigen::IndexPair<int>, 0> contractionDims = {};
+        // // Create empty contraction dimensions
+        // Eigen::array<Eigen::IndexPair<int>, 0> contractionDims = {};
 
-        // Convert the input matrices to Eigen::TensorFixedSize so we can use the contract method
-        Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd>> A_tensor = Eigen::TensorMap<const Eigen::Tensor<const double, 2>>(A.data(), nsd, nsd);
-        Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd>> B_tensor = Eigen::TensorMap<const Eigen::Tensor<const double, 2>>(B.data(), nsd, nsd);
+        // // Convert the input matrices to Eigen::TensorFixedSize so we can use the contract method
+        // Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd>> A_tensor = Eigen::TensorMap<const Eigen::Tensor<const double, 2>>(A.data(), nsd, nsd);
+        // Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd>> B_tensor = Eigen::TensorMap<const Eigen::Tensor<const double, 2>>(B.data(), nsd, nsd);
 
-        // The contraction of A and B with no dimensions specified is the outer product
-        // of the two matrices, C_ijkl = A_ij * B_kl
-        return A_tensor.contract(B_tensor, contractionDims);
+        // // The contraction of A and B with no dimensions specified is the outer product
+        // // of the two matrices, C_ijkl = A_ij * B_kl
+        // return A_tensor.contract(B_tensor, contractionDims);
+
+        // For some reason, the Eigen::Tensor contract function above is slower than the manual implementation below
+        
+        // Initialize the result tensor
+        Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>> C;
+
+        // Compute the dyadic product: C_ijkl = A_ij * B_kl
+        for (int i = 0; i < nsd; ++i) {
+            for (int j = 0; j < nsd; ++j) {
+                for (int k = 0; k < nsd; ++k) {
+                    for (int l = 0; l < nsd; ++l) {
+                        C(i,j,k,l) = A(i,j) * B(k,l);
+                    }
+                }
+            }
+        }
+
+        return C;
     }
 
     Tensor4<double> ten_ids(const int nd);
@@ -262,25 +345,40 @@ namespace mat_fun {
     Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>>
     ten_symm_prod_eigen(const Eigen::Matrix<double, nsd, nsd>& A, const Eigen::Matrix<double, nsd, nsd>& B) {
         
-        // Create empty contraction dimensions
-        Eigen::array<Eigen::IndexPair<int>, 0> contractionDims = {};
+        // // Create empty contraction dimensions
+        // Eigen::array<Eigen::IndexPair<int>, 0> contractionDims = {};
 
-        // Convert the input matrices to Eigen::TensorFixedSize so we can use the contract method
-        Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd>> A_tensor = Eigen::TensorMap<const Eigen::Tensor<const double, 2>>(A.data(), nsd, nsd);
-        Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd>> B_tensor = Eigen::TensorMap<const Eigen::Tensor<const double, 2>>(B.data(), nsd, nsd);
+        // // Convert the input matrices to Eigen::TensorFixedSize so we can use the contract method
+        // Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd>> A_tensor = Eigen::TensorMap<const Eigen::Tensor<const double, 2>>(A.data(), nsd, nsd);
+        // Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd>> B_tensor = Eigen::TensorMap<const Eigen::Tensor<const double, 2>>(B.data(), nsd, nsd);
 
 
-        // Compute the outer product of A and B, A_ij * B_kl
-        // The contraction of A and B with no dimensions specified is the outer product
-        Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>> AB = A_tensor.contract(B_tensor, contractionDims); // A_{ij} * B_{kl}
+        // // Compute the outer product of A and B, A_ij * B_kl
+        // // The contraction of A and B with no dimensions specified is the outer product
+        // Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>> AB = A_tensor.contract(B_tensor, contractionDims); // A_{ij} * B_{kl}
 
-        // Compute the product term1 = A_ik * B_jl and term2 = A_il * B_jk by shuffling the indices
-        Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>> term1, term2;
-        term1.shuffle(Eigen::array<int, 4>{0, 2, 1, 3}) = AB; // A_{ik} * B_{jl}
-        term2.shuffle(Eigen::array<int, 4>{0, 3, 1, 2}) = AB; // A_{il} * B_{jk}
+        // // Compute the product term1 = A_ik * B_jl and term2 = A_il * B_jk by shuffling the indices
+        // Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>> term1, term2;
+        // term1.shuffle(Eigen::array<int, 4>{0, 2, 1, 3}) = AB; // A_{ik} * B_{jl}
+        // term2.shuffle(Eigen::array<int, 4>{0, 3, 1, 2}) = AB; // A_{il} * B_{jk}
 
-        // Compute the symmetric product: C_{ijkl} = 0.5 * (A_{ik} * B_{jl} + A_{il} * B_{jk})
-        Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>> C = 0.5 * (term1 + term2);
+        // // Compute the symmetric product: C_{ijkl} = 0.5 * (A_{ik} * B_{jl} + A_{il} * B_{jk})
+        // Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>> C = 0.5 * (term1 + term2);
+
+        // For some reason, the Eigen::Tensor contract function above is slower than the manual implementation below
+        // Initialize the result tensor
+        Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>> C;
+
+        // Compute the symmetric product: C_ijkl = 0.5 * (A_ik * B_jl + A_il * B_jk)
+        for (int i = 0; i < nsd; ++i) {
+            for (int j = 0; j < nsd; ++j) {
+                for (int k = 0; k < nsd; ++k) {
+                    for (int l = 0; l < nsd; ++l) {
+                        C(i,j,k,l) = 0.5 * (A(i,k) * B(j,l) + A(i,l) * B(j,k));
+                    }
+                }
+            }
+        }
 
         // Return the symmetric product
         return C;
@@ -302,8 +400,18 @@ namespace mat_fun {
         // Initialize the result tensor
         Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>> B;
 
-        // Permute the tensor indices to perform the transpose operation
-        B.shuffle(Eigen::array<int, 4>{2, 3, 0, 1}) = A;
+        // // Permute the tensor indices to perform the transpose operation
+        // B.shuffle(Eigen::array<int, 4>{2, 3, 0, 1}) = A;
+
+        for (int i = 0; i < nsd; ++i) {
+            for (int j = 0; j < nsd; ++j) {
+                for (int k = 0; k < nsd; ++k) {
+                    for (int l = 0; l < nsd; ++l) {
+                        B(i,j,k,l) = A(k,l,i,j);
+                    }
+                }
+            }
+        }
 
         return B;
     }
