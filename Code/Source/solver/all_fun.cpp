@@ -346,7 +346,8 @@ double integ(const ComMod& com_mod, const CmMod& cm_mod, int dId, const Array<do
 
   bool flag = pFlag; 
   if (l != u) {
-    throw std::runtime_error("Incompatible spatial output setting and element type");
+    std::string msg = " l=" + std::to_string(l) + " u=" + std::to_string(u);
+    throw std::runtime_error("Incompatible spatial output setting and element type." + msg);
   }
 
   bool isIB = false;

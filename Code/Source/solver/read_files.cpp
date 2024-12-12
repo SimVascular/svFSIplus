@@ -2243,9 +2243,9 @@ void read_outputs(Simulation* simulation, EquationParameters* eq_params, eqType&
   // 
   for (int j = 0; j < 3; j++) {
     for (int k = 0; k < nDOP[j+1]; k++) {
-      lEq.output[k].options.boundary_integral = true;
-      lEq.output[k].options.spatial = true;
-      lEq.output[k].options.volume_integral = true;
+      lEq.output[k].options.boundary_integral = false;
+      lEq.output[k].options.spatial = false;
+      lEq.output[k].options.volume_integral = false;
     }
   } 
 
