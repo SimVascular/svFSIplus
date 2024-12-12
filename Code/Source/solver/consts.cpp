@@ -216,6 +216,16 @@ const std::map<std::string,EquationType> equation_name_to_type = {
 
   };
 
+// Map from output type string to OutputType.
+//
+const std::map<std::string,OutputType> output_type_name_to_type = {
+  {"B_INT", OutputType::boundary_integral}, 
+  {"Boundary_integral", OutputType::boundary_integral},
+  {"Spatial", OutputType::spatial}, 
+  {"V_INT", OutputType::volume_integral}, 
+  {"Volume_integral", OutputType::volume_integral}
+};
+
 const std::map<std::string,MeshGeneratorType> mesh_generator_name_to_type = {
     {"Tetgen", MeshGeneratorType::RMSH_TETGEN},
     {"Meshsim", MeshGeneratorType::RMSH_MESHSIM}

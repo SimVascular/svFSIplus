@@ -44,7 +44,7 @@ namespace read_files_ns {
 
   const int maxOutput = 22;
   using EquationNdop = std::array<int, 4>;
-  using EquationOutputs = std::array<consts::OutputType, maxOutput>;
+  using EquationOutputs = std::array<consts::OutputNameType, maxOutput>;
   using EquationPhys = std::vector<consts::EquationType>;
   using EquationProps = std::array<std::array<consts::PhysicalProperyType, consts::maxNProp>, 20>;
 

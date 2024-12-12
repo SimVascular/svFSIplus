@@ -67,7 +67,7 @@ SetEquationPropertiesMapType set_equation_props = {
   read_domain(simulation, eq_params, lEq, propL);
 
   nDOP = {1, 1, 0, 0};
-  outPuts[0] = OutputType::out_voltage;
+  outPuts[0] = OutputNameType::out_voltage;
 
   // Set solver parameters.
   read_ls(simulation, eq_params, SolverType::lSolver_CG, lEq);
@@ -156,18 +156,18 @@ SetEquationPropertiesMapType set_equation_props = {
 
     nDOP = {12, 4, 3, 0};
     outPuts = {
-       OutputType::out_velocity,
-       OutputType::out_pressure,
-       OutputType::out_WSS,
-       OutputType::out_displacement,
-       OutputType::out_energyFlux,
-       OutputType::out_traction,
-       OutputType::out_vorticity,
-       OutputType::out_vortex,
-       OutputType::out_strainInv,
-       OutputType::out_viscosity,
-       OutputType::out_divergence,
-       OutputType::out_acceleration
+       OutputNameType::out_velocity,
+       OutputNameType::out_pressure,
+       OutputNameType::out_WSS,
+       OutputNameType::out_displacement,
+       OutputNameType::out_energyFlux,
+       OutputNameType::out_traction,
+       OutputNameType::out_vorticity,
+       OutputNameType::out_vortex,
+       OutputNameType::out_strainInv,
+       OutputNameType::out_viscosity,
+       OutputNameType::out_divergence,
+       OutputNameType::out_acceleration
      };
 
   } else {
@@ -185,10 +185,10 @@ SetEquationPropertiesMapType set_equation_props = {
 
     if (pstEq) {
       nDOP = {2, 2, 0, 0};
-      outPuts = { OutputType::out_displacement, OutputType::out_stress };
+      outPuts = { OutputNameType::out_displacement, OutputNameType::out_stress };
     } else { 
       nDOP = {1, 1, 0, 0};
-      outPuts[0] = OutputType::out_displacement;
+      outPuts[0] = OutputNameType::out_displacement;
     }
   }
 
@@ -232,17 +232,17 @@ SetEquationPropertiesMapType set_equation_props = {
   nDOP = {11, 2, 3, 0};
 
   outPuts = { 
-    OutputType::out_velocity,
-    OutputType::out_pressure,
-    OutputType::out_WSS,
-    OutputType::out_traction,
-    OutputType::out_vorticity,
-    OutputType::out_vortex,
-    OutputType::out_strainInv,
-    OutputType::out_energyFlux,
-    OutputType::out_viscosity,
-    OutputType::out_divergence,
-    OutputType::out_acceleration
+    OutputNameType::out_velocity,
+    OutputNameType::out_pressure,
+    OutputNameType::out_WSS,
+    OutputNameType::out_traction,
+    OutputNameType::out_vorticity,
+    OutputNameType::out_vortex,
+    OutputNameType::out_strainInv,
+    OutputNameType::out_energyFlux,
+    OutputNameType::out_viscosity,
+    OutputNameType::out_divergence,
+    OutputNameType::out_acceleration
   };
 
   // Set solver parameters.
@@ -267,9 +267,9 @@ SetEquationPropertiesMapType set_equation_props = {
   read_domain(simulation, eq_params, lEq, propL);
 
   nDOP = {3,1,1,0};
-  outPuts = {OutputType::out_temperature,
-             OutputType::out_heatFlux,
-             OutputType::out_velocity};
+  outPuts = {OutputNameType::out_temperature,
+             OutputNameType::out_heatFlux,
+             OutputNameType::out_velocity};
 
   // Set solver parameters.
   read_ls(simulation, eq_params, SolverType::lSolver_GMRES, lEq);
@@ -294,7 +294,7 @@ SetEquationPropertiesMapType set_equation_props = {
   read_domain(simulation, eq_params, lEq, propL);
 
   nDOP = {2,1,1,0};
-  outPuts = {OutputType::out_temperature, OutputType::out_heatFlux};
+  outPuts = {OutputNameType::out_temperature, OutputNameType::out_heatFlux};
 
   // Set solver parameters.
   read_ls(simulation, eq_params, SolverType::lSolver_CG, lEq);
@@ -367,30 +367,30 @@ SetEquationPropertiesMapType set_equation_props = {
 
   nDOP = {22, 4, 2, 0};
   outPuts = {
-    OutputType::out_velocity,
-    OutputType::out_pressure,
-    OutputType::out_displacement,
-    OutputType::out_mises,
+    OutputNameType::out_velocity,
+    OutputNameType::out_pressure,
+    OutputNameType::out_displacement,
+    OutputNameType::out_mises,
 
-    OutputType::out_WSS,
-    OutputType::out_traction,
-    OutputType::out_vorticity,
-    OutputType::out_vortex,
-    OutputType::out_strainInv,
-    OutputType::out_energyFlux,
-    OutputType::out_viscosity,
-    OutputType::out_absVelocity,
-    OutputType::out_stress,
-    OutputType::out_cauchy,
-    OutputType::out_strain,
-    OutputType::out_jacobian,
-    OutputType::out_defGrad,
-    OutputType::out_integ,
-    OutputType::out_fibDir,
-    OutputType::out_fibAlign,
+    OutputNameType::out_WSS,
+    OutputNameType::out_traction,
+    OutputNameType::out_vorticity,
+    OutputNameType::out_vortex,
+    OutputNameType::out_strainInv,
+    OutputNameType::out_energyFlux,
+    OutputNameType::out_viscosity,
+    OutputNameType::out_absVelocity,
+    OutputNameType::out_stress,
+    OutputNameType::out_cauchy,
+    OutputNameType::out_strain,
+    OutputNameType::out_jacobian,
+    OutputNameType::out_defGrad,
+    OutputNameType::out_integ,
+    OutputNameType::out_fibDir,
+    OutputNameType::out_fibAlign,
 
-    OutputType::out_divergence,
-    OutputType::out_acceleration
+    OutputNameType::out_divergence,
+    OutputNameType::out_acceleration
   };
 
   // Set solver parameters.
@@ -426,13 +426,13 @@ SetEquationPropertiesMapType set_equation_props = {
 
   if (eq_params->prestress.defined() && eq_params->prestress.value()) { 
     nDOP = {3,2,0,0};
-    outPuts = {OutputType::out_displacement, OutputType::out_stress, OutputType::out_strain};
+    outPuts = {OutputNameType::out_displacement, OutputNameType::out_stress, OutputNameType::out_strain};
   } else {
     nDOP = {8,2,0,0};
     outPuts = {
-      OutputType::out_displacement, OutputType::out_mises, OutputType::out_stress,
-      OutputType::out_strain, OutputType::out_velocity, OutputType::out_acceleration,
-      OutputType::out_integ, OutputType::out_jacobian 
+      OutputNameType::out_displacement, OutputNameType::out_mises, OutputNameType::out_stress,
+      OutputNameType::out_strain, OutputNameType::out_velocity, OutputNameType::out_acceleration,
+      OutputNameType::out_integ, OutputNameType::out_jacobian 
     };
   }
 
@@ -469,7 +469,7 @@ SetEquationPropertiesMapType set_equation_props = {
   }
 
   nDOP = {3, 1, 0, 0};
-  outPuts = {OutputType::out_displacement, OutputType::out_velocity, OutputType::out_acceleration };
+  outPuts = {OutputNameType::out_displacement, OutputNameType::out_velocity, OutputNameType::out_acceleration };
 
   lEq.ls.relTol = 0.2;
 
@@ -503,15 +503,15 @@ SetEquationPropertiesMapType set_equation_props = {
   
   nDOP = {9,1,0,0};
   outPuts = {
-    OutputType::out_displacement, 
-    OutputType::out_stress, 
-    OutputType::out_strain, 
-    OutputType::out_jacobian, 
-    OutputType::out_defGrad, 
-    OutputType::out_velocity, 
-    OutputType::out_integ,
-    OutputType::out_CGstrain,
-    OutputType::out_CGInv1
+    OutputNameType::out_displacement, 
+    OutputNameType::out_stress, 
+    OutputNameType::out_strain, 
+    OutputNameType::out_jacobian, 
+    OutputNameType::out_defGrad, 
+    OutputNameType::out_velocity, 
+    OutputNameType::out_integ,
+    OutputNameType::out_CGstrain,
+    OutputNameType::out_CGInv1
   };
 
   // Set solver parameters.
@@ -540,14 +540,14 @@ SetEquationPropertiesMapType set_equation_props = {
 
   nDOP = {8, 2, 3, 0};
   outPuts = {
-    OutputType::out_velocity,
-    OutputType::out_pressure,
-    OutputType::out_WSS,
-    OutputType::out_vorticity,
-    OutputType::out_traction,
-    OutputType::out_strainInv,
-    OutputType::out_viscosity,
-    OutputType::out_divergence
+    OutputNameType::out_velocity,
+    OutputNameType::out_pressure,
+    OutputNameType::out_WSS,
+    OutputNameType::out_vorticity,
+    OutputNameType::out_traction,
+    OutputNameType::out_strainInv,
+    OutputNameType::out_viscosity,
+    OutputNameType::out_divergence
   };
 
   // Set solver parameters.
@@ -580,15 +580,15 @@ SetEquationPropertiesMapType set_equation_props = {
 
   if (eq_params->prestress.defined() && eq_params->prestress.value()) { 
     nDOP = {4,2,0,0};
-    outPuts = {OutputType::out_displacement, OutputType::out_stress, OutputType::out_cauchy, OutputType::out_strain};
+    outPuts = {OutputNameType::out_displacement, OutputNameType::out_stress, OutputNameType::out_cauchy, OutputNameType::out_strain};
     //simulation->com_mod.pstEq = true;
   } else {
     nDOP = {12,2,0,0};
     outPuts = { 
-      OutputType::out_displacement, OutputType::out_mises, OutputType::out_stress,
-      OutputType::out_cauchy, OutputType::out_strain, OutputType::out_jacobian,
-      OutputType::out_defGrad, OutputType::out_integ, OutputType::out_fibDir,
-      OutputType::out_fibAlign, OutputType::out_velocity, OutputType::out_acceleration
+      OutputNameType::out_displacement, OutputNameType::out_mises, OutputNameType::out_stress,
+      OutputNameType::out_cauchy, OutputNameType::out_strain, OutputNameType::out_jacobian,
+      OutputNameType::out_defGrad, OutputNameType::out_integ, OutputNameType::out_fibDir,
+      OutputNameType::out_fibAlign, OutputNameType::out_velocity, OutputNameType::out_acceleration
     };
   }
 
@@ -625,20 +625,20 @@ SetEquationPropertiesMapType set_equation_props = {
 
   nDOP = {14, 2, 0, 0};
   outPuts = {
-    OutputType::out_displacement,
-    OutputType::out_mises,
-    OutputType::out_stress,
-    OutputType::out_cauchy,
-    OutputType::out_strain,
-    OutputType::out_jacobian,
-    OutputType::out_defGrad,
-    OutputType::out_integ,
-    OutputType::out_fibDir,
-    OutputType::out_fibAlign,
-    OutputType::out_velocity,
-    OutputType::out_pressure,
-    OutputType::out_acceleration,
-    OutputType::out_divergence
+    OutputNameType::out_displacement,
+    OutputNameType::out_mises,
+    OutputNameType::out_stress,
+    OutputNameType::out_cauchy,
+    OutputNameType::out_strain,
+    OutputNameType::out_jacobian,
+    OutputNameType::out_defGrad,
+    OutputNameType::out_integ,
+    OutputNameType::out_fibDir,
+    OutputNameType::out_fibAlign,
+    OutputNameType::out_velocity,
+    OutputNameType::out_pressure,
+    OutputNameType::out_acceleration,
+    OutputNameType::out_divergence
   };
 
   // Set solver parameters.

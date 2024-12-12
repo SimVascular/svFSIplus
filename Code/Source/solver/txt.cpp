@@ -43,82 +43,131 @@
 
 namespace txt_ns {
 
-/// @brief This is to check/create the txt file
+/// @brief Create a text file for writing boundary integral quantities.
 //
-void cctxt(const ComMod& com_mod, CmMod& cm_mod, const eqType& lEq, const std::array<std::string,2>& fName, const std::vector<bool>& wtn)
+void create_boundary_integral_file(const ComMod& com_mod, CmMod& cm_mod, const eqType& lEq, const std::string& file_name)
 {
   int fid = 1;
-
   if (com_mod.cm.slv(cm_mod)) {
     return;
   }
 
-  // i=1 are the boundary values and i=2 are volume values
-  //
-  for (int i = 0; i < 2; i++) {
-    if (!wtn[i]) {
-      continue;
-    }
+  bool file_exists = false;
+  std::string geometry;
 
-    bool flag = false;
-    auto file_name = fName[i];
-    if (FILE *fp = fopen(file_name.c_str(), "r")) {
-      flag = true;
-      fclose(fp);
-    }
-
-    // [NOTE] What is this all about?
-    if (com_mod.cTS != 0 && flag) {
-      //CALL TRIMFILE(cTS+3,fName(i))
-      continue;
-    }
-
-    auto fp = fopen(file_name.c_str(), "w");
-
-    if (i == 0) {
-      for (int iM = 0; iM < com_mod.nMsh; iM++) {
-        auto& msh = com_mod.msh[iM];
-
-        for (int iFa = 0; iFa < msh.nFa; iFa++) {
-          auto& fa = msh.fa[iFa];
-          auto stmp = fa.name;
-          fprintf(fp, " %s ", stmp.c_str());
-        }
-      }
-
-      fprintf(fp, "\n");
-
-      for (int iM = 0; iM < com_mod.nMsh; iM++) {
-        auto& msh = com_mod.msh[iM];
-        for (int iFa = 0; iFa < msh.nFa; iFa++) {
-          auto& fa = msh.fa[iFa];
-          fprintf(fp, " %4.3e ", fa.area);
-        }
-      }
-
-    } else {
-      for (int iDmn = 0; iDmn < lEq.nDmn; iDmn++) {
-        std::string stmp;
-        if (lEq.dmn[iDmn].Id == -1) {
-          stmp = "ENTIRE";
-        }
-      }
-
-      for (int iDmn = 0; iDmn < lEq.nDmn; iDmn++) {
-        std::string stmp;
-      }
-    }
-
-    fprintf(fp, "\n");
-    fprintf(fp, "\n");
+  if (FILE *fp = fopen(file_name.c_str(), "r")) {
+    file_exists = true;
     fclose(fp);
   }
 
+  // [NOTE] What is this all about?
+  if (com_mod.cTS != 0 && file_exists) {
+    //CALL TRIMFILE(cTS+3,fName(i))
+    return;
+  }
+
+  auto fp = fopen(file_name.c_str(), "w");
+  fprintf(fp, "# svMultiPhysics boundary integral results file. \n");
+  fprintf(fp, "# Quantities represent averaged scalar or flux values over each mesh face.\n");
+  fprintf(fp, "#        \n");
+  fprintf(fp, "# Format \n");
+  fprintf(fp, "# ------ \n");
+  fprintf(fp, "# face areas: [list of mesh face areas]  \n");
+  fprintf(fp, "# step time [list of mesh face names] \n");
+  fprintf(fp, "# [time step] [time] [list of computed values for each mesh face]\n");
+
+  // Write face areas.
+  //
+  fprintf(fp, "face areas: ");
+  for (int iM = 0; iM < com_mod.nMsh; iM++) {
+    auto& msh = com_mod.msh[iM];
+    for (int iFa = 0; iFa < msh.nFa; iFa++) {
+      auto& fa = msh.fa[iFa];
+      fprintf(fp, " %4.3e ", fa.area);
+    }
+  }
+  fprintf(fp, "\n");
+
+  // Write face names.
+  //
+  fprintf(fp, "step   time  ");
+
+  for (int iM = 0; iM < com_mod.nMsh; iM++) {
+    auto& msh = com_mod.msh[iM];
+    for (int iFa = 0; iFa < msh.nFa; iFa++) {
+      auto& fa = msh.fa[iFa];
+      auto stmp = fa.name;
+      fprintf(fp, " %s ", stmp.c_str());
+    }
+  }
+
+  fprintf(fp, "\n");
+  fclose(fp);
+}
+
+/// @brief Create a text file for writing volume integral quantities.
+//
+void create_volume_integral_file(const ComMod& com_mod, CmMod& cm_mod, const eqType& lEq, const std::string& file_name)
+{
+  int fid = 1;
+  if (com_mod.cm.slv(cm_mod)) {
+    return;
+  }
+
+  bool file_exists = false;
+  std::string geometry;
+
+  if (FILE *fp = fopen(file_name.c_str(), "r")) {
+    file_exists = true;
+    fclose(fp);
+  }
+
+  // [NOTE] What is this all about?
+  if (com_mod.cTS != 0 && file_exists) {
+    //CALL TRIMFILE(cTS+3,fName(i))
+    return;
+  }
+
+  auto fp = fopen(file_name.c_str(), "w");
+  fprintf(fp, "# svMultiPhysics volume integral results file. \n");
+  fprintf(fp, "# Quantities represent averaged scalar or flux values over each volume mesh domain.\n");
+  fprintf(fp, "#        \n");
+  fprintf(fp, "# Format \n");
+  fprintf(fp, "# ------ \n");
+  fprintf(fp, "# domain volumes: [list of mesh domain volumes]  \n");
+  fprintf(fp, "# step time [list of mesh domain names] \n");
+  fprintf(fp, "# [time step] [time] [list of computed values for each mesh domain]\n");
+
+  // Write domain volumes.
+  //
+  fprintf(fp, "domain volumes: ");
+  for (int iDmn = 0; iDmn < lEq.nDmn; iDmn++) {
+    fprintf(fp, " %4.3e ", lEq.dmn[iDmn].v);
+  }
+  fprintf(fp, "\n");
+
+  // Write domain names.
+  //
+  fprintf(fp, "step   time  ");
+
+  for (int iDmn = 0; iDmn < lEq.nDmn; iDmn++) {
+    std::string stmp = "domain-" + std::to_string(lEq.dmn[iDmn].Id);
+    if (lEq.dmn[iDmn].Id == -1) {
+      stmp = "domain";
+    }
+    fprintf(fp, "%s ", stmp.c_str());
+  }
+
+  fprintf(fp, "\n");
+  fclose(fp);
 }
 
 /// \todo [NOTE] This is not fully implemented.
 //
-void txt(Simulation* simulation, const bool flag) 
+// init_write - if true then this is the start of the simulation and 
+//   so create a new file to initialize output.
+//
+void txt(Simulation* simulation, const bool init_write) 
 {
   using namespace consts;
   using namespace utils;
@@ -146,7 +195,7 @@ void txt(Simulation* simulation, const bool flag)
     if (cplBC.coupled) {
       bool ltmp = false;
 
-      if (!flag) {
+      if (!init_write) {
         if (cplBC.useGenBC) {
           set_bc::genBC_Integ_X(com_mod, cm_mod, "L");
 
@@ -167,7 +216,7 @@ void txt(Simulation* simulation, const bool flag)
       }
 
       if (com_mod.cm.mas(cm_mod) && !cplBC.useGenBC) {
-        if (flag) {
+        if (init_write) {
           if (com_mod.cTS == 0 || !ltmp) {
             //OPEN(fid, FILE=cplBC.saveName)
             //CLOSE(fid, STATUS='DELETE')
@@ -195,12 +244,9 @@ void txt(Simulation* simulation, const bool flag)
 
   // Process eq outputs
   //
-  //dmsg << "Process eq outputs ... ";
-  //dmsg << "com_mod.nEq: " << com_mod.nEq;
-
   for (int iEq = 0; iEq < com_mod.nEq; iEq++) {
     #ifdef debug_txt
-    dmsg << "---------- iEq " << iEq+1 << " ----------";
+    dmsg << "---------- iEq " << iEq+1;
     #endif
     Array<double> tmpV(maxNSD,tnNo);
     auto& eq = com_mod.eq[iEq];
@@ -210,15 +256,13 @@ void txt(Simulation* simulation, const bool flag)
       // Don't write it when it doesn't suppose to be written
       #ifdef debug_txt
       dmsg;
-      dmsg << "----- iOut " << iOut+1 << " -----";
+      dmsg << "----- iOut " << iOut+1;
       #endif
 
-      std::vector<bool> wtn;
-      for (int i = 1; i < 3; i++) {
-        wtn.push_back( eq.output[iOut].wtn[i] );
-      }
-
-      if (std::count(wtn.begin(), wtn.end(), false) == wtn.size()) {
+      // Get options for computing boundary and volume integral quantities.
+      // 
+      auto output_options = eq.output[iOut].options;
+      if (!output_options.boundary_integral && !output_options.volume_integral) { 
         continue;
       } 
 
@@ -245,11 +289,11 @@ void txt(Simulation* simulation, const bool flag)
       #endif
 
       switch (oGrp) {
-        case OutputType::outGrp_NA:
+        case OutputNameType::outGrp_NA:
           throw std::runtime_error("NA outGrp in TXT");
         break;
 
-        case OutputType::outGrp_A:
+        case OutputNameType::outGrp_A:
           for (int j = 0; j < tnNo; j++) {
             for (int i = 0; i < l; i++) {
               tmpV(i,j) = com_mod.An(i+s,j);
@@ -257,7 +301,7 @@ void txt(Simulation* simulation, const bool flag)
           }
         break;
 
-        case OutputType::outGrp_Y:
+        case OutputNameType::outGrp_Y:
           for (int j = 0; j < tnNo; j++) {
             for (int i = 0; i < l; i++) {
               tmpV(i,j) = com_mod.Yn(i+s,j);
@@ -269,7 +313,7 @@ void txt(Simulation* simulation, const bool flag)
           }
         break;
 
-        case OutputType::outGrp_D:
+        case OutputNameType::outGrp_D:
           for (int j = 0; j < tnNo; j++) {
             for (int i = 0; i < l; i++) {
               tmpV(i,j) = com_mod.Dn(i+s,j);
@@ -277,9 +321,9 @@ void txt(Simulation* simulation, const bool flag)
           }
         break;
 
-        case OutputType::outGrp_WSS: 
-        case OutputType::outGrp_vort: 
-        case OutputType::outGrp_trac:
+        case OutputNameType::outGrp_WSS: 
+        case OutputNameType::outGrp_vort: 
+        case OutputNameType::outGrp_trac:
           post::all_post(simulation, tmpV, com_mod.Yn, com_mod.Dn, oGrp, iEq);
           for (int a = 0; a < tnNo; a++) {
             auto vec = tmpV.col(a, {0,nsd-1});
@@ -288,15 +332,15 @@ void txt(Simulation* simulation, const bool flag)
           l = 1;
         break;
 
-        case OutputType::outGrp_eFlx: 
-        case OutputType::outGrp_hFlx: 
-        case OutputType::outGrp_divV: 
-        case OutputType::outGrp_J: 
-        case OutputType::outGrp_mises:
+        case OutputNameType::outGrp_eFlx: 
+        case OutputNameType::outGrp_hFlx: 
+        case OutputNameType::outGrp_divV: 
+        case OutputNameType::outGrp_J: 
+        case OutputNameType::outGrp_mises:
           post::all_post(simulation, tmpV, com_mod.Yn, com_mod.Dn, oGrp, iEq);
         break;
 
-        case OutputType::outGrp_absV:
+        case OutputNameType::outGrp_absV:
           for (int a = 0; a < tnNo; a++) {
             for (int i = 0; i < l; i++) {
               tmpV(i,a) = com_mod.Yn(i,a) - com_mod.Yn(i+nsd+1,a);
@@ -304,7 +348,7 @@ void txt(Simulation* simulation, const bool flag)
           }
         break;
 
-        case OutputType::outGrp_I:
+        case OutputNameType::outGrp_I:
           div = false;
           for (int a = 0; a < tnNo; a++) {
             for (int i = 0; i < l; i++) {
@@ -314,96 +358,49 @@ void txt(Simulation* simulation, const bool flag)
         break;
 
         default:
-          throw std::runtime_error("Undefined output");
+          throw std::runtime_error("Undefined output '" + std::to_string(static_cast<int>(oGrp)) + "'");
       } 
 
-      // Write average/flux of variables at the boundaries
+      // Write boundary and volume integral quantities.
       //
       #ifdef debug_txt
       dmsg << "Write average/flux of variables ...";
       #endif
       const auto& appPath = chnl_mod.appPath;
-      std::array<std::string,2> fName; 
-      fName[0] = eq.sym + "_" + output.name;
-      fName[1] = fName[0];
+      std::string file_name = eq.sym + "_" + output.name;
+      std::string boundary_file_name;
 
       if (l == nsd) {
-        fName[0] = appPath + "B_" + fName[0] + "_flux.txt";
+        boundary_file_name = appPath + "B_" + file_name + "_flux.txt";
       } else {
-        fName[0] = appPath + "B_" + fName[0] + "_average.txt";
+        boundary_file_name = appPath + "B_" + file_name + "_average.txt";
       }
 
-      fName[1] = appPath + "V_" + fName[1] + "_flux.txt";
+      std::string volume_file_name = appPath + "V_" + file_name + "_flux.txt";
+
       #ifdef debug_txt
-      dmsg << "flag: " << flag;
-      dmsg << "fName[0]: " << fName[0];
-      dmsg << "fName[1]: " << fName[1];
+      dmsg << "init_write: " << init_write;
+      dmsg << "boundary_file_name: " << boundary_file_name;
+      dmsg << "volume_file_name: " << volume_file_name;
       #endif
 
-      if (flag) {
-        cctxt(com_mod, cm_mod, eq, fName, wtn);
+      if (init_write) {
+        if (output_options.boundary_integral) {
+          create_boundary_integral_file(com_mod, cm_mod, eq, boundary_file_name);
+        }
+        if (output_options.volume_integral) {
+          create_volume_integral_file(com_mod, cm_mod, eq, volume_file_name);
+        }
+
       } else {
-        wtxt(com_mod, cm_mod, eq, l, fName, tmpV, wtn, div, pflag);
+        if (output_options.boundary_integral) {
+          write_boundary_integral_data(com_mod, cm_mod, eq, l, boundary_file_name, tmpV, div, pflag);
+        }
+        if (output_options.volume_integral) {
+          write_volume_integral_data(com_mod, cm_mod, eq, l, volume_file_name, tmpV, div, pflag);
+        }
       }
     }
-
-    // IB outputs
-
-    // TODO:DaveP] not implemented.
-    //
-/* 
-    if (.NOT.ibFlag) continue;
-    if (ALLOCATED(tmpV)) DEALLOCATE(tmpV)
-    ALLOCATE (tmpV(maxnsd,ib.tnNo))
-    for (int iOut=1, eq(iEq).nOutIB
-      // Don't write it when it doesn't suppose to be written
-      wtn = eq(iEq).outIB(iOut).wtn(2:3)
-      if (ALL(.NOT.wtn)) continue;
-      l = eq(iEq).outIB(iOut).l
-      s = eq(iEq).s + eq(iEq).outIB(iOut).o
-      e = s + l - 1
-
-      oGrp = eq(iEq).outIB(iOut).grp
-      div  = .TRUE.
-
-      SELECT case (oGrp)
-      case (outGrp_NA)
-        err = "NA outGrp in TXT"
-        case (outGrp_Y)
-           for (int a=1, ib.tnNo
-              tmpV(1:l,a) = ib.Yb(s:e,a)/REAL(cm.np(), KIND=RKIND)
-           {
-        case (outGrp_D)
-           for (int a=1, ib.tnNo
-              tmpV(1:l,a) = ib.Ubo(s:e,a)/REAL(cm.np(), KIND=RKIND)
-           {
-        case (outGrp_I)
-           div = .FALSE.
-           for (int a=1, ib.tnNo
-              tmpV(1:l,a) = 1.
-           {
-        case DEFAULT
-           err = "Undefined output"
-        END SELECT
-
-        fName = eq(iEq).sym//"_"//TRIM(eq(iEq).outIB(iOut).name)
-        if (l .EQ. nsd) {
-           fName(1) = TRIM(appPath)//"IB_B_"//TRIM(fName(1))//
-     2        "_flux.txt"
-        } else {
-           fName(1) = TRIM(appPath)//"IB_B_"//TRIM(fName(1))//
-     2        "_average.txt"
-        }
-        fName(2) = TRIM(appPath)//"IB_V_"//TRIM(fName(2))//
-     2     "_average.txt"
-
-        if (flag) {
-           CALL IB_CCTXT(eq(iEq), fName, wtn)
-        } else {
-           CALL IB_WTXT(eq(iEq), l, fName, tmpV, wtn, div)
-        }
-     }
-*/
 
     // ECG leads output
     if (com_mod.cm.idcm() == cm_mod.master) {
@@ -432,89 +429,72 @@ void txt(Simulation* simulation, const bool flag)
   #endif
 }
 
-/// @brief This is to write to txt file
+/// @brief Compute boundary integral for quantities at the current time step 
+/// and write them to a text file.
 ///
-/// \todo TODO:DaveP] not fully implemented.
-///
-/// WARNING: There is an indexing problem here because 'm' is a length and not an index.
+/// NOTE: Be carefu of a potential indexing problem here because 'm' is a length and not an index.
 //
-void wtxt(const ComMod& com_mod, CmMod& cm_mod, const eqType& lEq, const int m, const std::array<std::string,2>& fName, 
-    const Array<double>& tmpV, const std::vector<bool>& wtn, const bool div, const bool pFlag)
+void write_boundary_integral_data(const ComMod& com_mod, CmMod& cm_mod, const eqType& lEq, const int m, 
+    const std::string file_name, const Array<double>& tmpV, const bool div, const bool pFlag)
 {
-  return;
-
-  #ifdef debug_wtxt
+  #define n_debug_write_boundary_integral_data
+  #ifdef debug_write_boundary_integral_data
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
+  dmsg << "file_name: " << file_name;
   dmsg << "m: " << m;
   dmsg << "div: " << div;
   dmsg << "pFlag: " << pFlag;
+  #endif
+
+  double time = com_mod.time;
+  int time_step = com_mod.cTS;
+  #ifdef debug_wtxt
+  dmsg << "time_step: " << time_step;
+  dmsg << "time: " << time;
   #endif
 
   int fid = 1;
   int nsd = com_mod.nsd;
   FILE* fp = nullptr;
 
-  for (int i = 0; i < 2; i++) {
-    if (!wtn[i]) {
-      continue;
+  if (com_mod.cm.mas(cm_mod)) {
+    fp = fopen(file_name.c_str(), "a");
+    fprintf(fp, " %d   %.10e ", time_step, time);
+  }
+
+  for (int iM = 0; iM < com_mod.nMsh; iM++) {
+    auto& msh = com_mod.msh[iM];
+    bool lTH = false; 
+
+    if (msh.nFs == 2) {
+      lTH = true;
     }
 
-    if (com_mod.cm.mas(cm_mod)) {
-      fp = fopen(fName[i].c_str(), "a");
-    }
+    for (int iFa = 0; iFa < msh.nFa; iFa++) {
+      auto& fa = msh.fa[iFa];
+      double tmp = 0.0;
 
-    if (i == 0) {
-      for (int iM = 0; iM < com_mod.nMsh; iM++) {
-        auto& msh = com_mod.msh[iM];
-        bool lTH = false; 
-
-        if (msh.nFs == 2) {
-          lTH = true;
-        }
-
-        for (int iFa = 0; iFa < msh.nFa; iFa++) {
-          auto& fa = msh.fa[iFa];
-          double tmp = 0.0;
-
-          if (m == 1) {
-            if (div) {
-              tmp = fa.area;
-              tmp = all_fun::integ(com_mod, cm_mod, fa, tmpV, 0) / tmp;
-            } else {
-              if (pFlag && lTH) {
-                tmp = all_fun::integ(com_mod, cm_mod, fa, tmpV, 0, true);
-              } else {
-                tmp = all_fun::integ(com_mod, cm_mod, fa, tmpV, 0);
-              }
-            }
-
-          } else if (m == nsd) {
-            tmp = all_fun::integ(com_mod, cm_mod, fa, tmpV, 0, m-1);
+      if (m == 1) {
+        if (div) {
+          tmp = fa.area;
+          tmp = all_fun::integ(com_mod, cm_mod, fa, tmpV, 0) / tmp;
+        } else {
+          if (pFlag && lTH) {
+            tmp = all_fun::integ(com_mod, cm_mod, fa, tmpV, 0, true);
           } else {
-            throw std::runtime_error("WTXT only accepts 1 and nsd");
-          }
-
-          if (com_mod.cm.mas(cm_mod)) {
-            fprintf(fp, " %.10e ", tmp);
+            tmp = all_fun::integ(com_mod, cm_mod, fa, tmpV, 0);
           }
         }
+
+      } else if (m == nsd) {
+        tmp = all_fun::integ(com_mod, cm_mod, fa, tmpV, 0, m-1);
+      } else {
+        throw std::runtime_error("WTXT only accepts 1 and nsd");
       }
 
-    } else {
-      for (int iDmn = 0; iDmn < lEq.nDmn; iDmn++) {
-        auto& dmn = lEq.dmn[iDmn];
-        double tmp = 0.0;
-
-        if (div) {
-          tmp = dmn.v;
-          tmp = all_fun::integ(com_mod, cm_mod, dmn.Id, tmpV, 0, m-1) / tmp;
-        } else {
-          tmp = all_fun::integ(com_mod, cm_mod, dmn.Id, tmpV, 0, m-1, pFlag);
-        }
-        if (com_mod.cm.mas(cm_mod)) {
-          fprintf(fp, " %.10e ", tmp);
-        }
+      if (com_mod.cm.mas(cm_mod)) {
+        fprintf(fp, " %.10e ", tmp);
       }
     }
 
@@ -522,6 +502,62 @@ void wtxt(const ComMod& com_mod, CmMod& cm_mod, const eqType& lEq, const int m, 
       fprintf(fp, "\n");
       fclose(fp);
     }
+  }
+}
+
+/// @brief Compute volume integral for quantities at the current time step 
+/// and write them to a text file.
+///
+/// NOTE: Be carefu of a potential indexing problem here because 'm' is a length and not an index.
+//
+void write_volume_integral_data(const ComMod& com_mod, CmMod& cm_mod, const eqType& lEq, const int m, 
+    const std::string file_name, const Array<double>& tmpV, const bool div, const bool pFlag)
+{
+  #define n_debug_write_volume_integral_data
+  #ifdef debug_write_volume_integral_data
+  DebugMsg dmsg(__func__, com_mod.cm.idcm());
+  dmsg.banner();
+  dmsg << "file_name: " << file_name;
+  dmsg << "m: " << m;
+  dmsg << "div: " << div;
+  dmsg << "pFlag: " << pFlag;
+  #endif
+
+  double time = com_mod.time;
+  int time_step = com_mod.cTS;
+  #ifdef debug_wtxt
+  dmsg << "time_step: " << time_step;
+  dmsg << "time: " << time;
+  #endif
+
+  int fid = 1;
+  int nsd = com_mod.nsd;
+  FILE* fp = nullptr;
+
+  if (com_mod.cm.mas(cm_mod)) {
+    fp = fopen(file_name.c_str(), "a");
+    fprintf(fp, " %d   %.10e ", time_step, time);
+  }
+
+  for (int iDmn = 0; iDmn < lEq.nDmn; iDmn++) {
+    auto& dmn = lEq.dmn[iDmn];
+    double tmp = 0.0;
+
+    if (div) {
+      tmp = dmn.v;
+      tmp = all_fun::integ(com_mod, cm_mod, dmn.Id, tmpV, 0, m-1) / tmp;
+    } else {
+      tmp = all_fun::integ(com_mod, cm_mod, dmn.Id, tmpV, 0, m-1, pFlag);
+    }
+
+    if (com_mod.cm.mas(cm_mod)) {
+      fprintf(fp, " %.10e ", tmp);
+    }
+  }
+
+  if (com_mod.cm.mas(cm_mod)) {
+    fprintf(fp, "\n");
+    fclose(fp);
   }
 }
 

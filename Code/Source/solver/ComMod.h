@@ -611,18 +611,40 @@ class faceType
     double qmTRI3 = 2.0/3.0;
 };
 
+/// @brief Store options for output types.
+//
+struct OutputOptions {
+  bool boundary_integral = false;
+  bool spatial = false;
+  bool volume_integral = false;
+
+  bool no_options_set() {
+    return !(boundary_integral | spatial | volume_integral);
+  }
+
+  void set_option(consts::OutputType type, bool value) 
+  {
+    if (type == consts::OutputType::boundary_integral) {
+      boundary_integral = value;
+    } else if (type == consts::OutputType::spatial) {
+      spatial = value;
+    } else if (type == consts::OutputType::volume_integral) {
+      volume_integral = value;
+    }
+  }
+};
+    
 /// @brief Declared type for outputed variables
 //
 class outputType
 {
   public:
 
-    // Is this output suppose to be written into VTK, boundary, vol
-    std::vector<bool> wtn{false, false, false};
+    // Options to write various output types.
+    OutputOptions options;
 
     // The group that this belong to (one of outType_*)
-    consts::OutputType grp = consts::OutputType::outGrp_NA;
-    //int grp;
+    consts::OutputNameType grp = consts::OutputNameType::outGrp_NA;
 
     // Length of the outputed variable
     int l = 0;

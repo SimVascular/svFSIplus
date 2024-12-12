@@ -61,7 +61,6 @@ int enum_int(T value)
   return static_cast<int>(value);
 }
 
-
 /// Check if a value is set to infinity.
 template<typename T>
 bool present(T value)
@@ -332,7 +331,7 @@ enum class MeshGeneratorType
 /// Map for string to MeshGeneratorType. 
 extern const std::map<std::string,MeshGeneratorType> mesh_generator_name_to_type;
 
-enum class OutputType 
+enum class OutputNameType 
 {
   outGrp_NA = 500, 
   outGrp_A = 501,
@@ -390,6 +389,17 @@ enum class OutputType
   out_CGstrain = 573,
   out_CGInv1 = 572
 };
+
+/// @brief Simulation output file types. 
+//
+enum class OutputType 
+{
+  boundary_integral,  
+  spatial,
+  volume_integral
+};
+
+extern const std::map<std::string,OutputType> output_type_name_to_type;
 
 /// @brief Possible physical properties. Current maxNPror is 20.
 //

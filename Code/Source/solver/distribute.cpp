@@ -942,7 +942,7 @@ void dist_eq(ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, const std::
 {
   using namespace consts;
 
-  #define n_dist_eq
+  #define ndist_eq
   #ifdef dist_eq
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
@@ -1122,11 +1122,14 @@ void dist_eq(ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, const std::
 
   for (int iOut = 0; iOut < lEq.nOutput; iOut++) {
     auto& output = lEq.output[iOut];
-    cm.bcast(cm_mod, output.wtn);
     cm.bcast_enum(cm_mod, &output.grp);
     cm.bcast(cm_mod, &output.o);
     cm.bcast(cm_mod, &output.l);
     cm.bcast(cm_mod, output.name);
+
+    cm.bcast(cm_mod, &output.options.boundary_integral);
+    cm.bcast(cm_mod, &output.options.spatial);
+    cm.bcast(cm_mod, &output.options.volume_integral);
   }
 
   // Distribute BC information
