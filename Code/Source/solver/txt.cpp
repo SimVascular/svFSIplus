@@ -262,7 +262,7 @@ void txt(Simulation* simulation, const bool init_write)
       // Get options for computing boundary and volume integral quantities.
       // 
       auto output_options = eq.output[iOut].options;
-      if (output_options.no_options_set()) { 
+      if (!output_options.boundary_integral && !output_options.volume_integral) { 
         continue;
       } 
 
@@ -358,7 +358,7 @@ void txt(Simulation* simulation, const bool init_write)
         break;
 
         default:
-          throw std::runtime_error("Undefined output");
+          throw std::runtime_error("Undefined output '" + std::to_string(static_cast<int>(oGrp)) + "'");
       } 
 
       // Write boundary and volume integral quantities.
