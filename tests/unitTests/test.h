@@ -30,7 +30,7 @@
 
 // --------------------------------------------------------------
 // To run the tests in test.cpp
-// 1.  Navigate to <svFSIplus_root_directory>/build/svFSI-build/Source/svFSI
+// 1.  Navigate to <svMultiPhysics_root_directory>/build/svMultiPhysics-build/Source/solver
 // 2.  Run `make` to build the tests
 // 3.  Run `ctest --verbose` to run the tests
 
@@ -41,7 +41,7 @@
 // 1. Create a new material parameters class derived from MatParams (e.g. NeoHookeanParams)
 // 2. Create a new material model test class derived from TestMaterialModel (e.g. TestNeoHookean)
 // 3. Implement required functions in the material model test class:
-//    - Constructor: Sets the material model type and parameters for svFSIplus (e.g. TestNeoHookean())
+//    - Constructor: Sets the material model type and parameters for svMultiPhysics (e.g. TestNeoHookean())
 //    - printMaterialParameters(): Prints the material parameters
 //    - computeStrainEnergy(): Computes the strain energy density function
 // In test.cpp:
@@ -325,7 +325,7 @@ std::pair<double, double> computeLinearRegression(const std::vector<double>& x, 
 }
 
 // --------------------------------------------------------------
-// -------------------- Mock svFSIplus object -------------------
+// -------------------- Mock svMultiPhysics object -------------------
 // --------------------------------------------------------------
 
 
@@ -375,7 +375,7 @@ public:
 // ------------------ Test Material Model Classes ---------------
 // --------------------------------------------------------------
 
-// Class for testing material models in svFSI
+// Class for testing material models in svMultiPhysics
 class TestMaterialModel {
 public:
     MockComMod com_mod;
@@ -1133,7 +1133,7 @@ public:
         // Compute CC_ijkl(F). 
         // CC is provided in Voigt notation as Dm, and we will convert it to CC
         double S[3][3], Dm[6][6];
-        get_pk2cc(F, S, Dm); // S from svFSI
+        get_pk2cc(F, S, Dm); // S from solver 
 
         // Convert Dm to Array
         Array<double> Dm_array(6, 6);
@@ -1705,14 +1705,14 @@ public:
     /**
      * @brief Constructor for the TestNeoHookean class.
      *
-     * Initializes the Neo-Hookean material parameters for svFSIplus.
+     * Initializes the Neo-Hookean material parameters for svMultiPhysics.
      *
      * @param[in] params_ Parameters for the Neo-Hookean material model.
      */
     TestNeoHookean(const NeoHookeanParams &params_) : TestMaterialModel( consts::ConstitutiveModelType::stIso_nHook, consts::ConstitutiveModelType::stVol_ST91),
         params(params_) 
         {
-        // Set Neo-Hookean material parameters for svFSIplus
+        // Set Neo-Hookean material parameters for svMultiPhysics
         auto &dmn = com_mod.mockEq.mockDmn;
         dmn.stM.C10 = params.C10;
         dmn.stM.Kpen = 0.0;         // Zero volumetric penalty parameter
@@ -1760,14 +1760,14 @@ public:
     /**
      * @brief Constructor for the TestMooneyRivlin class.
      *
-     * Initializes the Mooney-Rivlin material parameters for svFSIplus.
+     * Initializes the Mooney-Rivlin material parameters for svMultiPhysics.
      *
      * @param[in] params_ Parameters for the Mooney-Rivlin material model.
      */
     TestMooneyRivlin(const MooneyRivlinParams &params_) : TestMaterialModel( consts::ConstitutiveModelType::stIso_MR, consts::ConstitutiveModelType::stVol_ST91),
         params(params_) 
         {
-        // Set Mooney-Rivlin material parameters for svFSIplus
+        // Set Mooney-Rivlin material parameters for svMultiPhysics
         auto &dmn = com_mod.mockEq.mockDmn;
         dmn.stM.C01 = params.C01;
         dmn.stM.C10 = params.C10;
@@ -1817,14 +1817,14 @@ public:
     /**
      * @brief Constructor for the TestHolzapfelOgden class.
      *
-     * Initializes the Holzapfel-Ogden material parameters for svFSIplus.
+     * Initializes the Holzapfel-Ogden material parameters for svMultiPhysics.
      *
      * @param[in] params_ Parameters for the Holzapfel-Ogden material model.
      */
     TestHolzapfelOgden(const HolzapfelOgdenParams &params_) : TestMaterialModel( consts::ConstitutiveModelType::stIso_HO, consts::ConstitutiveModelType::stVol_ST91),
         params(params_) 
         {
-        // Set Holzapfel-Ogden material parameters for svFSIplus
+        // Set Holzapfel-Ogden material parameters for svMultiPhysics
         auto &dmn = com_mod.mockEq.mockDmn;
         dmn.stM.a = params.a;
         dmn.stM.b = params.b;
@@ -1908,7 +1908,7 @@ public:
         //       + a_f/2b_f * chi(I4_bar_f) * (exp{b_f(I4_bar_f - 1)^2} - 1
         //       + a_s/2b_s * chi(I4_bar_s) * (exp{b_s(I4_bar_s - 1)^2} - 1
         //       + a_fs/2b_fs * (exp{b_fs*I8_bar_fs^2} - 1)
-        // This corresponds to the HO implementation in svFSIplus
+        // This corresponds to the HO implementation in svMultiPhysics
 
         // Invariants
         double I1_bar = smTerms.Ib1;
@@ -1951,14 +1951,14 @@ public:
     /**
      * @brief Constructor for the TestHolzapfelOgdenMA class.
      *
-     * Initializes the Holzapfel-Ogden material parameters for svFSIplus.
+     * Initializes the Holzapfel-Ogden material parameters for svMultiPhysics.
      *
      * @param[in] params_ Parameters for the Holzapfel-Ogden ma material model.
      */
     TestHolzapfelOgdenMA(const HolzapfelOgdenMAParams &params_) : TestMaterialModel( consts::ConstitutiveModelType::stIso_HO_ma, consts::ConstitutiveModelType::stVol_ST91),
         params(params_) 
         {
-        // Set Holzapfel-Ogden material parameters for svFSIplus
+        // Set Holzapfel-Ogden material parameters for svMultiPhysics
         auto &dmn = com_mod.mockEq.mockDmn;
         dmn.stM.a = params.a;
         dmn.stM.b = params.b;
@@ -2042,7 +2042,7 @@ public:
         //       + a_f/2b_f * chi(I4_f) * (exp{b_f(I4_f - 1)^2} - 1
         //       + a_s/2b_s * chi(I4_s) * (exp{b_s(I4_s - 1)^2} - 1
         //       + a_fs/2b_fs * (exp{b_fs*I8_fs^2} - 1)
-        // This corresponds to the HO-ma (modified anisotropy) implementation in svFSIplus
+        // This corresponds to the HO-ma (modified anisotropy) implementation in svMultiPhysics
 
         // Invariants
         double I1_bar = smTerms.Ib1;
@@ -2085,7 +2085,7 @@ public:
     /**
      * @brief Constructor for the TestQuadraticVolumetricPenalty class.
      *
-     * Initializes the volumetric penalty parameters for svFSIplus.
+     * Initializes the volumetric penalty parameters for svMultiPhysics.
      *
      * @param[in] params_ Parameters for the volumetric penalty model.
      */
@@ -2093,7 +2093,7 @@ public:
         params(params_) 
         {
 
-        // Set volumetric penalty parameter for svFSIplus
+        // Set volumetric penalty parameter for svMultiPhysics
         auto &dmn = com_mod.mockEq.mockDmn;
         dmn.stM.Kpen = params.kappa;         // Volumetric penalty parameter
 
@@ -2144,7 +2144,7 @@ public:
     /**
      * @brief Constructor for the TestSimoTaylor91VolumetricPenalty class.
      *
-     * Initializes the volumetric penalty parameters for svFSIplus.
+     * Initializes the volumetric penalty parameters for svMultiPhysics.
      *
      * @param[in] params_ Parameters for the volumetric penalty model.
      */
@@ -2152,7 +2152,7 @@ public:
         params(params_) 
         {
 
-        // Set volumetric penalty parameter for svFSIplus
+        // Set volumetric penalty parameter for svMultiPhysics
         auto &dmn = com_mod.mockEq.mockDmn;
         dmn.stM.Kpen = params.kappa;         // Volumetric penalty parameter
 
@@ -2203,7 +2203,7 @@ public:
     /**
      * @brief Constructor for the TestMiehe94VolumetricPenalty class.
      *
-     * Initializes the volumetric penalty parameters for svFSIplus.
+     * Initializes the volumetric penalty parameters for svMultiPhysics.
      *
      * @param[in] params_ Parameters for the volumetric penalty model.
      */
@@ -2211,7 +2211,7 @@ public:
         params(params_) 
         {
 
-        // Set volumetric penalty parameter for svFSIplus
+        // Set volumetric penalty parameter for svMultiPhysics
         auto &dmn = com_mod.mockEq.mockDmn;
         dmn.stM.Kpen = params.kappa;         // Volumetric penalty parameter
 
