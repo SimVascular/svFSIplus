@@ -26,7 +26,7 @@
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-include_directories(${SV_SOURCE_DIR}/ThirdParty/parmetis_internal/simvascular_parmetis_internal/ParMETISLib)
+include_directories(${SV_SOURCE_DIR}/ThirdParty/parmetis_svfsi/simvascular_parmetis_svfsi/ParMETISLib)
 include_directories(${SV_SOURCE_DIR}/ThirdParty/tetgen/simvascular_tetgen)
 include_directories(${SV_SOURCE_DIR}/ThirdParty/tinyxml/simvascular_tinyxml)
 include_directories(${MPI_C_INCLUDE_PATH})
@@ -75,7 +75,7 @@ if(SV_USE_TRILINOS)
 
     set(USE_TRILINOS 1)
   ELSE()
-    MESSAGE(WARNING "Could not find Trilinos. Compiling svMultiPhysics without Trilinos.")
+    MESSAGE(WARNING "Could not find Trilinos. Compiling svFSI without Trilinos.")
   ENDIF()
 
 endif()
@@ -128,7 +128,7 @@ if(ENABLE_ARRAY_INDEX_CHECKING)
   ADD_DEFINITIONS(-DENABLE_ARRAY_INDEX_CHECKING)
 endif()
 
-# svMultiPhysics requires LAPACK
+# svFSI requires LAPACK
 find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
 
@@ -238,38 +238,38 @@ if(USE_TRILINOS)
   link_directories(${Trilinos_TPL_LIBRARY_DIRS})
 endif()
 
-simvascular_add_executable(${SV_MULTIPHYSICS_EXE}
+simvascular_add_executable(${SV_SVFSI_EXE}
   SRCS ${CSRCS}
-  DEV_SCRIPT_NAME "mysvmultiphysics"
-  INSTALL_SCRIPT_NAME "svmultiphysics"
+  DEV_SCRIPT_NAME "mysvfsi"
+  INSTALL_SCRIPT_NAME "svfsi"
   INSTALL_COMP CoreExecutables
   INSTALL_DESTINATION ${SV_INSTALL_RUNTIME_DIR})
 
-target_link_libraries(${SV_MULTIPHYSICS_EXE}
+target_link_libraries(${SV_SVFSI_EXE}
   ${GLOBAL_LIBRARIES}
   ${INTELRUNTIME_LIBRARIES}
   ${ZLIB_LIBRARY}
   ${BLAS_LIBRARIES}
   ${LAPACK_LIBRARIES}
   ${METIS_SVFSI_LIBRARY_NAME}
-  ${PARMETIS_INTERNAL_LIBRARY_NAME}
+  ${PARMETIS_SVFSI_LIBRARY_NAME}
   ${TETGEN_LIBRARY_NAME}
   ${TINYXML_LIBRARY_NAME}
-  ${SV_LIB_LINEAR_SOLVER_NAME}${SV_MPI_NAME_EXT}
+  ${SV_LIB_SVFSILS_NAME}${SV_MPI_NAME_EXT}
   ${VTK_LIBRARIES}
   )
 
 # extra MPI libraries only if there are not set to NOT_FOUND or other null
 if(SV_MPI_EXTRA_LIBRARY)
-  target_link_libraries(${SV_MULTIPHYSICS_EXE} ${SV_MPI_EXTRA_LIBRARY})
+  target_link_libraries(${SV_SVFSI_EXE} ${SV_MPI_EXTRA_LIBRARY})
 endif()
 
 if(USE_TRILINOS)
-  target_link_libraries(${SV_MULTIPHYSICS_EXE} ${Trilinos_LIBRARIES} ${Trilinos_TPL_LIBRARIES})
+  target_link_libraries(${SV_SVFSI_EXE} ${Trilinos_LIBRARIES} ${Trilinos_TPL_LIBRARIES})
 endif()
 
 if(USE_PETSC)
-  target_link_libraries(${SV_MULTIPHYSICS_EXE} ${PETSC_LIBRARY_DIRS})
+  target_link_libraries(${SV_SVFSI_EXE} ${PETSC_LIBRARY_DIRS})
 endif()
 
 # coverage
@@ -319,7 +319,7 @@ if(ENABLE_UNIT_TEST)
   list(REMOVE_ITEM CSRCS "main.cpp")
   list(APPEND CSRCS ${TEST_SOURCES})
 
-  # include source files (same as what svMultiPhysics does except for main.cpp)
+  # include source files (same as what svFSI does except for main.cpp)
   add_executable(run_all_unit_tests ${CSRCS})
   
   if(USE_TRILINOS)
@@ -338,10 +338,10 @@ if(ENABLE_UNIT_TEST)
     ${BLAS_LIBRARIES}
     ${LAPACK_LIBRARIES}
     ${METIS_SVFSI_LIBRARY_NAME}
-    ${PARMETIS_INTERNAL_LIBRARY_NAME}
+    ${PARMETIS_SVFSI_LIBRARY_NAME}
     ${TETGEN_LIBRARY_NAME}
     ${TINYXML_LIBRARY_NAME}
-    ${SV_LIB_LINEAR_SOLVER_NAME}${SV_MPI_NAME_EXT}
+    ${SV_LIB_SVFSILS_NAME}${SV_MPI_NAME_EXT}
     ${VTK_LIBRARIES}
   )
 

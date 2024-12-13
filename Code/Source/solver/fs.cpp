@@ -303,9 +303,9 @@ void init_fs_msh(const ComMod& com_mod, mshType& lM)
     lM.fs[0].Nx  = lM.Nx;
   }
 
-  bool flag = (lM.eType == ElementType::HEX20) || (lM.eType == ElementType::HEX27) || (lM.eType == ElementType::WDG);
+  bool flag = (lM.eType == ElementType::HEX20) || (lM.eType == ElementType::HEX27);
   if (flag) {
-    std::cout << "WARNING: Second derivatives are not computed for HEX20/HEX27/WDG type elements";
+    std::cout << "WARNING: Second derivatives are not computed for HEX20/HEX27 type elements";
     //throw std::runtime_error(" Second derivatives are not computed for HEX20/HEX27/WDG type elements");
   }
 

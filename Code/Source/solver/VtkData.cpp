@@ -340,6 +340,9 @@ void VtkVtuData::VtkVtuDataImpl::set_connectivity(const int nsd, const Array<int
     } else if (np_elem == 4) {
       vtk_cell_type = VTK_TETRA;
 
+      } else if (np_elem == 6) {
+      vtk_cell_type = VTK_WEDGE;
+
     } else if (np_elem == 8) {
       vtk_cell_type = VTK_HEXAHEDRON;
 

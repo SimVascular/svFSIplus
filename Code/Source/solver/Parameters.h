@@ -59,11 +59,11 @@ template<typename T>
 /// branches from the root to sub-elements. All elements can have sub-elements:
 ///
 /// \code{.cpp}
-/// <svMultiPhysicsFile>
+/// <svFSIFile>
 ///   <element>
 ///     <subelement>.....</subelement>
 ///   </element>
-/// </svMultiPhysicsFile>
+/// </svFSIFile>
 /// \endcode
 ///
 /// The elements in the svFSIplus simulation file are represented by sections of
