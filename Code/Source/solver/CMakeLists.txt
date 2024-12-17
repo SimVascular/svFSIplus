@@ -26,6 +26,7 @@
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+include_directories(${SV_SOURCE_DIR}/ThirdParty/eigen/include)
 include_directories(${SV_SOURCE_DIR}/ThirdParty/parmetis_internal/simvascular_parmetis_internal/ParMETISLib)
 include_directories(${SV_SOURCE_DIR}/ThirdParty/tetgen/simvascular_tetgen)
 include_directories(${SV_SOURCE_DIR}/ThirdParty/tinyxml/simvascular_tinyxml)
