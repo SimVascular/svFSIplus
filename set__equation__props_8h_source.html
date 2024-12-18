@@ -151,7 +151,7 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>  read_domain(simulation, eq_params, lEq, propL);</div>
 <div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span> </div>
 <div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>  nDOP = {1, 1, 0, 0};</div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>  outPuts[0] = OutputType::out_voltage;</div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>  outPuts[0] = OutputNameType::out_voltage;</div>
 <div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span> </div>
 <div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>  <span class="comment">// Set solver parameters.</span></div>
 <div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>  read_ls(simulation, eq_params, SolverType::lSolver_CG, lEq);</div>
@@ -240,18 +240,18 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00156" name="l00156"></a><span class="lineno">  156</span> </div>
 <div class="line"><a id="l00157" name="l00157"></a><span class="lineno">  157</span>    nDOP = {12, 4, 3, 0};</div>
 <div class="line"><a id="l00158" name="l00158"></a><span class="lineno">  158</span>    outPuts = {</div>
-<div class="line"><a id="l00159" name="l00159"></a><span class="lineno">  159</span>       OutputType::out_velocity,</div>
-<div class="line"><a id="l00160" name="l00160"></a><span class="lineno">  160</span>       OutputType::out_pressure,</div>
-<div class="line"><a id="l00161" name="l00161"></a><span class="lineno">  161</span>       OutputType::out_WSS,</div>
-<div class="line"><a id="l00162" name="l00162"></a><span class="lineno">  162</span>       OutputType::out_displacement,</div>
-<div class="line"><a id="l00163" name="l00163"></a><span class="lineno">  163</span>       OutputType::out_energyFlux,</div>
-<div class="line"><a id="l00164" name="l00164"></a><span class="lineno">  164</span>       OutputType::out_traction,</div>
-<div class="line"><a id="l00165" name="l00165"></a><span class="lineno">  165</span>       OutputType::out_vorticity,</div>
-<div class="line"><a id="l00166" name="l00166"></a><span class="lineno">  166</span>       OutputType::out_vortex,</div>
-<div class="line"><a id="l00167" name="l00167"></a><span class="lineno">  167</span>       OutputType::out_strainInv,</div>
-<div class="line"><a id="l00168" name="l00168"></a><span class="lineno">  168</span>       OutputType::out_viscosity,</div>
-<div class="line"><a id="l00169" name="l00169"></a><span class="lineno">  169</span>       OutputType::out_divergence,</div>
-<div class="line"><a id="l00170" name="l00170"></a><span class="lineno">  170</span>       OutputType::out_acceleration</div>
+<div class="line"><a id="l00159" name="l00159"></a><span class="lineno">  159</span>       OutputNameType::out_velocity,</div>
+<div class="line"><a id="l00160" name="l00160"></a><span class="lineno">  160</span>       OutputNameType::out_pressure,</div>
+<div class="line"><a id="l00161" name="l00161"></a><span class="lineno">  161</span>       OutputNameType::out_WSS,</div>
+<div class="line"><a id="l00162" name="l00162"></a><span class="lineno">  162</span>       OutputNameType::out_displacement,</div>
+<div class="line"><a id="l00163" name="l00163"></a><span class="lineno">  163</span>       OutputNameType::out_energyFlux,</div>
+<div class="line"><a id="l00164" name="l00164"></a><span class="lineno">  164</span>       OutputNameType::out_traction,</div>
+<div class="line"><a id="l00165" name="l00165"></a><span class="lineno">  165</span>       OutputNameType::out_vorticity,</div>
+<div class="line"><a id="l00166" name="l00166"></a><span class="lineno">  166</span>       OutputNameType::out_vortex,</div>
+<div class="line"><a id="l00167" name="l00167"></a><span class="lineno">  167</span>       OutputNameType::out_strainInv,</div>
+<div class="line"><a id="l00168" name="l00168"></a><span class="lineno">  168</span>       OutputNameType::out_viscosity,</div>
+<div class="line"><a id="l00169" name="l00169"></a><span class="lineno">  169</span>       OutputNameType::out_divergence,</div>
+<div class="line"><a id="l00170" name="l00170"></a><span class="lineno">  170</span>       OutputNameType::out_acceleration</div>
 <div class="line"><a id="l00171" name="l00171"></a><span class="lineno">  171</span>     };</div>
 <div class="line"><a id="l00172" name="l00172"></a><span class="lineno">  172</span> </div>
 <div class="line"><a id="l00173" name="l00173"></a><span class="lineno">  173</span>  } <span class="keywordflow">else</span> {</div>
@@ -269,10 +269,10 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00185" name="l00185"></a><span class="lineno">  185</span> </div>
 <div class="line"><a id="l00186" name="l00186"></a><span class="lineno">  186</span>    <span class="keywordflow">if</span> (pstEq) {</div>
 <div class="line"><a id="l00187" name="l00187"></a><span class="lineno">  187</span>      nDOP = {2, 2, 0, 0};</div>
-<div class="line"><a id="l00188" name="l00188"></a><span class="lineno">  188</span>      outPuts = { OutputType::out_displacement, OutputType::out_stress };</div>
+<div class="line"><a id="l00188" name="l00188"></a><span class="lineno">  188</span>      outPuts = { OutputNameType::out_displacement, OutputNameType::out_stress };</div>
 <div class="line"><a id="l00189" name="l00189"></a><span class="lineno">  189</span>    } <span class="keywordflow">else</span> { </div>
 <div class="line"><a id="l00190" name="l00190"></a><span class="lineno">  190</span>      nDOP = {1, 1, 0, 0};</div>
-<div class="line"><a id="l00191" name="l00191"></a><span class="lineno">  191</span>      outPuts[0] = OutputType::out_displacement;</div>
+<div class="line"><a id="l00191" name="l00191"></a><span class="lineno">  191</span>      outPuts[0] = OutputNameType::out_displacement;</div>
 <div class="line"><a id="l00192" name="l00192"></a><span class="lineno">  192</span>    }</div>
 <div class="line"><a id="l00193" name="l00193"></a><span class="lineno">  193</span>  }</div>
 <div class="line"><a id="l00194" name="l00194"></a><span class="lineno">  194</span> </div>
@@ -316,17 +316,17 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00232" name="l00232"></a><span class="lineno">  232</span>  nDOP = {11, 2, 3, 0};</div>
 <div class="line"><a id="l00233" name="l00233"></a><span class="lineno">  233</span> </div>
 <div class="line"><a id="l00234" name="l00234"></a><span class="lineno">  234</span>  outPuts = { </div>
-<div class="line"><a id="l00235" name="l00235"></a><span class="lineno">  235</span>    OutputType::out_velocity,</div>
-<div class="line"><a id="l00236" name="l00236"></a><span class="lineno">  236</span>    OutputType::out_pressure,</div>
-<div class="line"><a id="l00237" name="l00237"></a><span class="lineno">  237</span>    OutputType::out_WSS,</div>
-<div class="line"><a id="l00238" name="l00238"></a><span class="lineno">  238</span>    OutputType::out_traction,</div>
-<div class="line"><a id="l00239" name="l00239"></a><span class="lineno">  239</span>    OutputType::out_vorticity,</div>
-<div class="line"><a id="l00240" name="l00240"></a><span class="lineno">  240</span>    OutputType::out_vortex,</div>
-<div class="line"><a id="l00241" name="l00241"></a><span class="lineno">  241</span>    OutputType::out_strainInv,</div>
-<div class="line"><a id="l00242" name="l00242"></a><span class="lineno">  242</span>    OutputType::out_energyFlux,</div>
-<div class="line"><a id="l00243" name="l00243"></a><span class="lineno">  243</span>    OutputType::out_viscosity,</div>
-<div class="line"><a id="l00244" name="l00244"></a><span class="lineno">  244</span>    OutputType::out_divergence,</div>
-<div class="line"><a id="l00245" name="l00245"></a><span class="lineno">  245</span>    OutputType::out_acceleration</div>
+<div class="line"><a id="l00235" name="l00235"></a><span class="lineno">  235</span>    OutputNameType::out_velocity,</div>
+<div class="line"><a id="l00236" name="l00236"></a><span class="lineno">  236</span>    OutputNameType::out_pressure,</div>
+<div class="line"><a id="l00237" name="l00237"></a><span class="lineno">  237</span>    OutputNameType::out_WSS,</div>
+<div class="line"><a id="l00238" name="l00238"></a><span class="lineno">  238</span>    OutputNameType::out_traction,</div>
+<div class="line"><a id="l00239" name="l00239"></a><span class="lineno">  239</span>    OutputNameType::out_vorticity,</div>
+<div class="line"><a id="l00240" name="l00240"></a><span class="lineno">  240</span>    OutputNameType::out_vortex,</div>
+<div class="line"><a id="l00241" name="l00241"></a><span class="lineno">  241</span>    OutputNameType::out_strainInv,</div>
+<div class="line"><a id="l00242" name="l00242"></a><span class="lineno">  242</span>    OutputNameType::out_energyFlux,</div>
+<div class="line"><a id="l00243" name="l00243"></a><span class="lineno">  243</span>    OutputNameType::out_viscosity,</div>
+<div class="line"><a id="l00244" name="l00244"></a><span class="lineno">  244</span>    OutputNameType::out_divergence,</div>
+<div class="line"><a id="l00245" name="l00245"></a><span class="lineno">  245</span>    OutputNameType::out_acceleration</div>
 <div class="line"><a id="l00246" name="l00246"></a><span class="lineno">  246</span>  };</div>
 <div class="line"><a id="l00247" name="l00247"></a><span class="lineno">  247</span> </div>
 <div class="line"><a id="l00248" name="l00248"></a><span class="lineno">  248</span>  <span class="comment">// Set solver parameters.</span></div>
@@ -351,9 +351,9 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00267" name="l00267"></a><span class="lineno">  267</span>  read_domain(simulation, eq_params, lEq, propL);</div>
 <div class="line"><a id="l00268" name="l00268"></a><span class="lineno">  268</span> </div>
 <div class="line"><a id="l00269" name="l00269"></a><span class="lineno">  269</span>  nDOP = {3,1,1,0};</div>
-<div class="line"><a id="l00270" name="l00270"></a><span class="lineno">  270</span>  outPuts = {OutputType::out_temperature,</div>
-<div class="line"><a id="l00271" name="l00271"></a><span class="lineno">  271</span>             OutputType::out_heatFlux,</div>
-<div class="line"><a id="l00272" name="l00272"></a><span class="lineno">  272</span>             OutputType::out_velocity};</div>
+<div class="line"><a id="l00270" name="l00270"></a><span class="lineno">  270</span>  outPuts = {OutputNameType::out_temperature,</div>
+<div class="line"><a id="l00271" name="l00271"></a><span class="lineno">  271</span>             OutputNameType::out_heatFlux,</div>
+<div class="line"><a id="l00272" name="l00272"></a><span class="lineno">  272</span>             OutputNameType::out_velocity};</div>
 <div class="line"><a id="l00273" name="l00273"></a><span class="lineno">  273</span> </div>
 <div class="line"><a id="l00274" name="l00274"></a><span class="lineno">  274</span>  <span class="comment">// Set solver parameters.</span></div>
 <div class="line"><a id="l00275" name="l00275"></a><span class="lineno">  275</span>  read_ls(simulation, eq_params, SolverType::lSolver_GMRES, lEq);</div>
@@ -378,7 +378,7 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00294" name="l00294"></a><span class="lineno">  294</span>  read_domain(simulation, eq_params, lEq, propL);</div>
 <div class="line"><a id="l00295" name="l00295"></a><span class="lineno">  295</span> </div>
 <div class="line"><a id="l00296" name="l00296"></a><span class="lineno">  296</span>  nDOP = {2,1,1,0};</div>
-<div class="line"><a id="l00297" name="l00297"></a><span class="lineno">  297</span>  outPuts = {OutputType::out_temperature, OutputType::out_heatFlux};</div>
+<div class="line"><a id="l00297" name="l00297"></a><span class="lineno">  297</span>  outPuts = {OutputNameType::out_temperature, OutputNameType::out_heatFlux};</div>
 <div class="line"><a id="l00298" name="l00298"></a><span class="lineno">  298</span> </div>
 <div class="line"><a id="l00299" name="l00299"></a><span class="lineno">  299</span>  <span class="comment">// Set solver parameters.</span></div>
 <div class="line"><a id="l00300" name="l00300"></a><span class="lineno">  300</span>  read_ls(simulation, eq_params, SolverType::lSolver_CG, lEq);</div>
@@ -451,30 +451,30 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00367" name="l00367"></a><span class="lineno">  367</span> </div>
 <div class="line"><a id="l00368" name="l00368"></a><span class="lineno">  368</span>  nDOP = {22, 4, 2, 0};</div>
 <div class="line"><a id="l00369" name="l00369"></a><span class="lineno">  369</span>  outPuts = {</div>
-<div class="line"><a id="l00370" name="l00370"></a><span class="lineno">  370</span>    OutputType::out_velocity,</div>
-<div class="line"><a id="l00371" name="l00371"></a><span class="lineno">  371</span>    OutputType::out_pressure,</div>
-<div class="line"><a id="l00372" name="l00372"></a><span class="lineno">  372</span>    OutputType::out_displacement,</div>
-<div class="line"><a id="l00373" name="l00373"></a><span class="lineno">  373</span>    OutputType::out_mises,</div>
+<div class="line"><a id="l00370" name="l00370"></a><span class="lineno">  370</span>    OutputNameType::out_velocity,</div>
+<div class="line"><a id="l00371" name="l00371"></a><span class="lineno">  371</span>    OutputNameType::out_pressure,</div>
+<div class="line"><a id="l00372" name="l00372"></a><span class="lineno">  372</span>    OutputNameType::out_displacement,</div>
+<div class="line"><a id="l00373" name="l00373"></a><span class="lineno">  373</span>    OutputNameType::out_mises,</div>
 <div class="line"><a id="l00374" name="l00374"></a><span class="lineno">  374</span> </div>
-<div class="line"><a id="l00375" name="l00375"></a><span class="lineno">  375</span>    OutputType::out_WSS,</div>
-<div class="line"><a id="l00376" name="l00376"></a><span class="lineno">  376</span>    OutputType::out_traction,</div>
-<div class="line"><a id="l00377" name="l00377"></a><span class="lineno">  377</span>    OutputType::out_vorticity,</div>
-<div class="line"><a id="l00378" name="l00378"></a><span class="lineno">  378</span>    OutputType::out_vortex,</div>
-<div class="line"><a id="l00379" name="l00379"></a><span class="lineno">  379</span>    OutputType::out_strainInv,</div>
-<div class="line"><a id="l00380" name="l00380"></a><span class="lineno">  380</span>    OutputType::out_energyFlux,</div>
-<div class="line"><a id="l00381" name="l00381"></a><span class="lineno">  381</span>    OutputType::out_viscosity,</div>
-<div class="line"><a id="l00382" name="l00382"></a><span class="lineno">  382</span>    OutputType::out_absVelocity,</div>
-<div class="line"><a id="l00383" name="l00383"></a><span class="lineno">  383</span>    OutputType::out_stress,</div>
-<div class="line"><a id="l00384" name="l00384"></a><span class="lineno">  384</span>    OutputType::out_cauchy,</div>
-<div class="line"><a id="l00385" name="l00385"></a><span class="lineno">  385</span>    OutputType::out_strain,</div>
-<div class="line"><a id="l00386" name="l00386"></a><span class="lineno">  386</span>    OutputType::out_jacobian,</div>
-<div class="line"><a id="l00387" name="l00387"></a><span class="lineno">  387</span>    OutputType::out_defGrad,</div>
-<div class="line"><a id="l00388" name="l00388"></a><span class="lineno">  388</span>    OutputType::out_integ,</div>
-<div class="line"><a id="l00389" name="l00389"></a><span class="lineno">  389</span>    OutputType::out_fibDir,</div>
-<div class="line"><a id="l00390" name="l00390"></a><span class="lineno">  390</span>    OutputType::out_fibAlign,</div>
+<div class="line"><a id="l00375" name="l00375"></a><span class="lineno">  375</span>    OutputNameType::out_WSS,</div>
+<div class="line"><a id="l00376" name="l00376"></a><span class="lineno">  376</span>    OutputNameType::out_traction,</div>
+<div class="line"><a id="l00377" name="l00377"></a><span class="lineno">  377</span>    OutputNameType::out_vorticity,</div>
+<div class="line"><a id="l00378" name="l00378"></a><span class="lineno">  378</span>    OutputNameType::out_vortex,</div>
+<div class="line"><a id="l00379" name="l00379"></a><span class="lineno">  379</span>    OutputNameType::out_strainInv,</div>
+<div class="line"><a id="l00380" name="l00380"></a><span class="lineno">  380</span>    OutputNameType::out_energyFlux,</div>
+<div class="line"><a id="l00381" name="l00381"></a><span class="lineno">  381</span>    OutputNameType::out_viscosity,</div>
+<div class="line"><a id="l00382" name="l00382"></a><span class="lineno">  382</span>    OutputNameType::out_absVelocity,</div>
+<div class="line"><a id="l00383" name="l00383"></a><span class="lineno">  383</span>    OutputNameType::out_stress,</div>
+<div class="line"><a id="l00384" name="l00384"></a><span class="lineno">  384</span>    OutputNameType::out_cauchy,</div>
+<div class="line"><a id="l00385" name="l00385"></a><span class="lineno">  385</span>    OutputNameType::out_strain,</div>
+<div class="line"><a id="l00386" name="l00386"></a><span class="lineno">  386</span>    OutputNameType::out_jacobian,</div>
+<div class="line"><a id="l00387" name="l00387"></a><span class="lineno">  387</span>    OutputNameType::out_defGrad,</div>
+<div class="line"><a id="l00388" name="l00388"></a><span class="lineno">  388</span>    OutputNameType::out_integ,</div>
+<div class="line"><a id="l00389" name="l00389"></a><span class="lineno">  389</span>    OutputNameType::out_fibDir,</div>
+<div class="line"><a id="l00390" name="l00390"></a><span class="lineno">  390</span>    OutputNameType::out_fibAlign,</div>
 <div class="line"><a id="l00391" name="l00391"></a><span class="lineno">  391</span> </div>
-<div class="line"><a id="l00392" name="l00392"></a><span class="lineno">  392</span>    OutputType::out_divergence,</div>
-<div class="line"><a id="l00393" name="l00393"></a><span class="lineno">  393</span>    OutputType::out_acceleration</div>
+<div class="line"><a id="l00392" name="l00392"></a><span class="lineno">  392</span>    OutputNameType::out_divergence,</div>
+<div class="line"><a id="l00393" name="l00393"></a><span class="lineno">  393</span>    OutputNameType::out_acceleration</div>
 <div class="line"><a id="l00394" name="l00394"></a><span class="lineno">  394</span>  };</div>
 <div class="line"><a id="l00395" name="l00395"></a><span class="lineno">  395</span> </div>
 <div class="line"><a id="l00396" name="l00396"></a><span class="lineno">  396</span>  <span class="comment">// Set solver parameters.</span></div>
@@ -510,13 +510,13 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00426" name="l00426"></a><span class="lineno">  426</span> </div>
 <div class="line"><a id="l00427" name="l00427"></a><span class="lineno">  427</span>  <span class="keywordflow">if</span> (eq_params-&gt;prestress.defined() &amp;&amp; eq_params-&gt;prestress.value()) { </div>
 <div class="line"><a id="l00428" name="l00428"></a><span class="lineno">  428</span>    nDOP = {3,2,0,0};</div>
-<div class="line"><a id="l00429" name="l00429"></a><span class="lineno">  429</span>    outPuts = {OutputType::out_displacement, OutputType::out_stress, OutputType::out_strain};</div>
+<div class="line"><a id="l00429" name="l00429"></a><span class="lineno">  429</span>    outPuts = {OutputNameType::out_displacement, OutputNameType::out_stress, OutputNameType::out_strain};</div>
 <div class="line"><a id="l00430" name="l00430"></a><span class="lineno">  430</span>  } <span class="keywordflow">else</span> {</div>
 <div class="line"><a id="l00431" name="l00431"></a><span class="lineno">  431</span>    nDOP = {8,2,0,0};</div>
 <div class="line"><a id="l00432" name="l00432"></a><span class="lineno">  432</span>    outPuts = {</div>
-<div class="line"><a id="l00433" name="l00433"></a><span class="lineno">  433</span>      OutputType::out_displacement, OutputType::out_mises, OutputType::out_stress,</div>
-<div class="line"><a id="l00434" name="l00434"></a><span class="lineno">  434</span>      OutputType::out_strain, OutputType::out_velocity, OutputType::out_acceleration,</div>
-<div class="line"><a id="l00435" name="l00435"></a><span class="lineno">  435</span>      OutputType::out_integ, OutputType::out_jacobian </div>
+<div class="line"><a id="l00433" name="l00433"></a><span class="lineno">  433</span>      OutputNameType::out_displacement, OutputNameType::out_mises, OutputNameType::out_stress,</div>
+<div class="line"><a id="l00434" name="l00434"></a><span class="lineno">  434</span>      OutputNameType::out_strain, OutputNameType::out_velocity, OutputNameType::out_acceleration,</div>
+<div class="line"><a id="l00435" name="l00435"></a><span class="lineno">  435</span>      OutputNameType::out_integ, OutputNameType::out_jacobian </div>
 <div class="line"><a id="l00436" name="l00436"></a><span class="lineno">  436</span>    };</div>
 <div class="line"><a id="l00437" name="l00437"></a><span class="lineno">  437</span>  }</div>
 <div class="line"><a id="l00438" name="l00438"></a><span class="lineno">  438</span> </div>
@@ -553,7 +553,7 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00469" name="l00469"></a><span class="lineno">  469</span>  }</div>
 <div class="line"><a id="l00470" name="l00470"></a><span class="lineno">  470</span> </div>
 <div class="line"><a id="l00471" name="l00471"></a><span class="lineno">  471</span>  nDOP = {3, 1, 0, 0};</div>
-<div class="line"><a id="l00472" name="l00472"></a><span class="lineno">  472</span>  outPuts = {OutputType::out_displacement, OutputType::out_velocity, OutputType::out_acceleration };</div>
+<div class="line"><a id="l00472" name="l00472"></a><span class="lineno">  472</span>  outPuts = {OutputNameType::out_displacement, OutputNameType::out_velocity, OutputNameType::out_acceleration };</div>
 <div class="line"><a id="l00473" name="l00473"></a><span class="lineno">  473</span> </div>
 <div class="line"><a id="l00474" name="l00474"></a><span class="lineno">  474</span>  lEq.ls.relTol = 0.2;</div>
 <div class="line"><a id="l00475" name="l00475"></a><span class="lineno">  475</span> </div>
@@ -587,15 +587,15 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00503" name="l00503"></a><span class="lineno">  503</span>  </div>
 <div class="line"><a id="l00504" name="l00504"></a><span class="lineno">  504</span>  nDOP = {9,1,0,0};</div>
 <div class="line"><a id="l00505" name="l00505"></a><span class="lineno">  505</span>  outPuts = {</div>
-<div class="line"><a id="l00506" name="l00506"></a><span class="lineno">  506</span>    OutputType::out_displacement, </div>
-<div class="line"><a id="l00507" name="l00507"></a><span class="lineno">  507</span>    OutputType::out_stress, </div>
-<div class="line"><a id="l00508" name="l00508"></a><span class="lineno">  508</span>    OutputType::out_strain, </div>
-<div class="line"><a id="l00509" name="l00509"></a><span class="lineno">  509</span>    OutputType::out_jacobian, </div>
-<div class="line"><a id="l00510" name="l00510"></a><span class="lineno">  510</span>    OutputType::out_defGrad, </div>
-<div class="line"><a id="l00511" name="l00511"></a><span class="lineno">  511</span>    OutputType::out_velocity, </div>
-<div class="line"><a id="l00512" name="l00512"></a><span class="lineno">  512</span>    OutputType::out_integ,</div>
-<div class="line"><a id="l00513" name="l00513"></a><span class="lineno">  513</span>    OutputType::out_CGstrain,</div>
-<div class="line"><a id="l00514" name="l00514"></a><span class="lineno">  514</span>    OutputType::out_CGInv1</div>
+<div class="line"><a id="l00506" name="l00506"></a><span class="lineno">  506</span>    OutputNameType::out_displacement, </div>
+<div class="line"><a id="l00507" name="l00507"></a><span class="lineno">  507</span>    OutputNameType::out_stress, </div>
+<div class="line"><a id="l00508" name="l00508"></a><span class="lineno">  508</span>    OutputNameType::out_strain, </div>
+<div class="line"><a id="l00509" name="l00509"></a><span class="lineno">  509</span>    OutputNameType::out_jacobian, </div>
+<div class="line"><a id="l00510" name="l00510"></a><span class="lineno">  510</span>    OutputNameType::out_defGrad, </div>
+<div class="line"><a id="l00511" name="l00511"></a><span class="lineno">  511</span>    OutputNameType::out_velocity, </div>
+<div class="line"><a id="l00512" name="l00512"></a><span class="lineno">  512</span>    OutputNameType::out_integ,</div>
+<div class="line"><a id="l00513" name="l00513"></a><span class="lineno">  513</span>    OutputNameType::out_CGstrain,</div>
+<div class="line"><a id="l00514" name="l00514"></a><span class="lineno">  514</span>    OutputNameType::out_CGInv1</div>
 <div class="line"><a id="l00515" name="l00515"></a><span class="lineno">  515</span>  };</div>
 <div class="line"><a id="l00516" name="l00516"></a><span class="lineno">  516</span> </div>
 <div class="line"><a id="l00517" name="l00517"></a><span class="lineno">  517</span>  <span class="comment">// Set solver parameters.</span></div>
@@ -624,14 +624,14 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00540" name="l00540"></a><span class="lineno">  540</span> </div>
 <div class="line"><a id="l00541" name="l00541"></a><span class="lineno">  541</span>  nDOP = {8, 2, 3, 0};</div>
 <div class="line"><a id="l00542" name="l00542"></a><span class="lineno">  542</span>  outPuts = {</div>
-<div class="line"><a id="l00543" name="l00543"></a><span class="lineno">  543</span>    OutputType::out_velocity,</div>
-<div class="line"><a id="l00544" name="l00544"></a><span class="lineno">  544</span>    OutputType::out_pressure,</div>
-<div class="line"><a id="l00545" name="l00545"></a><span class="lineno">  545</span>    OutputType::out_WSS,</div>
-<div class="line"><a id="l00546" name="l00546"></a><span class="lineno">  546</span>    OutputType::out_vorticity,</div>
-<div class="line"><a id="l00547" name="l00547"></a><span class="lineno">  547</span>    OutputType::out_traction,</div>
-<div class="line"><a id="l00548" name="l00548"></a><span class="lineno">  548</span>    OutputType::out_strainInv,</div>
-<div class="line"><a id="l00549" name="l00549"></a><span class="lineno">  549</span>    OutputType::out_viscosity,</div>
-<div class="line"><a id="l00550" name="l00550"></a><span class="lineno">  550</span>    OutputType::out_divergence</div>
+<div class="line"><a id="l00543" name="l00543"></a><span class="lineno">  543</span>    OutputNameType::out_velocity,</div>
+<div class="line"><a id="l00544" name="l00544"></a><span class="lineno">  544</span>    OutputNameType::out_pressure,</div>
+<div class="line"><a id="l00545" name="l00545"></a><span class="lineno">  545</span>    OutputNameType::out_WSS,</div>
+<div class="line"><a id="l00546" name="l00546"></a><span class="lineno">  546</span>    OutputNameType::out_vorticity,</div>
+<div class="line"><a id="l00547" name="l00547"></a><span class="lineno">  547</span>    OutputNameType::out_traction,</div>
+<div class="line"><a id="l00548" name="l00548"></a><span class="lineno">  548</span>    OutputNameType::out_strainInv,</div>
+<div class="line"><a id="l00549" name="l00549"></a><span class="lineno">  549</span>    OutputNameType::out_viscosity,</div>
+<div class="line"><a id="l00550" name="l00550"></a><span class="lineno">  550</span>    OutputNameType::out_divergence</div>
 <div class="line"><a id="l00551" name="l00551"></a><span class="lineno">  551</span>  };</div>
 <div class="line"><a id="l00552" name="l00552"></a><span class="lineno">  552</span> </div>
 <div class="line"><a id="l00553" name="l00553"></a><span class="lineno">  553</span>  <span class="comment">// Set solver parameters.</span></div>
@@ -664,15 +664,15 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00580" name="l00580"></a><span class="lineno">  580</span> </div>
 <div class="line"><a id="l00581" name="l00581"></a><span class="lineno">  581</span>  <span class="keywordflow">if</span> (eq_params-&gt;prestress.defined() &amp;&amp; eq_params-&gt;prestress.value()) { </div>
 <div class="line"><a id="l00582" name="l00582"></a><span class="lineno">  582</span>    nDOP = {4,2,0,0};</div>
-<div class="line"><a id="l00583" name="l00583"></a><span class="lineno">  583</span>    outPuts = {OutputType::out_displacement, OutputType::out_stress, OutputType::out_cauchy, OutputType::out_strain};</div>
+<div class="line"><a id="l00583" name="l00583"></a><span class="lineno">  583</span>    outPuts = {OutputNameType::out_displacement, OutputNameType::out_stress, OutputNameType::out_cauchy, OutputNameType::out_strain};</div>
 <div class="line"><a id="l00584" name="l00584"></a><span class="lineno">  584</span>    <span class="comment">//simulation-&gt;com_mod.pstEq = true;</span></div>
 <div class="line"><a id="l00585" name="l00585"></a><span class="lineno">  585</span>  } <span class="keywordflow">else</span> {</div>
 <div class="line"><a id="l00586" name="l00586"></a><span class="lineno">  586</span>    nDOP = {12,2,0,0};</div>
 <div class="line"><a id="l00587" name="l00587"></a><span class="lineno">  587</span>    outPuts = { </div>
-<div class="line"><a id="l00588" name="l00588"></a><span class="lineno">  588</span>      OutputType::out_displacement, OutputType::out_mises, OutputType::out_stress,</div>
-<div class="line"><a id="l00589" name="l00589"></a><span class="lineno">  589</span>      OutputType::out_cauchy, OutputType::out_strain, OutputType::out_jacobian,</div>
-<div class="line"><a id="l00590" name="l00590"></a><span class="lineno">  590</span>      OutputType::out_defGrad, OutputType::out_integ, OutputType::out_fibDir,</div>
-<div class="line"><a id="l00591" name="l00591"></a><span class="lineno">  591</span>      OutputType::out_fibAlign, OutputType::out_velocity, OutputType::out_acceleration</div>
+<div class="line"><a id="l00588" name="l00588"></a><span class="lineno">  588</span>      OutputNameType::out_displacement, OutputNameType::out_mises, OutputNameType::out_stress,</div>
+<div class="line"><a id="l00589" name="l00589"></a><span class="lineno">  589</span>      OutputNameType::out_cauchy, OutputNameType::out_strain, OutputNameType::out_jacobian,</div>
+<div class="line"><a id="l00590" name="l00590"></a><span class="lineno">  590</span>      OutputNameType::out_defGrad, OutputNameType::out_integ, OutputNameType::out_fibDir,</div>
+<div class="line"><a id="l00591" name="l00591"></a><span class="lineno">  591</span>      OutputNameType::out_fibAlign, OutputNameType::out_velocity, OutputNameType::out_acceleration</div>
 <div class="line"><a id="l00592" name="l00592"></a><span class="lineno">  592</span>    };</div>
 <div class="line"><a id="l00593" name="l00593"></a><span class="lineno">  593</span>  }</div>
 <div class="line"><a id="l00594" name="l00594"></a><span class="lineno">  594</span> </div>
@@ -709,20 +709,20 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00625" name="l00625"></a><span class="lineno">  625</span> </div>
 <div class="line"><a id="l00626" name="l00626"></a><span class="lineno">  626</span>  nDOP = {14, 2, 0, 0};</div>
 <div class="line"><a id="l00627" name="l00627"></a><span class="lineno">  627</span>  outPuts = {</div>
-<div class="line"><a id="l00628" name="l00628"></a><span class="lineno">  628</span>    OutputType::out_displacement,</div>
-<div class="line"><a id="l00629" name="l00629"></a><span class="lineno">  629</span>    OutputType::out_mises,</div>
-<div class="line"><a id="l00630" name="l00630"></a><span class="lineno">  630</span>    OutputType::out_stress,</div>
-<div class="line"><a id="l00631" name="l00631"></a><span class="lineno">  631</span>    OutputType::out_cauchy,</div>
-<div class="line"><a id="l00632" name="l00632"></a><span class="lineno">  632</span>    OutputType::out_strain,</div>
-<div class="line"><a id="l00633" name="l00633"></a><span class="lineno">  633</span>    OutputType::out_jacobian,</div>
-<div class="line"><a id="l00634" name="l00634"></a><span class="lineno">  634</span>    OutputType::out_defGrad,</div>
-<div class="line"><a id="l00635" name="l00635"></a><span class="lineno">  635</span>    OutputType::out_integ,</div>
-<div class="line"><a id="l00636" name="l00636"></a><span class="lineno">  636</span>    OutputType::out_fibDir,</div>
-<div class="line"><a id="l00637" name="l00637"></a><span class="lineno">  637</span>    OutputType::out_fibAlign,</div>
-<div class="line"><a id="l00638" name="l00638"></a><span class="lineno">  638</span>    OutputType::out_velocity,</div>
-<div class="line"><a id="l00639" name="l00639"></a><span class="lineno">  639</span>    OutputType::out_pressure,</div>
-<div class="line"><a id="l00640" name="l00640"></a><span class="lineno">  640</span>    OutputType::out_acceleration,</div>
-<div class="line"><a id="l00641" name="l00641"></a><span class="lineno">  641</span>    OutputType::out_divergence</div>
+<div class="line"><a id="l00628" name="l00628"></a><span class="lineno">  628</span>    OutputNameType::out_displacement,</div>
+<div class="line"><a id="l00629" name="l00629"></a><span class="lineno">  629</span>    OutputNameType::out_mises,</div>
+<div class="line"><a id="l00630" name="l00630"></a><span class="lineno">  630</span>    OutputNameType::out_stress,</div>
+<div class="line"><a id="l00631" name="l00631"></a><span class="lineno">  631</span>    OutputNameType::out_cauchy,</div>
+<div class="line"><a id="l00632" name="l00632"></a><span class="lineno">  632</span>    OutputNameType::out_strain,</div>
+<div class="line"><a id="l00633" name="l00633"></a><span class="lineno">  633</span>    OutputNameType::out_jacobian,</div>
+<div class="line"><a id="l00634" name="l00634"></a><span class="lineno">  634</span>    OutputNameType::out_defGrad,</div>
+<div class="line"><a id="l00635" name="l00635"></a><span class="lineno">  635</span>    OutputNameType::out_integ,</div>
+<div class="line"><a id="l00636" name="l00636"></a><span class="lineno">  636</span>    OutputNameType::out_fibDir,</div>
+<div class="line"><a id="l00637" name="l00637"></a><span class="lineno">  637</span>    OutputNameType::out_fibAlign,</div>
+<div class="line"><a id="l00638" name="l00638"></a><span class="lineno">  638</span>    OutputNameType::out_velocity,</div>
+<div class="line"><a id="l00639" name="l00639"></a><span class="lineno">  639</span>    OutputNameType::out_pressure,</div>
+<div class="line"><a id="l00640" name="l00640"></a><span class="lineno">  640</span>    OutputNameType::out_acceleration,</div>
+<div class="line"><a id="l00641" name="l00641"></a><span class="lineno">  641</span>    OutputNameType::out_divergence</div>
 <div class="line"><a id="l00642" name="l00642"></a><span class="lineno">  642</span>  };</div>
 <div class="line"><a id="l00643" name="l00643"></a><span class="lineno">  643</span> </div>
 <div class="line"><a id="l00644" name="l00644"></a><span class="lineno">  644</span>  <span class="comment">// Set solver parameters.</span></div>
@@ -733,7 +733,7 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00649" name="l00649"></a><span class="lineno">  649</span> </div>
 <div class="ttc" id="aclass_equation_parameters_html"><div class="ttname"><a href="class_equation_parameters.html">EquationParameters</a></div><div class="ttdoc">The EquationParameters class stores parameters for the 'Add_equation' XML element used to specify an ...</div><div class="ttdef"><b>Definition</b> Parameters.h:1193</div></div>
 <div class="ttc" id="aclass_simulation_html"><div class="ttname"><a href="class_simulation.html">Simulation</a></div><div class="ttdef"><b>Definition</b> Simulation.h:41</div></div>
-<div class="ttc" id="aclasseq_type_html"><div class="ttname"><a href="classeq_type.html">eqType</a></div><div class="ttdoc">Equation type.</div><div class="ttdef"><b>Definition</b> ComMod.h:1000</div></div>
+<div class="ttc" id="aclasseq_type_html"><div class="ttname"><a href="classeq_type.html">eqType</a></div><div class="ttdoc">Equation type.</div><div class="ttdef"><b>Definition</b> ComMod.h:1022</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

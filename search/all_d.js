@@ -6,7 +6,7 @@ var searchData=
   ['ok_3',['ok',['../classeq_type.html#a168b70cd9f8b50c649d5dd5d64afadf0',1,'eqType']]],
   ['operator_28_29_4',['operator()',['../class_array3.html#ad3e801b3eba93502f6d48f43bd0aafd7',1,'Array3::operator()(const int row, const int col, const int slice) const'],['../class_array3.html#ae97685e04f50c5f5bb9c70538679c07d',1,'Array3::operator()(const int row, const int col, const int slice)']]],
   ['operator_2a_5',['operator*',['../class_array3.html#a4efd9c0c2c3c1c4a2f32c14f3cccb929',1,'Array3::operator*()'],['../class_vector.html#ab5c6ea220a41d4f9ca505aa989bff046',1,'Vector::operator*(const T value) const']]],
-  ['operator_2b_6',['operator+',['../class_vector.html#a0226d8916960275bfac50ee837f2efa8',1,'Vector::operator+(const Vector&lt; T &gt; &amp;vec) const'],['../class_vector.html#a9c0b34e94413a4ef55adc63784cc2da9',1,'Vector::operator+(const T value) const']]],
+  ['operator_2b_6',['operator+',['../class_vector.html#a9c0b34e94413a4ef55adc63784cc2da9',1,'Vector::operator+(const T value) const'],['../class_vector.html#a0226d8916960275bfac50ee837f2efa8',1,'Vector::operator+(const Vector&lt; T &gt; &amp;vec) const']]],
   ['operator_2d_7',['operator-',['../class_vector.html#aed09a49898d7a949b93addb54657f1ed',1,'Vector']]],
   ['operator_2f_8',['operator/',['../class_vector.html#a9d039799d2c2b1c8c3c02a28d2548b47',1,'Vector']]],
   ['operator_3d_9',['operator=',['../class_array3.html#a35fd645a503475a7cc980acaa1af246a',1,'Array3::operator=()'],['../class_vector.html#a7594fda7b9388c049c2fe95ffe154075',1,'Vector::operator=()']]],
@@ -17,6 +17,7 @@ var searchData=
   ['out_5ffiles_14',['out_files',['../classecg_leads_type.html#af77b84a8b3e4444955a642447c278a34',1,'ecgLeadsType']]],
   ['outib_15',['outIB',['../classeq_type.html#a6986408c1ffc78110922fefa5506d792',1,'eqType']]],
   ['output_16',['output',['../classeq_type.html#ae6f3019943067b01b306086d24af0783',1,'eqType']]],
-  ['outputparameters_17',['OutputParameters',['../class_output_parameters.html',1,'']]],
-  ['outputtype_18',['outputType',['../classoutput_type.html',1,'']]]
+  ['outputoptions_17',['OutputOptions',['../struct_output_options.html',1,'']]],
+  ['outputparameters_18',['OutputParameters',['../class_output_parameters.html',1,'']]],
+  ['outputtype_19',['outputType',['../classoutput_type.html',1,'']]]
 ];
