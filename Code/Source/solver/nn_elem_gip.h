@@ -265,6 +265,23 @@ GetElementGausIntMapType get_element_gauss_int_data = {
     xi(1,2) = s;
     }
   },
+
+  {ElementType::WDG, [](const int insd, const int nG, Vector<double>& w, Array<double>& xi)  -> void { 
+     for (int i = 0; i < nG; i++) { 
+       w(i) = 1.0 / 6.0;
+     }
+    double s  =  2.0 / 3.0;
+    double t  =  1.0 / 6.0;
+    double uz =  1.0 / sqrt(3.0);
+    double lz = -1.0 / sqrt(3.0);
+    xi(0,0) = s; xi(1,0) = t; xi(2,0) = lz;
+    xi(0,1) = t; xi(1,1) = s; xi(2,1) = lz;
+    xi(0,2) = t; xi(1,2) = t; xi(2,2) = lz;
+    xi(0,3) = s; xi(1,3) = t; xi(2,3) = uz;
+    xi(0,4) = t; xi(1,4) = s; xi(2,4) = uz;
+    xi(0,5) = t; xi(1,5) = t; xi(2,5) = uz;
+    }
+  },
   
 };
 

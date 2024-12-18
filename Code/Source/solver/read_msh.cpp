@@ -758,12 +758,10 @@ void check_wedge_conn(mshType& mesh)
 
     if (sn == -1) {
       utils::swap( mesh.gIEN(0,e), mesh.gIEN(1,e));
-      a = 4;
-      b = 5;
-      if (e == 0) {
-        //std::cout << "[check_wedge_conn] Reorder element connectivity." << std::endl;
-      }
-    } else if (sn == 0) { 
+      a = 3;
+      b = 4;
+    
+     } else if (sn == 0) { 
       throw std::runtime_error("Element " + std::to_string(e) + " is distorted.");
     } 
 

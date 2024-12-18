@@ -26,9 +26,9 @@ svMultiPhysics is an open-source, parallel, finite element multi-physics solver 
 
 svMultiPhysics is a C++ implementation of the Fortran [svFSI](https://github.com/SimVascular/svFSI) multi-physics finite element solver designed for computational modeling of the cardiovascular system. The C++ implementation is essentially a line-by-line translation of the svFSI Fortran code and therefore uses a procedural rather than an object oriented programming paradigm. The code will be incrementally refactored into an object oriented code. 
 
-The [SimVascular svMultiPhysics Documentation](https://simvascular.github.io/documentation/svmultiphysics.html) provides documentation describing how to use the svMultiPhysics solver. It also has developer guide describing the code organization and some implementation details. 
+The [SimVascular svMultiPhysics Documentation](https://simvascular.github.io/documentation/multi_physics.html) provides documentation describing how to use the svMultiPhysics solver. It also has developer guide describing the code organization and some implementation details. 
 
-The [svMultiPhysics Internal Code Documentation](https://simvascular.github.io/svmultiphysics/index.html) provides documentation of the svMultiPhysics source code. It is automatically generated using [Doxygen](https://www.doxygen.nl).
+The [svMultiPhysics Internal Code Documentation](https://simvascular.github.io/multi_physics/index.html) provides documentation of the svMultiPhysics source code. It is automatically generated using [Doxygen](https://www.doxygen.nl).
 
 <!--- =================================================================================== -->
 <!---                             Docker container                                        -->
