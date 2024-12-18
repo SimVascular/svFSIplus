@@ -63,6 +63,15 @@
       <WSS> true </WSS>
    </Output>
 
+   <Output type="B_INT" >
+     <Pressure> true </Pressure>
+     <Velocity> true </Velocity>
+   </Output>
+
+   <Output type="V_INT" >
+     <Pressure> true </Pressure>
+   </Output>
+
    <LS type="NS" >
       <Linear_algebra type="fsils" >
          <Preconditioner> fsils </Preconditioner>

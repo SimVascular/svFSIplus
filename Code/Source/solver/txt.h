@@ -39,12 +39,17 @@
 
 namespace txt_ns {
 
-void cctxt(const ComMod& com_mod, CmMod& cm_mod, const eqType& lEq, const std::array<std::string,2>& fName, const std::vector<bool>& wtn);
+void create_boundary_integral_file(const ComMod& com_mod, CmMod& cm_mod, const eqType& lEq, const std::string& file_name);
+
+void create_volume_integral_file(const ComMod& com_mod, CmMod& cm_mod, const eqType& lEq, const std::string& file_name);
 
 void txt(Simulation* simulation, const bool flag);
 
-void wtxt(const ComMod& com_mod, CmMod& cm_mod, const eqType& lEq, const int m, const std::array<std::string,2>& fName, 
-    const Array<double>& tmpV, const std::vector<bool>& wtn, const bool div, const bool pflag);
+void write_boundary_integral_data(const ComMod& com_mod, CmMod& cm_mod, const eqType& lEq, const int m, 
+    const std::string file_name, const Array<double>& tmpV, const bool div, const bool pFlag);
+
+void write_volume_integral_data(const ComMod& com_mod, CmMod& cm_mod, const eqType& lEq, const int m, 
+    const std::string file_name, const Array<double>& tmpV, const bool div, const bool pFlag);
 
 };
 

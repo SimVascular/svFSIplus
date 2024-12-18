@@ -46,7 +46,7 @@
 namespace post {
 
 void all_post(Simulation* simulation, Array<double>& res, const Array<double>& lY, const Array<double>& lD, 
-    consts::OutputType outGrp, const int iEq) 
+    consts::OutputNameType outGrp, const int iEq) 
 {
   using namespace consts;
 
@@ -65,14 +65,14 @@ void all_post(Simulation* simulation, Array<double>& res, const Array<double>& l
     auto& msh = com_mod.msh[iM];
     Array<double> tmpV(maxNSD,msh.nNo);
 
-    if (outGrp == OutputType::outGrp_WSS ||  outGrp == OutputType::outGrp_trac) {
+    if (outGrp == OutputNameType::outGrp_WSS ||  outGrp == OutputNameType::outGrp_trac) {
       bpost(simulation, msh,  tmpV, lY, lD, outGrp);
       for (int a = 0; a < com_mod.msh[iM].nNo; a++) {
         int Ac = msh.gN(a);
         res.set_col(Ac, tmpV.col(a));
       }
 
-    } else if (outGrp == OutputType::outGrp_J) {
+    } else if (outGrp == OutputNameType::outGrp_J) {
       Array<double> tmpV(1,msh.nNo); 
       Vector<double> tmpVe(msh.nEl);
       tpost(simulation, msh, 1, tmpV, tmpVe, lD, lY, iEq, outGrp);
@@ -82,7 +82,7 @@ void all_post(Simulation* simulation, Array<double>& res, const Array<double>& l
          res(0,Ac) = tmpV(0,a);
       }
 
-     } else if (outGrp == OutputType::outGrp_mises) {
+     } else if (outGrp == OutputNameType::outGrp_mises) {
        Array<double> tmpV(1,msh.nNo); 
        Vector<double> tmpVe(msh.nEl);
        tpost(simulation, msh, 1, tmpV, tmpVe, lD, lY, iEq, outGrp);
@@ -92,7 +92,7 @@ void all_post(Simulation* simulation, Array<double>& res, const Array<double>& l
          res(0,Ac) = tmpV(0,a);
        }
 
-     } else if (outGrp ==  OutputType::outGrp_divV) {
+     } else if (outGrp ==  OutputNameType::outGrp_divV) {
        Array<double> tmpV(1,msh.nNo); 
        div_post(simulation, msh, tmpV, lY, lD, iEq);
        res = 0.0;
@@ -116,7 +116,7 @@ void all_post(Simulation* simulation, Array<double>& res, const Array<double>& l
 /// Here t is stress tensor: t = \mu (grad(u) + grad(u)^T)
 //
 void bpost(Simulation* simulation, const mshType& lM, Array<double>& res, const Array<double>& lY, const Array<double>& lD, 
-    consts::OutputType outGrp)
+    consts::OutputNameType outGrp)
 {
   using namespace consts;
 
@@ -131,7 +131,7 @@ void bpost(Simulation* simulation, const mshType& lM, Array<double>& res, const 
   dmsg << "outGrp: " << outGrp;
 #endif
 
-  if ((outGrp != OutputType::outGrp_WSS) && (outGrp != OutputType::outGrp_trac)) {
+  if ((outGrp != OutputNameType::outGrp_WSS) && (outGrp != OutputNameType::outGrp_trac)) {
     throw std::runtime_error("Invalid output group. Correction is required in BPOST");
   }
 
@@ -314,12 +314,12 @@ void bpost(Simulation* simulation, const mshType& lM, Array<double>& res, const 
         taue = Tdn - ndTdn*nV;
         Vector<double> lRes(maxNSD);
 
-        if (outGrp == OutputType::outGrp_WSS) {
+        if (outGrp == OutputNameType::outGrp_WSS) {
           for (int i = 0; i < nsd; i++) {
             lRes(i) = -taue(i);
           }
 
-        } else if (outGrp == OutputType::outGrp_trac) {
+        } else if (outGrp == OutputNameType::outGrp_trac) {
           for (int i = 0; i < nsd; i++) {
             lRes(i) = p*nV(i) - Tdn(i);
           } 
@@ -857,7 +857,7 @@ void fib_strech(Simulation* simulation, const int iEq, const mshType& lM, const 
 }
 
 void post(Simulation* simulation, const mshType& lM, Array<double>& res, const Array<double>& lY, const Array<double>& lD, 
-    consts::OutputType outGrp, const int iEq)
+    consts::OutputNameType outGrp, const int iEq)
 {
   using namespace consts;
   auto& com_mod = simulation->com_mod;
@@ -885,7 +885,7 @@ void post(Simulation* simulation, const mshType& lM, Array<double>& res, const A
   //
   int nsd = com_mod.nsd;
 
-  if ((outGrp == OutputType::outGrp_eFlx) && (com_mod.dmnId.size() == 0)) {
+  if ((outGrp == OutputNameType::outGrp_eFlx) && (com_mod.dmnId.size() == 0)) {
     double rho = eq.dmn[0].prop[PhysicalProperyType::fluid_density];
     for (int a = 0; a < lM.nNo; a++) {
       int Ac = lM.gN(a);
@@ -962,7 +962,7 @@ void post(Simulation* simulation, const mshType& lM, Array<double>& res, const A
 
       // Vorticity calculation 
       //
-      if (outGrp == OutputType::outGrp_vort) {
+      if (outGrp == OutputNameType::outGrp_vort) {
         for (int a = 0; a < eNoN; a++) {
           if (nsd == 2) {
             lRes(2) = lRes(2) + Nx(0,a)*yl(1,a)- Nx(1,a)*yl(0,a);
@@ -974,7 +974,7 @@ void post(Simulation* simulation, const mshType& lM, Array<double>& res, const A
         }
 
       // Vortex Identification Criterion (lamda_ci)
-      } else if (outGrp == OutputType::outGrp_vortex) {
+      } else if (outGrp == OutputNameType::outGrp_vortex) {
         Array<double> ux(nsd,nsd);
         for (int a = 0; a < eNoN; a++) {
           for (int i = 0; i < nsd; i++) {
@@ -992,7 +992,7 @@ void post(Simulation* simulation, const mshType& lM, Array<double>& res, const A
 
       //  Energy flux calculation   
       //
-      } else if (outGrp == OutputType::outGrp_eFlx) {
+      } else if (outGrp == OutputNameType::outGrp_eFlx) {
         double rho = eq.dmn[cDmn].prop[PhysicalProperyType::fluid_density];
         double p = 0.0;
         Vector<double> u(nsd);
@@ -1012,7 +1012,7 @@ void post(Simulation* simulation, const mshType& lM, Array<double>& res, const A
 
       // Heat flux calculation   
       //
-      } else if (outGrp == OutputType::outGrp_hFlx) {
+      } else if (outGrp == OutputNameType::outGrp_hFlx) {
         double kappa = eq.dmn[cDmn].prop[PhysicalProperyType::conductivity];
         int i = eq.s;
 
@@ -1046,7 +1046,7 @@ void post(Simulation* simulation, const mshType& lM, Array<double>& res, const A
 
       // Strain tensor invariants calculation   
       //
-      } else if (outGrp == OutputType::outGrp_stInv) {
+      } else if (outGrp == OutputNameType::outGrp_stInv) {
         Array<double> ksix(nsd,nsd);
         Vector<double> lRes(maxNSD);
 
@@ -1078,7 +1078,7 @@ void post(Simulation* simulation, const mshType& lM, Array<double>& res, const A
 
       // Viscosity
       //
-      } else if (outGrp == OutputType::outGrp_Visc) {
+      } else if (outGrp == OutputNameType::outGrp_Visc) {
         Array<double> ux(nsd,nsd);
         Vector<double> lRes(maxNSD);
 
@@ -1209,7 +1209,7 @@ void ppbin2vtk(Simulation* simulation)
 // Reproduces Fortran SHLPOST.
 //
 void shl_post(Simulation* simulation, const mshType& lM, const int m, Array<double>& res, 
-    Vector<double>& resE, const Array<double>& lD, const int iEq, consts::OutputType outGrp)
+    Vector<double>& resE, const Array<double>& lD, const int iEq, consts::OutputNameType outGrp)
 {
   using namespace consts;
   using namespace mat_fun;
@@ -1530,13 +1530,13 @@ void shl_post(Simulation* simulation, const mshType& lM, const int m, Array<doub
 
       switch (outGrp) {
         //dmsg << "outGrp: " << outGrp;
-        case OutputType::outGrp_J: {
+        case OutputNameType::outGrp_J: {
           // Jacobian := determinant of deformation gradient tensor
           resl(0) = detF;
           sE(e) = sE(e) + w*detF;
         } break;
 
-        case OutputType::outGrp_F:
+        case OutputNameType::outGrp_F:
           // 3D deformation gradient tensor (F)
           resl(0) = F3d(0,0);
           resl(1) = F3d(0,1);
@@ -1549,16 +1549,16 @@ void shl_post(Simulation* simulation, const mshType& lM, const int m, Array<doub
           resl(8) = F3d(2,2);
         break; 
 
-        case OutputType::outGrp_strain:
-        case OutputType::outGrp_C:
-        case OutputType::outGrp_I1: {
+        case OutputNameType::outGrp_strain:
+        case OutputNameType::outGrp_C:
+        case OutputNameType::outGrp_I1: {
           // In-plane Cauchy-Green deformation tensor
           auto C = mat_mul(transpose(F), F);
 
           // In-plane Green-Lagrange strain tensor
           auto Eg = 0.50 * (C - Im);
 
-          if (outGrp == OutputType::outGrp_strain) {
+          if (outGrp == OutputNameType::outGrp_strain) {
             // resl is used to remap Eg
             resl(0) = Eg(0,0);
             resl(1) = Eg(1,1);
@@ -1567,7 +1567,7 @@ void shl_post(Simulation* simulation, const mshType& lM, const int m, Array<doub
             resl(4) = Eg(1,2);
             resl(5) = Eg(2,0);
 
-          } else if (outGrp == OutputType::outGrp_C) {
+          } else if (outGrp == OutputNameType::outGrp_C) {
             // resl is used to remap C
             resl(0) = C(0,0);
             resl(1) = C(1,1);
@@ -1576,13 +1576,13 @@ void shl_post(Simulation* simulation, const mshType& lM, const int m, Array<doub
             resl(4) = C(1,2);
             resl(5) = C(2,0);
 
-          } else if (outGrp == OutputType::outGrp_I1) {
+          } else if (outGrp == OutputNameType::outGrp_I1) {
             resl(0) = mat_trace(C, 3);
             sE(e) = sE(e) + w*resl(0);
           }
         } break;
 
-        case OutputType::outGrp_stress: {
+        case OutputNameType::outGrp_stress: {
           //dmsg << "outGrp: " << " outGrp_stress";
           Array<double> S(3,3);
 
@@ -1642,7 +1642,7 @@ void shl_post(Simulation* simulation, const mshType& lM, const int m, Array<doub
 // Routine for post processing stress tensor
 //
 void tpost(Simulation* simulation, const mshType& lM, const int m, Array<double>& res, Vector<double>& resE, const Array<double>& lD, 
-    const Array<double>& lY, const int iEq, consts::OutputType outGrp)
+    const Array<double>& lY, const int iEq, consts::OutputNameType outGrp)
 {
   using namespace consts;
   using namespace mat_fun;
@@ -1848,13 +1848,13 @@ void tpost(Simulation* simulation, const mshType& lM, const int m, Array<double>
       switch (outGrp) {
 
         // Jacobian := determinant of deformation gradient tensor
-        case OutputType::outGrp_J:
+        case OutputNameType::outGrp_J:
           resl(0) = detF;
           sE(e) = sE(e) + w*detF;
         break;
 
         //  Deformation gradient tensor (F)
-        case OutputType::outGrp_F:
+        case OutputNameType::outGrp_F:
           if (nsd == 3) {
             resl(0) = F(0,0);
             resl(1) = F(0,1);
@@ -1874,7 +1874,7 @@ void tpost(Simulation* simulation, const mshType& lM, const int m, Array<double>
         break;
 
         // Green-Lagrange strain tensor
-        case OutputType::outGrp_strain:
+        case OutputNameType::outGrp_strain:
           if (cPhys == EquationType::phys_lElas) {
             resl = ed;
           } else { 
@@ -1897,9 +1897,9 @@ void tpost(Simulation* simulation, const mshType& lM, const int m, Array<double>
           }
         break;
 
-        case OutputType::outGrp_stress:
-        case OutputType::outGrp_cauchy: 
-        case OutputType::outGrp_mises:
+        case OutputNameType::outGrp_stress:
+        case OutputNameType::outGrp_cauchy: 
+        case OutputNameType::outGrp_mises:
           Array<double> sigma(nsd,nsd);
           Array<double> S(nsd,nsd);
 
@@ -1966,7 +1966,7 @@ void tpost(Simulation* simulation, const mshType& lM, const int m, Array<double>
           }
 
           // 2nd Piola-Kirchhoff stress tensor
-          if (outGrp == OutputType::outGrp_stress) {
+          if (outGrp == OutputNameType::outGrp_stress) {
             if (nsd == 3) {
               resl(0) = S(0,0);
               resl(1) = S(1,1);
@@ -1981,7 +1981,7 @@ void tpost(Simulation* simulation, const mshType& lM, const int m, Array<double>
             }
 
           //Cauchy stress tensor
-          } else if (outGrp == OutputType::outGrp_cauchy) {
+          } else if (outGrp == OutputNameType::outGrp_cauchy) {
             if (nsd == 3) {
               resl(0) = sigma(0,0);
               resl(1) = sigma(1,1);
@@ -1996,7 +1996,7 @@ void tpost(Simulation* simulation, const mshType& lM, const int m, Array<double>
             }
 
           // Von Mises stress
-          } else if (outGrp == OutputType::outGrp_mises) {
+          } else if (outGrp == OutputNameType::outGrp_mises) {
             double trS = mat_trace(sigma, nsd) / static_cast<double>(nsd);
             for (int l = 0; l < nsd; l++) {
               sigma(l,l) = sigma(l,l) - trS;

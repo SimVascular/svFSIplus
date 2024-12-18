@@ -739,7 +739,7 @@ void read_vtus(Simulation* simulation, Array<double>& lA, Array<double>& lY, Arr
     for (int iOut = 0; iOut < eq.nOutput; iOut++) {
       auto& output = eq.output[iOut];
 
-      if (!output.wtn[0]) {
+      if (!output.options.spatial) {
         continue;
       }
 
@@ -752,9 +752,9 @@ void read_vtus(Simulation* simulation, Array<double>& lA, Array<double>& lY, Arr
       Array<double> tmpGS;
 
       switch (oGrp) {
-        case OutputType::outGrp_A: 
-        case OutputType::outGrp_Y:
-        case OutputType::outGrp_D:
+        case OutputNameType::outGrp_A: 
+        case OutputNameType::outGrp_Y:
+        case OutputNameType::outGrp_D:
           if (l > 1) {
             tmpGS.resize(maxNSD,nNo);
           } else {
@@ -791,7 +791,7 @@ void read_vtus(Simulation* simulation, Array<double>& lA, Array<double>& lY, Arr
       }
 
       switch (oGrp) {
-        case OutputType::outGrp_A:
+        case OutputNameType::outGrp_A:
           for (int i = 0; i < l; i++) {
             for (int j = 0; j < gtnNo; j++) {
               lA(i+s,j) = tmpGS(i,j);
@@ -799,7 +799,7 @@ void read_vtus(Simulation* simulation, Array<double>& lA, Array<double>& lY, Arr
           }
         break;
 
-        case OutputType::outGrp_Y:
+        case OutputNameType::outGrp_Y:
           for (int i = 0; i < l; i++) {
             for (int j = 0; j < gtnNo; j++) {
               lY(i+s,j) = tmpGS(i,j);
@@ -807,7 +807,7 @@ void read_vtus(Simulation* simulation, Array<double>& lA, Array<double>& lY, Arr
           }
         break;
 
-        case OutputType::outGrp_D:
+        case OutputNameType::outGrp_D:
           for (int i = 0; i < l; i++) {
             for (int j = 0; j < gtnNo; j++) {
               lD(i+s,j) = tmpGS(i,j);
@@ -959,7 +959,7 @@ void write_vtus(Simulation* simulation, const Array<double>& lA, const Array<dou
     auto& eq = eqs[iEq];
 
     for (int iOut = 0; iOut < eq.nOutput; iOut++) {
-      if (!eq.output[iOut].wtn[0]) {
+      if (!eq.output[iOut].options.spatial) {
         continue; 
       }
 
@@ -968,7 +968,7 @@ void write_vtus(Simulation* simulation, const Array<double>& lA, const Array<dou
       dmsg << "oGrp: " << oGrp;
       #endif
 
-      if (oGrp == OutputType::outGrp_fN) {
+      if (oGrp == OutputNameType::outGrp_fN) {
         nFn = 1;
         for (int iM = 0; iM < nMsh; iM++) {
           nFn = std::max(nFn, meshes[iM].nFn);
@@ -980,8 +980,8 @@ void write_vtus(Simulation* simulation, const Array<double>& lA, const Array<dou
         outDof = outDof + eq.output[iOut].l;
       }
 
-      if (oGrp == OutputType::outGrp_J || oGrp == OutputType::outGrp_mises ||
-          oGrp == OutputType::outGrp_I1) { 
+      if (oGrp == OutputNameType::outGrp_J || oGrp == OutputNameType::outGrp_mises ||
+          oGrp == OutputNameType::outGrp_I1) { 
         nOute = nOute + 1;
       }
     }
@@ -1047,7 +1047,7 @@ void write_vtus(Simulation* simulation, const Array<double>& lA, const Array<dou
       auto& eq = eqs[iEq];
 
       for (int iOut = 0; iOut < eq.nOutput; iOut++) {
-        if (!eq.output[iOut].wtn[0]) {
+        if (!eq.output[iOut].options.spatial) {
           continue;
         }
 
@@ -1065,11 +1065,11 @@ void write_vtus(Simulation* simulation, const Array<double>& lA, const Array<dou
         Vector<double> tmpVe;
 
         switch (oGrp) {
-          case OutputType::outGrp_NA:
+          case OutputNameType::outGrp_NA:
             throw std::runtime_error("Undefined output grp in VTK");
           break;
 
-          case OutputType::outGrp_A:
+          case OutputNameType::outGrp_A:
             for (int a = 0; a < msh.nNo; a++) {
               int Ac = msh.gN(a);
               for (int i = 0; i < l; i++) {
@@ -1078,7 +1078,7 @@ void write_vtus(Simulation* simulation, const Array<double>& lA, const Array<dou
             }
           break;
 
-          case OutputType::outGrp_Y:
+          case OutputNameType::outGrp_Y:
             if (eq.phys != EquationType::phys_heatF) {
                 for (int a = 0; a < msh.nNo; a++) {
                     int Ac = msh.gN(a);
@@ -1105,7 +1105,7 @@ void write_vtus(Simulation* simulation, const Array<double>& lA, const Array<dou
             }
           break;
 
-          case OutputType::outGrp_D:
+          case OutputNameType::outGrp_D:
             #ifdef debug_write_vtus 
             dmsg << "case " << " outGrp_D ";
             dmsg << "is: " << is;
@@ -1122,8 +1122,8 @@ void write_vtus(Simulation* simulation, const Array<double>& lA, const Array<dou
             }
           break;
 
-          case OutputType::outGrp_WSS:
-          case OutputType::outGrp_trac:
+          case OutputNameType::outGrp_WSS:
+          case OutputNameType::outGrp_trac:
             post::bpost(simulation, msh, tmpV, lY, lD, oGrp);
 
             for (int a = 0; a < msh.nNo; a++) {
@@ -1133,12 +1133,12 @@ void write_vtus(Simulation* simulation, const Array<double>& lA, const Array<dou
             }
           break;
 
-          case OutputType::outGrp_vort: 
-          case OutputType::outGrp_eFlx: 
-          case OutputType::outGrp_hFlx: 
-          case OutputType::outGrp_stInv: 
-          case OutputType::outGrp_vortex: 
-          case OutputType::outGrp_Visc: 
+          case OutputNameType::outGrp_vort: 
+          case OutputNameType::outGrp_eFlx: 
+          case OutputNameType::outGrp_hFlx: 
+          case OutputNameType::outGrp_stInv: 
+          case OutputNameType::outGrp_vortex: 
+          case OutputNameType::outGrp_Visc: 
             post::post(simulation, msh, tmpV, lY, lD, oGrp, iEq);
             for (int a = 0; a < msh.nNo; a++) {
               int Ac = msh.gN(a);
@@ -1148,7 +1148,7 @@ void write_vtus(Simulation* simulation, const Array<double>& lA, const Array<dou
             }
           break;
 
-          case OutputType::outGrp_absV: 
+          case OutputNameType::outGrp_absV: 
             for (int a = 0; a < msh.nNo; a++) {
               int Ac = msh.gN(a);
               for (int i = 0; i < l; i++) {
@@ -1157,7 +1157,7 @@ void write_vtus(Simulation* simulation, const Array<double>& lA, const Array<dou
             }
           break;
 
-          case OutputType::outGrp_fN:
+          case OutputNameType::outGrp_fN:
             cOut = cOut - 1;
             tmpV.resize(nFn*nsd,msh.nNo);
             if (msh.nFn != 0) {
@@ -1179,7 +1179,7 @@ void write_vtus(Simulation* simulation, const Array<double>& lA, const Array<dou
             tmpV.resize(consts::maxNSD, msh.nNo);
           break;
 
-          case OutputType::outGrp_fA:
+          case OutputNameType::outGrp_fA:
             tmpV.resize(1,msh.nNo);
             if (msh.nFn == 2) {
               post::fib_algn_post(simulation, msh, tmpV, lD, iEq);
@@ -1190,9 +1190,9 @@ void write_vtus(Simulation* simulation, const Array<double>& lA, const Array<dou
             tmpV.resize(consts::maxNSD, msh.nNo);
           break;
 
-          case OutputType::outGrp_stress:
-          case OutputType::outGrp_cauchy:
-          case OutputType::outGrp_mises:
+          case OutputNameType::outGrp_stress:
+          case OutputNameType::outGrp_cauchy:
+          case OutputNameType::outGrp_mises:
             #ifdef debug_write_vtus 
             dmsg << "case " << " outGrp_stress";
             #endif
@@ -1223,7 +1223,7 @@ void write_vtus(Simulation* simulation, const Array<double>& lA, const Array<dou
               }
             }
 
-            if (oGrp == OutputType::outGrp_mises) {
+            if (oGrp == OutputNameType::outGrp_mises) {
               outNamesE[nOute] = "E_VonMises";
               for (int a = 0; a < msh.nEl; a++) {
                 d[iM].xe(nOute,a) = tmpVe(a);
@@ -1234,11 +1234,11 @@ void write_vtus(Simulation* simulation, const Array<double>& lA, const Array<dou
             tmpV.resize(consts::maxNSD,msh.nNo);
           break;
 
-          case OutputType::outGrp_J:
-          case OutputType::outGrp_F:
-          case OutputType::outGrp_strain:
-          case OutputType::outGrp_fS:
-          case OutputType::outGrp_I1:
+          case OutputNameType::outGrp_J:
+          case OutputNameType::outGrp_F:
+          case OutputNameType::outGrp_strain:
+          case OutputNameType::outGrp_fS:
+          case OutputNameType::outGrp_I1:
             #ifdef debug_write_vtus 
             dmsg << "case " << " outGrp_J";
             #endif
@@ -1258,7 +1258,7 @@ void write_vtus(Simulation* simulation, const Array<double>& lA, const Array<dou
               }
             }
 
-            if (oGrp == OutputType::outGrp_J) {
+            if (oGrp == OutputNameType::outGrp_J) {
               outNamesE[nOute] = "E_Jacobian";
               for (int a = 0; a < msh.nEl; a++) {
                 d[iM].xe(nOute,a) = tmpVe(a);
@@ -1266,7 +1266,7 @@ void write_vtus(Simulation* simulation, const Array<double>& lA, const Array<dou
               nOute = nOute + 1;
             }
 
-            if (oGrp == OutputType::outGrp_I1) {
+            if (oGrp == OutputNameType::outGrp_I1) {
               outNamesE[nOute] = "E_CG_I1";
               nOute = nOute + 1;
               for (int a = 0; a < msh.nEl; a++) {
@@ -1277,7 +1277,7 @@ void write_vtus(Simulation* simulation, const Array<double>& lA, const Array<dou
             tmpV.resize(consts::maxNSD,msh.nNo);
           break;
 
-          case OutputType::outGrp_divV:
+          case OutputNameType::outGrp_divV:
             tmpV.resize(l,msh.nNo); 
             post::div_post(simulation, msh, tmpV, lY, lD, iEq);
             for (int a = 0; a < msh.nNo; a++) {
