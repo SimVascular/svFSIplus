@@ -62,7 +62,7 @@ message(STATUS "SV_TOP: ${SV_TOP}")
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/Code/CMake"
 	"${CMAKE_MODULE_PATH}")
 
-# Add -march=native to CMAKE_C_FLAGS and CMAKE_CXX_FLAGS
+# Add -march=native to CMAKE_C_FLAGS and CMAKE_CXX_FLAGS for Eigen performance
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=native")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
 #-----------------------------------------------------------------------------
