@@ -546,12 +546,12 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
 
       double r2 = stM.C10 * exp(QQ);
 
-      EigenMatrix<nsd> RmRm_00 = dyadic_product<nsd>(Rm.col(0), Rm.col(0));
-      EigenMatrix<nsd> RmRm_11 = dyadic_product<nsd>(Rm.col(1), Rm.col(1));
-      EigenMatrix<nsd> RmRm_22 = dyadic_product<nsd>(Rm.col(2), Rm.col(2));
-      EigenMatrix<nsd> RmRm_01 = symmetric_dyadic_product<nsd>(Rm.col(0), Rm.col(1));
-      EigenMatrix<nsd> RmRm_12 = symmetric_dyadic_product<nsd>(Rm.col(1), Rm.col(2));
-      EigenMatrix<nsd> RmRm_20 = symmetric_dyadic_product<nsd>(Rm.col(2), Rm.col(0));
+      EigenMatrix<nsd> RmRm_00 = Rm.col(0) * Rm.col(0).transpose();
+      EigenMatrix<nsd> RmRm_11 = Rm.col(1) * Rm.col(1).transpose();
+      EigenMatrix<nsd> RmRm_22 = Rm.col(2) * Rm.col(2).transpose();
+      EigenMatrix<nsd> RmRm_01 = 0.5 * (Rm.col(0) * Rm.col(1).transpose() + Rm.col(1) * Rm.col(0).transpose());
+      EigenMatrix<nsd> RmRm_12 = 0.5 * (Rm.col(1) * Rm.col(2).transpose() + Rm.col(2) * Rm.col(1).transpose());
+      EigenMatrix<nsd> RmRm_20 = 0.5 * (Rm.col(2) * Rm.col(0).transpose() + Rm.col(0) * Rm.col(2).transpose());
 
       // Compute fictious stress and elasticity tensor
       EigenMatrix<nsd> S_bar = g1 *  Es(0,0) * RmRm_00 + 
@@ -616,7 +616,7 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
       // 1.S) Add isotropic + fiber-sheet interaction stress
       double g1 = stM.a * exp(stM.b*(Inv1-3.0));
       double g2 = 2.0 * stM.afs * Efs * exp(stM.bfs*Efs*Efs);
-      EigenMatrix<nsd> Hfs = symmetric_dyadic_product<nsd>(fl.col(0), fl.col(1));
+      EigenMatrix<nsd> Hfs = 0.5 * (fl.col(0) * fl.col(1).transpose() + fl.col(1) * fl.col(0).transpose());
       EigenMatrix<nsd> S_bar = g1*Idm + g2*Hfs;
 
       // 1.CC) Add isotropic + fiber-sheet interaction stiffness
@@ -629,7 +629,7 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
       g1 = c4f * Eff * rexp;
       g1 = g1 + (0.5*dc4f/stM.bff) * (rexp - 1.0);
       g1 = 2.0 * stM.aff * g1 + Tfa;
-      EigenMatrix<nsd> Hff = dyadic_product<nsd>(fl.col(0), fl.col(0));
+      EigenMatrix<nsd> Hff = fl.col(0) * fl.col(0).transpose();
       S_bar += g1*Hff;
 
       // 2.CC) Add fiber-fiber interaction stiffness
@@ -644,7 +644,7 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
       g2 = c4s * Ess * rexp;
       g2 = g2 + (0.5*dc4s/stM.bss) * (rexp - 1.0);
       g2 = 2.0 * stM.ass * g2 + Tsa;
-      EigenMatrix<nsd> Hss = dyadic_product<nsd>(fl.col(1), fl.col(1));
+      EigenMatrix<nsd> Hss = fl.col(1) * fl.col(1).transpose();
       S_bar += g2 * Hss;
 
       // 3.CC) Add sheet-sheet interaction stiffness
@@ -717,7 +717,7 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
       // Now add aniostropic components to stress and elasticity tensor (in steps)
 
       // 1.S) Add fiber-sheet interaction stress
-      EigenMatrix<nsd> Hfs = symmetric_dyadic_product<nsd>(fl.col(0), fl.col(1));
+      EigenMatrix<nsd> Hfs = 0.5 * (fl.col(0) * fl.col(1).transpose() + fl.col(1) * fl.col(0).transpose());
       g1 = 2.0 * stM.afs * exp(stM.bfs*Efs*Efs);
       S += g1*Efs*Hfs;
 
@@ -730,7 +730,7 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
       g1 = c4f*Eff*rexp;
       g1 = g1 + (0.5*dc4f/stM.bff)*(rexp - 1.0);
       g1 = (2.0*stM.aff*g1) + Tfa;
-      EigenMatrix<nsd> Hff = dyadic_product<nsd>(fl.col(0), fl.col(0));
+      EigenMatrix<nsd> Hff = fl.col(0) * fl.col(0).transpose();
       S += g1*Hff;
 
       // 2.CC) Add fiber-fiber interaction stiffness
@@ -745,7 +745,7 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
       double g2 = c4s*Ess*rexp;
       g2 = g2 + (0.5*dc4s/stM.bss)*(rexp - 1.0);
       g2 = 2.0*stM.ass*g2 + Tsa;
-      EigenMatrix<nsd> Hss = dyadic_product<nsd>(fl.col(1), fl.col(1));
+      EigenMatrix<nsd> Hss = fl.col(1) * fl.col(1).transpose();
       S  += g2*Hss;
 
       // 3.CC) Add sheet-sheet interaction stiffness

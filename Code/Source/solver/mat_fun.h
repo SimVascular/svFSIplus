@@ -105,11 +105,6 @@ namespace mat_fun {
 
     Array<double> mat_dyad_prod(const Vector<double>& u, const Vector<double>& v, const int nd);
 
-    template <int nsd>
-    EigenMatrix<nsd> dyadic_product(const Eigen::Matrix<double, nsd, 1>& u, const Eigen::Matrix<double, nsd, 1>& v) {
-        return u * v.transpose();
-    }
-
     Array<double> mat_id(const int nsd);
     Array<double> mat_inv(const Array<double>& A, const int nd, bool debug = false);
     Array<double> mat_inv_ge(const Array<double>& A, const int nd, bool debug = false);
@@ -122,11 +117,6 @@ namespace mat_fun {
 
     Array<double> mat_symm(const Array<double>& A, const int nd);
     Array<double> mat_symm_prod(const Vector<double>& u, const Vector<double>& v, const int nd);
-
-    template <int nsd>
-    EigenMatrix<nsd> symmetric_dyadic_product(const Eigen::Matrix<double, nsd, 1>& u, const Eigen::Matrix<double, nsd, 1>& v) {
-        return 0.5 * (u * v.transpose() + v * u.transpose());
-    }
 
     double mat_trace(const Array<double>& A, const int nd);
 
