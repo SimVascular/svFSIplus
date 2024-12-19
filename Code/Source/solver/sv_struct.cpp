@@ -39,7 +39,6 @@
 #include "consts.h"
 #include "lhsa.h"
 #include "mat_fun.h"
-#include "mat_fun_carray.h"
 #include "mat_models.h"
 #include "nn.h"
 #include "utils.h"
@@ -637,18 +636,6 @@ void struct_3d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, 
     F(2,0) = F(2,0) + Nx(0,a)*dl(k,a);
     F(2,1) = F(2,1) + Nx(1,a)*dl(k,a);
     F(2,2) = F(2,2) + Nx(2,a)*dl(k,a);
-
-    #ifdef use_carrays
-    F_f[0][0] += Nx(0,a)*dl(i,a);
-    F_f[0][1] += Nx(1,a)*dl(i,a);
-    F_f[0][2] += Nx(2,a)*dl(i,a);
-    F_f[1][0] += Nx(0,a)*dl(j,a);
-    F_f[1][1] += Nx(1,a)*dl(j,a);
-    F_f[1][2] += Nx(2,a)*dl(j,a);
-    F_f[2][0] += Nx(0,a)*dl(k,a);
-    F_f[2][1] += Nx(1,a)*dl(k,a);
-    F_f[2][2] += Nx(2,a)*dl(k,a);
-    #endif
 
     S0(0,0) = S0(0,0) + N(a)*pS0l(0,a);
     S0(1,1) = S0(1,1) + N(a)*pS0l(1,a);

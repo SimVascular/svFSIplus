@@ -34,7 +34,6 @@
 
 #include "fft.h"
 #include "mat_fun.h"
-#include "mat_fun_carray.h"
 #include "utils.h"
 
 #include <math.h>
