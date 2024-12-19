@@ -283,18 +283,18 @@ std::pair<EigenMatrix<nsd>, EigenTensor<nsd>> bar_to_iso(
   using namespace mat_fun;
 
   // Useful scalar
-  double r1 = J2d * mat_ddot_eigen<nsd>(C, S_bar) / nsd;
+  double r1 = J2d * double_dot_product<nsd>(C, S_bar) / nsd;
 
   // Compute isochoric 2nd Piola-Kirchhoff stress
   auto S_iso = J2d*S_bar - r1*Ci;
 
   // Compute isochoric material elasticity tensor
-  EigenTensor<nsd> PP = ten_ids_eigen<nsd>() - (1.0/nsd) * ten_dyad_prod_eigen<nsd>(Ci, C); // Important: using auto here causes tests to fail
-  auto CC_iso = ten_ddot_eigen<nsd>(CC_bar, PP);
-  CC_iso = ten_transpose_eigen<nsd>(CC_iso);
-  CC_iso = ten_ddot_eigen<nsd>(PP, CC_iso);
-  CC_iso += (-2.0/nsd) * (ten_dyad_prod_eigen<nsd>(Ci, S_iso)  + ten_dyad_prod_eigen<nsd>(S_iso, Ci));
-  CC_iso += 2.0 * r1 * ten_symm_prod_eigen<nsd>(Ci, Ci)  +  (- 2.0*r1/nsd) * ten_dyad_prod_eigen<nsd>(Ci, Ci);
+  EigenTensor<nsd> PP = fourth_order_identity<nsd>() - (1.0/nsd) * dyadic_product<nsd>(Ci, C); // Important: using auto here causes tests to fail
+  auto CC_iso = double_dot_product_2323<nsd>(CC_bar, PP);
+  CC_iso = transpose<nsd>(CC_iso);
+  CC_iso = double_dot_product_2323<nsd>(PP, CC_iso);
+  CC_iso += (-2.0/nsd) * (dyadic_product<nsd>(Ci, S_iso) + dyadic_product<nsd>(S_iso, Ci));
+  CC_iso += 2.0 * r1 * symmetric_dyadic_product<nsd>(Ci, Ci) + (- 2.0*r1/nsd) * dyadic_product<nsd>(Ci, Ci);
 
   return std::make_pair(S_iso, CC_iso);
 }
@@ -396,7 +396,7 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
       double pl = 0.0;
       get_svol_p(com_mod, cep_mod, stM, J, p, pl);
       S += p * J * Ci;
-      CC += -2.0 * p * J * ten_symm_prod_eigen<nsd>(Ci, Ci) + pl * J * ten_dyad_prod_eigen<nsd>(Ci, Ci);
+      CC += -2.0 * p * J * symmetric_dyadic_product<nsd>(Ci, Ci) + pl * J * dyadic_product<nsd>(Ci, Ci);
     }
   }
 
@@ -422,7 +422,7 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
       double g2 = stM.C01 * 2.0;   // 2*mu
 
       S += g1*trE*Idm + g2*E;
-      CC += g1 * ten_dyad_prod_eigen<nsd>(Idm, Idm) + g2*ten_ids_eigen<nsd>();
+      CC += g1 * dyadic_product<nsd>(Idm, Idm) + g2*fourth_order_identity<nsd>();
     } break;
 
     // modified St.Venant-Kirchhoff
@@ -435,8 +435,8 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
       double g2 = stM.C01;  // mu
 
       S += g1*log(J)*Ci + g2*(C-Idm);
-      CC += g1 * ( -2.0*log(J)*ten_symm_prod_eigen<nsd>(Ci, Ci) +
-         ten_dyad_prod_eigen<nsd>(Ci, Ci) ) + 2.0*g2*ten_ids_eigen<nsd>();
+      CC += g1 * ( -2.0*log(J)*symmetric_dyadic_product<nsd>(Ci, Ci) +
+         dyadic_product<nsd>(Ci, Ci) ) + 2.0*g2*fourth_order_identity<nsd>();
     } break;
 
     // NeoHookean model
@@ -444,7 +444,8 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
 
       // Compute fictious stress and elasticity tensor
       EigenMatrix<nsd> S_bar = 2.0 * stM.C10 * Idm;
-      EigenTensor<nsd> CC_bar; CC_bar.setZero();
+      EigenTensor<nsd> CC_bar; 
+      CC_bar.setZero();
 
       // Add fiber reinforcement/active stress
       S_bar += Tfa * (fl.col(0) * fl.col(0).transpose());
@@ -463,7 +464,7 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
       EigenMatrix<nsd> S_bar = 2.0 * (stM.C10 + Inv1 * stM.C01) * Idm 
                               -2.0 * stM.C01 * J2d * C;
 
-      EigenTensor<nsd> CC_bar = 4.0 * J4d * stM.C01 * (ten_dyad_prod_eigen<nsd>(Idm, Idm) - ten_ids_eigen<nsd>());
+      EigenTensor<nsd> CC_bar = 4.0 * J4d * stM.C01 * (dyadic_product<nsd>(Idm, Idm) - fourth_order_identity<nsd>());
 
       // Add fiber reinforcement/active stress
       S_bar += Tfa * (fl.col(0) * fl.col(0).transpose());
@@ -504,7 +505,7 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
       g2 = stM.ass*(1.0 + 2.0*stM.bss*Ess*Ess)*exp(stM.bss*Ess*Ess);
       g1 = 4.0*J4d*g1;
       g2 = 4.0*J4d*g2;
-      EigenTensor<nsd> CC_bar = g1 * ten_dyad_prod_eigen<nsd>(Hff, Hff) + g2 * ten_dyad_prod_eigen<nsd>(Hss, Hss);
+      EigenTensor<nsd> CC_bar = g1 * dyadic_product<nsd>(Hff, Hff) + g2 * dyadic_product<nsd>(Hss, Hss);
       
       // Add fiber reinforcement/active stress
       S_bar += Tfa * (fl.col(0) * fl.col(0).transpose());
@@ -529,7 +530,7 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
       EigenMatrix<nsd> Rm;
       Rm.col(0) = fl.col(0);
       Rm.col(1) = fl.col(1);
-      Rm.col(2) = cross_eigen<nsd>(fl.col(0), fl.col(1));
+      Rm.col(2) = cross_product<nsd>(fl.col(0), fl.col(1));
 
       // Project E to local orthogonal coordinate system
       EigenMatrix<nsd> Es = Rm.transpose() * E * Rm;
@@ -545,29 +546,29 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
 
       double r2 = stM.C10 * exp(QQ);
 
-      EigenMatrix<nsd> RmRm_00 = mat_dyad_prod_eigen<nsd>(Rm.col(0), Rm.col(0));
-      EigenMatrix<nsd> RmRm_11 = mat_dyad_prod_eigen<nsd>(Rm.col(1), Rm.col(1));
-      EigenMatrix<nsd> RmRm_22 = mat_dyad_prod_eigen<nsd>(Rm.col(2), Rm.col(2));
-      EigenMatrix<nsd> RmRm_01 = mat_symm_prod_eigen<nsd>(Rm.col(0), Rm.col(1));
-      EigenMatrix<nsd> RmRm_12 = mat_symm_prod_eigen<nsd>(Rm.col(1), Rm.col(2));
-      EigenMatrix<nsd> RmRm_20 = mat_symm_prod_eigen<nsd>(Rm.col(2), Rm.col(0));
+      EigenMatrix<nsd> RmRm_00 = dyadic_product<nsd>(Rm.col(0), Rm.col(0));
+      EigenMatrix<nsd> RmRm_11 = dyadic_product<nsd>(Rm.col(1), Rm.col(1));
+      EigenMatrix<nsd> RmRm_22 = dyadic_product<nsd>(Rm.col(2), Rm.col(2));
+      EigenMatrix<nsd> RmRm_01 = symmetric_dyadic_product<nsd>(Rm.col(0), Rm.col(1));
+      EigenMatrix<nsd> RmRm_12 = symmetric_dyadic_product<nsd>(Rm.col(1), Rm.col(2));
+      EigenMatrix<nsd> RmRm_20 = symmetric_dyadic_product<nsd>(Rm.col(2), Rm.col(0));
 
       // Compute fictious stress and elasticity tensor
       EigenMatrix<nsd> S_bar = g1 *  Es(0,0) * RmRm_00 + 
                                g2 * (Es(1,1) * RmRm_11 + Es(2,2)*RmRm_22 + 2.0*Es(1,2)*RmRm_12) +
                          2.0 * g3 * (Es(0,1) * RmRm_01 + Es(0,2)*RmRm_20);
 
-      EigenTensor<nsd> CC_bar = 2.0*ten_dyad_prod_eigen<nsd>(S_bar, S_bar);
+      EigenTensor<nsd> CC_bar = 2.0*dyadic_product<nsd>(S_bar, S_bar);
 
       S_bar = S_bar * r2;
 
       r2  = r2*J4d;
-      CC_bar += g1 * ten_dyad_prod_eigen<nsd>(RmRm_00, RmRm_00) + 
-                g2 * (ten_dyad_prod_eigen<nsd>(RmRm_11, RmRm_11) +
-                      ten_dyad_prod_eigen<nsd>(RmRm_22, RmRm_22) +
-                2.0 * ten_dyad_prod_eigen<nsd>(RmRm_12, RmRm_12)) +
-          2.0 * g3 * (ten_dyad_prod_eigen<nsd>(RmRm_01, RmRm_01) +
-                      ten_dyad_prod_eigen<nsd>(RmRm_20, RmRm_20));
+      CC_bar += g1 * dyadic_product<nsd>(RmRm_00, RmRm_00);
+      CC_bar += g2 * (dyadic_product<nsd>(RmRm_11, RmRm_11) +
+                      dyadic_product<nsd>(RmRm_22, RmRm_22) +
+                2.0 * dyadic_product<nsd>(RmRm_12, RmRm_12));
+      CC_bar += 2.0 * g3 * (dyadic_product<nsd>(RmRm_01, RmRm_01) +
+                      dyadic_product<nsd>(RmRm_20, RmRm_20));
       CC_bar = r2 * CC_bar;
 
       // Add fiber reinforcement/active stress
@@ -615,20 +616,20 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
       // 1.S) Add isotropic + fiber-sheet interaction stress
       double g1 = stM.a * exp(stM.b*(Inv1-3.0));
       double g2 = 2.0 * stM.afs * Efs * exp(stM.bfs*Efs*Efs);
-      EigenMatrix<nsd> Hfs = mat_symm_prod_eigen<nsd>(fl.col(0), fl.col(1));
+      EigenMatrix<nsd> Hfs = symmetric_dyadic_product<nsd>(fl.col(0), fl.col(1));
       EigenMatrix<nsd> S_bar = g1*Idm + g2*Hfs;
 
       // 1.CC) Add isotropic + fiber-sheet interaction stiffness
       g1 = 2.0*J4d*stM.b*g1;
       g2 = 4.0*J4d*stM.afs*(1.0 + 2.0*stM.bfs*Efs*Efs)* exp(stM.bfs*Efs*Efs);
-      EigenTensor<nsd> CC_bar  = g1 * ten_dyad_prod_eigen<nsd>(Idm, Idm) + g2 * ten_dyad_prod_eigen<nsd>(Hfs, Hfs);
+      EigenTensor<nsd> CC_bar  = g1 * dyadic_product<nsd>(Idm, Idm) + g2 * dyadic_product<nsd>(Hfs, Hfs);
 
       // 2.S) Add fiber-fiber interaction stress + additional fiber reinforcement/active stress (Tfa)
       double rexp = exp(stM.bff*Eff*Eff);
       g1 = c4f * Eff * rexp;
       g1 = g1 + (0.5*dc4f/stM.bff) * (rexp - 1.0);
       g1 = 2.0 * stM.aff * g1 + Tfa;
-      EigenMatrix<nsd> Hff = mat_dyad_prod_eigen<nsd>(fl.col(0), fl.col(0));
+      EigenMatrix<nsd> Hff = dyadic_product<nsd>(fl.col(0), fl.col(0));
       S_bar += g1*Hff;
 
       // 2.CC) Add fiber-fiber interaction stiffness
@@ -636,14 +637,14 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
       g1 = (g1 + 2.0*dc4f*Eff) * rexp;
       g1 = g1 + (0.5*ddc4f/stM.bff)*(rexp - 1.0);
       g1 = 4.0 * J4d * stM.aff * g1;
-      CC_bar += g1*ten_dyad_prod_eigen<nsd>(Hff, Hff);
+      CC_bar += g1*dyadic_product<nsd>(Hff, Hff);
 
       // 3.S) Add sheet-sheet interaction stress + additional cross-fiber active stress (Tsa)
       rexp = exp(stM.bss*Ess*Ess);
       g2 = c4s * Ess * rexp;
       g2 = g2 + (0.5*dc4s/stM.bss) * (rexp - 1.0);
       g2 = 2.0 * stM.ass * g2 + Tsa;
-      EigenMatrix<nsd> Hss = mat_dyad_prod_eigen<nsd>(fl.col(1), fl.col(1));
+      EigenMatrix<nsd> Hss = dyadic_product<nsd>(fl.col(1), fl.col(1));
       S_bar += g2 * Hss;
 
       // 3.CC) Add sheet-sheet interaction stiffness
@@ -651,7 +652,7 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
       g2 = (g2 + 2.0*dc4s*Ess) * rexp;
       g2 = g2 + (0.5*ddc4s/stM.bss)*(rexp - 1.0);
       g2 = 4.0 * J4d * stM.ass * g2;
-      CC_bar += g2*ten_dyad_prod_eigen<nsd>(Hss, Hss);
+      CC_bar += g2*dyadic_product<nsd>(Hss, Hss);
 
 
       // Compute and add isochoric stress and elasticity tensor
@@ -662,10 +663,9 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
       // Modify S and CC if using active strain
       if (cep_mod.cem.aStrain) {
         S = Fa * S * Fai.transpose();
-        CC_bar.setZero(); // Probably unnecessary
-        CC_bar = ten_dyad_prod_eigen<nsd>(Fai, Fai);
-        CC = ten_ddot_3424_eigen<nsd>(CC, CC_bar);
-        CC = ten_ddot_2412_eigen<nsd>(CC_bar, CC);
+        CC_bar = dyadic_product<nsd>(Fai, Fai); // Reusing CC_bar
+        CC = double_dot_product_2313<nsd>(CC, CC_bar);
+        CC = double_dot_product_1301<nsd>(CC_bar, CC);
       }
     } break;
 
@@ -707,7 +707,7 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
 
       // 1.CC) Add isotropic stiffness
       g1 = g1*2.0*J4d*stM.b;
-      EigenTensor<nsd> CC_bar = g1 * ten_dyad_prod_eigen<nsd>(Idm, Idm);
+      EigenTensor<nsd> CC_bar = g1 * dyadic_product<nsd>(Idm, Idm);
 
       // Compute and add isochoric isotropic stress and elasticity tensor
       auto [S_iso, CC_iso] = bar_to_iso<nsd>(S_bar, CC_bar, J2d, C, Ci);
@@ -717,20 +717,20 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
       // Now add aniostropic components to stress and elasticity tensor (in steps)
 
       // 1.S) Add fiber-sheet interaction stress
-      EigenMatrix<nsd> Hfs = mat_symm_prod_eigen<nsd>(fl.col(0), fl.col(1));
+      EigenMatrix<nsd> Hfs = symmetric_dyadic_product<nsd>(fl.col(0), fl.col(1));
       g1 = 2.0 * stM.afs * exp(stM.bfs*Efs*Efs);
       S += g1*Efs*Hfs;
 
       // 1.CC) Add fiber-sheet interaction stiffness
       g1 = g1 * 2.0*(1.0 + 2.0*stM.bfs*Efs*Efs);
-      CC += g1*ten_dyad_prod_eigen<nsd>(Hfs, Hfs);
+      CC += g1*dyadic_product<nsd>(Hfs, Hfs);
 
       // 2.S) Add fiber-fiber interaction stress + additional reinforcement/active stress (Tfa)
       double rexp = exp(stM.bff * Eff * Eff);
       g1 = c4f*Eff*rexp;
       g1 = g1 + (0.5*dc4f/stM.bff)*(rexp - 1.0);
       g1 = (2.0*stM.aff*g1) + Tfa;
-      EigenMatrix<nsd> Hff = mat_dyad_prod_eigen<nsd>(fl.col(0), fl.col(0));
+      EigenMatrix<nsd> Hff = dyadic_product<nsd>(fl.col(0), fl.col(0));
       S += g1*Hff;
 
       // 2.CC) Add fiber-fiber interaction stiffness
@@ -738,14 +738,14 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
       g1 = (g1 + (2.0*dc4f*Eff))*rexp;
       g1 = g1 + (0.5*ddc4f/stM.bff)*(rexp - 1.0);
       g1 = 4.0*stM.aff*g1;
-      CC += g1*ten_dyad_prod_eigen<nsd>(Hff, Hff);
+      CC += g1*dyadic_product<nsd>(Hff, Hff);
 
       // 3.S) Add sheet-sheet interaction stress + additional cross-fiber active stress (Tsa)
       rexp = exp(stM.bss * Ess * Ess);
       double g2 = c4s*Ess*rexp;
       g2 = g2 + (0.5*dc4s/stM.bss)*(rexp - 1.0);
       g2 = 2.0*stM.ass*g2 + Tsa;
-      EigenMatrix<nsd> Hss = mat_dyad_prod_eigen<nsd>(fl.col(1), fl.col(1));
+      EigenMatrix<nsd> Hss = dyadic_product<nsd>(fl.col(1), fl.col(1));
       S  += g2*Hss;
 
       // 3.CC) Add sheet-sheet interaction stiffness
@@ -753,7 +753,7 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
       g2   = (g2 + (2.0*dc4s*Ess))*rexp;
       g2 = g2 + (0.5*ddc4s/stM.bss)*(rexp - 1.0);
       g2   = 4.0*stM.ass*g2;
-      CC += g2*ten_dyad_prod_eigen<nsd>(Hss, Hss);
+      CC += g2*dyadic_product<nsd>(Hss, Hss);
     } break;
 
 
@@ -779,7 +779,7 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
 
     if (nsd == 2) {
         // Copy deformation gradient to Eigen matrix
-        auto F_2D = mat_fun::toEigenMatrix<Eigen::Matrix2d>(F);
+        auto F_2D = mat_fun::convert_to_eigen_matrix<Eigen::Matrix2d>(F);
         
         // Copy fiber directions to Eigen matrix
         Eigen::Matrix<double, 2, Eigen::Dynamic> fl_2D(2, nfd);
@@ -796,12 +796,12 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
         _get_pk2cc<2>(com_mod, cep_mod, lDmn, F_2D, nfd, fl_2D, ya, S_2D, Dm_2D, Ja);
 
         // Copy results back
-        mat_fun::toArray(S_2D, S);
-        mat_fun::copyDm(Dm_2D, Dm, 4, 4);
+        mat_fun::convert_to_array(S_2D, S);
+        mat_fun::copy_Dm(Dm_2D, Dm, 4, 4);
 
     } else if (nsd == 3) {
         // Copy deformation gradient to Eigen matrix
-        auto F_3D = mat_fun::toEigenMatrix<Eigen::Matrix3d>(F);
+        auto F_3D = mat_fun::convert_to_eigen_matrix<Eigen::Matrix3d>(F);
 
         // Copy fiber directions to Eigen matrix
         Eigen::Matrix<double, 3, Eigen::Dynamic> fl_3D(3, nfd);
@@ -820,8 +820,8 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
         _get_pk2cc<3>(com_mod, cep_mod, lDmn, F_3D, nfd, fl_3D, ya, S_3D, Dm_3D, Ja);
 
         // Copy results back
-        mat_fun::toArray(S_3D, S);
-        mat_fun::copyDm(Dm_3D, Dm, 6, 6);
+        mat_fun::convert_to_array(S_3D, S);
+        mat_fun::copy_Dm(Dm_3D, Dm, 6, 6);
     }
 }
 
@@ -1529,7 +1529,7 @@ void g_vol_pen(const ComMod& com_mod, const dmnType& lDmn, const double p,
  * @param Kvis_u Viscous tangent matrix contribution due to displacement
  * @param Kvis_v Visous tangent matrix contribution due to velocity
  */
-void get_visc_stress_pot(const double mu, const int eNoN, const Array<double>& Nx, const Array<double>& vx, const Array<double>& F,
+void get_visc_stress_potential(const double mu, const int eNoN, const Array<double>& Nx, const Array<double>& vx, const Array<double>& F,
                         Array<double>& Svis, Array3<double>& Kvis_u, Array3<double>& Kvis_v) {
 
     using namespace consts;
@@ -1608,7 +1608,7 @@ void get_visc_stress_pot(const double mu, const int eNoN, const Array<double>& N
  * @param Kvis_u Viscous tangent matrix contribution due to displacement
  * @param Kvis_v Visous tangent matrix contribution due to velocity
  */
-void get_visc_stress_newt(const double mu, const int eNoN, const Array<double>& Nx, const Array<double>& vx, const Array<double>& F,
+void get_visc_stress_newtonian(const double mu, const int eNoN, const Array<double>& Nx, const Array<double>& vx, const Array<double>& F,
                            Array<double>& Svis, Array3<double>& Kvis_u, Array3<double>& Kvis_v) {
     using namespace consts;
     using namespace mat_fun;
@@ -1701,11 +1701,11 @@ void get_visc_stress_and_tangent(const dmnType& lDmn, const int eNoN, const Arra
 
     switch (lDmn.solid_visc.viscType) {
       case consts::SolidViscosityModelType::viscType_Newtonian:
-        get_visc_stress_newt(lDmn.solid_visc.mu, eNoN, Nx, vx, F, Svis, Kvis_u, Kvis_v);
+        get_visc_stress_newtonian(lDmn.solid_visc.mu, eNoN, Nx, vx, F, Svis, Kvis_u, Kvis_v);
       break;
 
       case consts::SolidViscosityModelType::viscType_Potential:
-        get_visc_stress_pot(lDmn.solid_visc.mu, eNoN, Nx, vx, F, Svis, Kvis_u, Kvis_v);
+        get_visc_stress_potential(lDmn.solid_visc.mu, eNoN, Nx, vx, F, Svis, Kvis_u, Kvis_v);
       break;
     }
 }
