@@ -51,32 +51,32 @@ void cc_to_voigt(const int nsd, const Tensor4<double>& CC, Array<double>& Dm);
 
 void voigt_to_cc(const int nsd, const Array<double>& Dm, Tensor4<double>& CC);
 
-void get_fib_stress(const ComMod& com_mod, const CepMod& cep_mod, const fibStrsType& Tfl, double& g);
+void compute_fib_stress(const ComMod& com_mod, const CepMod& cep_mod, const fibStrsType& Tfl, double& g);
 
-void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn, const Array<double>& F, const int nfd,
+void compute_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn, const Array<double>& F, const int nfd,
     const Array<double>& fl, const double ya, Array<double>& S, Array<double>& Dm, double& Ja);
 
-void get_pk2cc_shlc(const ComMod& com_mod, const dmnType& lDmn, const int nfd, const Array<double>& fNa0,
+void compute_pk2cc_shlc(const ComMod& com_mod, const dmnType& lDmn, const int nfd, const Array<double>& fNa0,
     const Array<double>& gg_0, const Array<double>& gg_x, double& g33, Vector<double>& Sml, Array<double>& Dml);
 
-void get_pk2cc_shli(const ComMod& com_mod, const dmnType& lDmn, const int nfd, const Array<double>& fNa0,
+void compute_pk2cc_shli(const ComMod& com_mod, const dmnType& lDmn, const int nfd, const Array<double>& fNa0,
     const Array<double>& gg_0, const Array<double>& gg_x, double& g33, Vector<double>& Sml, Array<double>& Dml);
 
-void get_tau(const ComMod& com_mod, const dmnType& lDmn, const double detF, const double Je, double& tauM, double& tauC);
+void compute_tau(const ComMod& com_mod, const dmnType& lDmn, const double detF, const double Je, double& tauM, double& tauC);
 
-void get_svol_p(const ComMod& com_mod, const CepMod& cep_mod, const stModelType& stM, const double J, 
+void compute_svol_p(const ComMod& com_mod, const CepMod& cep_mod, const stModelType& stM, const double J, 
     double& p, double& pl);
 
 void g_vol_pen(const ComMod& com_mod, const dmnType& lDmn, const double p, 
     double& ro, double& bt, double& dro, double& dbt, const double Ja);
 
-void get_visc_stress_potential(const double mu, const int eNoN, const Array<double>& Nx, const double vx, const double F,
+void compute_visc_stress_potential(const double mu, const int eNoN, const Array<double>& Nx, const double vx, const double F,
                         Array<double>& Svis, Array3<double>& Kvis_u, Array3<double>& Kvis_v);
 
-void get_visc_stress_newtonian(const double mu, const int eNoN, const Array<double>& Nx, const Array<double>& vx, const Array<double>& F,
+void compute_visc_stress_newtonian(const double mu, const int eNoN, const Array<double>& Nx, const Array<double>& vx, const Array<double>& F,
                         Array<double>& Svis, Array3<double>& Kvis_u, Array3<double>& Kvis_v);
 
-void get_visc_stress_and_tangent(const dmnType& lDmn, const int eNoN, const Array<double>& Nx, const  Array<double>& vx, const  Array<double>& F,
+void compute_visc_stress_and_tangent(const dmnType& lDmn, const int eNoN, const Array<double>& Nx, const  Array<double>& vx, const  Array<double>& F,
                         Array<double>& Svis, Array3<double>& Kvis_u, Array3<double>& Kvis_v);
 };
 

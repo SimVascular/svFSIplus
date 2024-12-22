@@ -391,8 +391,8 @@ public:
         ya_g = 0.0;                       // ?
 
         // Flag to use struct or ustruct material models
-        // If struct, calls get_pk2cc() and uses strain energy composed of isochoric and volumetric parts
-        // If ustruct, calls get_pk2cc() and uses strain energy composed of isochoric part only
+        // If struct, calls compute_pk2cc() and uses strain energy composed of isochoric and volumetric parts
+        // If ustruct, calls compute_pk2cc() and uses strain energy composed of isochoric part only
         ustruct = false;
 
     // Material parameters are set in each derived class
@@ -408,14 +408,14 @@ public:
      * @brief Computes the PK2 stress tensor S and material elasticity tensor Dm for a given deformation gradient F.
      *
      * This function computes the PK2 stress tensor S and the material elasticity tensor Dm from the deformation gradient F.
-     * If `ustruct` is true, the deviatoric part of the PK2 stress tensor is returned using the `get_pk2cc` function.
+     * If `ustruct` is true, the deviatoric part of the PK2 stress tensor is returned using the `compute_pk2cc` function.
      *
      * @param[in] F The deformation gradient tensor.
      * @param[out] S The computed PK2 stress tensor.
      * @param[out] Dm The computed material elasticity tensor.
      * @return None, but fills S and Dm with the computed values.
      */
-    void get_pk2cc(const Array<double> &F, Array<double> &S,  Array<double> &Dm) {
+    void compute_pk2cc(const Array<double> &F, Array<double> &S,  Array<double> &Dm) {
         auto &dmn = com_mod.mockEq.mockDmn;
 
         double J = 0; // Jacobian (not used in this testing)
@@ -426,8 +426,8 @@ public:
             dmn.phys = consts::EquationType::phys_struct;
         }
 
-        // Call get_pk2cc to compute S and Dm
-        mat_models::get_pk2cc(com_mod, cep_mod, dmn, F, nFn, fN, ya_g, S, Dm, J);
+        // Call compute_pk2cc to compute S and Dm
+        mat_models::compute_pk2cc(com_mod, cep_mod, dmn, F, nFn, fN, ya_g, S, Dm, J);
 
     }
 
@@ -577,9 +577,9 @@ public:
             delta /= 2.0;
         }
 
-        // Compute S(F) from get_pk2cc()
+        // Compute S(F) from compute_pk2cc()
         Array<double> S(3,3), Dm(6,6);
-        get_pk2cc(F, S, Dm);
+        compute_pk2cc(F, S, Dm);
 
         // Compute finite difference S for each delta and store error in list
         std::vector<double> errors;
@@ -787,9 +787,9 @@ public:
         int N = F.ncols();
         assert(F.nrows() == N);
 
-        // Compute S(F) from get_pk2cc()
+        // Compute S(F) from compute_pk2cc()
         Array<double> S(N,N), Dm(2*N,2*N);
-        get_pk2cc(F, S, Dm);
+        compute_pk2cc(F, S, Dm);
 
         // Compute dE using finite difference, given dF
         Array<double> dE(N,N);
@@ -800,13 +800,13 @@ public:
     }
 
     /**
-     * @brief Tests the consistency of the PK2 stress tensor S(F) from get_pk2cc() with the strain energy density Psi(F) provided by the user.
+     * @brief Tests the consistency of the PK2 stress tensor S(F) from compute_pk2cc() with the strain energy density Psi(F) provided by the user.
      *
      * Analytically, we should have S = dPsi/dE. This function checks whether S:dE = dPsi, where dE and dPsi are computed using finite differences in F.
      *
      * Pseudocode:
      * - Compute Psi(F)
-     * - Compute S(F) from get_pk2cc()
+     * - Compute S(F) from compute_pk2cc()
      * - For many random dF
      *      - Compute dPsi = Psi(F + dF) - Psi(F)
      *      - Compute dE = E(F + dF) - E(F)
@@ -828,7 +828,7 @@ public:
         assert(F.nrows() == N);
 
         // Generate many random dF and check that S:dE = dPsi
-        // S was obtained from get_pk2cc(), and dPsi = Psi(F + dF) - Psi(F)
+        // S was obtained from compute_pk2cc(), and dPsi = Psi(F + dF) - Psi(F)
         double dPsi, SdE;
         for (int i = 0; i < n_iter; i++) {
             // Generate random dF
@@ -870,7 +870,7 @@ public:
      *
      * Pseudocode:
      * - Compute Psi(F)
-     * - Compute S(F) from get_pk2cc()
+     * - Compute S(F) from compute_pk2cc()
      * - For each component-wise perturbation dF
      *      - Compute dPsi
      *      - Compute dE
@@ -983,9 +983,9 @@ public:
         int N = F.ncols();
         assert(F.nrows() == N);
 
-        // Compute S(F) from get_pk2cc()
+        // Compute S(F) from compute_pk2cc()
         Array<double> S(N,N), Dm(2*N,2*N);
-        get_pk2cc(F, S, Dm);
+        compute_pk2cc(F, S, Dm);
 
         // Compute dS using finite difference, given dF
         if (order == 1){
@@ -1003,7 +1003,7 @@ public:
 
             // Compute perturbed S_tilde from F_tilde
             Array<double> S_tilde(N,N), Dm_tilde(2*N,2*N);
-            get_pk2cc(F_tilde, S_tilde, Dm_tilde);
+            compute_pk2cc(F_tilde, S_tilde, Dm_tilde);
 
             // Compute differences in S
             dS = S_tilde - S;
@@ -1027,8 +1027,8 @@ public:
             Array<double> S_plus(N,N), Dm_plus(2*N,2*N);
             Array<double> S_minus(N,N), Dm_minus(2*N,2*N);
 
-            get_pk2cc(F_plus, S_plus, Dm_plus);
-            get_pk2cc(F_minus, S_minus, Dm_minus);
+            compute_pk2cc(F_plus, S_plus, Dm_plus);
+            compute_pk2cc(F_minus, S_minus, Dm_minus);
 
             // Compute differences in S
             dS = S_plus - S_minus;
@@ -1049,9 +1049,9 @@ public:
         int N = F.ncols();
         assert(F.nrows() == N);
 
-        // Compute CC(F) from get_pk2cc()
+        // Compute CC(F) from compute_pk2cc()
         Array<double> S(N, N), Dm(2*N, 2*N);
-        get_pk2cc(F, S, Dm);
+        compute_pk2cc(F, S, Dm);
         
         // Create Tensor for CC
         Tensor4<double> CC(N, N, N, N);
@@ -1068,14 +1068,14 @@ public:
 
 
     /**
-     * @brief Tests the consistency of the material elasticity tensor CC(F) from get_pk2cc() with the PK2 stress tensor S(F) from get_pk2cc().
+     * @brief Tests the consistency of the material elasticity tensor CC(F) from compute_pk2cc() with the PK2 stress tensor S(F) from compute_pk2cc().
      *
      * Analytically, we should have CC:dE = dS. This function checks whether CC:dE = dS, where dE and dS are computed using finite differences in F.
      *
      * Pseudocode:
-     * - Compute S(F) and CC(F) from get_pk2cc()
+     * - Compute S(F) and CC(F) from compute_pk2cc()
      * - For each component-wise perturbation dF
-     *      - Compute S(F + dF) from get_pk2cc()
+     *      - Compute S(F + dF) from compute_pk2cc()
      *      - Compute dS = S(F + dF) - S(F)
      *      - Compute dE from dF
      *      - Check that CC:dE = dS
@@ -1102,7 +1102,7 @@ public:
         // Compute CC_ijkl(F). 
         // CC is provided in Voigt notation as Dm, and we will convert it to CC
         Array<double> S(N, N), Dm(2*N, 2*N);
-        get_pk2cc(F, S, Dm); // S from solver 
+        compute_pk2cc(F, S, Dm); // S from solver 
 
         // Calculate CC from Dm
         Tensor4<double> CC(N, N, N, N);
@@ -1122,8 +1122,8 @@ public:
         // -------------------------------
     
         // Generate many random dF and check that CC:dE = dS
-        // CC was obtained from get_pk2cc(), and dS = S(F + dF) - S(F), 
-        // where S is also obtained from get_pk2cc()
+        // CC was obtained from compute_pk2cc(), and dS = S(F + dF) - S(F), 
+        // where S is also obtained from compute_pk2cc()
         Array<double> dS(N, N), CCdE(N, N);
         
         // Loop over perturbations to each component of F, dF
@@ -1318,7 +1318,7 @@ public:
     /**
      * @brief Compares the PK2 stress tensor S(F) with a reference solution.
      *
-     * This function computes the PK2 stress tensor S(F) from the deformation gradient F using get_pk2cc() 
+     * This function computes the PK2 stress tensor S(F) from the deformation gradient F using compute_pk2cc() 
      * and compares it with a reference solution S_ref. The comparison is done using relative and absolute tolerances.
      *
      * @param[in] F Deformation gradient.
@@ -1333,9 +1333,9 @@ public:
         int N = F.ncols();
         assert(F.nrows() == N);
 
-        // Compute S(F) from get_pk2cc()
+        // Compute S(F) from compute_pk2cc()
         Array<double> S(N, N), Dm(2*N, 2*N);
-        get_pk2cc(F, S, Dm);
+        compute_pk2cc(F, S, Dm);
     
         // Compare S with reference solution
         for (int i = 0; i < 3; i++) {
@@ -1378,7 +1378,7 @@ public:
     /**
      * @brief Compares the material elasticity tensor CC(F) with a reference solution.
      *
-     * This function computes the material elasticity tensor CC(F) from the deformation gradient F using get_pk2cc() 
+     * This function computes the material elasticity tensor CC(F) from the deformation gradient F using compute_pk2cc() 
      * and compares it with a reference solution CC_ref. The comparison is done using relative and absolute tolerances.
      *
      * @param[in] F Deformation gradient.
@@ -1393,9 +1393,9 @@ public:
         int N = F.ncols();
         assert(F.nrows() == N);
 
-        // Compute CC(F) from get_pk2cc()
+        // Compute CC(F) from compute_pk2cc()
         Array<double> S(N, N), Dm(2*N, 2*N);
-        get_pk2cc(F, S, Dm);
+        compute_pk2cc(F, S, Dm);
 
         // Calculate CC from Dm
         Tensor4<double> CC(N, N, N, N);

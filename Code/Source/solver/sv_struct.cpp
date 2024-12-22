@@ -444,14 +444,14 @@ void struct_2d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, 
   // 2nd Piola-Kirchhoff stress (S) and material stiffness tensor in Voight notation (Dm)
   Array<double> S(2,2), Dm(3,3);
   double Ja;
-  mat_models::get_pk2cc(com_mod, cep_mod, dmn, F, nFn, fN, ya_g, S, Dm, Ja);
+  mat_models::compute_pk2cc(com_mod, cep_mod, dmn, F, nFn, fN, ya_g, S, Dm, Ja);
 
   // Viscous 2nd Piola-Kirchhoff stress and tangent contributions
   Array<double> Svis(2,2);
   Array3<double> Kvis_u(4, eNoN, eNoN);
   Array3<double> Kvis_v(4, eNoN, eNoN);
 
-  mat_models::get_visc_stress_and_tangent(dmn, eNoN, Nx, vx, F, Svis, Kvis_u, Kvis_v);
+  mat_models::compute_visc_stress_and_tangent(dmn, eNoN, Nx, vx, F, Svis, Kvis_u, Kvis_v);
 
   // Elastic + Viscous stresses
   S = S + Svis;
@@ -656,14 +656,14 @@ void struct_3d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, 
   //
   Array<double> S(3,3), Dm(6,6); 
   double Ja;
-  mat_models::get_pk2cc(com_mod, cep_mod, dmn, F, nFn, fN, ya_g, S, Dm, Ja);
+  mat_models::compute_pk2cc(com_mod, cep_mod, dmn, F, nFn, fN, ya_g, S, Dm, Ja);
 
   // Viscous 2nd Piola-Kirchhoff stress and tangent contributions
   Array<double> Svis(3,3);
   Array3<double> Kvis_u(9, eNoN, eNoN);
   Array3<double> Kvis_v(9, eNoN, eNoN);
   
-  mat_models::get_visc_stress_and_tangent(dmn, eNoN, Nx, vx, F, Svis, Kvis_u, Kvis_v);
+  mat_models::compute_visc_stress_and_tangent(dmn, eNoN, Nx, vx, F, Svis, Kvis_u, Kvis_v);
 
   // Elastic + Viscous stresses
   S = S + Svis;

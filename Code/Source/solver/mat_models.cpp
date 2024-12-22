@@ -41,12 +41,12 @@
 
 namespace mat_models {
 
-// Define templated type aliases for Eigen matrices and tensors for convenience
+// Define templated type aliases for Eigen matrices and 4th order tensors for convenience
 template<size_t nsd>
-using EigenMatrix = Eigen::Matrix<double, nsd, nsd>;
+using Matrix = Eigen::Matrix<double, nsd, nsd>;
 
 template<size_t nsd>
-using EigenTensor = Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>>;
+using Tensor = Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>>;
 
 
 
@@ -129,7 +129,7 @@ void cc_to_voigt(const int nsd, const Tensor4<double>& CC, Array<double>& Dm)
 }
 
 template <int nsd>
-void cc_to_voigt_eigen(const Eigen::TensorFixedSize<double, Eigen::Sizes<nsd, nsd, nsd, nsd>>& CC, Eigen::Matrix<double, 2*nsd, 2*nsd>& Dm)
+void cc_to_voigt_eigen(const Tensor<nsd>& CC, Matrix<2*nsd>& Dm)
 {
   if (nsd == 3) {
     Dm(0,0) = CC(0,0,0,0);
@@ -234,7 +234,7 @@ void voigt_to_cc(const int nsd, const Array<double>& Dm, Tensor4<double>& CC)
 ///
 /// Reproduces Fortran 'GETFIBSTRESS' subroutine.
 //
-void get_fib_stress(const ComMod& com_mod, const CepMod& cep_mod, const fibStrsType& Tfl, double& g)
+void compute_fib_stress(const ComMod& com_mod, const CepMod& cep_mod, const fibStrsType& Tfl, double& g)
 {
   using namespace consts;
 
@@ -275,9 +275,9 @@ void get_fib_stress(const ComMod& com_mod, const CepMod& cep_mod, const fibStrsT
  * 
  */
 template<size_t nsd>
-std::pair<EigenMatrix<nsd>, EigenTensor<nsd>> bar_to_iso(
-  const EigenMatrix<nsd>& S_bar, const EigenTensor<nsd> &CC_bar, 
-  const double J2d, const EigenMatrix<nsd>& C, const EigenMatrix<nsd>& Ci) 
+std::pair<Matrix<nsd>, Tensor<nsd>> bar_to_iso(
+  const Matrix<nsd>& S_bar, const Tensor<nsd> &CC_bar, 
+  const double J2d, const Matrix<nsd>& C, const Matrix<nsd>& Ci) 
   {
 
   using namespace mat_fun;
@@ -289,13 +289,14 @@ std::pair<EigenMatrix<nsd>, EigenTensor<nsd>> bar_to_iso(
   auto S_iso = J2d*S_bar - r1*Ci;
 
   // Compute isochoric material elasticity tensor
-  EigenTensor<nsd> PP = fourth_order_identity<nsd>() - (1.0/nsd) * dyadic_product<nsd>(Ci, C); // Important: using auto here causes tests to fail
-  auto CC_iso = double_dot_product_2323<nsd>(CC_bar, PP);
+  Tensor<nsd> PP = fourth_order_identity<nsd>() - (1.0/nsd) * dyadic_product<nsd>(Ci, C); // Important: using auto here causes tests to fail
+  auto CC_iso = double_dot_product<nsd>(CC_bar, {2,3}, PP, {2,3});
   CC_iso = transpose<nsd>(CC_iso);
-  CC_iso = double_dot_product_2323<nsd>(PP, CC_iso);
+  CC_iso = double_dot_product<nsd>(PP, {2,3}, CC_iso, {2,3});
   CC_iso += (-2.0/nsd) * (dyadic_product<nsd>(Ci, S_iso) + dyadic_product<nsd>(S_iso, Ci));
   CC_iso += 2.0 * r1 * symmetric_dyadic_product<nsd>(Ci, Ci) + (- 2.0*r1/nsd) * dyadic_product<nsd>(Ci, Ci);
 
+  // TODO: make_pair makes copies of the objects, which may be inefficient. Is there a better way?
   return std::make_pair(S_iso, CC_iso);
 }
 
@@ -319,22 +320,22 @@ std::pair<EigenMatrix<nsd>, EigenTensor<nsd>> bar_to_iso(
  * @return None, but modifies S, Dm, and Ja in place.
  */
 template<size_t nsd>
-void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn, const EigenMatrix<nsd>& F, const int nfd,
-    const Eigen::Matrix<double, nsd, Eigen::Dynamic> fl, const double ya, EigenMatrix<nsd>& S, EigenMatrix<2*nsd>& Dm, double& Ja)
+void compute_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn, const Matrix<nsd>& F, const int nfd,
+    const Eigen::Matrix<double, nsd, Eigen::Dynamic> fl, const double ya, Matrix<nsd>& S, Matrix<2*nsd>& Dm, double& Ja)
 {
   using namespace consts;
   using namespace mat_fun;
   using namespace utils;
 
-  #define n_debug_get_pk2cc
-  #ifdef debug_get_pk2cc
+  #define n_debug_compute_pk2cc
+  #ifdef debug_compute_pk2cc
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
   #endif
 
   // Check that this function is only called for struct, ustruct, or fsi physics
   if (lDmn.phys != EquationType::phys_struct && lDmn.phys != EquationType::phys_ustruct && lDmn.phys != EquationType::phys_FSI) {
-    throw std::runtime_error("[get_pk2cc] This function is only valid for struct, ustruct, or fsi physics.");
+    throw std::runtime_error("[compute_pk2cc] This function is only valid for struct, ustruct, or fsi physics.");
   }
 
   // ustruct flag
@@ -350,7 +351,7 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
 
   // Fiber-reinforced stress
   double Tfa = 0.0;
-  get_fib_stress(com_mod, cep_mod, stM.Tf, Tfa);
+  compute_fib_stress(com_mod, cep_mod, stM.Tf, Tfa);
   double Tsa = Tfa*stM.Tf.eta_s;
 
   // Electromechanics coupling - active stress
@@ -359,10 +360,14 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
   }
 
   // Electromechanics coupling - active strain
-  EigenMatrix<nsd> Fe  = F;
-  EigenMatrix<nsd> Fa = EigenMatrix<nsd>::Identity();
-  EigenMatrix<nsd> Fai = Fa;
+  Matrix<nsd> Fe  = F;
+  Matrix<nsd> Fa = Matrix<nsd>::Identity();
+  Matrix<nsd> Fai = Fa;
 
+  // This commented block implements the active strain formulation, taken from svFSI
+  // It is commented out because the active strain formulation is not used in the 
+  // current implementation. However, it is left here for reference when we decide to
+  // implement it.
   // if (cep_mod.cem.aStrain) {
   //   actv_strain(com_mod, cep_mod, ya, nfd, fl, Fa);
   //   Fai = Fa.inverse();
@@ -374,18 +379,18 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
   double J2d = pow(J, (-2.0/nd));
   double J4d = J2d*J2d;
 
-  EigenMatrix<nsd> Idm = EigenMatrix<nsd>::Identity();
-  EigenMatrix<nsd> C = Fe.transpose() * Fe;
-  EigenMatrix<nsd> E = 0.50 * (C - Idm);
+  Matrix<nsd> Idm = Matrix<nsd>::Identity();
+  Matrix<nsd> C = Fe.transpose() * Fe;
+  Matrix<nsd> E = 0.50 * (C - Idm);
 
-  EigenMatrix<nsd> Ci = C.inverse();
+  Matrix<nsd> Ci = C.inverse();
   double trE = E.trace();
   double Inv1 = J2d * C.trace();
   double Inv2 = 0.50 * (Inv1*Inv1 - J4d * (C*C).trace());
 
 
   // Initialize elasticity tensor
-  EigenTensor<nsd> CC;
+  Tensor<nsd> CC;
   CC.setZero();
 
   // Add volumetric stress and elasticity tensor if not ustruct and volumetric
@@ -394,7 +399,7 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
     if (!utils::is_zero(Kp)) {
       double p  = 0.0;
       double pl = 0.0;
-      get_svol_p(com_mod, cep_mod, stM, J, p, pl);
+      compute_svol_p(com_mod, cep_mod, stM, J, p, pl);
       S += p * J * Ci;
       CC += -2.0 * p * J * symmetric_dyadic_product<nsd>(Ci, Ci) + pl * J * dyadic_product<nsd>(Ci, Ci);
     }
@@ -404,7 +409,7 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
   switch (stM.isoType) {
     case ConstitutiveModelType::stIso_lin: {
       if (ustruct) {
-        std::runtime_error("[get_pk2cc] Linear isotropic material model not valid for ustruct physics.");
+        throw std::runtime_error("[compute_pk2cc] Linear isotropic material model not valid for ustruct physics.");
       }
 
       double g1 = stM.C10;    // mu
@@ -415,7 +420,7 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
     // St.Venant-Kirchhoff
     case ConstitutiveModelType::stIso_StVK: {
       if (ustruct) {
-        std::runtime_error("[get_pk2cc] St.Venant-Kirchhoff material model not valid for ustruct physics.");
+        throw std::runtime_error("[compute_pk2cc] St.Venant-Kirchhoff material model not valid for ustruct physics.");
       }
       
       double g1 = stM.C10;         // lambda
@@ -428,7 +433,7 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
     // modified St.Venant-Kirchhoff
     case ConstitutiveModelType::stIso_mStVK: {
       if (ustruct) {
-        std::runtime_error("[get_pk2cc] Modified St.Venant-Kirchhoff material model not valid for ustruct physics.");
+        throw std::runtime_error("[compute_pk2cc] Modified St.Venant-Kirchhoff material model not valid for ustruct physics.");
       }
 
       double g1 = stM.C10; // kappa
@@ -443,8 +448,8 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
     case ConstitutiveModelType::stIso_nHook: {
 
       // Compute fictious stress and elasticity tensor
-      EigenMatrix<nsd> S_bar = 2.0 * stM.C10 * Idm;
-      EigenTensor<nsd> CC_bar; 
+      Matrix<nsd> S_bar = 2.0 * stM.C10 * Idm;
+      Tensor<nsd> CC_bar; 
       CC_bar.setZero();
 
       // Add fiber reinforcement/active stress
@@ -461,10 +466,10 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
     case ConstitutiveModelType::stIso_MR: {
 
       // Compute fictious stress and elasticity tensor
-      EigenMatrix<nsd> S_bar = 2.0 * (stM.C10 + Inv1 * stM.C01) * Idm 
+      Matrix<nsd> S_bar = 2.0 * (stM.C10 + Inv1 * stM.C01) * Idm 
                               -2.0 * stM.C01 * J2d * C;
 
-      EigenTensor<nsd> CC_bar = 4.0 * J4d * stM.C01 * (dyadic_product<nsd>(Idm, Idm) - fourth_order_identity<nsd>());
+      Tensor<nsd> CC_bar = 4.0 * J4d * stM.C01 * (dyadic_product<nsd>(Idm, Idm) - fourth_order_identity<nsd>());
 
       // Add fiber reinforcement/active stress
       S_bar += Tfa * (fl.col(0) * fl.col(0).transpose());
@@ -480,7 +485,7 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
     // the anisotropic fiber-based strain-energy terms
     case ConstitutiveModelType::stIso_HGO: {
       if (nfd != 2) {
-        throw std::runtime_error("[get_pk2cc] Min fiber directions not defined for HGO material model.");
+        throw std::runtime_error("[compute_pk2cc] Min fiber directions not defined for HGO material model.");
       }
 
       // Compute preliminary quantities
@@ -492,20 +497,20 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
       double Eff = kap*Inv1 + (1.0 - 3.0*kap)*Inv4 - 1.0;
       double Ess = kap*Inv1 + (1.0 - 3.0*kap)*Inv6 - 1.0;
 
-      EigenMatrix<nsd> Hff = kap*Idm + (1.0-3.0*kap) * (fl.col(0) * fl.col(0).transpose());
-      EigenMatrix<nsd> Hss = kap*Idm + (1.0-3.0*kap) * (fl.col(1) * fl.col(1).transpose());
+      Matrix<nsd> Hff = kap*Idm + (1.0-3.0*kap) * (fl.col(0) * fl.col(0).transpose());
+      Matrix<nsd> Hss = kap*Idm + (1.0-3.0*kap) * (fl.col(1) * fl.col(1).transpose());
 
       // Compute fictious stress and elasticity tensor
       double g1 = stM.C10;
       double g2 = stM.aff * Eff * exp(stM.bff*Eff*Eff);
       double g3 = stM.ass * Ess * exp(stM.bss*Ess*Ess);
-      EigenMatrix<nsd> S_bar = 2.0*(g1*Idm + g2*Hff + g3*Hss);
+      Matrix<nsd> S_bar = 2.0*(g1*Idm + g2*Hff + g3*Hss);
 
       g1 = stM.aff*(1.0 + 2.0*stM.bff*Eff*Eff)*exp(stM.bff*Eff*Eff);
       g2 = stM.ass*(1.0 + 2.0*stM.bss*Ess*Ess)*exp(stM.bss*Ess*Ess);
       g1 = 4.0*J4d*g1;
       g2 = 4.0*J4d*g2;
-      EigenTensor<nsd> CC_bar = g1 * dyadic_product<nsd>(Hff, Hff) + g2 * dyadic_product<nsd>(Hss, Hss);
+      Tensor<nsd> CC_bar = g1 * dyadic_product<nsd>(Hff, Hff) + g2 * dyadic_product<nsd>(Hss, Hss);
       
       // Add fiber reinforcement/active stress
       S_bar += Tfa * (fl.col(0) * fl.col(0).transpose());
@@ -520,20 +525,20 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
     // Guccione (1995) transversely isotropic model
     case ConstitutiveModelType::stIso_Gucci: {
       if (nfd != 2) {
-        throw std::runtime_error("[get_pk2cc] Min fiber directions not defined for Guccione material model.");
+        throw std::runtime_error("[compute_pk2cc] Min fiber directions not defined for Guccione material model.");
       }
 
       // Compute isochoric component of E
-      EigenMatrix<nsd> E = 0.50 * (J2d*C - Idm);
+      Matrix<nsd> E = 0.50 * (J2d*C - Idm);
 
       // Construct local orthogonal coordinate system
-      EigenMatrix<nsd> Rm;
+      Matrix<nsd> Rm;
       Rm.col(0) = fl.col(0);
       Rm.col(1) = fl.col(1);
       Rm.col(2) = cross_product<nsd>(fl.col(0), fl.col(1));
 
       // Project E to local orthogonal coordinate system
-      EigenMatrix<nsd> Es = Rm.transpose() * E * Rm;
+      Matrix<nsd> Es = Rm.transpose() * E * Rm;
 
       // Compute preliminary quantities
       double g1 = stM.bff;
@@ -546,19 +551,19 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
 
       double r2 = stM.C10 * exp(QQ);
 
-      EigenMatrix<nsd> RmRm_00 = Rm.col(0) * Rm.col(0).transpose();
-      EigenMatrix<nsd> RmRm_11 = Rm.col(1) * Rm.col(1).transpose();
-      EigenMatrix<nsd> RmRm_22 = Rm.col(2) * Rm.col(2).transpose();
-      EigenMatrix<nsd> RmRm_01 = 0.5 * (Rm.col(0) * Rm.col(1).transpose() + Rm.col(1) * Rm.col(0).transpose());
-      EigenMatrix<nsd> RmRm_12 = 0.5 * (Rm.col(1) * Rm.col(2).transpose() + Rm.col(2) * Rm.col(1).transpose());
-      EigenMatrix<nsd> RmRm_20 = 0.5 * (Rm.col(2) * Rm.col(0).transpose() + Rm.col(0) * Rm.col(2).transpose());
+      Matrix<nsd> RmRm_00 = Rm.col(0) * Rm.col(0).transpose();
+      Matrix<nsd> RmRm_11 = Rm.col(1) * Rm.col(1).transpose();
+      Matrix<nsd> RmRm_22 = Rm.col(2) * Rm.col(2).transpose();
+      Matrix<nsd> RmRm_01 = 0.5 * (Rm.col(0) * Rm.col(1).transpose() + Rm.col(1) * Rm.col(0).transpose());
+      Matrix<nsd> RmRm_12 = 0.5 * (Rm.col(1) * Rm.col(2).transpose() + Rm.col(2) * Rm.col(1).transpose());
+      Matrix<nsd> RmRm_20 = 0.5 * (Rm.col(2) * Rm.col(0).transpose() + Rm.col(0) * Rm.col(2).transpose());
 
       // Compute fictious stress and elasticity tensor
-      EigenMatrix<nsd> S_bar = g1 *  Es(0,0) * RmRm_00 + 
+      Matrix<nsd> S_bar = g1 *  Es(0,0) * RmRm_00 + 
                                g2 * (Es(1,1) * RmRm_11 + Es(2,2)*RmRm_22 + 2.0*Es(1,2)*RmRm_12) +
                          2.0 * g3 * (Es(0,1) * RmRm_01 + Es(0,2)*RmRm_20);
 
-      EigenTensor<nsd> CC_bar = 2.0*dyadic_product<nsd>(S_bar, S_bar);
+      Tensor<nsd> CC_bar = 2.0*dyadic_product<nsd>(S_bar, S_bar);
 
       S_bar = S_bar * r2;
 
@@ -583,7 +588,7 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
     //  HO (Holzapfel-Ogden) model for myocardium (2009)
     case ConstitutiveModelType::stIso_HO: {
       if (nfd != 2) {
-        throw std::runtime_error("[get_pk2cc] Min fiber directions not defined for Holzapfel material model.");
+        throw std::runtime_error("[compute_pk2cc] Min fiber directions not defined for Holzapfel material model.");
       }
 
       // Compute isochoric anisotropic invariants
@@ -616,20 +621,20 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
       // 1.S) Add isotropic + fiber-sheet interaction stress
       double g1 = stM.a * exp(stM.b*(Inv1-3.0));
       double g2 = 2.0 * stM.afs * Efs * exp(stM.bfs*Efs*Efs);
-      EigenMatrix<nsd> Hfs = 0.5 * (fl.col(0) * fl.col(1).transpose() + fl.col(1) * fl.col(0).transpose());
-      EigenMatrix<nsd> S_bar = g1*Idm + g2*Hfs;
+      Matrix<nsd> Hfs = 0.5 * (fl.col(0) * fl.col(1).transpose() + fl.col(1) * fl.col(0).transpose());
+      Matrix<nsd> S_bar = g1*Idm + g2*Hfs;
 
       // 1.CC) Add isotropic + fiber-sheet interaction stiffness
       g1 = 2.0*J4d*stM.b*g1;
       g2 = 4.0*J4d*stM.afs*(1.0 + 2.0*stM.bfs*Efs*Efs)* exp(stM.bfs*Efs*Efs);
-      EigenTensor<nsd> CC_bar  = g1 * dyadic_product<nsd>(Idm, Idm) + g2 * dyadic_product<nsd>(Hfs, Hfs);
+      Tensor<nsd> CC_bar  = g1 * dyadic_product<nsd>(Idm, Idm) + g2 * dyadic_product<nsd>(Hfs, Hfs);
 
       // 2.S) Add fiber-fiber interaction stress + additional fiber reinforcement/active stress (Tfa)
       double rexp = exp(stM.bff*Eff*Eff);
       g1 = c4f * Eff * rexp;
       g1 = g1 + (0.5*dc4f/stM.bff) * (rexp - 1.0);
       g1 = 2.0 * stM.aff * g1 + Tfa;
-      EigenMatrix<nsd> Hff = fl.col(0) * fl.col(0).transpose();
+      Matrix<nsd> Hff = fl.col(0) * fl.col(0).transpose();
       S_bar += g1*Hff;
 
       // 2.CC) Add fiber-fiber interaction stiffness
@@ -644,7 +649,7 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
       g2 = c4s * Ess * rexp;
       g2 = g2 + (0.5*dc4s/stM.bss) * (rexp - 1.0);
       g2 = 2.0 * stM.ass * g2 + Tsa;
-      EigenMatrix<nsd> Hss = fl.col(1) * fl.col(1).transpose();
+      Matrix<nsd> Hss = fl.col(1) * fl.col(1).transpose();
       S_bar += g2 * Hss;
 
       // 3.CC) Add sheet-sheet interaction stiffness
@@ -664,8 +669,8 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
       if (cep_mod.cem.aStrain) {
         S = Fa * S * Fai.transpose();
         CC_bar = dyadic_product<nsd>(Fai, Fai); // Reusing CC_bar
-        CC = double_dot_product_2313<nsd>(CC, CC_bar);
-        CC = double_dot_product_1301<nsd>(CC_bar, CC);
+        CC = double_dot_product<nsd>(CC, {2,3}, CC_bar, {1,3});
+        CC = double_dot_product<nsd>(CC_bar, {1,3}, CC, {0,1});
       }
     } break;
 
@@ -703,11 +708,11 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
       // Compute fictious stress and elasticity tensor for isotropic component only
       // Add isotropic stress
       double g1 = stM.a * exp(stM.b*(Inv1-3.0));
-      EigenMatrix<nsd> S_bar = g1*Idm;
+      Matrix<nsd> S_bar = g1*Idm;
 
       // 1.CC) Add isotropic stiffness
       g1 = g1*2.0*J4d*stM.b;
-      EigenTensor<nsd> CC_bar = g1 * dyadic_product<nsd>(Idm, Idm);
+      Tensor<nsd> CC_bar = g1 * dyadic_product<nsd>(Idm, Idm);
 
       // Compute and add isochoric isotropic stress and elasticity tensor
       auto [S_iso, CC_iso] = bar_to_iso<nsd>(S_bar, CC_bar, J2d, C, Ci);
@@ -717,7 +722,7 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
       // Now add aniostropic components to stress and elasticity tensor (in steps)
 
       // 1.S) Add fiber-sheet interaction stress
-      EigenMatrix<nsd> Hfs = 0.5 * (fl.col(0) * fl.col(1).transpose() + fl.col(1) * fl.col(0).transpose());
+      Matrix<nsd> Hfs = 0.5 * (fl.col(0) * fl.col(1).transpose() + fl.col(1) * fl.col(0).transpose());
       g1 = 2.0 * stM.afs * exp(stM.bfs*Efs*Efs);
       S += g1*Efs*Hfs;
 
@@ -730,7 +735,7 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
       g1 = c4f*Eff*rexp;
       g1 = g1 + (0.5*dc4f/stM.bff)*(rexp - 1.0);
       g1 = (2.0*stM.aff*g1) + Tfa;
-      EigenMatrix<nsd> Hff = fl.col(0) * fl.col(0).transpose();
+      Matrix<nsd> Hff = fl.col(0) * fl.col(0).transpose();
       S += g1*Hff;
 
       // 2.CC) Add fiber-fiber interaction stiffness
@@ -745,7 +750,7 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
       double g2 = c4s*Ess*rexp;
       g2 = g2 + (0.5*dc4s/stM.bss)*(rexp - 1.0);
       g2 = 2.0*stM.ass*g2 + Tsa;
-      EigenMatrix<nsd> Hss = fl.col(1) * fl.col(1).transpose();
+      Matrix<nsd> Hss = fl.col(1) * fl.col(1).transpose();
       S  += g2*Hss;
 
       // 3.CC) Add sheet-sheet interaction stiffness
@@ -768,10 +773,10 @@ void _get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDm
 /**
  * @brief Get the 2nd Piola-Kirchhoff stress tensor and material elasticity tensor.
  * 
- * This is a wrapper function for the templated function _get_pk2cc.
+ * This is a wrapper function for the templated function compute_pk2cc.
  * 
  */
-void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn, const Array<double>& F, const int nfd,
+void compute_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn, const Array<double>& F, const int nfd,
     const Array<double>& fl, const double ya, Array<double>& S, Array<double>& Dm, double& Ja)
 {
     // Number of spatial dimensions
@@ -793,7 +798,7 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
         Eigen::Matrix4d Dm_2D = Eigen::Matrix4d::Zero();
 
         // Call templated function
-        _get_pk2cc<2>(com_mod, cep_mod, lDmn, F_2D, nfd, fl_2D, ya, S_2D, Dm_2D, Ja);
+        compute_pk2cc<2>(com_mod, cep_mod, lDmn, F_2D, nfd, fl_2D, ya, S_2D, Dm_2D, Ja);
 
         // Copy results back
         mat_fun::convert_to_array(S_2D, S);
@@ -817,7 +822,7 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
         Dm_3D.setZero();
 
         // Call templated function
-        _get_pk2cc<3>(com_mod, cep_mod, lDmn, F_3D, nfd, fl_3D, ya, S_3D, Dm_3D, Ja);
+        compute_pk2cc<3>(com_mod, cep_mod, lDmn, F_3D, nfd, fl_3D, ya, S_3D, Dm_3D, Ja);
 
         // Copy results back
         mat_fun::convert_to_array(S_3D, S);
@@ -828,7 +833,7 @@ void get_pk2cc(const ComMod& com_mod, const CepMod& cep_mod, const dmnType& lDmn
 /// @brief Compute 2nd Piola-Kirchhoff stress and material stiffness tensors
 /// for compressible shell elements.
 //
-void get_pk2cc_shlc(const ComMod& com_mod, const dmnType& lDmn, const int nfd, const Array<double>& fNa0,
+void compute_pk2cc_shlc(const ComMod& com_mod, const dmnType& lDmn, const int nfd, const Array<double>& fNa0,
     const Array<double>& gg_0, const Array<double>& gg_x, double& g33, Vector<double>& Sml, Array<double>& Dml)
 {
   // [NOTE] The tolerance here is a bit larger than Fortran.
@@ -840,8 +845,8 @@ void get_pk2cc_shlc(const ComMod& com_mod, const dmnType& lDmn, const int nfd, c
   using namespace mat_fun;
   using namespace utils;
 
-  #define n_debug_get_pk2cc_shlc
-  #ifdef debug_get_pk2cc_shlc 
+  #define n_debug_compute_pk2cc_shlc
+  #ifdef debug_compute_pk2cc_shlc 
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
   #endif
@@ -859,7 +864,7 @@ void get_pk2cc_shlc(const ComMod& com_mod, const dmnType& lDmn, const int nfd, c
   auto mu = 2.0 * stM.C10;
   auto f13 = 1.0 / 3.0;
   auto f23 = 2.0 / 3.0;
-  #ifdef debug_get_pk2cc_shlc 
+  #ifdef debug_compute_pk2cc_shlc 
   dmsg << "kap: " << kap;
   dmsg << "mu: " << mu;
   #endif
@@ -880,7 +885,7 @@ void get_pk2cc_shlc(const ComMod& com_mod, const dmnType& lDmn, const int nfd, c
   // Ratio of inplane Jacobian determinant squared
   auto Jg2 = mat_det(gg_x, 2) / mat_det(gg_0, 2);
 
-  #ifdef debug_get_pk2cc_shlc 
+  #ifdef debug_compute_pk2cc_shlc 
   dmsg << "gi_0: " << gi_0; 
   dmsg << "gi_x: " << gi_x; 
   dmsg << "Jg2: " << Jg2; 
@@ -925,7 +930,7 @@ void get_pk2cc_shlc(const ComMod& com_mod, const dmnType& lDmn, const int nfd, c
     // Contribution from dilational penalty terms to S and CC
     auto pJ  = 0.50 * kap * (J2 - 1.0);
     auto plJ = kap * J2;
-    #ifdef debug_get_pk2cc_shlc 
+    #ifdef debug_compute_pk2cc_shlc 
     dmsg << "pJ: " << pJ;
     dmsg << "plJ: " << plJ;
     dmsg << "J23: " << J23;
@@ -1132,7 +1137,7 @@ void get_pk2cc_shlc(const ComMod& com_mod, const dmnType& lDmn, const int nfd, c
      }
 
      if (itr > MAXITR) {
-        std::cerr << "[get_pk2cc_shlc] Failed to converge plane-stress condition." << std::endl;
+        std::cerr << "[compute_pk2cc_shlc] Failed to converge plane-stress condition." << std::endl;
         //exit(0);
         break;
      }
@@ -1187,15 +1192,15 @@ void get_pk2cc_shlc(const ComMod& com_mod, const dmnType& lDmn, const int nfd, c
 ///
 /// Reproduces Fortran GETPK2CC_SHLi
 //
-void get_pk2cc_shli(const ComMod& com_mod, const dmnType& lDmn, const int nfd, const Array<double>& fNa0, 
+void compute_pk2cc_shli(const ComMod& com_mod, const dmnType& lDmn, const int nfd, const Array<double>& fNa0, 
     const Array<double>& gg_0, const Array<double>& gg_x, double& g33, Vector<double>& Sml, Array<double>& Dml)
 {
   using namespace consts;
   using namespace mat_fun;
   using namespace utils;
 
-  #define n_debug_get_pk2cc_shli
-  #ifdef debug_get_pk2cc_shli 
+  #define n_debug_compute_pk2cc_shli
+  #ifdef debug_compute_pk2cc_shli 
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
   #endif
@@ -1387,7 +1392,7 @@ void get_pk2cc_shli(const ComMod& com_mod, const dmnType& lDmn, const int nfd, c
 
 /// @brief Reproduces Fortran 'GETSVOLP'.
 //
-void get_svol_p(const ComMod& com_mod, const CepMod& cep_mod, const stModelType& stM, const double J, 
+void compute_svol_p(const ComMod& com_mod, const CepMod& cep_mod, const stModelType& stM, const double J, 
     double& p, double& pl) 
 {
   using namespace consts;
@@ -1416,7 +1421,7 @@ void get_svol_p(const ComMod& com_mod, const CepMod& cep_mod, const stModelType&
 ///
 /// Reproduces Fortran 'GETTAU'.
 //
-void get_tau(const ComMod& com_mod, const dmnType& lDmn, const double detF, const double Je, double& tauM, double& tauC)
+void compute_tau(const ComMod& com_mod, const dmnType& lDmn, const double detF, const double Je, double& tauM, double& tauC)
 {
   using namespace consts;
 
@@ -1529,7 +1534,7 @@ void g_vol_pen(const ComMod& com_mod, const dmnType& lDmn, const double p,
  * @param Kvis_u Viscous tangent matrix contribution due to displacement
  * @param Kvis_v Visous tangent matrix contribution due to velocity
  */
-void get_visc_stress_potential(const double mu, const int eNoN, const Array<double>& Nx, const Array<double>& vx, const Array<double>& F,
+void compute_visc_stress_potential(const double mu, const int eNoN, const Array<double>& Nx, const Array<double>& vx, const Array<double>& F,
                         Array<double>& Svis, Array3<double>& Kvis_u, Array3<double>& Kvis_v) {
 
     using namespace consts;
@@ -1608,7 +1613,7 @@ void get_visc_stress_potential(const double mu, const int eNoN, const Array<doub
  * @param Kvis_u Viscous tangent matrix contribution due to displacement
  * @param Kvis_v Visous tangent matrix contribution due to velocity
  */
-void get_visc_stress_newtonian(const double mu, const int eNoN, const Array<double>& Nx, const Array<double>& vx, const Array<double>& F,
+void compute_visc_stress_newtonian(const double mu, const int eNoN, const Array<double>& Nx, const Array<double>& vx, const Array<double>& F,
                            Array<double>& Svis, Array3<double>& Kvis_u, Array3<double>& Kvis_v) {
     using namespace consts;
     using namespace mat_fun;
@@ -1696,16 +1701,16 @@ void get_visc_stress_newtonian(const double mu, const int eNoN, const Array<doub
  * @param[out] Kvis_u Viscous tangent matrix contribution due to displacement
  * @param[out] Kvis_v Viscous tangent matrix contribution due to velocity
  */
-void get_visc_stress_and_tangent(const dmnType& lDmn, const int eNoN, const Array<double>& Nx, const  Array<double>& vx, const  Array<double>& F,
+void compute_visc_stress_and_tangent(const dmnType& lDmn, const int eNoN, const Array<double>& Nx, const  Array<double>& vx, const  Array<double>& F,
                                  Array<double>& Svis, Array3<double>& Kvis_u, Array3<double>& Kvis_v) {
 
     switch (lDmn.solid_visc.viscType) {
       case consts::SolidViscosityModelType::viscType_Newtonian:
-        get_visc_stress_newtonian(lDmn.solid_visc.mu, eNoN, Nx, vx, F, Svis, Kvis_u, Kvis_v);
+        compute_visc_stress_newtonian(lDmn.solid_visc.mu, eNoN, Nx, vx, F, Svis, Kvis_u, Kvis_v);
       break;
 
       case consts::SolidViscosityModelType::viscType_Potential:
-        get_visc_stress_potential(lDmn.solid_visc.mu, eNoN, Nx, vx, F, Svis, Kvis_u, Kvis_v);
+        compute_visc_stress_potential(lDmn.solid_visc.mu, eNoN, Nx, vx, F, Svis, Kvis_u, Kvis_v);
       break;
     }
 }
