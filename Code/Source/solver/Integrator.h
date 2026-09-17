@@ -168,6 +168,35 @@ private:
   void update_residual_arrays(eqType& eq);
 
   /**
+   * @brief Assemble the linear system of an equation
+   *
+   * Evaluates the boundary conditions of the equation, forms the solution at
+   * the intermediate generalized-alpha time levels, and assembles the residual
+   * into com_mod.R and the tangent into com_mod.Val, including the
+   * contributions of the coupled surfaces.
+   *
+   * @param[in,out] eq Equation whose linear system is assembled, and whose
+   *   active stress models are re-advanced when their state is coupled
+   *   implicitly.
+   */
+  void assemble_linear_system(eqType &eq);
+
+  /**
+   * @brief Compute the norm of the assembled residual
+   *
+   * Sums the squares of the entries of com_mod.R belonging to the nodes owned
+   * by each process and reduces them across processes, so that the result does
+   * not depend on the partitioning. It is available as soon as the residual has
+   * been assembled, before the linear system is solved.
+   *
+   * com_mod.R holds the residual of the equation assembled last, and its rows
+   * are the degrees of freedom of that equation, numbered from zero.
+   *
+   * @return Euclidean norm of the assembled residual.
+   */
+  double residual_norm() const;
+
+  /**
    * @brief Compute the fiber stretch and fiber stretch rate at every node.
    *
    * The stretch is computed from the current displacement, so that calling this

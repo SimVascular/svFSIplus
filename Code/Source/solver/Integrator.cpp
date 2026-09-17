@@ -19,6 +19,7 @@
 #include "utils.h"
 
 #include <algorithm>
+#include <cmath>
 #include <iostream>
 #include <set>
 
@@ -62,7 +63,6 @@ bool Integrator::step(bool save_results) {
   using namespace consts;
 
   auto& com_mod = simulation_->com_mod;
-  auto& cm_mod = simulation_->cm_mod;
 
   int& cTS = com_mod.cTS;
   int& cEq = com_mod.cEq;
@@ -88,79 +88,8 @@ bool Integrator::step(bool save_results) {
     iEqOld = cEq;
     auto& eq = com_mod.eq[cEq];
 
-    if (cEq == com_mod.cplBC.equationIndex && com_mod.cplBC.coupled) {
-      #ifdef debug_integrator_step
-      dmsg << "Set coupled BCs " << std::endl;
-      #endif
-      set_bc::set_bc_cpl(com_mod, cm_mod, solutions_);
-      set_bc::set_bc_dir(com_mod, solutions_);
-    }
-
-    // Initiator step for Generalized α-Method (quantities at n+am, n+af).
-    initiator_step();
-
-    if (com_mod.Rd.size() != 0) {
-      com_mod.Rd = 0.0;
-      com_mod.Kd = 0.0;
-    }
-
-    // Allocate com_mod.R and com_mod.Val arrays
-    allocate_linear_system(eq);
-
-    // Compute body forces
-    set_body_forces();
-
-    // Implicit state coupling of the active stress: re-advance the state of the
-    // active stress model from the displacement of the current nonlinear
-    // iterate.
-    if (supports_active_stress(eq.phys) &&
-        has_implicit_active_stress_state_coupling()) {
-      Vector<double> fiber_stretch;
-      Vector<double> fiber_stretch_rate;
-      compute_fiber_stretch(fiber_stretch, fiber_stretch_rate);
-
-      update_active_stress(eq, fiber_stretch, fiber_stretch_rate,
-                           /* within_nonlinear_iterations = */ true);
-    }
-
-    // Assemble equations
-    assemble_equations();
-
-    // Treatment of boundary conditions on faces
-    apply_boundary_conditions();
-
-    // Synchronize R across processes
-    if (!eq.assmTLS) {
-      #ifdef debug_integrator_step
-      dmsg << "Synchronize R across processes ..." << std::endl;
-      #endif
-      all_fun::commu(com_mod, com_mod.R);
-    }
-
-    // Update residual in displacement equation for USTRUCT phys
-    #ifdef debug_integrator_step
-    dmsg << "com_mod.sstEq: " << com_mod.sstEq;
-    #endif
-    if (com_mod.sstEq) {
-      ustruct::ustruct_r(com_mod, solutions_);
-    }
-
-    // Set the residual of the continuity equation to 0 on edge nodes
-    if (std::set<EquationType>{Equation_stokes, Equation_fluid, Equation_ustruct, Equation_FSI}.count(eq.phys) != 0) {
-      #ifdef debug_integrator_step
-      dmsg << "thood_val_rc ..." << std::endl;
-      #endif
-      fs::thood_val_rc(com_mod);
-    }
-
-    // Treat Neumann boundaries that are not deforming
-    #ifdef debug_integrator_step
-    dmsg << "set_bc_undef_neu ..." << std::endl;
-    #endif
-    set_bc::set_bc_undef_neu(com_mod);
-
-    // Update residual and increment arrays
-    update_residual_arrays(eq);
+    // Assemble the linear system of the current equation
+    assemble_linear_system(eq);
 
     // Solve equation
     solve_linear_system();
@@ -348,6 +277,112 @@ bool Integrator::corrector_and_check_convergence() {
   // Check if all equations converged
   return std::count_if(com_mod.eq.begin(), com_mod.eq.end(),
                        [](eqType& eq) { return eq.ok; }) == com_mod.eq.size();
+}
+
+//------------------------
+// assemble_linear_system
+//------------------------
+void Integrator::assemble_linear_system(eqType& eq) {
+  using namespace consts;
+
+  auto& com_mod = simulation_->com_mod;
+  auto& cm_mod = simulation_->cm_mod;
+
+  #ifdef debug_integrator_step
+  DebugMsg dmsg(__func__, com_mod.cm.idcm());
+  #endif
+
+  if (com_mod.cEq == com_mod.cplBC.equationIndex && com_mod.cplBC.coupled) {
+    #ifdef debug_integrator_step
+    dmsg << "Set coupled BCs " << std::endl;
+    #endif
+    set_bc::set_bc_cpl(com_mod, cm_mod, solutions_);
+    set_bc::set_bc_dir(com_mod, solutions_);
+  }
+
+  // Initiator step for Generalized α-Method (quantities at n+am, n+af).
+  initiator_step();
+
+  if (com_mod.Rd.size() != 0) {
+    com_mod.Rd = 0.0;
+    com_mod.Kd = 0.0;
+  }
+
+  // Allocate com_mod.R and com_mod.Val arrays
+  allocate_linear_system(eq);
+
+  // Compute body forces
+  set_body_forces();
+
+  // Implicit state coupling of the active stress: re-advance the state of the
+  // active stress model from the displacement of the current nonlinear
+  // iterate.
+  if (supports_active_stress(eq.phys) &&
+      has_implicit_active_stress_state_coupling()) {
+    Vector<double> fiber_stretch;
+    Vector<double> fiber_stretch_rate;
+    compute_fiber_stretch(fiber_stretch, fiber_stretch_rate);
+
+    update_active_stress(eq, fiber_stretch, fiber_stretch_rate,
+                         /* within_nonlinear_iterations = */ true);
+  }
+
+  // Assemble equations
+  assemble_equations();
+
+  // Treatment of boundary conditions on faces
+  apply_boundary_conditions();
+
+  // Synchronize R across processes
+  if (!eq.assmTLS) {
+    #ifdef debug_integrator_step
+    dmsg << "Synchronize R across processes ..." << std::endl;
+    #endif
+    all_fun::commu(com_mod, com_mod.R);
+  }
+
+  // Update residual in displacement equation for USTRUCT phys
+  #ifdef debug_integrator_step
+  dmsg << "com_mod.sstEq: " << com_mod.sstEq;
+  #endif
+  if (com_mod.sstEq) {
+    ustruct::ustruct_r(com_mod, solutions_);
+  }
+
+  // Set the residual of the continuity equation to 0 on edge nodes
+  if (std::set<EquationType>{Equation_stokes, Equation_fluid, Equation_ustruct, Equation_FSI}.count(eq.phys) != 0) {
+    #ifdef debug_integrator_step
+    dmsg << "thood_val_rc ..." << std::endl;
+    #endif
+    fs::thood_val_rc(com_mod);
+  }
+
+  // Treat Neumann boundaries that are not deforming
+  #ifdef debug_integrator_step
+  dmsg << "set_bc_undef_neu ..." << std::endl;
+  #endif
+  set_bc::set_bc_undef_neu(com_mod);
+
+  // Update residual and increment arrays
+  update_residual_arrays(eq);
+}
+
+//------------------------
+// residual_norm
+//------------------------
+double Integrator::residual_norm() const {
+  const auto& com_mod = simulation_->com_mod;
+  const auto& R = com_mod.R;
+
+  double sum_of_squares = 0.0;
+
+  for (int a = 0; a < com_mod.lhs.mynNo; a++) {
+    for (int i = 0; i < R.nrows(); i++) {
+      sum_of_squares += R(i,a) * R(i,a);
+    }
+  }
+
+  return std::sqrt(com_mod.cm.reduce(simulation_->cm_mod, sum_of_squares));
 }
 
 //------------------------
