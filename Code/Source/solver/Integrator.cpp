@@ -338,7 +338,8 @@ bool Integrator::corrector_and_check_convergence() {
   dmsg << "Update corrector ..." << std::endl;
   #endif
 
-  corrector();
+  apply_increment(1.0);
+  finalize_iteration();
 
   #ifdef debug_integrator_step
   solutions_.current.get_velocity().write("solutions_.current.Ycorrector" + istr_);
@@ -787,29 +788,9 @@ void Integrator::initiator(SolutionStates& solutions)
   }
 }
 //------------------------
-// corrector
+// apply_increment
 //------------------------
-/// @brief Corrector with convergence check
-///
-/// Decision for next eqn is also made here (modifies cEq global).
-///
-/// Modifies:
-/// \code {.cpp}
-///   com_mod.Ad
-///   solutions_.current.A
-///   solutions_.current.D
-///   solutions_.current.Y
-///   cep_mod.Xion
-///   com_mod.pS0
-///   com_mod.pSa
-///   com_mod.pSn
-///
-///   com_mod.cEq
-///   eq.FSILS.RI.iNorm
-///   eq.pNorm
-/// \endcode
-//
-void Integrator::corrector()
+void Integrator::apply_increment(const double alpha)
 {
   using namespace consts;
 
@@ -837,9 +818,6 @@ void Integrator::corrector()
   auto& Dn = solutions_.current.get_displacement();
   auto& Yn = solutions_.current.get_velocity();
 
-  auto& pS0 = com_mod.pS0;
-  auto& pSa = com_mod.pSa;
-  auto& pSn = com_mod.pSn;
   auto& Xion = cep_mod.Xion;
 
   int s = eq.s;
@@ -869,12 +847,12 @@ void Integrator::corrector()
 
       for (int a = 0; a < tnNo; a++) {
         for (int i = 0; i < e-s+1; i++) {
-          An(i+s,a) = An(i+s,a) - R(i,a);
-          Yn(i+s,a) = Yn(i+s,a) - R(i,a)*coef[0];
+          An(i+s,a) = An(i+s,a) - alpha*R(i,a);
+          Yn(i+s,a) = Yn(i+s,a) - alpha*R(i,a)*coef[0];
         }
 
         for (int i = 0; i < e-s; i++) {
-          dUl(i) = Rd(i,a)*coef[2] + R(i,a)*coef[3];
+          dUl(i) = alpha*(Rd(i,a)*coef[2] + R(i,a)*coef[3]);
           Ad(i,a) = Ad(i,a) - dUl(i);
           Dn(i+s,a) = Dn(i+s,a) - dUl(i)*coef[0];
         }
@@ -883,9 +861,9 @@ void Integrator::corrector()
     } else if (eq.phys == EquationType::phys_mesh) {
       for (int a = 0; a < tnNo; a++) {
         for (int i = 0; i < e-s+1; i++) {
-          An(i+s,a) = An(i+s,a) - R(i,a);
-          Yn(i+s,a) = Yn(i+s,a) - R(i,a)*coef[0];
-          Dn(i+s,a) = Dn(i+s,a) - R(i,a)*coef[1];
+          An(i+s,a) = An(i+s,a) - alpha*R(i,a);
+          Yn(i+s,a) = Yn(i+s,a) - alpha*R(i,a)*coef[0];
+          Dn(i+s,a) = Dn(i+s,a) - alpha*R(i,a)*coef[1];
         }
       }
     }
@@ -894,12 +872,12 @@ void Integrator::corrector()
     for (int a = 0; a < tnNo; a++) {
       for (int i = 0; i < e-s+1; i++) {
         // eqn 94 of Bazilevs 2007 // here, -R contains the acceleration update (obtained from Newton solve))?
-        An(i+s,a) = An(i+s,a) - R(i,a);
+        An(i+s,a) = An(i+s,a) - alpha*R(i,a);
 
         // eqn 95 of Bazilevs 2007
-        Yn(i+s,a) = Yn(i+s,a) - R(i,a)*coef[0];
+        Yn(i+s,a) = Yn(i+s,a) - alpha*R(i,a)*coef[0];
 
-        Dn(i+s,a) = Dn(i+s,a) - R(i,a)*coef[1];
+        Dn(i+s,a) = Dn(i+s,a) - alpha*R(i,a)*coef[1];
       }
     }
   }
@@ -945,6 +923,44 @@ void Integrator::corrector()
     }
   }
 
+  // Filter out the non-wall displacements for CMM equation
+  //
+  if (eq.phys == Equation_CMM && !com_mod.cmmInit) {
+    for (int a = 0; a < tnNo; a++) {
+      double r1 = static_cast<double>(com_mod.cmmBdry(a));
+      for (int i = 0; i < e-s; i++) {
+        Dn(i+s,a) = Dn(i+s,a)*r1;
+      }
+    }
+  }
+}
+
+//------------------------
+// finalize_iteration
+//------------------------
+void Integrator::finalize_iteration()
+{
+  using namespace consts;
+
+  auto& com_mod = simulation_->com_mod;
+
+  #ifdef debug_corrector
+  DebugMsg dmsg(__func__, com_mod.cm.idcm());
+  dmsg.banner();
+  #endif
+
+  const int tnNo = com_mod.tnNo;
+
+  auto& cEq = com_mod.cEq;
+  auto& eq = com_mod.eq[cEq];
+
+  auto& An = solutions_.current.get_acceleration();
+  auto& Dn = solutions_.current.get_displacement();
+  auto& Yn = solutions_.current.get_velocity();
+
+  auto& pSa = com_mod.pSa;
+  auto& pSn = com_mod.pSn;
+
   // Update prestress at the nodes and re-initialize
   //
   if (com_mod.pstEq) {
@@ -960,17 +976,6 @@ void Integrator::corrector()
     }
 
     pSa = 0.0;
-  }
-
-  // Filter out the non-wall displacements for CMM equation
-  //
-  if (eq.phys == Equation_CMM && !com_mod.cmmInit) {
-    for (int a = 0; a < tnNo; a++) {
-      double r1 = static_cast<double>(com_mod.cmmBdry(a));
-      for (int i = 0; i < e-s; i++) {
-        Dn(i+s,a) = Dn(i+s,a)*r1;
-      }
-    }
   }
 
   // Computes norms and check for convergence of Newton iterations

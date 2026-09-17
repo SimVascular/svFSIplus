@@ -225,12 +225,65 @@ private:
   void initiator(SolutionStates& solutions);
 
   /**
-   * @brief Corrector function with convergence check (corrector)
+   * @brief Apply a multiple of the increment of the linear solve to the
+   * solution
    *
-   * Updates solution at n+1 time level and checks convergence of Newton
-   * iterations. Also handles equation switching for coupled problems.
+   * Advances the solution of the current equation at the n+1 time level by
+   * alpha times the increment held in com_mod.R (and com_mod.Rd for the
+   * velocity-based formulation), and updates the quantities that are derived
+   * from the resulting solution: the Taylor-Hood pressure at edge nodes, the
+   * copy of the solution onto the solid subdomain of an FSI equation, the
+   * ionic state of an electrophysiology equation, and the wall filter of a CMM
+   * equation.
+   *
+   * The solution change is proportional to alpha, so calling this function
+   * from the same starting solution with different step lengths traces the
+   * segment between that solution and the one the full increment produces.
+   * Every quantity derived from the solution is recomputed, so any step length
+   * leaves a consistent state.
+   *
+   * Modifies:
+   * \code {.cpp}
+   *   com_mod.Ad
+   *   solutions_.current.A
+   *   solutions_.current.D
+   *   solutions_.current.Y
+   *   cep_mod.Xion
+   * \endcode
+   *
+   * @param[in] alpha Step length multiplying the increment. One applies the
+   *   full increment of the linear solve.
    */
-  void corrector();
+  void apply_increment(const double alpha);
+
+  /**
+   * @brief Close a nonlinear iteration of the current equation
+   *
+   * Normalizes the nodal prestress accumulated during the assembly, tests the
+   * residual norm of the current equation for convergence, and selects the
+   * equation to be solved by the next iteration.
+   *
+   * The nodal quantities this function reduces are accumulated once per
+   * assembly and its convergence bookkeeping counts one iteration, so it is
+   * called once per iteration, after the solution has been advanced by
+   * apply_increment.
+   *
+   * Modifies:
+   * \code {.cpp}
+   *   com_mod.pSa
+   *   com_mod.pSn
+   *   solutions_.current.A
+   *   solutions_.current.D
+   *   solutions_.current.Y
+   *
+   *   com_mod.cEq
+   *   eq.FSILS.RI.iNorm
+   *   eq.iNorm
+   *   eq.ok
+   *   eq.pNorm
+   * \endcode
+   */
+  void finalize_iteration();
 
   /**
    * @brief Pressure correction for Taylor-Hood elements (corrector_taylor_hood)
