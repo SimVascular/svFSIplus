@@ -433,7 +433,17 @@ void initialize(Simulation* simulation, Vector<double>& timeP)
     }
   }
 
-  #ifdef debug_initialize
+  // A prestress run accumulates the nodal stress over the assemblies of a time
+  // step, so the assemblies a line search performs to measure a trial solution
+  // would contribute to it as well.
+  for (const auto &eq : com_mod.eq) {
+    svmp::throw_if<svmp::ParseException>(
+        eq.line_search_enabled && com_mod.pstEq,
+        "The " + LineSearchParameters::xml_element_name_ +
+            " XML element is not supported by a prestress simulation.");
+  }
+
+#ifdef debug_initialize
   dmsg << "nFacesLS: " << nFacesLS;
   dmsg << "com_mod.cplBC.coupled: " << com_mod.cplBC.coupled;
   #endif

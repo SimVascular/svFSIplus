@@ -154,11 +154,31 @@ private:
   void solve_linear_system();
 
   /**
-   * @brief Perform corrector step and check convergence of all equations
+   * @brief Search for a step length that decreases the residual.
    *
-   * @return True if all equations converged, false otherwise
+   * Measures the increment of the linear solve at decreasing step lengths,
+   * starting from one, until the residual assembled at the resulting solution
+   * falls below \p reference_norm by the margin the settings of the equation
+   * ask for, or until the shortest step length is reached, which is returned
+   * without being measured. Measuring a step length costs one assembly of the
+   * linear system, while the increment itself is reused, so the linear system
+   * is solved once per nonlinear iteration however many step lengths are
+   * tried.
+   *
+   * The solution and the increment are left as they were found, so that the
+   * caller can apply the returned step length to them.
+   *
+   * @param[in,out] eq Equation whose increment is measured, and whose settings
+   *   configure the search.
+   * @param[in] weights Weight of every residual entry in the norm, as computed
+   *   by compute_residual_weights at the solution the search starts from.
+   * @param[in] reference_norm Norm of the residual at the solution the search
+   *   starts from, measured with \p weights.
+   *
+   * @return Step length to apply to the increment.
    */
-  bool corrector_and_check_convergence();
+  double line_search_step_length(eqType &eq, const Array<double> &weights,
+                                 const double reference_norm);
 
   /**
    * @brief Update residual and increment arrays for linear solver
@@ -182,19 +202,49 @@ private:
   void assemble_linear_system(eqType &eq);
 
   /**
-   * @brief Compute the norm of the assembled residual
+   * @brief Compute the weight of every residual entry in the residual norm.
    *
-   * Sums the squares of the entries of com_mod.R belonging to the nodes owned
-   * by each process and reduces them across processes, so that the result does
-   * not depend on the partitioning. It is available as soon as the residual has
-   * been assembled, before the linear system is solved.
+   * The weight of a degree of freedom is the inverse square root of the
+   * magnitude of the corresponding diagonal entry of the tangent, assembled
+   * across processes, which is what the Jacobi preconditioner of the linear
+   * solver scales the rows of the linear system by. The weight of a degree of
+   * freedom constrained by a Dirichlet condition is zero, so that the residual
+   * norm ignores the rows the linear solve eliminates, whose residual is a
+   * reaction rather than an equation left to be satisfied.
+   *
+   * The resulting norm is the one the convergence of the nonlinear iterations
+   * is tested with, and it is dimensionally homogeneous across the degrees of
+   * freedom of an equation, which a norm of the residual entries themselves is
+   * not.
+   *
+   * The weights are read from the tangent assembled last, which the assembly
+   * of a further solution overwrites, so a line search computes them once at
+   * the solution it starts from and reuses them for every step length it
+   * tries. Keeping them fixed is what makes the norm a function of the
+   * solution alone, and so makes the norms of two step lengths comparable.
+   *
+   * @param[out] weights Weight of every degree of freedom of every node, in
+   *   the node numbering of the linear solver.
+   */
+  void compute_residual_weights(Array<double> &weights) const;
+
+  /**
+   * @brief Compute the weighted norm of the assembled residual
+   *
+   * Sums the squares of the weighted entries of com_mod.R belonging to the
+   * nodes owned by each process and reduces them across processes, so that the
+   * result does not depend on the partitioning. It is available as soon as the
+   * residual has been assembled, before the linear system is solved.
    *
    * com_mod.R holds the residual of the equation assembled last, and its rows
    * are the degrees of freedom of that equation, numbered from zero.
    *
-   * @return Euclidean norm of the assembled residual.
+   * @param[in] weights Weight of every degree of freedom of every node, as
+   *   computed by compute_residual_weights.
+   *
+   * @return Weighted Euclidean norm of the assembled residual.
    */
-  double residual_norm() const;
+  double residual_norm(const Array<double> &weights) const;
 
   /**
    * @brief Compute the fiber stretch and fiber stretch rate at every node.
@@ -257,17 +307,17 @@ private:
    * @brief Apply a multiple of the increment of the linear solve to the
    * solution
    *
-   * Advances the solution of the current equation at the n+1 time level by
-   * alpha times the increment held in com_mod.R (and com_mod.Rd for the
+   * Advances the solution of an equation at the n+1 time level by @c
+   * step_length times the increment held in com_mod.R (and com_mod.Rd for the
    * velocity-based formulation), and updates the quantities that are derived
    * from the resulting solution: the Taylor-Hood pressure at edge nodes, the
    * copy of the solution onto the solid subdomain of an FSI equation, the
    * ionic state of an electrophysiology equation, and the wall filter of a CMM
    * equation.
    *
-   * The solution change is proportional to alpha, so calling this function
-   * from the same starting solution with different step lengths traces the
-   * segment between that solution and the one the full increment produces.
+   * The solution change is proportional to step_length, so calling this
+   * function from the same starting solution with different step lengths traces
+   * the segment between that solution and the one the full increment produces.
    * Every quantity derived from the solution is recomputed, so any step length
    * leaves a consistent state.
    *
@@ -280,10 +330,13 @@ private:
    *   cep_mod.Xion
    * \endcode
    *
-   * @param[in] alpha Step length multiplying the increment. One applies the
-   *   full increment of the linear solve.
+   * @param[in] eq Equation whose solution is advanced, which selects the
+   *   degrees of freedom the increment is applied to and the coefficients of
+   *   the time integration scheme.
+   * @param[in] step_length Step length multiplying the increment. One applies
+   * the full increment of the linear solve.
    */
-  void apply_increment(const double alpha);
+  void apply_increment(const eqType &eq, const double step_length);
 
   /**
    * @brief Close a nonlinear iteration of the current equation

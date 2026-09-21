@@ -9,6 +9,7 @@
 #include "contact.h"
 #include "eq_assem.h"
 #include "fs.h"
+#include "fsils_api.hpp"
 #include "ls.h"
 #include "nn.h"
 #include "output.h"
@@ -88,14 +89,35 @@ bool Integrator::step(bool save_results) {
     iEqOld = cEq;
     auto& eq = com_mod.eq[cEq];
 
-    // Assemble the linear system of the current equation
+    eq.itr = eq.itr + 1;
+
     assemble_linear_system(eq);
 
-    // Solve equation
+    // The residual at the current solution, which a line search measures the
+    // trial solutions against. The linear solve overwrites com_mod.R with the
+    // increment, and assembling a trial solution overwrites com_mod.Val, so
+    // both the residual and the weights of its norm have to be taken here.
+    Array<double> weights;
+    double reference_norm = 0.0;
+
+    if (eq.line_search_enabled) {
+      compute_residual_weights(weights);
+      reference_norm = residual_norm(weights);
+    }
+
     solve_linear_system();
 
-    // Solution is obtained, now updating (Corrector) and check for convergence
-    bool all_converged = corrector_and_check_convergence();
+    const double step_length =
+        eq.line_search_enabled
+            ? line_search_step_length(eq, weights, reference_norm)
+            : 1.0;
+
+    apply_increment(eq, step_length);
+    finalize_iteration();
+
+    const bool all_converged =
+        std::all_of(com_mod.eq.begin(), com_mod.eq.end(),
+                    [](const eqType &eq) { return eq.ok; });
 
     // Writing out the time passed, residual, and etc. The converged iteration
     // is flagged with an 's' when the results of this time step are saved to a
@@ -257,29 +279,6 @@ void Integrator::solve_linear_system() {
 }
 
 //------------------------
-// corrector_and_check_convergence
-//------------------------
-bool Integrator::corrector_and_check_convergence() {
-  auto& com_mod = simulation_->com_mod;
-
-  #ifdef debug_integrator_step
-  DebugMsg dmsg(__func__, com_mod.cm.idcm());
-  dmsg << "Update corrector ..." << std::endl;
-  #endif
-
-  apply_increment(1.0);
-  finalize_iteration();
-
-  #ifdef debug_integrator_step
-  solutions_.current.get_velocity().write("solutions_.current.Ycorrector" + istr_);
-  #endif
-
-  // Check if all equations converged
-  return std::count_if(com_mod.eq.begin(), com_mod.eq.end(),
-                       [](eqType& eq) { return eq.ok; }) == com_mod.eq.size();
-}
-
-//------------------------
 // assemble_linear_system
 //------------------------
 void Integrator::assemble_linear_system(eqType& eq) {
@@ -368,17 +367,165 @@ void Integrator::assemble_linear_system(eqType& eq) {
 }
 
 //------------------------
+// line_search_step_length
+//------------------------
+double Integrator::line_search_step_length(eqType &eq,
+                                           const Array<double> &weights,
+                                           const double reference_norm) {
+  // com_mod.R holds the solution of the linear system, which is the direction
+  // the search moves along. A zero direction is zero at every step length, so
+  // it leaves the residual where it is and no step length would be accepted.
+  // The linear solve returns one when the residual it starts from is already
+  // below its own absolute tolerance.
+  if (utils::is_zero(residual_norm(weights))) {
+    return 1.0;
+  }
+
+  auto &com_mod = simulation_->com_mod;
+
+  const bool report =
+      eq.line_search_verbose && com_mod.cm.mas(simulation_->cm_mod);
+
+  // The solution the search starts from and the direction it moves along, both
+  // of which assembling a trial solution overwrites.
+  const Array<double> initial_A = solutions_.current.get_acceleration();
+  const Array<double> initial_Y = solutions_.current.get_velocity();
+  const Array<double> initial_D = solutions_.current.get_displacement();
+  const Array<double> search_direction = com_mod.R;
+
+  const Array<double> initial_Ad = com_mod.Ad;
+  const Array<double> search_direction_d = com_mod.Rd;
+
+  auto restore_starting_point = [&]() {
+    solutions_.current.get_acceleration() = initial_A;
+    solutions_.current.get_velocity() = initial_Y;
+    solutions_.current.get_displacement() = initial_D;
+    com_mod.Ad = initial_Ad;
+    com_mod.R = search_direction;
+    com_mod.Rd = search_direction_d;
+  };
+
+  double step_length = 1.0;
+
+  while (step_length > eq.line_search_minimum_step_length) {
+    restore_starting_point();
+    apply_increment(eq, step_length);
+
+    // @todo[michelebucelli] This also reassembles the tangent matrix, which is
+    //   not needed. Disabling the recomputation of the tangent would require
+    //   changing the assembly code quite invasively, however, and repeatedly
+    //   for all the equation types. This should be addressed as part of or
+    //   after the refactoring of the assembly.
+    assemble_linear_system(eq);
+
+    const double norm = residual_norm(weights);
+    const double limit =
+        (1.0 - eq.line_search_minimum_decrease * step_length) * reference_norm;
+
+    if (norm <= limit) {
+      if (report && step_length < 1.0) {
+        std::cout << "    Line search: step length " << step_length
+                  << " accepted, residual " << norm << " at or below " << limit
+                  << std::endl;
+      }
+      break;
+    }
+
+    if (report) {
+      std::cout << "    Line search: step length " << step_length
+                << " rejected, residual " << norm << " above " << limit
+                << std::endl;
+    }
+
+    step_length *= eq.line_search_step_reduction_factor;
+  }
+
+  // Leaving the loop without accepting a step length means every step length
+  // longer than the shortest one was rejected. The shortest one is kept
+  // without being measured, since there is nothing left to compare it against.
+  if (report && step_length <= eq.line_search_minimum_step_length) {
+    std::cout << "    Line search: keeping the shortest step length "
+              << step_length << std::endl;
+  }
+
+  restore_starting_point();
+
+  return step_length;
+}
+
+//------------------------
+// compute_residual_weights
+//------------------------
+void Integrator::compute_residual_weights(Array<double> &weights) const {
+  const auto &com_mod = simulation_->com_mod;
+  const auto &lhs = com_mod.lhs;
+  const auto &Val = com_mod.Val;
+
+  const int dof = com_mod.R.nrows();
+
+  // The tangent holds one dense dof-by-dof block per nonzero of the nodal
+  // sparsity pattern, and its nodes are numbered as those of the linear solver.
+  weights.resize(dof, lhs.nNo);
+
+  for (int Ac = 0; Ac < lhs.nNo; Ac++) {
+    const int diagonal = lhs.diagPtr(Ac);
+
+    for (int i = 0; i < dof; i++) {
+      weights(i, Ac) = Val(i * dof + i, diagonal);
+    }
+  }
+
+  fsi_linear_solver::fsils_commuv(lhs, dof, weights);
+
+  for (int i = 0; i < weights.size(); i++) {
+    // A degree of freedom the tangent does not reach is left unscaled.
+    weights(i) = utils::is_zero(weights(i))
+                     ? 1.0
+                     : 1.0 / std::sqrt(std::fabs(weights(i)));
+  }
+
+  // The linear solve eliminates the degrees of freedom constrained by a
+  // Dirichlet condition, for which face.val is zero, so their residual is
+  // dropped from the norm as well: it is the reaction of the constraint rather
+  // than an equation left to be satisfied. The faces the linear system does
+  // not include are those the linear solve skips too.
+  for (int faIn = 0; faIn < lhs.nFaces; faIn++) {
+    const auto &face = lhs.face[faIn];
+
+    if (incL_(faIn) == 0 ||
+        face.bGrp != fsi_linear_solver::BcType::BC_TYPE_Dir) {
+      continue;
+    }
+
+    for (int a = 0; a < face.nNo; a++) {
+      for (int i = 0; i < std::min(face.dof, dof); i++) {
+        weights(i, face.glob(a)) = weights(i, face.glob(a)) * face.val(i, a);
+      }
+    }
+  }
+}
+
+//------------------------
 // residual_norm
 //------------------------
-double Integrator::residual_norm() const {
+double Integrator::residual_norm(const Array<double> &weights) const {
   const auto& com_mod = simulation_->com_mod;
+  const auto &lhs = com_mod.lhs;
   const auto& R = com_mod.R;
 
   double sum_of_squares = 0.0;
 
-  for (int a = 0; a < com_mod.lhs.mynNo; a++) {
+  for (int a = 0; a < R.ncols(); a++) {
+    // The nodes a process owns are those the linear solver numbers first.
+    const int Ac = lhs.map(a);
+
+    if (Ac >= lhs.mynNo) {
+      continue;
+    }
+
     for (int i = 0; i < R.nrows(); i++) {
-      sum_of_squares += R(i,a) * R(i,a);
+      const double entry = weights(i, Ac) * R(i, a);
+      sum_of_squares += entry * entry;
     }
   }
 
@@ -748,8 +895,7 @@ void Integrator::initiator(SolutionStates& solutions)
   const int cEq = com_mod.cEq;
   const int tnNo = com_mod.tnNo;
   auto& eq = com_mod.eq[cEq];
-  auto& dof = com_mod.dof;
-  eq.itr = eq.itr + 1;
+  auto &dof = com_mod.dof;
 
   // [NOTE] Setting gobal variable 'dof'.
   dof = eq.dof;
@@ -825,8 +971,7 @@ void Integrator::initiator(SolutionStates& solutions)
 //------------------------
 // apply_increment
 //------------------------
-void Integrator::apply_increment(const double alpha)
-{
+void Integrator::apply_increment(const eqType &eq, const double step_length) {
   using namespace consts;
 
   auto& com_mod = simulation_->com_mod;
@@ -845,9 +990,6 @@ void Integrator::apply_increment(const double alpha)
   const auto& R = com_mod.R;
   const auto& Rd = com_mod.Rd;
 
-  auto& cEq = com_mod.cEq;
-  auto& eq = com_mod.eq[cEq];
-
   auto& An = solutions_.current.get_acceleration();
   auto& Ad = com_mod.Ad;
   auto& Dn = solutions_.current.get_displacement();
@@ -858,14 +1000,11 @@ void Integrator::apply_increment(const double alpha)
   int s = eq.s;
   int e = eq.e;
 
-  std::array<double,4> coef;
-  coef[0] = eq.gam * dt;
-  coef[1] = eq.beta*dt*dt;
-  coef[2] = 1.0 / eq.am;
-  coef[3] = eq.af*coef[0]*coef[2];
+  const std::array<double, 4> coef = {eq.gam * dt, eq.beta * dt * dt,
+                                      1.0 / eq.am, eq.af * coef[0] * coef[2]};
 
-  #ifdef debug_corrector
-  dmsg << "cEq: " << cEq;
+#ifdef debug_corrector
+  dmsg << "eq.sym: " << eq.sym;
   dmsg << "s: " << s;
   dmsg << "e: " << e;
   dmsg << "coef: " << coef[0] << " " << coef[1] << " " << coef[2] << " " << coef[3];
@@ -882,12 +1021,12 @@ void Integrator::apply_increment(const double alpha)
 
       for (int a = 0; a < tnNo; a++) {
         for (int i = 0; i < e-s+1; i++) {
-          An(i+s,a) = An(i+s,a) - alpha*R(i,a);
-          Yn(i+s,a) = Yn(i+s,a) - alpha*R(i,a)*coef[0];
+          An(i + s, a) = An(i + s, a) - step_length * R(i, a);
+          Yn(i + s, a) = Yn(i + s, a) - step_length * R(i, a) * coef[0];
         }
 
         for (int i = 0; i < e-s; i++) {
-          dUl(i) = alpha*(Rd(i,a)*coef[2] + R(i,a)*coef[3]);
+          dUl(i) = step_length * (Rd(i, a) * coef[2] + R(i, a) * coef[3]);
           Ad(i,a) = Ad(i,a) - dUl(i);
           Dn(i+s,a) = Dn(i+s,a) - dUl(i)*coef[0];
         }
@@ -896,9 +1035,9 @@ void Integrator::apply_increment(const double alpha)
     } else if (eq.phys == EquationType::phys_mesh) {
       for (int a = 0; a < tnNo; a++) {
         for (int i = 0; i < e-s+1; i++) {
-          An(i+s,a) = An(i+s,a) - alpha*R(i,a);
-          Yn(i+s,a) = Yn(i+s,a) - alpha*R(i,a)*coef[0];
-          Dn(i+s,a) = Dn(i+s,a) - alpha*R(i,a)*coef[1];
+          An(i + s, a) = An(i + s, a) - step_length * R(i, a);
+          Yn(i + s, a) = Yn(i + s, a) - step_length * R(i, a) * coef[0];
+          Dn(i + s, a) = Dn(i + s, a) - step_length * R(i, a) * coef[1];
         }
       }
     }
@@ -907,12 +1046,12 @@ void Integrator::apply_increment(const double alpha)
     for (int a = 0; a < tnNo; a++) {
       for (int i = 0; i < e-s+1; i++) {
         // eqn 94 of Bazilevs 2007 // here, -R contains the acceleration update (obtained from Newton solve))?
-        An(i+s,a) = An(i+s,a) - alpha*R(i,a);
+        An(i + s, a) = An(i + s, a) - step_length * R(i, a);
 
         // eqn 95 of Bazilevs 2007
-        Yn(i+s,a) = Yn(i+s,a) - alpha*R(i,a)*coef[0];
+        Yn(i + s, a) = Yn(i + s, a) - step_length * R(i, a) * coef[0];
 
-        Dn(i+s,a) = Dn(i+s,a) - alpha*R(i,a)*coef[1];
+        Dn(i + s, a) = Dn(i + s, a) - step_length * R(i, a) * coef[1];
       }
     }
   }
