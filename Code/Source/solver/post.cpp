@@ -51,33 +51,6 @@ namespace post {
       return F;
     }
 
-    Array<double> velocity_gradient(const Array<double>& Nx, const Array<double>& yl,
-        int nsd, int nNo, int eq_start)
-    {
-      // Velocity gradient needed for viscous stress output.
-      Array<double> vx(nsd, nsd);
-      vx = 0.0;
-      for (int a = 0; a < nNo; a++) {
-        if (nsd == 3) {
-          vx(0,0) = vx(0,0) + Nx(0,a)*yl(eq_start,a);
-          vx(0,1) = vx(0,1) + Nx(1,a)*yl(eq_start,a);
-          vx(0,2) = vx(0,2) + Nx(2,a)*yl(eq_start,a);
-          vx(1,0) = vx(1,0) + Nx(0,a)*yl(eq_start+1,a);
-          vx(1,1) = vx(1,1) + Nx(1,a)*yl(eq_start+1,a);
-          vx(1,2) = vx(1,2) + Nx(2,a)*yl(eq_start+1,a);
-          vx(2,0) = vx(2,0) + Nx(0,a)*yl(eq_start+2,a);
-          vx(2,1) = vx(2,1) + Nx(1,a)*yl(eq_start+2,a);
-          vx(2,2) = vx(2,2) + Nx(2,a)*yl(eq_start+2,a);
-        } else {
-          vx(0,0) = vx(0,0) + Nx(0,a)*yl(eq_start,a);
-          vx(0,1) = vx(0,1) + Nx(1,a)*yl(eq_start,a);
-          vx(1,0) = vx(1,0) + Nx(0,a)*yl(eq_start+1,a);
-          vx(1,1) = vx(1,1) + Nx(1,a)*yl(eq_start+1,a);
-        }
-      }
-      return vx;
-    }
-
   }
 
 void all_post(Simulation* simulation, Array<double>& res, const SolutionStates& solutions,
@@ -110,7 +83,7 @@ void all_post(Simulation* simulation, Array<double>& res, const SolutionStates& 
     } else if (outGrp == OutputNameType::outGrp_J) {
       Array<double> tmpV(1,msh.nNo); 
       Vector<double> tmpVe(msh.nEl);
-      tpost(simulation, msh, 1, tmpV, tmpVe, solutions, iEq, outGrp);
+      tensor_post(simulation, msh, 1, tmpV, tmpVe, solutions, iEq, outGrp);
       res = 0.0;
       for (int a = 0; a < com_mod.msh[iM].nNo; a++) {
         int Ac = msh.gN(a);
@@ -120,7 +93,7 @@ void all_post(Simulation* simulation, Array<double>& res, const SolutionStates& 
      } else if (outGrp == OutputNameType::outGrp_mises) {
        Array<double> tmpV(1,msh.nNo); 
        Vector<double> tmpVe(msh.nEl);
-       tpost(simulation, msh, 1, tmpV, tmpVe, solutions, iEq, outGrp);
+       tensor_post(simulation, msh, 1, tmpV, tmpVe, solutions, iEq, outGrp);
        res = 0.0;
        for (int a = 0; a < com_mod.msh[iM].nNo; a++) {
          int Ac = msh.gN(a);
@@ -1723,11 +1696,16 @@ void shl_post(Simulation* simulation, const mshType& lM, const int m, Array<doub
 }
 
 //-------
-// tpost
+// tensor_post
 //-------
 // Routine for post processing stress tensor
 //
-void tpost(Simulation* simulation, const mshType& lM, const int m, Array<double>& res, Vector<double>& resE,
+namespace {
+
+/// @brief Implementation of tensor_post templated on nsd
+///
+template <int nsd>
+void tensor_post_impl(Simulation* simulation, const mshType& lM, const int m, Array<double>& res, Vector<double>& resE,
     const SolutionStates& solutions, const int iEq, consts::OutputNameType outGrp)
 {
   using namespace consts;
@@ -1741,8 +1719,8 @@ void tpost(Simulation* simulation, const mshType& lM, const int m, Array<double>
   const auto& lD = solutions.current.get_displacement();
   auto& eq = com_mod.eq[iEq];
 
-  #define n_debug_tpost
-  #ifdef debug_tpost
+  #define n_debug_tensor_post
+  #ifdef debug_tensor_post
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
   dmsg << "outGrp: " << outGrp;
@@ -1761,7 +1739,7 @@ void tpost(Simulation* simulation, const mshType& lM, const int m, Array<double>
     nFn = 1;
   }
 
-  #ifdef debug_tpost
+  #ifdef debug_tensor_post
   dmsg << "i: " << i;
   dmsg << "j: " << j;
   dmsg << "k: " << k;
@@ -1788,18 +1766,17 @@ void tpost(Simulation* simulation, const mshType& lM, const int m, Array<double>
     fs.nG    = lM.nG;
   }
 
-  #ifdef debug_tpost
+  #ifdef debug_tensor_post
   dmsg << "fs.eType: " << fs.eType;
   dmsg << "fs.eNoN: " << fs.eNoN;
   dmsg << "fs.nG: " << fs.nG;
   #endif
 
   int tnNo = com_mod.tnNo;
-  int nsd = com_mod.nsd;
   int tDof = com_mod.tDof;
   int nsymd = com_mod.nsymd;
 
-  #ifdef debug_tpost
+  #ifdef debug_tensor_post
   dmsg;
   dmsg << "tnNo: " << tnNo;
   dmsg << "tDof: " << tDof;
@@ -1824,7 +1801,8 @@ void tpost(Simulation* simulation, const mshType& lM, const int m, Array<double>
     insd = 1;
   }
 
-  Array<double> Im(nsd, nsd);
+  Array<double> ksix(nsd, nsd);
+  const Matrix<nsd> Im = Matrix<nsd>::Identity();
   double Je = 0.0; 
 
   for (int e = 0; e < lM.nEl; e++) {
@@ -1879,25 +1857,31 @@ void tpost(Simulation* simulation, const mshType& lM, const int m, Array<double>
     double Jac = 0.0;
 
     for (int g = 0; g < fs.nG; g++) {
-      if (g == 0  ||  !fs.lShpF) {
+      // Shape gradients and viscous response can be reused for linear elements.
+      const bool recompute_visc = (g == 0 || !fs.lShpF);
+
+      if (recompute_visc) {
         auto Nx_g = fs.Nx.slice(g);
-        nn::gnn(fs.eNoN, nsd, insd, Nx_g, xl, Nx, Jac, Im);
+        nn::gnn(fs.eNoN, nsd, insd, Nx_g, xl, Nx, Jac, ksix);
       }
 
       w  = fs.w(g) * Jac;
       N  = fs.N.col(g);
       Je = Je + w;
 
-      auto Im = mat_fun::mat_id(nsd); 
-      auto F = deformation_gradient(Nx, dl, nsd, fs.eNoN, i);
+      const auto Nxm  = eigen_view<nsd>(Nx);          // grad(N_a)
+      const auto disp = eigen_view_rows<nsd>(dl, i);  // nodal displacements
+      const auto vel  = eigen_view_rows<nsd>(yl, i);  // nodal velocities
 
-      double detF = mat_fun::mat_det(F, nsd);
+      // Deformation gradient: F = I + Grad(u)
+      const Matrix<nsd> F = Im + disp * Nxm.transpose();
+      const double detF = F.determinant();
 
       Vector<double> ed(com_mod.nsymd);
 
       if (cPhys == EquationType::phys_lElas) {
         for (int a = 0; a < fs.eNoN; a++) {
-          if (nsd ==  3) {
+          if (nsd == 3) {
             ed(0) = ed(0) + Nx(0,a)*dl(i,a);
             ed(1) = ed(1) + Nx(1,a)*dl(j,a);
             ed(2) = ed(2) + Nx(2,a)*dl(k,a);
@@ -1907,7 +1891,7 @@ void tpost(Simulation* simulation, const mshType& lM, const int m, Array<double>
           } else { 
             ed(0) = ed(0) + Nx(0,a)*dl(i,a);
             ed(1) = ed(1) + Nx(1,a)*dl(j,a);
-            ed(2) = ed(2) + Nx(1,a)*dl(i,a) + Nx(1,a)*dl(j,a);
+            ed(2) = ed(2) + Nx(1,a)*dl(i,a) + Nx(0,a)*dl(j,a);
           }
         }
       }
@@ -1945,11 +1929,11 @@ void tpost(Simulation* simulation, const mshType& lM, const int m, Array<double>
           if (cPhys == EquationType::phys_lElas) {
             resl = ed;
           } else { 
-            auto C = mat_fun::mat_mul(mat_fun::transpose(F), F);
-            auto Eg = 0.5 * (C - Im);
+            const Matrix<nsd> C = F.transpose() * F;
+            const Matrix<nsd> Eg = 0.5 * (C - Im);
 
             // resl is used to remap Eg
-            if (nsd  ==  3) {
+            if (nsd == 3) {
               resl(0) = Eg(0,0);
               resl(1) = Eg(1,1);
               resl(2) = Eg(2,2);
@@ -1967,11 +1951,10 @@ void tpost(Simulation* simulation, const mshType& lM, const int m, Array<double>
         case OutputNameType::outGrp_stress:
         case OutputNameType::outGrp_cauchy: 
         case OutputNameType::outGrp_mises:
-          Array<double> sigma(nsd,nsd);
-          Array<double> S(nsd,nsd);
-          Array<double> S0(nsd,nsd);
-          S0 = 0.0;
-          auto vx = velocity_gradient(Nx, yl, nsd, fs.eNoN, i);
+          Matrix<nsd> sigma = Matrix<nsd>::Zero();
+          Matrix<nsd> S = Matrix<nsd>::Zero();
+          Matrix<nsd> S0 = Matrix<nsd>::Zero();
+          const Matrix<nsd> vx = vel * Nxm.transpose();
 
           // Interpolate prestress to the current Gauss point.
           if (com_mod.pS0.size() != 0) {
@@ -2038,52 +2021,42 @@ void tpost(Simulation* simulation, const mshType& lM, const int m, Array<double>
           } else if (cPhys == EquationType::phys_ustruct) {
             double p = 0.0;
             for (int a = 0; a < fs.eNoN; a++) {
-              p = p + N(a)*yl(k+1,a);
+              p = p + N(a)*yl(i+nsd,a);
             }
             p = (-p) * detF;
 
-            Array<double> Dm(nsymd,nsymd);
+            Matrix<3*(nsd-1)> Dm;
             double Ja;
+            mat_models::compute_pk2cc<nsd>(com_mod, cep_mod, eq.dmn[cDmn], F, nFn,
+                eigen_view<nsd>(fN), ya_g_f, ya_g_s, ya_g_n, S, Dm, Ja);
 
-            mat_models::compute_pk2cc(com_mod, cep_mod, eq.dmn[cDmn], F, nFn,
-                                      fN, ya_g_f, ya_g_s, ya_g_n, S, Dm, Ja);
-
-            Array<double> Svis(nsd,nsd);
-            Array3<double> Kvis_u(nsd*nsd, fs.eNoN, fs.eNoN);
-            Array3<double> Kvis_v(nsd*nsd, fs.eNoN, fs.eNoN);
-            mat_models::compute_visc_stress_and_tangent(eq.dmn[cDmn], fs.eNoN,
-                Nx, vx, F, Svis, Kvis_u, Kvis_v);
+            static mat_models::ViscousResponse<nsd> visc;
+            visc.update(eq.dmn[cDmn], fs.eNoN, Nx, vx, F, recompute_visc);
             // Match assembly: elastic + viscous + prestress.
-            S = S + Svis + S0;
+            S = S + visc.S() + S0;
 
             // Add pressure
-            auto C = mat_mul(transpose(F), F);
-            S = S + p*mat_inv(C, nsd);
+            const Matrix<nsd> C = F.transpose() * F;
+            S += p * C.inverse();
 
-            auto P1 = mat_mul(F, S);
-            sigma = mat_mul(P1, transpose(F));
+            sigma = F * S * F.transpose();
 
             if (!utils::is_zero(detF)) {
               sigma = sigma / detF;
             }
 
           } else if (cPhys == EquationType::phys_struct) {
-            Array<double> Dm(nsymd,nsymd);
+            Matrix<3*(nsd-1)> Dm;
             double Ja;
+            mat_models::compute_pk2cc<nsd>(com_mod, cep_mod, eq.dmn[cDmn], F, nFn,
+                eigen_view<nsd>(fN), ya_g_f, ya_g_s, ya_g_n, S, Dm, Ja);
 
-            mat_models::compute_pk2cc(com_mod, cep_mod, eq.dmn[cDmn], F, nFn,
-                                      fN, ya_g_f, ya_g_s, ya_g_n, S, Dm, Ja);
-
-            Array<double> Svis(nsd,nsd);
-            Array3<double> Kvis_u(nsd*nsd, fs.eNoN, fs.eNoN);
-            Array3<double> Kvis_v(nsd*nsd, fs.eNoN, fs.eNoN);
-            mat_models::compute_visc_stress_and_tangent(eq.dmn[cDmn], fs.eNoN,
-                Nx, vx, F, Svis, Kvis_u, Kvis_v);
+            static mat_models::ViscousResponse<nsd> visc;
+            visc.update(eq.dmn[cDmn], fs.eNoN, Nx, vx, F, recompute_visc);
             // Match assembly: elastic + viscous + prestress.
-            S = S + Svis + S0;
+            S = S + visc.S() + S0;
 
-            auto P1 = mat_mul(F, S);
-            sigma = mat_mul(P1, transpose(F));
+            sigma = F * S * F.transpose();
 
             if (!utils::is_zero(detF)) {
               sigma = sigma / detF;
@@ -2122,11 +2095,9 @@ void tpost(Simulation* simulation, const mshType& lM, const int m, Array<double>
 
           // Von Mises stress
           } else if (outGrp == OutputNameType::outGrp_mises) {
-            double trS = mat_trace(sigma, nsd) / static_cast<double>(nsd);
-            for (int l = 0; l < nsd; l++) {
-              sigma(l,l) = sigma(l,l) - trS;
-            }
-            double vmises = sqrt(1.5 * mat_ddot(sigma, sigma, nsd));
+            const Matrix<nsd> s = sigma - (sigma.trace() / nsd) * Im;
+            const double vmises = sqrt(1.5 * s.squaredNorm());
+
             resl(0) = vmises;
             sE(e) = sE(e) + w*vmises;
           }
@@ -2206,7 +2177,7 @@ void tpost(Simulation* simulation, const mshType& lM, const int m, Array<double>
       for (int g = 0; g < fs.nG; g++) {
         if (g == 0 || !fs.lShpF) {
           auto fsNx_g = fs.Nx.slice(g);
-          nn::gnn(fs.eNoN, nsd, insd, fsNx_g, xl, Nx, Jac, Im);
+          nn::gnn(fs.eNoN, nsd, insd, fsNx_g, xl, Nx, Jac, ksix);
         }
       Je = Je + fs.w(g)*Jac;
       }
@@ -2246,6 +2217,20 @@ void tpost(Simulation* simulation, const mshType& lM, const int m, Array<double>
         }
       }
     }
+  }
+}
+
+}  // namespace
+
+/// @brief Post-processing routine for stress tensors
+///
+void tensor_post(Simulation* simulation, const mshType& lM, const int m, Array<double>& res, Vector<double>& resE,
+    const SolutionStates& solutions, const int iEq, consts::OutputNameType outGrp)
+{
+  if (simulation->com_mod.nsd == 3) {
+    tensor_post_impl<3>(simulation, lM, m, res, resE, solutions, iEq, outGrp);
+  } else if (simulation->com_mod.nsd == 2) {
+    tensor_post_impl<2>(simulation, lM, m, res, resE, solutions, iEq, outGrp);
   }
 }
 
