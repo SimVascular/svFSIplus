@@ -17,6 +17,7 @@
 #include "CmMod.h"
 #include "CoupledBoundaryCondition.h"
 #include "FourierInterpolation.h"
+#include "Fibers.h"
 #include "Parameters.h"
 #include "RobinBoundaryCondition.h"
 #include "SolutionStates.h"
@@ -1025,9 +1026,8 @@ class mshType
     /// @brief Normal vector to each nodal point (for Shells)
     Array<double> nV;
 
-    /// @brief Fiber orientations stored at the element level - used for
-    /// electrophysiology and solid mechanics
-    Array<double> fN;
+    /// @brief Fiber orientations used for electrophysiology and solid mechanics.
+    Fibers fibers;
 
     /// @brief Parent shape functions gradient
     /// double Nx(:,:,:)

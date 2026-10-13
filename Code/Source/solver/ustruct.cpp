@@ -268,10 +268,10 @@ void construct_usolid(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const
     ya_l_s = 0.0;
     ya_l_n = 0.0;
 
-    if (lM.fN.size() != 0) {
+    if (lM.fibers.has_fibers()) {
       for (int iFn = 0; iFn < nFn; iFn++) {
         for (int i = 0; i < nsd; i++) {
-          fN(i,iFn) = lM.fN(i+nsd*iFn,e);
+          fN(i,iFn) = lM.fibers.data()(i+nsd*iFn,e);
         }
       }
     }

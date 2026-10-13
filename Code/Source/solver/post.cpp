@@ -575,8 +575,8 @@ void fib_algn_post(Simulation* simulation, const mshType& lM, Array<double>& res
     }
 
     for (int i = 0; i < nsd; i++) {
-      fN(i,0) = lM.fN(i,e);
-      fN(i,0) = lM.fN(i+nsd,e);
+      fN(i,0) = lM.fibers.data()(i,e);
+      fN(i,0) = lM.fibers.data()(i+nsd,e);
     }
 
     Array<double> F;
@@ -672,7 +672,7 @@ void fib_dir_post(Simulation* simulation, const mshType& lM, const int nFn, Arra
 
     for (int iFn = 0; iFn < lM.nFn; iFn++) {
       for (int i = 0; i < nsd; i++) {
-        fN(i,iFn) = lM.fN(i+iFn*nsd,e);
+        fN(i,iFn) = lM.fibers.data()(i+iFn*nsd,e);
       }
     }
 
@@ -774,8 +774,8 @@ void fib_stretch(const ComMod& com_mod, const int iEq, const mshType& lM,
       // Compute Deformation Gradient: F = I + grad(u)
       F = deformation_gradient(Nx, dl, nsd, eNoN, i);
 
-      // Compute fiber stretch based on 4th invariant: I_{4,f} = F.fN.F.fN
-      auto fl = mat_fun::mat_mul(F, lM.fN.rows(0,nsd-1,e));
+      // Compute fiber stretch based on 4th invariant: I_{4,f} = F.f.F.f
+      auto fl = mat_fun::mat_mul(F, lM.fibers.data().rows(0,nsd-1,e));
       double lambda = utils::norm(fl);
 
       // L2 projection from integration points to nodes
@@ -1391,10 +1391,10 @@ void shl_post(Simulation* simulation, const mshType& lM, const int m, Array<doub
     //
     fN = 0.0;
 
-    if (lM.fN.size() != 0) {
+    if (lM.fibers.has_fibers()) {
       for (int iFn = 0; iFn < nFn; iFn++) {
         for (int i = 0; i < 3; i++) {
-          fN(i,iFn) = lM.fN(i+nsd*iFn,e);
+          fN(i,iFn) = lM.fibers.data()(i+nsd*iFn,e);
         }
       }
     }
@@ -1831,10 +1831,10 @@ void tensor_post_impl(Simulation* simulation, const mshType& lM, const int m, Ar
 
     fN = 0.0;
 
-    if (lM.fN.size() != 0) {
+    if (lM.fibers.has_fibers()) {
       for (int l = 0; l < nFn; l++) {
         for (int i = 0; i < nsd; i++) {
-          fN(i,l) = lM.fN(i+l*nsd,e);
+          fN(i,l) = lM.fibers.data()(i+l*nsd,e);
         }
       }
     }
