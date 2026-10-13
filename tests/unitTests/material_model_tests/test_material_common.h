@@ -300,9 +300,7 @@ class TestMaterialModel : public TestBase {
 public:
     int nFn;
     Array<double> fN;
-    double ya_g_f;
-    double ya_g_s;
-    double ya_g_n;
+    ActiveStress::ActiveTension active_tension;
     bool ustruct;
 
     TestMaterialModel(const consts::ConstitutiveModelType matType, const consts::ConstitutiveModelType penType) {
@@ -317,9 +315,7 @@ public:
         // Initialize fibers and other material parameters
         nFn = 2;                          // Number of fiber directions
         fN = Array<double>(nsd, nFn);     // Fiber directions array (initialized to zeros)
-        ya_g_f = 0.0;                     // Active tension along fibers.
-        ya_g_s = 0.0;                     // Active tension along sheets.
-        ya_g_n = 0.0;                     // Active tension along sheet normals.
+        active_tension = ActiveStress::ActiveTension{}; // No active tension.
 
         // Flag to use struct or ustruct material models
         // If struct, calls compute_pk2cc() and uses strain energy composed of isochoric and volumetric parts
@@ -347,19 +343,39 @@ public:
      * @return None, but fills S and Dm with the computed values.
      */
     void compute_pk2cc(const Array<double> &F, Array<double> &S,  Array<double> &Dm) {
+        using namespace mat_fun;
+
         auto &dmn = com_mod.mockEq.mockDmn;
 
         double J = 0; // Jacobian (not used in this testing)
-        
+
         if (ustruct) {
             dmn.phys = consts::EquationType::phys_ustruct;
         } else {
             dmn.phys = consts::EquationType::phys_struct;
         }
 
-        // Call compute_pk2cc to compute S and Dm
-        mat_models::compute_pk2cc(com_mod, cep_mod, dmn, F, nFn, fN, ya_g_f,
-                                  ya_g_s, ya_g_n, S, Dm, J);
+        if (com_mod.nsd == 3) {
+            Matrix<3> S_e;
+            Matrix<6> Dm_e;
+
+            mat_models::compute_pk2cc<3>(com_mod, cep_mod, dmn,
+                convert_to_eigen_matrix<Matrix<3>>(F), nFn,
+                eigen_view<3>(fN), active_tension, S_e, Dm_e, J);
+
+            convert_to_array(S_e, S);
+            copy_Dm(Dm_e, Dm);
+        } else {
+            Matrix<2> S_e;
+            Matrix<3> Dm_e;
+
+            mat_models::compute_pk2cc<2>(com_mod, cep_mod, dmn,
+                convert_to_eigen_matrix<Matrix<2>>(F), nFn,
+                eigen_view<2>(fN), active_tension, S_e, Dm_e, J);
+
+            convert_to_array(S_e, S);
+            copy_Dm(Dm_e, Dm);
+        }
     }
 
        /**
