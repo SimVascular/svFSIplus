@@ -149,6 +149,19 @@ void baf_ini(Simulation* simulation, SolutionStates& solutions)
       }
     }
 
+    // Initialize cap integration for Coupled boundary conditions
+    for (int iEq = 0; iEq < com_mod.nEq; iEq++) {
+      auto& eq = com_mod.eq[iEq];
+      for (int iBc = 0; iBc < eq.nBc; iBc++) {
+        auto& bc = eq.bc[iBc];
+        if (utils::btest(bc.bType, iBC_Coupled)) {
+          if (bc.coupled_bc.has_cap()) {
+            bc.coupled_bc.initialize_cap(com_mod);
+          }
+        }
+      }
+    }
+
     // Create temporary SolutionStates from the initialized 3D state.
     SolutionStates init_solutions;
     init_solutions.old.get_acceleration() = Ao;
@@ -173,18 +186,7 @@ void baf_ini(Simulation* simulation, SolutionStates& solutions)
       svOneD::init_svOneD(com_mod, cm_mod, init_solutions);
     }
 
-    // Initialize cap integration for Coupled boundary conditions
-    for (int iEq = 0; iEq < com_mod.nEq; iEq++) {
-      auto& eq = com_mod.eq[iEq];
-      for (int iBc = 0; iBc < eq.nBc; iBc++) {
-        auto& bc = eq.bc[iBc];
-        if (utils::btest(bc.bType, iBC_Coupled)) {
-          if (bc.coupled_bc.has_cap()) {
-            bc.coupled_bc.initialize_cap(com_mod);
-          }
-        }
-      }
-    }
+
 
     if (com_mod.cplBC.schm != CplBCType::cplBC_E) {
       // Create temporary SolutionStates for set_bc calls
