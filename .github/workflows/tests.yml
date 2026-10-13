@@ -14,7 +14,10 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
+
+      - name: Test review policy
+        run: node --test .github/scripts/review-policy.test.mjs
+
       - name: Check for relevant file changes
         uses: dorny/paths-filter@v3
         id: filter
@@ -63,10 +66,9 @@ jobs:
         uses: ./.github/actions/test-macos
 
   # Single coordinating job for branch protection rules
-  # This job succeeds if:
+  # Change detection and review policy tests must succeed, followed by either:
   # 1. Tests are skipped (no relevant changes) OR
   # 2. All tests pass (both Ubuntu and macOS)
-  # This job fails only if tests actually fail
   all-tests:
     name: All Tests
     runs-on: ubuntu-latest
@@ -75,6 +77,11 @@ jobs:
     steps:
       - name: Determine results of tests
         run: |
+          if [ "${{ needs.check-for-changes.result }}" != "success" ]; then
+            echo "Change detection or review policy tests did not succeed"
+            exit 1
+          fi
+
           # If tests were skipped, the job should succeed
           if [ "${{ needs.check-for-changes.outputs.run_full_tests }}" = "false" ]; then
             echo "✅ Tests were skipped - no relevant changes detected"

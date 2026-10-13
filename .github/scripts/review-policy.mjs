@@ -65,46 +65,42 @@ function changesPolicy(files) {
   // The files endpoint truncates at 3,000 files; an incomplete list cannot grant an exception.
   return files.length >= 3000 || files.some(file => [file.filename, file.previous_filename]
     .some(path => path?.startsWith('.github/workflows/')
+      || path?.startsWith('.github/actions/')
       || path?.startsWith('.github/scripts/review-policy')));
 }
 
-async function beginCheck(api, sha, detailsUrl, checks) {
-  const existing = await api.list(`${repoPath}/commits/${sha}/check-runs?check_name=${CHECK}&filter=latest`, 'check_runs');
-  const previous = existing.filter(check => check.name === CHECK && check.app?.id === APP_ID)
-    .sort((a, b) => b.id - a.id)[0];
+async function publishCheck(api, sha, passed, summary, detailsUrl) {
+  let previous;
+  try {
+    const existing = await api.list(`${repoPath}/commits/${sha}/check-runs?check_name=${CHECK}&filter=latest`, 'check_runs');
+    previous = existing.filter(check => check.name === CHECK && check.app?.id === APP_ID)
+      .sort((a, b) => b.id - a.id)[0];
+  } catch (error) {
+    // A lookup failure must not prevent publishing a new failing check.
+    if (passed) throw error;
+  }
   const body = {
-    name: CHECK, status: 'in_progress',
-    output: { title: 'Checking review policy', summary: 'Reading current reviews, labels and team membership.' },
+    name: CHECK, status: 'completed', conclusion: passed ? 'success' : 'failure',
+    output: { title: passed ? 'Review policy satisfied' : 'Review policy not satisfied', summary },
     ...(detailsUrl ? { details_url: detailsUrl } : {}),
   };
-  if (previous) {
-    checks.set(sha, previous.id);
+  // Scheduled refreshes have different details URLs even when the result is unchanged.
+  if (previous?.status === 'completed' && previous.conclusion === body.conclusion
+      && previous.output?.title === body.output.title && previous.output?.summary === summary) return;
+  if (previous && previous.status !== 'completed') {
     await api.request(`${repoPath}/check-runs/${previous.id}`, { method: 'PATCH', body });
   } else {
-    const check = await api.request(`${repoPath}/check-runs`, { method: 'POST', body: { ...body, head_sha: sha } });
-    checks.set(sha, check.id);
+    await api.request(`${repoPath}/check-runs`, { method: 'POST', body: { ...body, head_sha: sha } });
   }
-}
-
-async function finishCheck(api, id, passed, summary) {
-  await api.request(`${repoPath}/check-runs/${id}`, {
-    method: 'PATCH',
-    body: {
-      status: 'completed', conclusion: passed ? 'success' : 'failure',
-      output: { title: passed ? 'Review policy satisfied' : 'Review policy not satisfied', summary },
-    },
-  });
 }
 
 export async function reconcile(api, { apply = false, detailsUrl } = {}) {
   const prs = await api.list(openPulls);
   const heads = [...new Set(prs.map(pr => pr.head.sha))];
   if (heads.some(sha => !/^[a-f0-9]{40}$/.test(sha))) throw new Error('Invalid PR head SHA.');
-  const checks = new Map();
   const records = [];
   try {
     // Reconcile every open PR in one serialized run: dropped queued events lose no PRs.
-    if (apply) for (const sha of heads) await beginCheck(api, sha, detailsUrl, checks);
     if (!prs.length) return [];
     const configuredTeam = await api.request(teamPath);
     if (configuredTeam.id !== TEAM_ID) throw new Error('Refactoring team identity does not match configuration.');
@@ -162,20 +158,21 @@ export async function reconcile(api, { apply = false, detailsUrl } = {}) {
         }
       }
       const current = await api.list(openPulls);
-      for (const [sha, id] of checks) {
-        const group = records.filter(record => record.result.head_sha === sha).map(record => record.result);
+      for (const sha of heads) {
+        const group = records.filter(record => record.result.head_sha === sha).map(record => record.result)
+          .sort((a, b) => a.number - b.number);
         const numbers = pulls => pulls.filter(pr => pr.head.sha === sha).map(pr => pr.number).sort((a, b) => a - b).join(',');
         const unchanged = numbers(current) === numbers(prs);
         const summary = group.map(result => `PR #${result.number}: ${result.reason}`).join('\n\n')
           + (unchanged ? '' : '\n\nPRs sharing this commit changed; run the policy again.');
-        await finishCheck(api, id, unchanged && group.every(result => result.passed), summary);
+        await publishCheck(api, sha, unchanged && group.every(result => result.passed), summary, detailsUrl);
       }
     }
     return records.map(record => record.result);
   } catch (error) {
     // Replace earlier successes too, including failures after one group was published.
-    await Promise.allSettled([...checks.values()].map(id =>
-      finishCheck(api, id, false, `Evaluation could not complete. ${error.message}`)));
+    if (apply) await Promise.allSettled(heads.map(sha =>
+      publishCheck(api, sha, false, `Evaluation could not complete. ${error.message}`, detailsUrl)));
     throw error;
   }
 }
