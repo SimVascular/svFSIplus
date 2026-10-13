@@ -1857,7 +1857,7 @@ void tensor_post_impl(Simulation* simulation, const mshType& lM, const int m, Ar
     double Jac = 0.0;
 
     for (int g = 0; g < fs.nG; g++) {
-      // Shape gradients and viscous response can be reused for linear elements.
+      // Shape gradients and viscous response can be reused for linear triangular and tetrahedral elements.
       const bool recompute_visc = (g == 0 || !fs.lShpF);
 
       if (recompute_visc) {
