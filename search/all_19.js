@@ -9,9 +9,10 @@ var searchData=
   ['wedgenodeindex_6',['WedgeNodeIndex',['../classsvmp_1_1_f_e_1_1basis_1_1_lagrange_basis.html#ab38e41225e18f5d91b050a65e844bef4',1,'svmp::FE::basis::LagrangeBasis']]],
   ['weight_7',['weight',['../classsvmp_1_1_f_e_1_1quadrature_1_1_quadrature_rule.html#ac7752ccbaf6b342c9620b0b2e78a0106',1,'svmp::FE::quadrature::QuadratureRule']]],
   ['weights_8',['weights',['../structsvmp_1_1_f_e_1_1basis_1_1_basis_request.html#a897e43327cc30e4f2a0d7373793514f7',1,'svmp::FE::basis::BasisRequest::weights'],['../classsvmp_1_1_f_e_1_1quadrature_1_1_quadrature_rule.html#a0d405fa83bffa8364248e65eb0c6c083',1,'svmp::FE::quadrature::QuadratureRule::weights()']]],
-  ['well_20conditioned_20order_20range_9',['Conditioning and the well-conditioned order range',['../classsvmp_1_1_f_e_1_1basis_1_1_serendipity_basis.html#autotoc_md14',1,'']]],
+  ['well_20conditioned_20order_20range_9',['Conditioning and the well-conditioned order range',['../classsvmp_1_1_f_e_1_1basis_1_1_serendipity_basis.html#autotoc_md13',1,'']]],
   ['what_10',['what',['../class_boundary_condition_base_exception.html#a32c5778b38fef28785b310c9fe005a05',1,'BoundaryConditionBaseException']]],
-  ['workflow_11',['Workflow',['../md_solver_2_r_e_a_d_m_e-trilinos.html#autotoc_md38',1,'']]],
-  ['write_12',['write',['../class_vtk_vtu_data.html#a372d3943683916f332fa1d2a1af43590',1,'VtkVtuData::write()'],['../class_vtk_vtp_data.html#a80413e0f1bc782f4b3d9cb8d652b219b',1,'VtkVtpData::write()'],['../class_vtk_data.html#a7340a5224ac21949f061766f48cad578',1,'VtkData::write()']]],
-  ['ws_5finf_13',['ws_inf',['../class_bueno_orovio.html#aeae2eb78be8f4841812243b8eb368c3a',1,'BuenoOrovio']]]
+  ['with_20the_20structural_20mechanics_20problem_11',['Coupling with the structural mechanics problem',['../class_active_stress.html#activestress-coupling',1,'']]],
+  ['workflow_12',['Workflow',['../md_solver_2_r_e_a_d_m_e-trilinos.html#autotoc_md37',1,'']]],
+  ['write_13',['write',['../class_vtk_vtu_data.html#a372d3943683916f332fa1d2a1af43590',1,'VtkVtuData::write()'],['../class_vtk_vtp_data.html#a80413e0f1bc782f4b3d9cb8d652b219b',1,'VtkVtpData::write()'],['../class_vtk_data.html#a7340a5224ac21949f061766f48cad578',1,'VtkData::write()']]],
+  ['ws_5finf_14',['ws_inf',['../class_bueno_orovio.html#aeae2eb78be8f4841812243b8eb368c3a',1,'BuenoOrovio']]]
 ];

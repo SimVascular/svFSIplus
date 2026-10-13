@@ -143,15 +143,15 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span><span class="comment"></span><span class="keyword">extern</span> <span class="keyword">const</span> std::map&lt;std::string, TimeIntegrationType&gt; cep_time_int_to_type;</div>
 <div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span><span class="comment"></span> </div>
 <div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span><span class="comment">/// Write a TimeIntegrationType to an output stream.</span></div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span><span class="comment"></span><span class="keyword">static</span> std::ostream &amp;operator&lt;&lt;(std::ostream &amp;strm, TimeIntegrationType type) {</div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>  <span class="keyword">const</span> std::map&lt;TimeIntegrationType, std::string&gt; names = {</div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span><span class="comment"></span><span class="keyword">static</span> std::ostream &amp;operator&lt;&lt;(std::ostream &amp;<a class="code hl_typedef" href="namespacemat__fun.html#a08c6284789e31d0f22dd0e0f23cc51cf">strm</a>, TimeIntegrationType type) {</div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>  <span class="keyword">const</span> std::map&lt;TimeIntegrationType, std::string&gt; <a class="code hl_typedef" href="namespacemat__fun.html#a08c6284789e31d0f22dd0e0f23cc51cf">names</a> = {</div>
 <div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>      {TimeIntegrationType::NA, <span class="stringliteral">&quot;NA&quot;</span>},</div>
 <div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>      {TimeIntegrationType::FE, <span class="stringliteral">&quot;FE&quot;</span>},</div>
 <div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>      {TimeIntegrationType::RK4, <span class="stringliteral">&quot;RK4&quot;</span>},</div>
 <div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>      {TimeIntegrationType::CN2, <span class="stringliteral">&quot;CN2&quot;</span>},</div>
 <div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>  };</div>
 <div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span> </div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>  <span class="keywordflow">return</span> strm &lt;&lt; names.at(type);</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>  <span class="keywordflow">return</span> <a class="code hl_typedef" href="namespacemat__fun.html#a08c6284789e31d0f22dd0e0f23cc51cf">strm</a> &lt;&lt; <a class="code hl_typedef" href="namespacemat__fun.html#a08c6284789e31d0f22dd0e0f23cc51cf">names</a>.at(type);</div>
 <div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>}</div>
 <div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span><span class="comment"></span> </div>
 <div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span><span class="comment">/// @brief Time integration scheme and related parameters</span></div>
@@ -573,7 +573,7 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00451" name="l00451"></a><span class="lineno">  451</span><span class="comment"> *</span></div>
 <div class="line"><a id="l00452" name="l00452"></a><span class="lineno">  452</span><span class="comment"> * See the documentation for @ref Factory for more details on how this works.</span></div>
 <div class="line"><a id="l00453" name="l00453"></a><span class="lineno">  453</span><span class="comment"> */</span></div>
-<div class="line"><a id="l00454" name="l00454"></a><span class="lineno">  454</span><span class="keyword">using </span><a class="code hl_class" href="class_factory.html">IonicModelFactory</a> = <a class="code hl_class" href="class_factory.html">Factory&lt;IonicModel&gt;</a>;</div>
+<div class="line"><a id="l00454" name="l00454"></a><span class="lineno">  454</span><span class="keyword">using </span>IonicModelFactory = <a class="code hl_class" href="class_factory.html">Factory&lt;IonicModel&gt;</a>;</div>
 <div class="line"><a id="l00455" name="l00455"></a><span class="lineno">  455</span><span class="comment"></span> </div>
 <div class="line"><a id="l00456" name="l00456"></a><span class="lineno">  456</span><span class="comment">/**</span></div>
 <div class="line"><a id="l00457" name="l00457"></a><span class="lineno">  457</span><span class="comment"> * @brief Macro to register a ionic model in the factory.</span></div>
@@ -621,6 +621,7 @@ $(document).ready(function() { init_codefold(0); });
 <div class="ttc" id="aclassode_type_html_a22441c13b34522f6bb03091cc84e9fcc"><div class="ttname"><a href="classode_type.html#a22441c13b34522f6bb03091cc84e9fcc">odeType::tIntType</a></div><div class="ttdeci">TimeIntegrationType tIntType</div><div class="ttdoc">Time integration method type.</div><div class="ttdef"><b>Definition</b> IonicModel.h:55</div></div>
 <div class="ttc" id="aclassode_type_html_ad24afe40416393519ff181274c376365"><div class="ttname"><a href="classode_type.html#ad24afe40416393519ff181274c376365">odeType::maxItr</a></div><div class="ttdeci">int maxItr</div><div class="ttdoc">Max. iterations for Newton-Raphson method.</div><div class="ttdef"><b>Definition</b> IonicModel.h:58</div></div>
 <div class="ttc" id="aclassoutput_type_html"><div class="ttname"><a href="classoutput_type.html">outputType</a></div><div class="ttdoc">Declared type for outputed variables.</div><div class="ttdef"><b>Definition</b> ComMod.h:588</div></div>
+<div class="ttc" id="anamespacemat__fun_html_a08c6284789e31d0f22dd0e0f23cc51cf"><div class="ttname"><a href="namespacemat__fun.html#a08c6284789e31d0f22dd0e0f23cc51cf">mat_fun::Matrix</a></div><div class="ttdeci">Eigen::Matrix&lt; double, nsd, nsd &gt; Matrix</div><div class="ttdoc">A 2nd order tensor, nsd x nsd, fixed size and stack allocated. Used for the deformation gradient,...</div><div class="ttdef"><b>Definition</b> mat_fun.h:29</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

@@ -123,10 +123,46 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:ab18b196dd00d83fa4682ea0d9f2d229c" id="r_ab18b196dd00d83fa4682ea0d9f2d229c"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_active_stress_trajectory_configuration.html#ab18b196dd00d83fa4682ea0d9f2d229c">tolerance</a> = 1.0e-10</td></tr>
 <tr class="memdesc:ab18b196dd00d83fa4682ea0d9f2d229c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base tolerance in the pointwise comparison formula.  <br /></td></tr>
 <tr class="separator:ab18b196dd00d83fa4682ea0d9f2d229c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5eeffa03d7331d0cd0eeca810f910ebc" id="r_a5eeffa03d7331d0cd0eeca810f910ebc"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_active_stress_trajectory_configuration.html#a5eeffa03d7331d0cd0eeca810f910ebc">derivative_step</a> = 1.0e-6</td></tr>
+<tr class="separator:a5eeffa03d7331d0cd0eeca810f910ebc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5c3318ecaf5c82b06aaacebf2ff8cbf2" id="r_a5c3318ecaf5c82b06aaacebf2ff8cbf2"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_active_stress_trajectory_configuration.html#a5c3318ecaf5c82b06aaacebf2ff8cbf2">derivative_tolerance</a> = 1.0e-8</td></tr>
+<tr class="memdesc:a5c3318ecaf5c82b06aaacebf2ff8cbf2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base tolerance in the active tension derivative comparison formula.  <br /></td></tr>
+<tr class="separator:a5c3318ecaf5c82b06aaacebf2ff8cbf2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Configure one standalone trusted-reference <a class="el" href="class_active_stress.html" title="Abstract active stress class.">ActiveStress</a> trajectory. </p>
 </div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="a5eeffa03d7331d0cd0eeca810f910ebc" name="a5eeffa03d7331d0cd0eeca810f910ebc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5eeffa03d7331d0cd0eeca810f910ebc">&#9670;&#160;</a></span>derivative_step</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">double ActiveStressTrajectoryConfiguration::derivative_step = 1.0e-6</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Fiber-stretch increment of the central finite difference used to check the active tension derivative. </p>
+
+</div>
+</div>
+<a id="a5c3318ecaf5c82b06aaacebf2ff8cbf2" name="a5c3318ecaf5c82b06aaacebf2ff8cbf2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5c3318ecaf5c82b06aaacebf2ff8cbf2">&#9670;&#160;</a></span>derivative_tolerance</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">double ActiveStressTrajectoryConfiguration::derivative_tolerance = 1.0e-8</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Base tolerance in the active tension derivative comparison formula. </p>
+
+</div>
+</div>
 <a id="a6bb1cc5180fecb35ed5d199b75ef71f4" name="a6bb1cc5180fecb35ed5d199b75ef71f4"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a6bb1cc5180fecb35ed5d199b75ef71f4">&#9670;&#160;</a></span>final_time</h2>
 
