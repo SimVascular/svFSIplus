@@ -10,6 +10,7 @@
 
 #include "FE/Basis/NodeOrderingConventions.h"
 #include "FE/Common/FEException.h"
+#include "FE/Quadrature/GaussLobattoNodes.h"
 #include "FE/Quadrature/GaussLobattoQuadrature.h"
 #include "FE/Quadrature/GaussQuadrature.h"
 #include "FE/Quadrature/QuadratureRule.h"
@@ -37,8 +38,8 @@ constexpr double kMomentTolerance = 2.0e-12;
 // Computed fixtures follow the production 64*epsilon refinement scale.
 constexpr double kFixtureTolerance =
     64.0 * std::numeric_limits<double>::epsilon();
-// Basis and Quadrature independently refine computed interior GLL roots, so
-// terminal binary64 rounding can differ; this remains far below node spacing.
+// Basis and Quadrature use different correction tolerances, so terminal
+// binary64 rounding can differ; this remains far below node spacing.
 constexpr double kBasisConsistencyTolerance =
     128.0 * std::numeric_limits<double>::epsilon();
 
@@ -469,14 +470,12 @@ TEST(GaussLobattoImplementation, RejectsRequestsOutsideSupportedRange)
 
 /**
  * @test GaussLobattoBasisConsistency.MatchesRepresentativeNodeDistributions
- * compares 2-, 4-, 65-, and 128-point Lobatto rules with the independently
- * computed Basis nodes, requiring exact endpoints and close interior values.
+ * compares every supported Lobatto point count with Basis nodes, checking the
+ * two callers' indexing, symmetry, endpoints, and exact centers.
  */
 TEST(GaussLobattoBasisConsistency, MatchesRepresentativeNodeDistributions)
 {
-    constexpr std::array<std::size_t, 4> point_counts{2, 4, 65, 128};
-
-    for (const std::size_t num_points : point_counts) {
+    for (std::size_t num_points = 2; num_points <= 128; ++num_points) {
         SCOPED_TRACE(
             ::testing::Message() << "num_points=" << num_points);
         const QuadratureRule rule =
@@ -512,5 +511,39 @@ TEST(GaussLobattoBasisConsistency, MatchesRepresentativeNodeDistributions)
                     kBasisConsistencyTolerance);
             }
         }
+    }
+}
+
+TEST(GaussLobattoNodes, RefinesAnalyticNodesAndLegendreValues)
+{
+    const auto center = detail::refine_gauss_lobatto_node(3, 0, 1.0e-15);
+    EXPECT_EQ(center.coordinate, 0.0);
+    EXPECT_EQ(center.legendre_value, -0.5);
+
+    const auto cubic = detail::refine_gauss_lobatto_node(4, 0, 1.0e-15);
+    EXPECT_NEAR(cubic.coordinate, 1.0 / std::sqrt(5.0), kFixtureTolerance);
+    EXPECT_NEAR(cubic.legendre_value, -1.0 / std::sqrt(5.0), kFixtureTolerance);
+
+    const auto quartic = detail::refine_gauss_lobatto_node(5, 0, 1.0e-15);
+    EXPECT_NEAR(quartic.coordinate, std::sqrt(3.0 / 7.0), kFixtureTolerance);
+    EXPECT_NEAR(quartic.legendre_value, -3.0 / 7.0, kFixtureTolerance);
+    const auto quartic_center = detail::refine_gauss_lobatto_node(5, 1, 1.0e-15);
+    EXPECT_EQ(quartic_center.coordinate, 0.0);
+    EXPECT_EQ(quartic_center.legendre_value, 3.0 / 8.0);
+}
+
+TEST(GaussLobattoNodes, RejectsInvalidRefinementRequests)
+{
+    for (const std::size_t num_points : {0u, 1u, 2u}) {
+        EXPECT_THROW((void)detail::refine_gauss_lobatto_node(num_points, 0, 1.0e-15),
+                     InvalidArgumentException);
+    }
+    EXPECT_THROW((void)detail::refine_gauss_lobatto_node(4, 1, 1.0e-15),
+                 InvalidArgumentException);
+    for (const double tolerance : {0.0, -1.0,
+             std::numeric_limits<double>::infinity(),
+             std::numeric_limits<double>::quiet_NaN()}) {
+        EXPECT_THROW((void)detail::refine_gauss_lobatto_node(4, 0, tolerance),
+                     InvalidArgumentException);
     }
 }
