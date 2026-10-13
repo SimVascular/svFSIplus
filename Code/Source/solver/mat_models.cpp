@@ -737,11 +737,11 @@ void compute_pk2cc(const ComMod &com_mod, const CepMod &cep_mod,
   const bool has_tangent_s = !utils::is_zero(active_tension.d_sheets);
   const bool has_tangent_n = !utils::is_zero(active_tension.d_sheet_normals);
 
-  Matrix<nsd> dS_act;
+  Matrix<nsd> dS_act = Matrix<nsd>::Zero();
 
   S += Tfa * Hff;
   if (has_tangent_f)
-    dS_act = active_tension.d_fibers * Hff;
+    dS_act += active_tension.d_fibers * Hff;
 
   if (!utils::is_zero(Tsa) || !utils::is_zero(active_tension.d_sheets)) {
     svmp::check<svmp::InternalErrorException>(
