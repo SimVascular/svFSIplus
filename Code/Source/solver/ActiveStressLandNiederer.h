@@ -73,7 +73,7 @@ public:
   /**
    * @brief Constructor.
    */
-  ActiveStressLandNiederer() : ActiveStressODE(/* n_state_variables = */ 7,
+  ActiveStressLandNiederer() : ActiveStressODE(/* n_state_variables = */ 6,
                                    /* needs_fiber_stretch = */ true,
                                    /* needs_fiber_stretch_rate = */ true) {}
 
@@ -107,16 +107,6 @@ protected:
   virtual void init_local(Vector<double> &state) const override;
 
   /**
-   * @brief Advance in time for a single node.
-   *
-   */
-  virtual void advance_time_step_local(const double t, const double dt,
-                                       const double calcium,
-                                       const double fiber_stretch,
-                                       const double fiber_stretch_rate,
-                                       Vector<double> &state) const override;
-
-  /**
    * @brief Compute the rate of change in the state variables.
    */
   virtual Vector<double> getf(const double t, const Vector<double> &state,
@@ -129,6 +119,25 @@ protected:
   virtual double
   compute_active_tension_local(const Vector<double> &state,
                                const double fiber_stretch) const override;
+
+  /**
+   * @brief Compute the derivative of the active tension with respect to the
+   * fiber stretch, at fixed state, for a single node.
+   */ 
+  virtual double compute_active_tension_derivative_local(
+    const Vector<double> &state,
+    const double fiber_stretch) const override;
+
+  /**
+   * @brief Length-dependence factor scaling the active tension.
+   */
+  double length_dependence_factor(double lambda) const;
+
+  /**
+   * @brief Derivative of @ref length_dependence_factor with respect to the
+   * fiber stretch @f$\lambda@f$.
+   */
+  double length_dependence_factor_derivative(double lambda) const;
 
   /// @name Model parameters.
   /// @{

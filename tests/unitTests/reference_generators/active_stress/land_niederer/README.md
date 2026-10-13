@@ -17,7 +17,7 @@ calcium in micromolar, sarcomere length in micrometers, and its rate in
 micrometers per second. The authors' code advances the states with Forward-Euler 
 time steps. The Active tension is divided by 1000 to convert kPa to MPa.
 
-The committed CSV stores `step,Ta,s0,...,s6` at update indices 
+The committed CSV stores `step,Ta,s0,...,s5` at update indices 
 `0,10,30,60,99,149,199,299,349,449,599`, where index `N` is the result of the
 update starting at `t=N ms`. No ready-to-run generator is included because 
 reproducing the data depends on installation of MATLAB. The trusted data remain in

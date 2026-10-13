@@ -66,30 +66,6 @@ void ActiveStressLandNiederer::init_local(Vector<double> &state) const {
     state[3] = 0.0; 
     state[4] = 0.0; 
     state[5] = 0.0; 
-    const double lambda = 1.0; 
-    state[6] = std::max(0.0, 1.0 + beta0 * (lambda + std::min(0.87, lambda) - 1.87)); 
-}
-
-void ActiveStressLandNiederer::advance_time_step_local(const double t, const double dt,
-                                           const double calcium,
-                                           const double fiber_stretch,
-                                           const double fiber_stretch_rate,
-                                           Vector<double> &state) const {
-
-  Vector<double> ode_state(6); 
-  for (int i = 0; i < 6; i++) {
-    ode_state[i] = state[i]; 
-  }
-
-  ActiveStressODE::advance_time_step_local(t, dt, calcium, fiber_stretch,
-                                           fiber_stretch_rate, ode_state);
-
-  for (unsigned int i = 0; i < 6; ++i) {
-    state[i] = ode_state[i];
-  }
-
-  const double lambda = std::min(1.2, fiber_stretch); 
-  state[6] = std::max(0.0, 1.0 + beta0 * (lambda + std::min(0.87, lambda) - 1.87));
 }
 
 Vector<double> ActiveStressLandNiederer::getf(const double t, const Vector<double> &state,
@@ -148,9 +124,40 @@ double ActiveStressLandNiederer::compute_active_tension_local(const Vector<doubl
   const double XS = std::max(0.0, state[3]); 
   const double ZETAW = state[4];  
   const double ZETAS = state[5];
-  const double LFac = state[6];  
+  const double lambda = std::min(1.2, fiber_stretch); 
+  const double LFac = length_dependence_factor(lambda);
   
   return LFac * (Tref/rs) * ((ZETAS+1.0) * XS + (ZETAW) * XW);
 }
+
+double ActiveStressLandNiederer::compute_active_tension_derivative_local(
+    const Vector<double> &state, const double fiber_stretch) const {
+  const double XW = std::max(0.0, state[1]);
+  const double XS = std::max(0.0, state[3]);
+  const double ZETAW = state[4];
+  const double ZETAS = state[5];
+  const double lambda = std::min(1.2, fiber_stretch);
+  const double d_lambda = (fiber_stretch < 1.2) ? 1.0 : 0.0;
+  const double d_LFac = length_dependence_factor_derivative(lambda) * d_lambda;
+
+  return d_LFac * (Tref/rs) * ((ZETAS+1.0) * XS + (ZETAW) * XW);
+  }
+
+double ActiveStressLandNiederer::length_dependence_factor(double lambda) const {
+  return std::max(0.0, 1.0 + beta0 * (lambda + std::min(0.87, lambda) - 1.87));
+  }
+
+double ActiveStressLandNiederer::length_dependence_factor_derivative(
+    double lambda) const {
+  const double min_term = std::min(lambda, 0.87); 
+  const double g = 1.0 + beta0 * (lambda + min_term - 1.87); 
+  
+  if (g <= 0.0) 
+    return 0.0; 
+
+  if (lambda < 0.87)
+    return 2.0 * beta0;
+  return beta0;
+  }
 
 REGISTER_ACTIVE_STRESS_MODEL("LandNiederer", ActiveStressLandNiederer);
