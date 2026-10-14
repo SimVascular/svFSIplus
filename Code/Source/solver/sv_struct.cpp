@@ -212,7 +212,7 @@ void construct_dsolid(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const
   bool pstEq = com_mod.pstEq;
 
   int eNoN = lM.eNoN;
-  int nFn = lM.nFn;
+  int nFn = lM.fibers.nfibers;
   if (nFn == 0) {
     nFn = 1;
   }
@@ -253,14 +253,6 @@ void construct_dsolid(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const
     fN  = 0.0;
     pS0l = 0.0;
 
-    if (lM.fibers.has_fibers()) {
-      for (int iFn = 0; iFn < nFn; iFn++) {
-        for (int i = 0; i < nsd; i++) {
-          fN(i,iFn) = lM.fibers.data()(i+nsd*iFn,e);
-        }
-      }
-    }
-
     for (int a = 0; a < eNoN; a++) {
       int Ac = lM.IEN(a,e);
       ptr(a) = Ac;
@@ -296,6 +288,14 @@ void construct_dsolid(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const
     Array<double> ksix(nsd,nsd);
 
     for (int g = 0; g < lM.nG; g++) {
+      if (lM.fibers.has_fibers()) {
+        for (int iFn = 0; iFn < nFn; ++iFn) {
+          for (int i = 0; i < nsd; ++i) {
+            fN(i, iFn) = lM.fibers.data()(i + nsd * iFn, g, e);
+          }
+        }
+      }
+
       // Shape function gradients and the viscous response are constant
       // within linear triangles and tetrahedra.
       const bool recompute_visc = (g == 0 || !lM.lShpF);

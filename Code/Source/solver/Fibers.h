@@ -5,6 +5,8 @@
 #define FIBERS_H
 
 #include "Array.h"
+#include "Array3.h"
+#include "Vector.h"
 
 class ComMod;
 class CmMod;
@@ -13,11 +15,11 @@ class cmType;
 class mshType;
 
 /// @brief Fiber directions associated with one mesh.
-///
-/// The stored array has the same layout previously used by mshType::fN:
-/// (number_of_fibers * spatial_dimension, number_of_elements).
 class Fibers {
   public:
+
+    // Number of fiber directions.
+    int nfibers = 0;
 
     // Reads fiber directions from file paths or constant vectors.
     void read(const MeshParameters& mesh_parameters, mshType& mesh, int nsd);
@@ -29,23 +31,59 @@ class Fibers {
     // Clears the fiber directions.
     void clear();
 
-    // Returns the fiber directions.
-    const Array<double>& data() const { return fibers; }
-    Array<double>& data() { return fibers; }
+    // Returns the fiber directions at the quadrature points. The array layout
+    // is (number_of_fibers * spatial_dimension, number_of_quadrature_points,
+    // number_of_elements).
+    const Array3<double>& data() const { return quadrature_fibers; }
+    Array3<double>& data() { return quadrature_fibers; }
+
+    // Returns the normalized fiber directions read from the input.
+    const Array<double>& input_data() const { return input_fibers; }
 
     // Returns true if there are fiber directions.
-    bool has_fibers() const { return fibers.size() != 0; }
+    bool has_fibers() const { return quadrature_fibers.size() != 0; }
+
+    /// Interpolates one nodal fiber direction to a quadrature point.
+    ///
+    /// The nodal fibers are the columns of `nodal_fibers`, and
+    /// `shape_functions` contains their values at the quadrature point. The
+    /// dyads are interpolated before the principal direction is recovered, so
+    /// opposite representations of the same fiber direction do not cancel.
+    static Vector<double> interpolate_dyadic(
+      const Array<double>& nodal_fibers,
+      const Vector<double>& shape_functions);
 
 
   protected:
-    Array<double> fibers;
+    // Input fibers array (either nodal or cell-based).
+    Array<double> input_fibers;
+
+    // Fiber directions at the quadrature points.
+    Array3<double> quadrature_fibers;
 
   private:
-    // Reads fiber directions from a file.
+    // Location of the fiber directions in the input file.
+    enum class DataLocation {
+      none,
+      // The fiber directions are associated with the mesh nodes.
+      point,
+      // The fiber directions are associated with the mesh cells.
+      cell,
+      // The fiber directions are explicit vectors defined in the input file.
+      explicit_direction
+    };
+    DataLocation data_location = DataLocation::none;
+
+    // Reads fiber directions from a file. The fiber directions can be associated with
+    // cells or points.
     void read_from_file(const MeshParameters& mesh_parameters, mshType& mesh, int nsd);
 
-    // Reads constant fiber directions.
-    void read_directions(const MeshParameters& mesh_parameters, mshType& mesh, int nsd);
+    // Reads constant fiber directions as specified in the input file.
+    void read_directions(const MeshParameters& mesh_parameters, int nsd);
+
+    // Populates the quadrature-point fibers from the input fibers.
+    void populate_quadrature_fibers(const mshType& mesh, int nsd);
+
 };
 
 #endif

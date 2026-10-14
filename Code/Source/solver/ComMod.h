@@ -945,9 +945,6 @@ class mshType
     /// @brief The element type recognized by VTK format
     int vtkType = 0;
 
-    /// @brief Number of fiber directions
-    int nFn = 0;
-
     /// @brief Mesh scale factor
     double scF = 0.0;
 

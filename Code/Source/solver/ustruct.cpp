@@ -211,7 +211,7 @@ void construct_usolid(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const
   #ifdef debug_construct_usolid
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
-  dmsg << "lM.nFn: " << lM.nFn;
+  dmsg << "lM.fibers.nfibers: " << lM.fibers.nfibers;
   dmsg << "lM.nFs: " << lM.nFs;
   #endif
 
@@ -228,7 +228,7 @@ void construct_usolid(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const
   bool pstEq = com_mod.pstEq;
 
   int eNoN = lM.eNoN;
-  int nFn = lM.nFn;
+  int nFn = lM.fibers.nfibers;
   if (nFn == 0) {
     nFn = 1;
   }
@@ -264,14 +264,6 @@ void construct_usolid(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const
 
     // Create local copies
     fN  = 0.0;
-
-    if (lM.fibers.has_fibers()) {
-      for (int iFn = 0; iFn < nFn; iFn++) {
-        for (int i = 0; i < nsd; i++) {
-          fN(i,iFn) = lM.fibers.data()(i+nsd*iFn,e);
-        }
-      }
-    }
 
     for (int a = 0; a < eNoN; a++) {
       int Ac = lM.IEN(a,e);
@@ -324,6 +316,14 @@ void construct_usolid(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const
     Array<double> ksix(nsd,nsd);
 
     for (int g = 0; g < fs[0].nG; g++) {
+      if (lM.fibers.has_fibers()) {
+        for (int iFn = 0; iFn < nFn; ++iFn) {
+          for (int i = 0; i < nsd; ++i) {
+            fN(i, iFn) = lM.fibers.data()(i + nsd * iFn, g, e);
+          }
+        }
+      }
+
       // Shape function gradients and the viscous response are constant
       // within linear triangles and tetrahedra. triangles).
       const bool recompute_visc = (g == 0 || !fs[0].lShpF);

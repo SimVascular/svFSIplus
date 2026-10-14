@@ -575,14 +575,14 @@ void fib_algn_post(Simulation* simulation, const mshType& lM, Array<double>& res
       }
     }
 
-    for (int i = 0; i < nsd; i++) {
-      fN(i,0) = lM.fibers.data()(i,e);
-      fN(i,0) = lM.fibers.data()(i+nsd,e);
-    }
-
     Array<double> F;
 
     for (int g = 0; g < lM.nG; g++) {
+      for (int i = 0; i < nsd; ++i) {
+        fN(i, 0) = lM.fibers.data()(i, g, e);
+        fN(i, 1) = lM.fibers.data()(i + nsd, g, e);
+      }
+
       double Jac = 0.0;
 
       if (g == 0 || !lM.lShpF) {
@@ -649,8 +649,8 @@ void fib_dir_post(Simulation* simulation, const mshType& lM, const int nFn, Arra
   Array<double> sF(nFn*nsd,tnNo); 
   Array<double> xl(nsd,eNoN); 
   Array<double> dl(tDof,eNoN); 
-  Array<double> fN(nsd,lM.nFn); 
-  Array<double> fl(nsd,lM.nFn); 
+  Array<double> fN(nsd,lM.fibers.nfibers);
+  Array<double> fl(nsd,lM.fibers.nfibers);
   Array<double> Nx(nsd,eNoN); 
   Vector<double> N(eNoN);
 
@@ -671,17 +671,17 @@ void fib_dir_post(Simulation* simulation, const mshType& lM, const int nFn, Arra
       }
     }
 
-    for (int iFn = 0; iFn < lM.nFn; iFn++) {
-      for (int i = 0; i < nsd; i++) {
-        fN(i,iFn) = lM.fibers.data()(i+iFn*nsd,e);
-      }
-    }
-
     Array<double> F(nsd,nsd);
     Array<double> Nx(nsd,eNoN);
     double Jac = 0.0;
 
     for (int g = 0; g < lM.nG; g++) {
+      for (int iFn = 0; iFn < lM.fibers.nfibers; ++iFn) {
+        for (int i = 0; i < nsd; ++i) {
+          fN(i, iFn) = lM.fibers.data()(i + iFn * nsd, g, e);
+        }
+      }
+
       if (g == 0 || !lM.lShpF) {
         auto Nxi = lM.Nx.slice(g);
         nn::gnn(eNoN, nsd, nsd, Nxi, xl, Nx, Jac, F);
@@ -691,7 +691,7 @@ void fib_dir_post(Simulation* simulation, const mshType& lM, const int nFn, Arra
       N = lM.N.col(g);
       F = deformation_gradient(Nx, dl, nsd, eNoN, i);
 
-      for (int iFn = 0; iFn < lM.nFn; iFn++) {
+      for (int iFn = 0; iFn < lM.fibers.nfibers; iFn++) {
         for (int i = 0; i < nsd; i++) {
           auto fN_col = fN.col(iFn);
           auto F_fN = mat_fun::mat_mul(F, fN_col);
@@ -702,7 +702,7 @@ void fib_dir_post(Simulation* simulation, const mshType& lM, const int nFn, Arra
       for (int a = 0; a < eNoN; a++) {
         int Ac = lM.IEN(a,e);
         sA(Ac) = sA(Ac) + w*N(a);
-        for (int iFn = 0; iFn < lM.nFn; iFn++) {
+        for (int iFn = 0; iFn < lM.fibers.nfibers; iFn++) {
           int b = iFn*nsd;
           for (int l = 0; l < nsd; l++) {
             sF(b+l,Ac) = sF(b+l,Ac) + w*N(a)*fl(l,iFn);
@@ -776,7 +776,11 @@ void fib_stretch(const ComMod& com_mod, const int iEq, const mshType& lM,
       F = deformation_gradient(Nx, dl, nsd, eNoN, i);
 
       // Compute fiber stretch based on 4th invariant: I_{4,f} = F.f.F.f
-      auto fl = mat_fun::mat_mul(F, lM.fibers.data().rows(0,nsd-1,e));
+      Vector<double> fiber(nsd);
+      for (int component = 0; component < nsd; ++component) {
+        fiber[component] = lM.fibers.data()(component, g, e);
+      }
+      auto fl = mat_fun::mat_mul(F, fiber);
       double lambda = utils::norm(fl);
 
       // L2 projection from integration points to nodes
@@ -1356,7 +1360,7 @@ void shl_post(Simulation* simulation, const mshType& lM, const int m, Array<doub
   int j = i + 1;
   int k = j + 1;
 
-  int nFn = lM.nFn;
+  int nFn = lM.fibers.nfibers;
   if (nFn == 0) {
     nFn = 1;
   }
@@ -1447,18 +1451,6 @@ void shl_post(Simulation* simulation, const mshType& lM, const int m, Array<doub
       xc(2,a) = x0(2,a) + dl(k,a);
     }
 
-    // Get fiber directions
-    //
-    fN = 0.0;
-
-    if (lM.fibers.has_fibers()) {
-      for (int iFn = 0; iFn < nFn; iFn++) {
-        for (int i = 0; i < 3; i++) {
-          fN(i,iFn) = lM.fibers.data()(i+nsd*iFn,e);
-        }
-      }
-    }
-    
     // Set number of integration points.
     // Note: Gauss integration performed for NURBS elements
     // Not required for constant-strain triangle elements
@@ -1481,6 +1473,15 @@ void shl_post(Simulation* simulation, const mshType& lM, const int m, Array<doub
     Array<double> Nxx, Nx;
 
     for (int g = 0; g < nwg; g++) {
+      fN = 0.0;
+      if (lM.fibers.has_fibers()) {
+        for (int iFn = 0; iFn < nFn; ++iFn) {
+          for (int i = 0; i < 3; ++i) {
+            fN(i, iFn) = lM.fibers.data()(i + nsd * iFn, g, e);
+          }
+        }
+      }
+
       double w = 0.0;
       double lam3 = 0.0;
       double aa_0[2][2]{}, bb_0[2][2]{};
@@ -1794,7 +1795,7 @@ void tensor_post_impl(Simulation* simulation, const mshType& lM, const int m, Ar
   int j = i + 1;
   int k = j + 1;
 
-  int nFn = lM.nFn;
+  int nFn = lM.fibers.nfibers;
   if (nFn == 0) {
     nFn = 1;
   }
@@ -1891,16 +1892,6 @@ void tensor_post_impl(Simulation* simulation, const mshType& lM, const int m, Ar
       // CALL NRBNNX(lM, e)
     }
 
-    fN = 0.0;
-
-    if (lM.fibers.has_fibers()) {
-      for (int l = 0; l < nFn; l++) {
-        for (int i = 0; i < nsd; i++) {
-          fN(i,l) = lM.fibers.data()(i+l*nsd,e);
-        }
-      }
-    }
-
     dl = 0.0;
     yl = 0.0;
 
@@ -1926,6 +1917,15 @@ void tensor_post_impl(Simulation* simulation, const mshType& lM, const int m, Ar
     double Jac = 0.0;
 
     for (int g = 0; g < fs.nG; g++) {
+      fN = 0.0;
+      if (lM.fibers.has_fibers()) {
+        for (int l = 0; l < nFn; ++l) {
+          for (int i = 0; i < nsd; ++i) {
+            fN(i, l) = lM.fibers.data()(i + l * nsd, g, e);
+          }
+        }
+      }
+
       if (g == 0  ||  !fs.lShpF) {
         auto Nx_g = fs.Nx.slice(g);
         nn::gnn(fs.eNoN, nsd, insd, Nx_g, xl, Nx, Jac, ksix);

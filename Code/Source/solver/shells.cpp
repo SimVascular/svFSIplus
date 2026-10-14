@@ -32,7 +32,7 @@ void construct_shell(ComMod& com_mod, const mshType& lM, const SolutionStates& s
   #ifdef debug_construct_shell
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
-  dmsg << "lM.nFn: " << lM.nFn;
+  dmsg << "lM.fibers.nfibers: " << lM.fibers.nfibers;
   dmsg << "lM.nFs: " << lM.nFs;
   dmsg << "lM.eNoN: " << lM.eNoN;
   #endif
@@ -50,7 +50,7 @@ void construct_shell(ComMod& com_mod, const mshType& lM, const SolutionStates& s
     eNoN = 2 * eNoN;
   }
 
-  int nFn = lM.nFn;
+  int nFn = lM.fibers.nfibers;
   if (nFn == 0) {
     nFn = 1;
   }
@@ -122,16 +122,6 @@ void construct_shell(ComMod& com_mod, const mshType& lM, const SolutionStates& s
       }
     }
 
-    if (lM.fibers.has_fibers()) {
-      for (int iFn = 0; iFn < nFn; iFn++) {
-        for (int i = 0; i < 3; i++) {
-          fN(i,iFn) = lM.fibers.data()(i+nsd*iFn,e);
-        }
-      }
-    } else {
-      fN = 0.0;
-    }
-
     #ifdef debug_construct_shell
     dmsg << "-------------------" << "-------------------";
     dmsg << "ptr: " << ptr;
@@ -141,6 +131,14 @@ void construct_shell(ComMod& com_mod, const mshType& lM, const SolutionStates& s
     //  Constant strain triangles, no numerical integration
     //
     if (lM.eType == ElementType::TRI3) {
+      fN = 0.0;
+      if (lM.fibers.has_fibers()) {
+        for (int iFn = 0; iFn < nFn; ++iFn) {
+          for (int i = 0; i < 3; ++i) {
+            fN(i, iFn) = lM.fibers.data()(i + nsd * iFn, 0, e);
+          }
+        }
+      }
       shell_cst(com_mod, lM, e, eNoN, nFn, fN, al, yl, dl, xl, bfl, ptr);
 
     } else {
@@ -152,6 +150,14 @@ void construct_shell(ComMod& com_mod, const mshType& lM, const SolutionStates& s
 
       // Gauss integration
       for (int g = 0; g < lM.nG; g++) {
+        fN = 0.0;
+        if (lM.fibers.has_fibers()) {
+          for (int iFn = 0; iFn < nFn; ++iFn) {
+            for (int i = 0; i < 3; ++i) {
+              fN(i, iFn) = lM.fibers.data()(i + nsd * iFn, g, e);
+            }
+          }
+        }
         shell_3d(com_mod, lM, g, eNoN, nFn, fN, al, yl, dl, xl, bfl, lR, lK);
       }
     }
@@ -1198,7 +1204,7 @@ void shell_cst(ComMod& com_mod, const mshType& lM, const int e, const int eNoN, 
   #ifdef debug_shell_cst 
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
-  dmsg << "lM.nFn: " << lM.nFn;
+  dmsg << "lM.fibers.nfibers: " << lM.fibers.nfibers;
   dmsg << "lM.nFs: " << lM.nFs;
   dmsg << "dof: " << dof;
   dmsg << "eNoN: " << eNoN;

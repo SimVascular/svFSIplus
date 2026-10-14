@@ -309,7 +309,7 @@ void construct_cep(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const So
 
   int insd = nsd;
   const int eNoN = lM.eNoN;
-  int nFn  = lM.nFn;
+  int nFn  = lM.fibers.nfibers;
 
   if (lM.lFib) insd = 1;
   if (nFn == 0) nFn = 1;
@@ -365,14 +365,6 @@ void construct_cep(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const So
         yl(i,a) = Yg(i,Ac);
         dl(i,a) = Dg(i,Ac);
       }
-
-      if (lM.fibers.has_fibers()) {
-        for (int iFn = 0; iFn < nFn; iFn++) { 
-          for (int i = 0; i < nsd; i++) {
-            fN(i,iFn) = lM.fibers.data()(i+nsd*iFn,e);
-          }
-        }
-      }
     }
 
     // Gauss integration
@@ -382,6 +374,14 @@ void construct_cep(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const So
     Array<double> ksix(nsd,nsd);
 
     for (int g = 0; g < lM.nG; g++) {
+      if (lM.fibers.has_fibers()) {
+        for (int iFn = 0; iFn < nFn; ++iFn) {
+          for (int i = 0; i < nsd; ++i) {
+            fN(i, iFn) = lM.fibers.data()(i + nsd * iFn, g, e);
+          }
+        }
+      }
+
       if (g == 0 || !lM.lShpF) {
         auto Nx_g = lM.Nx.slice(g);
         nn::gnn(eNoN, nsd, insd, Nx_g, xl, Nx, Jac, ksix);

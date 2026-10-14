@@ -38,7 +38,7 @@ void construct_fsi(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const So
   using namespace consts;
 
   int eNoN = lM.eNoN;
-  int nFn  = lM.nFn;
+  int nFn  = lM.fibers.nfibers;
   if (nFn == 0) nFn = 1;
 
   bool  vmsStab = false;
@@ -98,14 +98,6 @@ void construct_fsi(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const So
     // Create local copies
     fN  = 0.0;
     pS0l = 0.0;
-
-    if (lM.fibers.has_fibers()) {
-      for (int iFn = 0; iFn < nFn; iFn++) {
-        for (int i = 0; i < nsd; i++) {
-          fN(i,iFn) = lM.fibers.data()(i+nsd*iFn,e);
-        }
-      }
-    }
 
     for (int a = 0; a < eNoN; a++) {
       int Ac = lM.IEN(a,e);
@@ -176,6 +168,14 @@ void construct_fsi(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const So
     }
 
     for (int g = 0; g < fs_1[0].nG; g++) {
+      if (lM.fibers.has_fibers()) {
+        for (int iFn = 0; iFn < nFn; ++iFn) {
+          for (int i = 0; i < nsd; ++i) {
+            fN(i, iFn) = lM.fibers.data()(i + nsd * iFn, g, e);
+          }
+        }
+      }
+
       if (g == 0 || !fs_1[1].lShpF) {
         auto Nx = fs_1[1].Nx.rslice(g);
         nn::gnn(fs_1[1].eNoN, nsd, nsd, Nx, xql, Nqx, Jac, ksix);
