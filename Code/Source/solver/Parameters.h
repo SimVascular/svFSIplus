@@ -657,6 +657,17 @@ class CoupleGenBCParameters : public ParameterLists
 //----------------------------------
 // svZeroDSolverInterfaceParameters
 //----------------------------------
+/// @brief Parameters for coupling to the svZeroDSolver (0D lumped-parameter solver).
+///
+/// XML element: \code {.xml}
+/// <svZeroDSolver_interface>
+///   <Coupling_type> implicit </Coupling_type>
+///   <Configuration_file> svzerod_3Dcoupling.json </Configuration_file>
+///   <Shared_library> /path/to/libsvzero_interface </Shared_library>
+///   <Finite_difference_absolute_perturbation> 1.0e-7 </Finite_difference_absolute_perturbation>
+///   <Finite_difference_relative_perturbation> 1.0e-5 </Finite_difference_relative_perturbation>
+/// </svZeroDSolver_interface>
+/// \endcode
 //
 class svZeroDSolverInterfaceParameters : public ParameterLists
 {
@@ -673,6 +684,9 @@ class svZeroDSolverInterfaceParameters : public ParameterLists
 
     Parameter<double> initial_flows;
     Parameter<double> initial_pressures;
+
+    Parameter<double> finite_difference_absolute_perturbation;
+    Parameter<double> finite_difference_relative_perturbation;
 
     Parameter<std::string> shared_library;
 
@@ -1362,6 +1376,18 @@ public:
     return parameters.at(label).value();
   }
 
+  /// Set the value of a scalar parameter by label.
+  void set_scalar(const std::string &label, double value) {
+    auto parameter = parameters.find(label);
+    svmp::check<svmp::FE::InvalidArgumentException>(
+        parameter != parameters.end(),
+        "Ionic model parameter '" + label + "' not found.");
+
+    parameter->second.value_ = value;
+    parameter->second.value_set_ = true;
+    value_set = true;
+  }
+
   /// Get the value of a vector parameter by label.
   Vector<double> get_vector(const std::string &label) const {
     auto param_value = vector_parameters.at(label).value();
@@ -1435,6 +1461,18 @@ public:
   /// Get the value of a parameter by label.
   double get_scalar(const std::string &label) const {
     return double_parameters.at(label).value();
+  }
+
+  /// Set the value of a scalar parameter by label.
+  void set_scalar(const std::string &label, double value) {
+    auto parameter = double_parameters.find(label);
+    svmp::check<svmp::FE::InvalidArgumentException>(
+        parameter != double_parameters.end(),
+        "Active stress model parameter '" + label + "' not found.");
+
+    parameter->second.value_ = value;
+    parameter->second.value_set_ = true;
+    value_set = true;
   }
 
   /// Get the value of a string parameter by label.
@@ -1520,6 +1558,10 @@ public:
   /// Get the active tension coefficient along sheet normals.
   double get_eta_n() const;
 
+  /// Get whether the state of the active stress model is updated within the
+  /// nonlinear iterations of the mechanics problem.
+  bool get_implicit_state_coupling() const;
+
   /// Get the parameters for a given active stress model.
   const ActiveStressModelParameters &
   get_parameters(const std::string &model_name) const;
@@ -1530,6 +1572,10 @@ public:
 protected:
   /// Parameter for the model name.
   Parameter<std::string> model_name;
+
+  /// Parameter selecting whether the state of the active stress model is
+  /// updated within the nonlinear iterations of the mechanics problem.
+  Parameter<bool> implicit_state_coupling;
 
   /// Parameters for the directional distribution of active tension.
   DirectionalDistributionParameters directional_distribution;
@@ -1623,8 +1669,13 @@ class DomainParameters : public ParameterLists
     Parameter<double> source_term;
     Parameter<double> time_step_for_integration;
     
-    // Inverse of Darcy permeability. Default value of 0.0 for Navier-Stokes and non-zero for Navier-Stokes-Brinkman
-    Parameter<double> inverse_darcy_permeability;
+    Parameter<double> darcy_permeability;
+    Parameter<double> darcy_compressibility;
+    Parameter<double> darcy_fluid_viscosity;
+
+    // Inverse permeability K^{-1} used in the Brinkman drag term
+    // mu K^{-1} u. A value of zero disables Brinkman drag.
+    Parameter<double> brinkman_inverse_permeability;
 };
 
 /// @brief The RemesherParameters class stores parameters for the 
@@ -1745,9 +1796,6 @@ class EquationParameters : public ParameterLists
     // and only then is the mesh equation solved.
     Parameter<bool> explicit_geometric_coupling;
 
-    // Inverse of Darcy permeability. Default value of 0.0 for Navier-Stokes and non-zero for Navier-Stokes-Brinkman
-    Parameter<double> inverse_darcy_permeability;
-
     // Sub-element parameters.
     //
     std::vector<BodyForceParameters*> body_forces;
@@ -1819,6 +1867,7 @@ class GeneralSimulationParameters : public ParameterLists
     Parameter<bool> debug;
     Parameter<bool> overwrite_restart_file;
     Parameter<bool> save_averaged_results;
+    Parameter<bool> save_domain_id_in_every_file;
     Parameter<bool> save_results_to_vtk_format;
     Parameter<bool> simulation_requires_remeshing;
     Parameter<bool> start_averaging_from_zero;

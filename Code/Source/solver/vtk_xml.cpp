@@ -183,7 +183,9 @@ void int_msh_data(const ComMod& com_mod, const CmMod& cm_mod, const mshType& lM,
   //
   int m = nOute;
 
-  if (!com_mod.savedOnce || com_mod.nMsh > 1) {
+  // This condition selects the same xe columns as the one in write_vtus that
+  // reads them back. The two must agree.
+  if (!com_mod.savedOnce || com_mod.nMsh > 1 || com_mod.alwaysSaveDomainID) {
     if (com_mod.savedOnce) {
       m = m + 1;
     } else { 
@@ -230,7 +232,7 @@ void int_msh_data(const ComMod& com_mod, const CmMod& cm_mod, const mshType& lM,
 
   // If files have not been written or there are multiple meshes.
   // 
-  if (!com_mod.savedOnce || com_mod.nMsh > 1) {
+  if (!com_mod.savedOnce || com_mod.nMsh > 1 || com_mod.alwaysSaveDomainID) {
     #ifdef debug_int_msh_data
     dmsg << "!com_mod.savedOnce || com_mod.nMsh > 1 ";
     dmsg << "com_mod.dmnId.size(): " << com_mod.dmnId.size();
@@ -579,8 +581,8 @@ void read_vtu(const std::string& file_name, mshType& mesh)
   #define n_read_vtu_use_VtkData 
   #ifdef read_vtu_use_VtkData 
   auto vtk_data = VtkData::create_reader(file_name);
-  int num_elems = vtk_data->num_elems(); 
-  int np_elem = vtk_data->np_elem(); 
+  int num_elems = vtk_data->num_elems();
+  int np_elem = vtk_data->num_points_per_elem();
   int elem_type = vtk_data->elem_type(); 
 
   // Set mesh data.
@@ -627,7 +629,7 @@ void read_precomputed_solution_vtu(const std::string& file_name, const std::stri
   #ifdef read_vtu_use_VtkData
   auto vtk_data = VtkData::create_reader(file_name);
   int num_elems = vtk_data->num_elems();
-  int np_elem = vtk_data->np_elem();
+  int np_elem = vtk_data->num_points_per_elem();
 
   // Set mesh data.
   mesh.nEl = num_elems;
@@ -839,7 +841,7 @@ void write_vtp(ComMod& com_mod, faceType& lFa, const std::string& fName)
   }
 
   if (lFa.gE.size() != 0) {
-    vtk_writer->set_point_data("GlobalElementID", lFa.gE);
+    vtk_writer->set_element_data("GlobalElementID", lFa.gE);
   }
 
   vtk_writer->write();
@@ -1064,6 +1066,23 @@ void write_vtus(Simulation* simulation, const SolutionStates& solutions, const b
     for (int iEq = 0; iEq < nEq; iEq++) {
       auto& eq = eqs[iEq];
 
+      // Active tension along fibers, sheets and sheet normals, computed
+      // lazily the first time any of the three is requested below, and
+      // reused for the others.
+      Vector<double> active_tension_f, active_tension_s, active_tension_n;
+      bool active_tension_computed = false;
+      auto compute_active_tension = [&]() {
+        if (active_tension_computed) {
+          return;
+        }
+        active_tension_f.resize(msh.nNo);
+        active_tension_s.resize(msh.nNo);
+        active_tension_n.resize(msh.nNo);
+        post::active_tension(simulation->com_mod, iEq, msh, solutions.current.get_displacement(),
+            active_tension_f, active_tension_s, active_tension_n);
+        active_tension_computed = true;
+      };
+
       for (int iOut = 0; iOut < eq.nOutput; iOut++) {
         if (!eq.output[iOut].options.spatial) {
           continue;
@@ -1163,7 +1182,8 @@ void write_vtus(Simulation* simulation, const SolutionStates& solutions, const b
           case OutputNameType::outGrp_hFlx: 
           case OutputNameType::outGrp_stInv: 
           case OutputNameType::outGrp_vortex: 
-          case OutputNameType::outGrp_Visc: 
+          case OutputNameType::outGrp_Visc:
+          case OutputNameType::outGrp_darcyFlux: 
             post::post(simulation, msh, tmpV, solutions, oGrp, iEq);
             for (int a = 0; a < msh.nNo; a++) {
               int Ac = msh.gN(a);
@@ -1238,7 +1258,7 @@ void write_vtus(Simulation* simulation, const SolutionStates& solutions, const b
               //CALL SHLPOST(msh(iM), l, tmpV, tmpVe, lD, iEq,oGrp)
             } else { 
               if (!com_mod.cmmInit) {
-                post::tpost(simulation, msh, l, tmpV, tmpVe, solutions, iEq, oGrp);
+                post::tensor_post(simulation, msh, l, tmpV, tmpVe, solutions, iEq, oGrp);
               }
             }
 
@@ -1274,7 +1294,7 @@ void write_vtus(Simulation* simulation, const SolutionStates& solutions, const b
               post::shl_post(simulation, msh, l, tmpV, tmpVe, solutions, iEq, oGrp);
               //CALL SHLPOST(msh(iM), l, tmpV, tmpVe, lD, iEq,oGrp)
             } else {
-              post::tpost(simulation, msh, l, tmpV, tmpVe, solutions, iEq, oGrp);
+              post::tensor_post(simulation, msh, l, tmpV, tmpVe, solutions, iEq, oGrp);
             }
 
             for (int a = 0; a < msh.nNo; a++) {
@@ -1332,23 +1352,23 @@ void write_vtus(Simulation* simulation, const SolutionStates& solutions, const b
           } break;
 
           case OutputNameType::outGrp_activeTensionFibers: {
+            compute_active_tension();
             for (int a = 0; a < msh.nNo; a++) {
-              int Ac = msh.gN(a);
-              d[iM].x(is, a) = simulation->cep_mod.cem.Ya_f[Ac];
+              d[iM].x(is, a) = active_tension_f[a];
             }
           } break;
 
           case OutputNameType::outGrp_activeTensionSheets: {
+            compute_active_tension();
             for (int a = 0; a < msh.nNo; a++) {
-              int Ac = msh.gN(a);
-              d[iM].x(is, a) = simulation->cep_mod.cem.Ya_s[Ac];
+              d[iM].x(is, a) = active_tension_s[a];
             }
           } break;
 
           case OutputNameType::outGrp_activeTensionNormal: {
+            compute_active_tension();
             for (int a = 0; a < msh.nNo; a++) {
-              int Ac = msh.gN(a);
-              d[iM].x(is, a) = simulation->cep_mod.cem.Ya_n[Ac];
+              d[iM].x(is, a) = active_tension_n[a];
             }
           } break;
 
@@ -1467,6 +1487,11 @@ void write_vtus(Simulation* simulation, const SolutionStates& solutions, const b
   fName = com_mod.saveName + "_" + fName + ".vtu";
   auto vtk_writer = VtkData::create_writer(fName);
 
+  // No time field is assigned for time-averaged output.
+  if (!lAve) {
+    vtk_writer->set_time_value(com_mod.time);
+  }
+
   // Writing the position data
   //
   int iOut = 0;
@@ -1533,7 +1558,7 @@ void write_vtus(Simulation* simulation, const SolutionStates& solutions, const b
   //
   int ne = -1;
 
-  if (!com_mod.savedOnce || nMsh > 1) {
+  if (!com_mod.savedOnce || nMsh > 1 || com_mod.alwaysSaveDomainID) {
     Array<int> tmpI(1,nEl);
 
     // Write the domain ID

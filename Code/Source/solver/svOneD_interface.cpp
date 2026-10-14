@@ -160,8 +160,7 @@ void init_svOneD(ComMod& com_mod, const CmMod& cm_mod,
         const auto& Yo = solutions.old.get_velocity();
         const double P_init =
             all_fun::integ(com_mod, cm_mod, face, Yo, com_mod.nsd,
-                           solutions, std::nullopt, false,
-                           MechanicalConfigurationType::reference) / area;
+                           solutions, std::nullopt, false) / area;
         st.P_prev_sent_old = P_init;
         st.P_prev_sent_new = P_init;
         st.P_neu_prev = P_init;

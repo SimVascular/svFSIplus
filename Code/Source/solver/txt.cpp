@@ -321,6 +321,7 @@ void txt(Simulation* simulation, const bool init_write, const SolutionStates& so
         case OutputNameType::outGrp_divV: 
         case OutputNameType::outGrp_J: 
         case OutputNameType::outGrp_mises:
+        case OutputNameType::outGrp_darcyFlux:
           post::all_post(simulation, tmpV, solutions, oGrp, iEq);
         break;
 
@@ -465,17 +466,22 @@ void write_boundary_integral_data(const ComMod& com_mod, CmMod& cm_mod, const eq
       if (m == 1) {
         if (div) {
           tmp = fa.area;
-          tmp = all_fun::integ(com_mod, cm_mod, fa, tmpV, 0, solutions, std::nullopt, false, consts::MechanicalConfigurationType::reference) / tmp;
+          tmp = all_fun::integ(com_mod, cm_mod, fa, tmpV, 0, solutions,
+                               std::nullopt, false) /
+                tmp;
         } else {
           if (pFlag && lTH) {
-            tmp = all_fun::integ(com_mod, cm_mod, fa, tmpV, 0, solutions, std::nullopt, true, consts::MechanicalConfigurationType::reference);
+            tmp = all_fun::integ(com_mod, cm_mod, fa, tmpV, 0, solutions,
+                                 std::nullopt, true);
           } else {
-            tmp = all_fun::integ(com_mod, cm_mod, fa, tmpV, 0, solutions, std::nullopt, false, consts::MechanicalConfigurationType::reference);
+            tmp = all_fun::integ(com_mod, cm_mod, fa, tmpV, 0, solutions,
+                                 std::nullopt, false);
           }
         }
 
       } else if (m == nsd) {
-        tmp = all_fun::integ(com_mod, cm_mod, fa, tmpV, 0, solutions, m-1, false, consts::MechanicalConfigurationType::reference);
+        tmp = all_fun::integ(com_mod, cm_mod, fa, tmpV, 0, solutions, m - 1,
+                             false);
       } else {
         throw std::runtime_error("WTXT only accepts 1 and nsd");
       }

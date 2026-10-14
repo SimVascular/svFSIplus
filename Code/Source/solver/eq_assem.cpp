@@ -11,6 +11,7 @@
 
 #include "cep.h"
 #include "cmm.h"
+#include "darcy.h"
 #include "fluid.h"
 #include "fsi.h"
 #include "heatf.h"
@@ -78,9 +79,8 @@ void b_assem_neu_bc(ComMod& com_mod, const faceType& lFa, const Vector<double>& 
     }
 
     for (int g = 0; g < lFa.nG; g++) {
-      Vector<double> nV(nsd);
       auto Nx = lFa.Nx.rslice(g);
-      nn::gnnb(com_mod, lFa, e, g, nsd, nsd-1, eNoN, Nx, nV, solutions, consts::MechanicalConfigurationType::reference);
+      Vector<double> nV = nn::gnnb(com_mod, lFa, e, g, Nx, solutions);
       double Jac = utils::norm(nV);
       nV = nV / Jac;
       double w = lFa.w(g)*Jac;
@@ -109,6 +109,10 @@ void b_assem_neu_bc(ComMod& com_mod, const faceType& lFa, const Vector<double>& 
 
         case EquationType::phys_heatF:
           heatf::b_heatf(com_mod, eNoN, w, N, y, h, nV, lR, lK);
+        break;
+
+        case EquationType::phys_darcy:
+          darcy::b_darcy(com_mod, eNoN, w, N, h, lR);
         break;
 
         case EquationType::phys_lElas:
@@ -251,9 +255,8 @@ void b_neu_folw_p(ComMod& com_mod, const bcType& lBc, const faceType& lFa, const
       }
 
       // Get surface normal vector
-      Vector<double> nV(nsd);
       auto Nx_g = lFa.Nx.rslice(g);
-      nn::gnnb(com_mod, lFa, e, g, nsd, nsd-1, eNoNb, Nx_g, nV, solutions, consts::MechanicalConfigurationType::reference);
+      Vector<double> nV = nn::gnnb(com_mod, lFa, e, g, Nx_g, solutions);
       Jac = utils::norm(nV);
       nV = nV / Jac;
       double w = lFa.w(g)*Jac;
@@ -325,13 +328,13 @@ void fsi_ls_upd(ComMod& com_mod, const bcType& lBc, const faceType& lFa, const S
       // CALL NRBNNXB(msh(iM),lFa,e)
     }
     for (int g = 0; g < lFa.nG; g++) {
-      Vector<double> n(nsd);
       auto Nx = lFa.Nx.rslice(g);
 
       auto cfg = MechanicalConfigurationType::new_timestep;
 
-      nn::gnnb(com_mod, lFa, e, g, nsd, nsd-1, lFa.eNoN, Nx, n, solutions, cfg);
-      // 
+      const Vector<double> n = nn::gnnb(com_mod, lFa, e, g, Nx, solutions, cfg,
+                                        com_mod.eq[com_mod.cEq].s);
+
       for (int a = 0; a < lFa.eNoN; a++) {
         int Ac = lFa.IEN(a,e);
         for (int i = 0; i < nsd; i++) {
@@ -406,6 +409,10 @@ void global_eq_assem(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const 
 
     case EquationType::phys_heatS:
       heats::construct_heats(com_mod, lM, solutions);
+    break;
+
+    case EquationType::phys_darcy:
+      darcy::construct_darcy(com_mod, lM, solutions);
     break;
 
     case EquationType::phys_lElas:

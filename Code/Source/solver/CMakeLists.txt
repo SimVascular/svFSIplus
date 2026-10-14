@@ -151,6 +151,40 @@ include(${VTK_USE_FILE})
 
 set(lib ${SV_LIB_SVFSI_NAME})
 
+# coverage
+if(ENABLE_COVERAGE)
+  # set compiler flags
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -coverage")
+
+  # find required tools
+  find_program(LCOV lcov REQUIRED)
+  find_program(GENHTML genhtml REQUIRED)
+
+  # add coverage target
+  add_custom_target(coverage
+    # gather data
+    COMMAND ${LCOV} --directory . --capture --output-file coverage.info --ignore-errors mismatch --rc geninfo_unexecuted_blocks=1
+    # exclude externals
+    COMMAND ${LCOV} --remove coverage.info -o coverage.info '/usr/*' '/opt/*' "${PROJECT_SOURCE_DIR}/ThirdParty/*" '/Library/*' 'v1/*' --ignore-errors unused
+    # generate report
+    COMMAND ${GENHTML} --demangle-cpp -o coverage coverage.info
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+endif()
+
+add_subdirectory(Core)
+add_subdirectory(FE/Common)
+add_subdirectory(FE/Math)
+add_subdirectory(FE/Basis)
+add_subdirectory(FE/Quadrature)
+
+set(SVMP_ARCHITECTURE_TARGETS
+  svmp_core
+  svmp_fe_common
+  svmp_fe_math
+  svmp_fe_basis
+  svmp_fe_quadrature
+)
+
 set(CSRCS 
   Array3.h Array3.cpp 
   Array.h Array.cpp
@@ -178,6 +212,7 @@ set(CSRCS
   cmm.h cmm.cpp
   consts.h consts.cpp
   contact.h contact.cpp
+  darcy.h darcy.cpp
   distribute.h distribute.cpp
   eq_assem.h eq_assem.cpp
   fluid.h fluid.cpp
@@ -223,18 +258,19 @@ set(CSRCS
   Timer.h
   ArtificialNeuralNetMaterial.h ArtificialNeuralNetMaterial.cpp
 
-  ionic_model.cpp
-  ionic_aliev_panfilov.cpp
-  ionic_bueno_orovio.cpp
-  ionic_fitzhugh_nagumo.cpp
-  ionic_ttp.cpp
+  IonicModel.cpp
+  IonicModelAlievPanfilov.cpp
+  IonicModelBuenoOrovio.cpp
+  IonicModelFitzHughNagumo.cpp
+  IonicModelTTP.cpp
 
-  active_stress.cpp
-  active_stress_uniform_steady.cpp
-  active_stress_uniform_unsteady.cpp
-  active_stress_ode.cpp
-  active_stress_nash_panfilov.cpp
-  
+  ActiveStress.cpp
+  ActiveStressUniformSteady.cpp
+  ActiveStressUniformUnsteady.cpp
+  ActiveStressODE.cpp
+  ActiveStressNashPanfilov.cpp
+  ActiveStressRegazzoni.cpp
+
   SPLIT.c
 
   svZeroD_interface/LPNSolverInterface.h svZeroD_interface/LPNSolverInterface.cpp
@@ -243,34 +279,6 @@ set(CSRCS
   BoundaryCondition.h BoundaryCondition.cpp
   RobinBoundaryCondition.h RobinBoundaryCondition.cpp
   CoupledBoundaryCondition.h CoupledBoundaryCondition.cpp
-)
-
-file(GLOB SOLVER_CORE_SRCS CONFIGURE_DEPENDS
-  Core/*.cpp
-  Core/*.h
-  Core/*.inl
-)
-
-file(GLOB SOLVER_FE_COMMON_SRCS CONFIGURE_DEPENDS
-  FE/Common/*.cpp
-  FE/Common/*.h
-)
-
-file(GLOB SOLVER_FE_BASIS_SRCS CONFIGURE_DEPENDS
-  FE/Basis/*.cpp
-  FE/Basis/*.h
-)
-
-file(GLOB SOLVER_FE_MATH_SRCS CONFIGURE_DEPENDS
-  FE/Math/*.cpp
-  FE/Math/*.h
-)
-
-list(APPEND CSRCS
-  ${SOLVER_CORE_SRCS}
-  ${SOLVER_FE_COMMON_SRCS}
-  ${SOLVER_FE_BASIS_SRCS}
-  ${SOLVER_FE_MATH_SRCS}
 )
 
   # Set PETSc interace code.
@@ -296,6 +304,7 @@ simvascular_add_executable(${SV_MULTIPHYSICS_EXE}
   INSTALL_DESTINATION ${SV_INSTALL_RUNTIME_DIR})
 
 target_link_libraries(${SV_MULTIPHYSICS_EXE}
+  ${SVMP_ARCHITECTURE_TARGETS}
   ${GLOBAL_LIBRARIES}
   ${INTELRUNTIME_LIBRARIES}
   ${ZLIB_LIBRARY}
@@ -320,26 +329,6 @@ endif()
 
 if(USE_PETSC)
   target_link_libraries(${SV_MULTIPHYSICS_EXE} ${PETSC_LIBRARY_DIRS})
-endif()
-
-# coverage
-if(ENABLE_COVERAGE)
-  # set compiler flags
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -coverage")
-
-  # find required tools
-  find_program(LCOV lcov REQUIRED)
-  find_program(GENHTML genhtml REQUIRED)
-
-  # add coverage target
-  add_custom_target(coverage
-    # gather data
-    COMMAND ${LCOV} --directory . --capture --output-file coverage.info --ignore-errors mismatch --rc geninfo_unexecuted_blocks=1
-    # exclude externals
-    COMMAND ${LCOV} --remove coverage.info -o coverage.info '/usr/*' '/opt/*' "${PROJECT_SOURCE_DIR}/ThirdParty/*" '/Library/*' 'v1/*' --ignore-errors unused
-    # generate report
-    COMMAND ${GENHTML} --demangle-cpp -o coverage coverage.info
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 endif()
 
 # unit tests and Google Test
@@ -399,6 +388,7 @@ if(ENABLE_UNIT_TEST)
 
   # libraries
   target_link_libraries(run_all_unit_tests
+    ${SVMP_ARCHITECTURE_TARGETS}
     ${GLOBAL_LIBRARIES}
     ${INTELRUNTIME_LIBRARIES}
     ${ZLIB_LIBRARY}
@@ -418,6 +408,12 @@ if(ENABLE_UNIT_TEST)
     gtest
     GTest::gtest_main 
     pthread   # link pthread on ubuntu20
+  )
+
+  # Define the path to the unit-test reference-data directory as a preprocessor
+  # macro.
+  target_compile_definitions(run_all_unit_tests PRIVATE
+    UNIT_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/../../../tests/unitTests/reference_data"
   )
 
   # gtest_discover_tests(runUnitTest)

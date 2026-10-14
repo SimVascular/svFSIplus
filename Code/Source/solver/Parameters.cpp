@@ -1208,6 +1208,14 @@ svZeroDSolverInterfaceParameters::svZeroDSolverInterfaceParameters() {
   set_parameter("Initial_flows", 0.0, !required, initial_flows);
   set_parameter("Initial_pressures", 0.0, !required, initial_pressures);
 
+  // Finite-difference perturbation used for the coupled-BC tangent dP/dQ,
+  //   diff = max(rms(Q) * Finite_difference_relative_perturbation,
+  //              Finite_difference_absolute_perturbation).
+  set_parameter("Finite_difference_absolute_perturbation", 1.0e-7, !required,
+                finite_difference_absolute_perturbation);
+  set_parameter("Finite_difference_relative_perturbation", 1.0e-5, !required,
+                finite_difference_relative_perturbation);
+
   set_parameter("Configuration_file", "", required, configuration_file);
 
   set_parameter("Shared_library", "", required, shared_library);
@@ -1900,9 +1908,13 @@ void ActiveStressModelParameters::set_values(
 const std::string ActiveStressParameters::xml_element_name = "Active_stress";
 
 ActiveStressParameters::ActiveStressParameters() {
+  constexpr bool required = true;
+
   model_name = Parameter<std::string>("Model", "", true);
 
-  set_parameter("Model", "", /* required = */ true, model_name);
+  set_parameter("Model", "", required, model_name);
+  set_parameter("Implicit_state_coupling", false, !required,
+                implicit_state_coupling);
 
   ActiveStressFactory::visit(
       [this](const std::string &name, const ActiveStress &model) {
@@ -1976,6 +1988,10 @@ double ActiveStressParameters::get_eta_n() const {
   return directional_distribution.sheet_normal_direction.value();
 }
 
+bool ActiveStressParameters::get_implicit_state_coupling() const {
+  return implicit_state_coupling.value();
+}
+
 const ActiveStressModelParameters &
 ActiveStressParameters::get_parameters(const std::string &model_name) const {
   if (active_stress_models.count(model_name) == 0) {
@@ -2044,6 +2060,11 @@ DomainParameters::DomainParameters() {
 
   set_parameter("Penalty_parameter", 0.0, !required, penalty_parameter);
   set_parameter("Poisson_ratio", 0.3, !required, poisson_ratio);
+  
+  set_parameter("Darcy_permeability", 1e-15, !required, darcy_permeability);
+  set_parameter("Darcy_compressibility", 0.0, !required,
+                darcy_compressibility);
+  set_parameter("Darcy_fluid_viscosity", 1.0, !required, darcy_fluid_viscosity);
 
   set_parameter("Relative_tolerance", 1e-4, !required, relative_tolerance);
   set_parameter("Shell_thickness", 0.0, !required, shell_thickness);
@@ -2052,8 +2073,8 @@ DomainParameters::DomainParameters() {
   set_parameter("Time_step_for_integration", 0.0, !required,
                 time_step_for_integration);
 
-  set_parameter("Inverse_darcy_permeability", 0.0, !required,
-                inverse_darcy_permeability);
+  set_parameter("Brinkman_inverse_permeability", 0.0, !required,
+                brinkman_inverse_permeability);
 
   // Ionic model parameters.
   IonicModelFactory::visit(
@@ -2807,9 +2828,9 @@ GeneralSimulationParameters::GeneralSimulationParameters() {
   set_parameter("Debug", false, !required, debug);
 
   set_parameter("Include_xml", "", !required, include_xml);
-  set_parameter("Increment_in_saving_restart_files", 0, !required,
+  set_parameter("Increment_in_saving_restart_files", 1, !required,
                 increment_in_saving_restart_files);
-  set_parameter("Increment_in_saving_VTK_files", 0, !required,
+  set_parameter("Increment_in_saving_VTK_files", 1, !required,
                 increment_in_saving_vtk_files);
 
   set_parameter("Name_prefix_of_saved_VTK_files", "", !required,
@@ -2828,6 +2849,8 @@ GeneralSimulationParameters::GeneralSimulationParameters() {
 
   set_parameter("Save_averaged_results", false, !required,
                 save_averaged_results);
+  set_parameter("Save_domain_ID_in_every_file", false, !required,
+                save_domain_id_in_every_file);
   set_parameter("Save_results_in_folder", "", !required,
                 save_results_in_folder);
   set_parameter("Save_results_to_VTK_format", false, required,
@@ -2912,9 +2935,22 @@ void GeneralSimulationParameters::set_values(tinyxml2::XMLElement *xml_element,
     item = item->NextSiblingElement();
   }
 
-  // Check that required parameters have been set.
   if (!from_external_xml) {
+    // Check that required parameters have been set.
     check_required();
+
+    // The saving increments select the time steps to save by taking the
+    // remainder of the time step number, so they cannot be zero.
+    svmp::check<svmp::ParseException>(
+        increment_in_saving_restart_files.value() >= 1,
+        "The GeneralSimulationParameters element "
+        "'Increment_in_saving_restart_files' must be greater than or equal "
+        "to 1.");
+
+    svmp::check<svmp::ParseException>(
+        increment_in_saving_vtk_files.value() >= 1,
+        "The GeneralSimulationParameters element "
+        "'Increment_in_saving_VTK_files' must be greater than or equal to 1.");
   }
 }
 

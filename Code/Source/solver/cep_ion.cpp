@@ -11,12 +11,7 @@
 
 namespace cep_ion {
 
-/// @brief Modifies:
-/// \code {.cpp}
-///   cep_mod.Xion
-/// \endcode
-//
-void cep_init(Simulation *simulation) {
+void cep_init(Simulation *simulation, SolutionStates &solutions) {
   using namespace consts;
   auto &com_mod = simulation->com_mod;
 
@@ -107,6 +102,15 @@ void cep_init(Simulation *simulation) {
         }
       }
     }
+
+    // Copy the action potential into the solution vector, as cep_integ does at
+    // every time step. Without this the initial solution holds a zero potential
+    // while the ionic model rests at its own initial value.
+    auto &Yo = solutions.old.get_velocity();
+
+    for (int Ac = 0; Ac < tnNo; Ac++) {
+      Yo(eq.e, Ac) = cep_mod.Xion(0, Ac);
+    }
   }
 }
 
@@ -136,14 +140,12 @@ void cep_integ(Simulation *simulation, const int iEq, const int iDof,
   double time = com_mod.time;
 
   auto &cep_mod = simulation->cep_mod;
-  auto &cem = cep_mod.cem;
   auto &eq = com_mod.eq[iEq];
 
   auto &Xion = cep_mod.Xion;
   int nXion = cep_mod.nXion;
 
 #ifdef debug_cep_integ
-  dmsg << "cem.cpld: " << cem.cpld;
   dmsg << "time: " << time;
 #endif
 
@@ -219,10 +221,6 @@ void cep_integ(Simulation *simulation, const int iEq, const int iDof,
     all_fun::commu(com_mod, sF);
     all_fun::commu(com_mod, cep_mod.calcium);
 
-    if (cem.cpld) {
-      all_fun::commu(com_mod, sY);
-    }
-
     for (int Ac = 0; Ac < tnNo; Ac++) {
       if (!utils::is_zero(sA(Ac))) {
         Xion.set_col(Ac, sF.col(Ac) / sA(Ac));
@@ -295,7 +293,7 @@ void cep_integ_l(CepMod &cep_mod, cepModelType &cep, Vector<double> &X,
       cep.ionic_model, "ionic model was not constructed.");
 
   for (unsigned int i = 0; i < nt; ++i) {
-    const double t = t1 + i * dt;
+    const double t = t1 + i * cep.dt;
     const double Istim = cep.stimulus_value(t, x);
 
     cep.ionic_model->integ(cep.odes, cep.imyo, t, cep.dt, Istim, Ksac, X, Xg);

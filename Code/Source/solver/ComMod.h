@@ -22,7 +22,7 @@
 #include "SolutionStates.h"
 #include "Timer.h"
 #include "Vector.h"
-#include "active_stress.h"
+#include "ActiveStress.h"
 
 #include "DebugMsg.h"
 
@@ -387,7 +387,7 @@ class dmnType
 
     // General physical properties such as density, elastic modulus...
     // FIX davep double prop[maxNProp] ;
-    std::map<consts::PhysicalProperyType,double> prop;
+    std::map<consts::PhysicalPropertyType,double> prop;
     //double prop[consts::maxNProp];
 
     // Electrophysiology model
@@ -790,6 +790,10 @@ class cplBCType
 {
   public:
     cplBCType();
+
+    /// @brief Index of the equation that this condition is associated with.
+    unsigned int equationIndex = 0;
+
     /// @brief Is multi-domain active
     bool coupled = false;
 
@@ -823,6 +827,19 @@ class cplBCType
     /// @brief Implicit/Explicit/Semi-implicit schemes
     consts::CplBCType schm = consts::CplBCType::cplBC_NA;
     //int schm = cplBC_NA;
+
+    /// @brief Absolute floor on the flow-rate perturbation used to
+    /// finite-difference the coupled-BC tangent dP/dQ in
+    /// \c set_bc::calc_der_cpl_bc. This is a dimensional quantity, so it must
+    /// be set consistently with the unit system of the simulation.
+    double finite_difference_absolute_perturbation = 1.0e-7;
+
+    /// @brief Flow-rate perturbation used to finite-difference the coupled-BC
+    /// tangent dP/dQ in \c set_bc::calc_der_cpl_bc, relative to the RMS coupled
+    /// flow rate. The perturbation actually applied is
+    /// \c max(rms(Q)*finite_difference_relative_perturbation,
+    /// \c finite_difference_absolute_perturbation).
+    double finite_difference_relative_perturbation = 1.0e-5;
 
     /// @brief Path to the 0D code binary file
     std::string binPath;
@@ -1594,14 +1611,15 @@ class ComMod {
     /// @brief Whether to averaged results
     bool saveAve = false;
 
+    /// @brief Whether to save the domain ID to every VTK file rather than to
+    /// the first one only
+    bool alwaysSaveDomainID = false;
+
     /// @brief Whether to save to VTK files
     bool saveVTK = false;
 
     /// @brief Whether any file being saved
     bool savedOnce = false;
-
-    /// @brief Whether to use separator in output
-    bool sepOutput = false;
 
     /// @brief Whether start from beginning or from simulations
     bool stFileFlag = false;

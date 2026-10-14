@@ -38,8 +38,71 @@ namespace nn {
   void gnn(const int eNoN, const int nsd, const int insd, Array<double>& Nxi, Array<double>& x, Array<double>& Nx, 
       double& Jac, Array<double>& ks);
 
-  void gnnb(const ComMod& com_mod, const faceType& lFa, const int e, const int g, const int nsd, const int insd,
-      const int eNoNb, const Array<double>& Nx, Vector<double>& n, const SolutionStates& solutions, consts::MechanicalConfigurationType cfg=consts::MechanicalConfigurationType::reference);
+  /**
+   * @brief Return the area-weighted surface normal at a given element and Gauss
+   * point.
+   *
+   * Returns the outward normal at element 'e', Gauss point 'g' of face 'lFa',
+   * weighted by the surface Jacobian: Jac = norm(n) is the Jacobian of the
+   * mapping from the parent surface element to the reference/old/new
+   * configuration.
+   *
+   * For simulations involving structural displacement, this function allows
+   * computing the normal vector in any of the following configurations:
+   * - reference configuration (the mesh is not displaced);
+   * - current configuration (the mesh is displaced by the current displacement
+   *   field);
+   * - old configuration (the mesh is displaced by the displacement field from
+   *   previous time step).
+   *
+   * @param[in] com_mod The common module.
+   * @param[in] lFa The boundary face for which the normal vector is computed.
+   * @param[in] e The face-local index of the element for which the normal
+   *   vector is computed.
+   * @param[in] g The Gauss point index for which the normal vector is computed.
+   * @param[in] Nx The shape function derivatives at the Gauss point. Its shape
+   *   (insd x eNoNb) determines the surface's intrinsic dimension and the
+   *   number of nodes per face element.
+   * @param[in] solutions The solution states that the displacement fields are
+   *   extracted from.
+   * @param[in] cfg The configuration in which the normal vector is computed
+   *   (reference, old or current).
+   * @param[in] displacement_index The index of the displacement field in the
+   *   solution arrays. This should correspond to the start index of the
+   *   equation that solves for the displacement.
+   * @return The area-weighted outward normal vector.
+   */
+  Vector<double> gnnb(const ComMod &com_mod, const faceType &lFa, const int e,
+                      const int g, const Array<double> &Nx,
+                      const SolutionStates &solutions,
+                      consts::MechanicalConfigurationType cfg,
+                      const unsigned int displacement_index);
+
+  /**
+   * @brief Return the area-weighted surface normal at a given element and Gauss
+   * point.
+   *
+   * Returns the outward normal at element 'e', Gauss point 'g' of face 'lFa',
+   * weighted by the surface Jacobian: Jac = norm(n) is the Jacobian of the
+   * mapping from the parent surface element to the mesh.
+   *
+   * This is the overload to use in the general case. The other overload adds
+   * the ability to compute the normal in a displaced configuration, which is
+   * only relevant for simulations involving structural displacement.
+   *
+   * @param[in] com_mod The common module.
+   * @param[in] lFa The boundary face for which the normal vector is computed.
+   * @param[in] e The face-local index of the element for which the normal
+   *   vector is computed.
+   * @param[in] g The Gauss point index for which the normal vector is computed.
+   * @param[in] Nx The shape function derivatives at the Gauss point.
+   * @param[in] solutions The solution states that the displacement fields are
+   *   extracted from.
+   * @return The area-weighted outward normal vector.
+   */
+  Vector<double> gnnb(const ComMod &com_mod, const faceType &lFa, const int e,
+                      const int g, const Array<double> &Nx,
+                      const SolutionStates &solutions);
 
   void gnns(const int nsd, const int eNoN, const Array<double>& Nxi, Array<double>& xl, Vector<double>& nV, 
       Array<double>& gCov, Array<double>& gCnv);

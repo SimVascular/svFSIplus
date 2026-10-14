@@ -3,8 +3,12 @@
 
 #include "post.h"
 
+#include "ActiveStress.h"
+#include "Core/Exception.h"
 #include "FE/Common/FEException.h"
+#include "FE/Math/DenseLinearAlgebra.h"
 #include "all_fun.h"
+#include "darcy.h"
 #include "fluid.h"
 #include "fs.h"
 #include "initialize.h"
@@ -14,7 +18,10 @@
 #include "shells.h"
 #include "utils.h"
 #include "vtk_xml.h"
+#include <algorithm>
+#include <cmath>
 #include <math.h>
+#include <vector>
 
 namespace post {
 
@@ -77,7 +84,7 @@ void all_post(Simulation* simulation, Array<double>& res, const SolutionStates& 
     } else if (outGrp == OutputNameType::outGrp_J) {
       Array<double> tmpV(1,msh.nNo); 
       Vector<double> tmpVe(msh.nEl);
-      tpost(simulation, msh, 1, tmpV, tmpVe, solutions, iEq, outGrp);
+      tensor_post(simulation, msh, 1, tmpV, tmpVe, solutions, iEq, outGrp);
       res = 0.0;
       for (int a = 0; a < com_mod.msh[iM].nNo; a++) {
         int Ac = msh.gN(a);
@@ -87,7 +94,7 @@ void all_post(Simulation* simulation, Array<double>& res, const SolutionStates& 
      } else if (outGrp == OutputNameType::outGrp_mises) {
        Array<double> tmpV(1,msh.nNo); 
        Vector<double> tmpVe(msh.nEl);
-       tpost(simulation, msh, 1, tmpV, tmpVe, solutions, iEq, outGrp);
+       tensor_post(simulation, msh, 1, tmpV, tmpVe, solutions, iEq, outGrp);
        res = 0.0;
        for (int a = 0; a < com_mod.msh[iM].nNo; a++) {
          int Ac = msh.gN(a);
@@ -796,6 +803,65 @@ void fib_stretch(const ComMod& com_mod, const int iEq, const mshType& lM,
   }
 }
 
+/// @brief Compute active tension along fibers, sheets and sheet normals at
+/// every mesh node.
+//
+void active_tension(const ComMod& com_mod, const int iEq, const mshType& lM,
+    const Array<double>& lD, Vector<double>& res_f, Vector<double>& res_s,
+    Vector<double>& res_n)
+{
+  auto& eq = com_mod.eq[iEq];
+
+  Vector<double> fiber_stretch(lM.nNo);
+  if (lM.nFn != 0) {
+    fib_stretch(com_mod, iEq, lM, lD, fiber_stretch);
+  }
+
+  res_f = 0.0;
+  res_s = 0.0;
+  res_n = 0.0;
+
+  for (int a = 0; a < lM.nNo; a++) {
+    int Ac = lM.gN(a);
+
+    double Ta_f = 0.0;
+    double Ta_s = 0.0;
+    double Ta_n = 0.0;
+    unsigned int n_domains = 0;
+
+    for (auto& dmn : eq.dmn) {
+      // Domains whose equations do not allow for active stress (e.g. fluid
+      // domains) do not contribute to the average, but domains that do
+      // allow for active stress (e.g. struct) for which active stress is
+      // not enabled contribute a zero value to the average.
+      if (!supports_active_stress(dmn.phys))
+        continue;
+
+      // Only domains that node Ac actually belongs to contribute to its
+      // average. Note that if there is only one domain dmnId may not be
+      // populated, so we only check domain membership if eq.nDmn > 1.
+      if (eq.nDmn > 1 && !utils::btest(com_mod.dmnId(Ac), dmn.Id))
+        continue;
+
+      if (dmn.active_stress != nullptr) {
+        auto tension = dmn.active_stress->compute_tension(
+            dmn.active_stress->get_state(Ac), fiber_stretch[a]);
+        Ta_f += tension.fibers;
+        Ta_s += tension.sheets;
+        Ta_n += tension.sheet_normals;
+      }
+
+      n_domains++;
+    }
+
+    if (n_domains > 0) {
+      res_f[a] = Ta_f / n_domains;
+      res_s[a] = Ta_s / n_domains;
+      res_n[a] = Ta_n / n_domains;
+    }
+  }
+}
+
 /// @brief Compute fiber stretch rate dλ/dt via backward finite difference.
 //
 void fib_stretch_rate(const ComMod& com_mod, const int iEq, const mshType& lM, const SolutionStates& solutions, Vector<double>& res)
@@ -853,7 +919,7 @@ void post(Simulation* simulation, const mshType& lM, Array<double>& res, const S
   int nsd = com_mod.nsd;
 
   if ((outGrp == OutputNameType::outGrp_eFlx) && (com_mod.dmnId.size() == 0)) {
-    double rho = eq.dmn[0].prop[PhysicalProperyType::fluid_density];
+    double rho = eq.dmn[0].prop[PhysicalPropertyType::fluid_density];
     for (int a = 0; a < lM.nNo; a++) {
       int Ac = lM.gN(a);
       double p  = lY(nsd,Ac);
@@ -879,6 +945,13 @@ void post(Simulation* simulation, const mshType& lM, Array<double>& res, const S
   Array<double> Nx(nsd,eNoN); 
   Vector<double> N(eNoN);
 
+  // Linear-simplex flux is constant; lumped recovery is already exact.
+  const bool project_flux = outGrp == OutputNameType::outGrp_darcyFlux &&
+      lM.eType != ElementType::TRI3 && lM.eType != ElementType::TET4;
+  // DenseLinearAlgebra expects row-major matrices and multiple right-hand sides.
+  std::vector<double> mass(project_flux ? eNoN * eNoN : 0);
+  std::vector<double> flux_rhs(project_flux ? eNoN * nsd : 0);
+
   int insd = nsd;
   if (lM.lFib) {
     insd = 1;
@@ -889,6 +962,10 @@ void post(Simulation* simulation, const mshType& lM, Array<double>& res, const S
     if (cDmn == -1) {
       continue;
     } 
+    std::fill(mass.begin(), mass.end(), 0.0);
+    std::fill(flux_rhs.begin(), flux_rhs.end(), 0.0);
+    double element_volume = 0.0;
+
     if (lM.eType == ElementType::NRB) {
       // CALL NRBNNX(lM, e)
     }
@@ -960,7 +1037,7 @@ void post(Simulation* simulation, const mshType& lM, Array<double>& res, const S
       //  Energy flux calculation   
       //
       } else if (outGrp == OutputNameType::outGrp_eFlx) {
-        double rho = eq.dmn[cDmn].prop[PhysicalProperyType::fluid_density];
+        double rho = eq.dmn[cDmn].prop[PhysicalPropertyType::fluid_density];
         double p = 0.0;
         Vector<double> u(nsd);
         Vector<double> lRes(maxNSD);
@@ -980,7 +1057,7 @@ void post(Simulation* simulation, const mshType& lM, Array<double>& res, const S
       // Heat flux calculation   
       //
       } else if (outGrp == OutputNameType::outGrp_hFlx) {
-        double kappa = eq.dmn[cDmn].prop[PhysicalProperyType::conductivity];
+        double kappa = eq.dmn[cDmn].prop[PhysicalPropertyType::conductivity];
         int i = eq.s;
 
         if (eq.phys == EquationType::phys_heatF) {
@@ -1009,6 +1086,28 @@ void post(Simulation* simulation, const mshType& lM, Array<double>& res, const S
           for (int j = 0; j < nsd; j++) {
             lRes(j) = -kappa * q(j);
           }
+        }
+
+      // Darcy flux, derived from pressure:
+      // q = -(K/mu) grad(p).
+      } else if (outGrp == OutputNameType::outGrp_darcyFlux) {
+        const double permeability =
+            eq.dmn[cDmn].prop[PhysicalPropertyType::darcy_permeability];
+        const double viscosity =
+            eq.dmn[cDmn].prop[PhysicalPropertyType::darcy_fluid_viscosity];
+        const double mobility = permeability / viscosity;
+        const int equation_index = eq.s;
+
+        Vector<double> grad_p(nsd);
+
+        for (int a = 0; a < eNoN; a++) {
+          for (int j = 0; j < nsd; j++) {
+            grad_p(j) = grad_p(j) + Nx(j,a) * yl(equation_index,a);
+          }
+        }
+         
+        for (int j = 0; j < nsd; j++) {
+          lRes(j) = -mobility * grad_p(j);
         }
 
       // Strain tensor invariants calculation   
@@ -1075,12 +1174,48 @@ void post(Simulation* simulation, const mshType& lM, Array<double>& res, const S
         throw std::runtime_error("Error in the post() function.");
       }
 
-      // Mapping Tau into the nodes by assembling it into a local vector
-      for (int a = 0; a < eNoN; a++) {
-        int Ac = lM.IEN(a,e);
-        sA(Ac) = sA(Ac) + w*N(a);
-        for (int i = 0; i < maxNSD; i++) {
-          sF(i,Ac) = sF(i,Ac) + w*N(a)*lRes(i);
+      if (project_flux) {
+        // M_ab = integral(N_a N_b), B_ai = integral(N_a q_i).
+        // Consistent projection avoids zero lumped weights on affine nodes.
+        element_volume += w;
+        for (int a = 0; a < eNoN; ++a) {
+          const double weighted_shape = w * N(a);
+          for (int b = 0; b < eNoN; ++b) {
+            mass[a * eNoN + b] += weighted_shape * N(b);
+          }
+          for (int i = 0; i < nsd; ++i) {
+            flux_rhs[a * nsd + i] += weighted_shape * lRes(i);
+          }
+        }
+      } else {
+        // Mapping Tau into the nodes by assembling it into a local vector
+        for (int a = 0; a < eNoN; a++) {
+          int Ac = lM.IEN(a,e);
+          sA(Ac) = sA(Ac) + w*N(a);
+          for (int i = 0; i < maxNSD; i++) {
+            sF(i,Ac) = sF(i,Ac) + w*N(a)*lRes(i);
+          }
+        }
+      }
+    }
+
+    if (project_flux) {
+      svmp::check<svmp::InternalErrorException>(
+          std::isfinite(element_volume) && element_volume > 0.0,
+          "Darcy flux projection requires a positive element volume.");
+
+      // Solve (M / volume) Q = B for volume-weighted flux directly.
+      // Normalizing M keeps the pivot tolerance independent of element size.
+      for (double& value : mass) {
+        value /= element_volume;
+      }
+      svmp::FE::math::factor_dense_matrix(mass, eNoN, "Darcy flux mass matrix").solve_in_place(flux_rhs, nsd);
+
+      for (int a = 0; a < eNoN; ++a) {
+        const int Ac = lM.IEN(a,e);
+        sA(Ac) += element_volume;
+        for (int i = 0; i < nsd; ++i) {
+          sF(i,Ac) += flux_rhs[a * nsd + i];
         }
       }
     }
@@ -1091,6 +1226,11 @@ void post(Simulation* simulation, const mshType& lM, Array<double>& res, const S
 
   for (int a = 0; a < lM.nNo; a++) {
     int Ac = lM.gN(a);
+    if (project_flux) {
+      svmp::check<svmp::InternalErrorException>(
+          std::isfinite(sA(Ac)) && sA(Ac) > 0.0,
+          "Darcy flux projection requires a positive nodal volume weight.");
+    }
     for (int i = 0; i < maxNSD; i++) {
       res(i,a) = sF(i,Ac) / sA(Ac);
     }
@@ -1260,8 +1400,8 @@ void shl_post(Simulation* simulation, const mshType& lM, const int m, Array<doub
     //if (lM.eType .EQ. eType_NRB) CALL NRBNNX(lM, e)
 
     // Get shell properties
-    double nu = eq.dmn[cDmn].prop.at(PhysicalProperyType::poisson_ratio);
-    double ht = eq.dmn[cDmn].prop.at(PhysicalProperyType::shell_thickness);
+    double nu = eq.dmn[cDmn].prop.at(PhysicalPropertyType::poisson_ratio);
+    double ht = eq.dmn[cDmn].prop.at(PhysicalPropertyType::shell_thickness);
 
     // Check for incompressibility
     //
@@ -1616,11 +1756,16 @@ void shl_post(Simulation* simulation, const mshType& lM, const int m, Array<doub
 }
 
 //-------
-// tpost
+// tensor_post
 //-------
 // Routine for post processing stress tensor
 //
-void tpost(Simulation* simulation, const mshType& lM, const int m, Array<double>& res, Vector<double>& resE,
+namespace {
+
+/// @brief Implementation of tensor_post templated on nsd
+///
+template <int nsd>
+void tensor_post_impl(Simulation* simulation, const mshType& lM, const int m, Array<double>& res, Vector<double>& resE,
     const SolutionStates& solutions, const int iEq, consts::OutputNameType outGrp)
 {
   using namespace consts;
@@ -1634,8 +1779,8 @@ void tpost(Simulation* simulation, const mshType& lM, const int m, Array<double>
   const auto& lD = solutions.current.get_displacement();
   auto& eq = com_mod.eq[iEq];
 
-  #define n_debug_tpost
-  #ifdef debug_tpost
+  #define n_debug_tensor_post
+  #ifdef debug_tensor_post
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
   dmsg << "outGrp: " << outGrp;
@@ -1654,7 +1799,7 @@ void tpost(Simulation* simulation, const mshType& lM, const int m, Array<double>
     nFn = 1;
   }
 
-  #ifdef debug_tpost
+  #ifdef debug_tensor_post
   dmsg << "i: " << i;
   dmsg << "j: " << j;
   dmsg << "k: " << k;
@@ -1681,18 +1826,17 @@ void tpost(Simulation* simulation, const mshType& lM, const int m, Array<double>
     fs.nG    = lM.nG;
   }
 
-  #ifdef debug_tpost
+  #ifdef debug_tensor_post
   dmsg << "fs.eType: " << fs.eType;
   dmsg << "fs.eNoN: " << fs.eNoN;
   dmsg << "fs.nG: " << fs.nG;
   #endif
 
   int tnNo = com_mod.tnNo;
-  int nsd = com_mod.nsd;
   int tDof = com_mod.tDof;
   int nsymd = com_mod.nsymd;
 
-  #ifdef debug_tpost
+  #ifdef debug_tensor_post
   dmsg;
   dmsg << "tnNo: " << tnNo;
   dmsg << "tDof: " << tDof;
@@ -1711,13 +1855,16 @@ void tpost(Simulation* simulation, const mshType& lM, const int m, Array<double>
   Vector<double> resl(m); 
   Array<double> Nx(nsd,fs.eNoN); 
   Vector<double> N(fs.eNoN);
+  Vector<int> element_nodes(fs.eNoN);
+  ActiveStress::Evaluator active_stress_evaluator;
 
   int insd = nsd;
   if (lM.lFib) {
     insd = 1;
   }
 
-  Array<double> Im(nsd, nsd);
+  Array<double> ksix(nsd, nsd);
+  const Matrix<nsd> Im = Matrix<nsd>::Identity();
   double Je = 0.0; 
 
   for (int e = 0; e < lM.nEl; e++) {
@@ -1734,8 +1881,8 @@ void tpost(Simulation* simulation, const mshType& lM, const int m, Array<double>
     double w = 0.0; 
 
     if (cPhys == EquationType::phys_lElas) {
-      elM = eq.dmn[cDmn].prop[PhysicalProperyType::elasticity_modulus];
-      nu = eq.dmn[cDmn].prop[PhysicalProperyType::poisson_ratio];
+      elM = eq.dmn[cDmn].prop[PhysicalPropertyType::elasticity_modulus];
+      nu = eq.dmn[cDmn].prop[PhysicalPropertyType::poisson_ratio];
       lambda = elM*nu / (1.0 + nu) / (1.0 - 2.0*nu);
       mu = 0.5*elM / (1.0 + nu);
     }
@@ -1759,6 +1906,7 @@ void tpost(Simulation* simulation, const mshType& lM, const int m, Array<double>
 
     for (int a = 0; a < fs.eNoN; a++) {
       int Ac = lM.IEN(a,e);
+      element_nodes(a) = Ac;
       for (int i = 0; i < nsd; i++) {
         xl(i,a) = com_mod.x(i,Ac);
       }
@@ -1768,29 +1916,37 @@ void tpost(Simulation* simulation, const mshType& lM, const int m, Array<double>
       }
     }
 
+    if (eq.dmn[cDmn].active_stress != nullptr) {
+      active_stress_evaluator.update(*eq.dmn[cDmn].active_stress, element_nodes);
+    } else {
+      active_stress_evaluator.clear();
+    }
+
     Je = 0.0;
     double Jac = 0.0;
 
     for (int g = 0; g < fs.nG; g++) {
       if (g == 0  ||  !fs.lShpF) {
         auto Nx_g = fs.Nx.slice(g);
-        nn::gnn(fs.eNoN, nsd, insd, Nx_g, xl, Nx, Jac, Im);
+        nn::gnn(fs.eNoN, nsd, insd, Nx_g, xl, Nx, Jac, ksix);
       }
 
       w  = fs.w(g) * Jac;
       N  = fs.N.col(g);
       Je = Je + w;
 
-      auto Im = mat_fun::mat_id(nsd); 
-      auto F = deformation_gradient(Nx, dl, nsd, fs.eNoN, i);
+      const auto Nxm  = eigen_view<nsd>(Nx);          // grad(N_a)
+      const auto disp = eigen_view_rows<nsd>(dl, i);  // nodal displacements
 
-      double detF = mat_fun::mat_det(F, nsd);
+      // Deformation gradient: F = I + Grad(u)
+      const Matrix<nsd> F = Im + disp * Nxm.transpose();
+      const double detF = F.determinant();
 
       Vector<double> ed(com_mod.nsymd);
 
       if (cPhys == EquationType::phys_lElas) {
         for (int a = 0; a < fs.eNoN; a++) {
-          if (nsd ==  3) {
+          if (nsd == 3) {
             ed(0) = ed(0) + Nx(0,a)*dl(i,a);
             ed(1) = ed(1) + Nx(1,a)*dl(j,a);
             ed(2) = ed(2) + Nx(2,a)*dl(k,a);
@@ -1800,7 +1956,7 @@ void tpost(Simulation* simulation, const mshType& lM, const int m, Array<double>
           } else { 
             ed(0) = ed(0) + Nx(0,a)*dl(i,a);
             ed(1) = ed(1) + Nx(1,a)*dl(j,a);
-            ed(2) = ed(2) + Nx(1,a)*dl(i,a) + Nx(1,a)*dl(j,a);
+            ed(2) = ed(2) + Nx(1,a)*dl(i,a) + Nx(0,a)*dl(j,a);
           }
         }
       }
@@ -1838,11 +1994,11 @@ void tpost(Simulation* simulation, const mshType& lM, const int m, Array<double>
           if (cPhys == EquationType::phys_lElas) {
             resl = ed;
           } else { 
-            auto C = mat_fun::mat_mul(mat_fun::transpose(F), F);
-            auto Eg = 0.5 * (C - Im);
+            const Matrix<nsd> C = F.transpose() * F;
+            const Matrix<nsd> Eg = 0.5 * (C - Im);
 
             // resl is used to remap Eg
-            if (nsd  ==  3) {
+            if (nsd == 3) {
               resl(0) = Eg(0,0);
               resl(1) = Eg(1,1);
               resl(2) = Eg(2,2);
@@ -1860,23 +2016,13 @@ void tpost(Simulation* simulation, const mshType& lM, const int m, Array<double>
         case OutputNameType::outGrp_stress:
         case OutputNameType::outGrp_cauchy: 
         case OutputNameType::outGrp_mises:
-          Array<double> sigma(nsd,nsd);
-          Array<double> S(nsd,nsd);
+          Matrix<nsd> sigma = Matrix<nsd>::Zero();
+          Matrix<nsd> S = Matrix<nsd>::Zero();
 
-          // Interpolate the active stress from active stress models to the
-          // current Gauss point so that the active contribution is included in
-          // the reported stress, consistently with the residual assembly.
-          double ya_g_f = 0.0;
-          double ya_g_s = 0.0;
-          double ya_g_n = 0.0;
-          if (eq.dmn[cDmn].active_stress != nullptr) {
-            for (int a = 0; a < fs.eNoN; a++) {
-              int Ac = lM.IEN(a,e);
-              ya_g_f = ya_g_f + N(a)*cep_mod.cem.Ya_f[Ac];
-              ya_g_s = ya_g_s + N(a)*cep_mod.cem.Ya_s[Ac];
-              ya_g_n = ya_g_n + N(a)*cep_mod.cem.Ya_n[Ac];
-            }
-          }
+          // Evaluate the active stress at the current Gauss point, the same
+          // way the residual assembly does, so that the active contribution to
+          // the reported stress matches the one the solver used.
+          const auto Ta = active_stress_evaluator.evaluate<nsd>(eigen_view(N), F, eigen_view<nsd>(fN));
 
           if (cPhys == EquationType::phys_lElas) {
             if (nsd == 3) {
@@ -1903,40 +2049,36 @@ void tpost(Simulation* simulation, const mshType& lM, const int m, Array<double>
           } else if (cPhys == EquationType::phys_ustruct) {
             double p = 0.0;
             for (int a = 0; a < fs.eNoN; a++) {
-              p = p + N(a)*yl(k+1,a);
+              p = p + N(a)*yl(i+nsd,a);
             }
             p = (-p) * detF;
 
-            Array<double> Dm(nsymd,nsymd);
+            Matrix<3*(nsd-1)> Dm;
             double Ja;
-
-            mat_models::compute_pk2cc(com_mod, cep_mod, eq.dmn[cDmn], F, nFn,
-                                      fN, ya_g_f, ya_g_s, ya_g_n, S, Dm, Ja);
+            mat_models::compute_pk2cc<nsd>(com_mod, cep_mod, eq.dmn[cDmn], F, nFn,
+                eigen_view<nsd>(fN), Ta, S, Dm, Ja);
 
             // TODO: Add viscous stress
 
             // Add pressure
-            auto C = mat_mul(transpose(F), F);
-            S = S + p*mat_inv(C, nsd);
+            const Matrix<nsd> C = F.transpose() * F;
+            S += p * C.inverse();
 
-            auto P1 = mat_mul(F, S);
-            sigma = mat_mul(P1, transpose(F));
+            sigma = F * S * F.transpose();
 
             if (!utils::is_zero(detF)) {
               sigma = sigma / detF;
             }
 
           } else if (cPhys == EquationType::phys_struct) {
-            Array<double> Dm(nsymd,nsymd);
+            Matrix<3*(nsd-1)> Dm;
             double Ja;
-
-            mat_models::compute_pk2cc(com_mod, cep_mod, eq.dmn[cDmn], F, nFn,
-                                      fN, ya_g_f, ya_g_s, ya_g_n, S, Dm, Ja);
+            mat_models::compute_pk2cc<nsd>(com_mod, cep_mod, eq.dmn[cDmn], F, nFn,
+                eigen_view<nsd>(fN), Ta, S, Dm, Ja);
 
             // TODO: Add viscous stress
 
-            auto P1 = mat_mul(F, S);
-            sigma = mat_mul(P1, transpose(F));
+            sigma = F * S * F.transpose();
 
             if (!utils::is_zero(detF)) {
               sigma = sigma / detF;
@@ -1975,11 +2117,9 @@ void tpost(Simulation* simulation, const mshType& lM, const int m, Array<double>
 
           // Von Mises stress
           } else if (outGrp == OutputNameType::outGrp_mises) {
-            double trS = mat_trace(sigma, nsd) / static_cast<double>(nsd);
-            for (int l = 0; l < nsd; l++) {
-              sigma(l,l) = sigma(l,l) - trS;
-            }
-            double vmises = sqrt(1.5 * mat_ddot(sigma, sigma, nsd));
+            const Matrix<nsd> s = sigma - (sigma.trace() / nsd) * Im;
+            const double vmises = sqrt(1.5 * s.squaredNorm());
+
             resl(0) = vmises;
             sE(e) = sE(e) + w*vmises;
           }
@@ -2059,7 +2199,7 @@ void tpost(Simulation* simulation, const mshType& lM, const int m, Array<double>
       for (int g = 0; g < fs.nG; g++) {
         if (g == 0 || !fs.lShpF) {
           auto fsNx_g = fs.Nx.slice(g);
-          nn::gnn(fs.eNoN, nsd, insd, fsNx_g, xl, Nx, Jac, Im);
+          nn::gnn(fs.eNoN, nsd, insd, fsNx_g, xl, Nx, Jac, ksix);
         }
       Je = Je + fs.w(g)*Jac;
       }
@@ -2099,6 +2239,20 @@ void tpost(Simulation* simulation, const mshType& lM, const int m, Array<double>
         }
       }
     }
+  }
+}
+
+}  // namespace
+
+/// @brief Post-processing routine for stress tensors
+///
+void tensor_post(Simulation* simulation, const mshType& lM, const int m, Array<double>& res, Vector<double>& resE,
+    const SolutionStates& solutions, const int iEq, consts::OutputNameType outGrp)
+{
+  if (simulation->com_mod.nsd == 3) {
+    tensor_post_impl<3>(simulation, lM, m, res, resE, solutions, iEq, outGrp);
+  } else if (simulation->com_mod.nsd == 2) {
+    tensor_post_impl<2>(simulation, lM, m, res, resE, solutions, iEq, outGrp);
   }
 }
 

@@ -37,10 +37,16 @@ public:
    *
    * Performs the complete Newton iteration sequence including initialization,
    * assembly, boundary condition application, linear solve, and convergence check.
+   * One line is written to the standard output and to the history file for every
+   * Newton iteration, including the converged one.
+   *
+   * @param[in] save_results True if the results of this time step are written to a
+   *   VTU file, which flags the converged iteration with an 's' in the standard
+   *   output.
    *
    * @return True if all equations converged, false otherwise
    */
-  bool step();
+  bool step(bool save_results = false);
 
   /**
    * @brief Perform predictor step for next time step
@@ -160,6 +166,51 @@ private:
    * @param eq Reference to the equation being solved
    */
   void update_residual_arrays(eqType& eq);
+
+  /**
+   * @brief Compute the fiber stretch and fiber stretch rate at every node.
+   *
+   * The stretch is computed from the current displacement, so that calling this
+   * function within the nonlinear iterations yields the stretch of the current
+   * displacement iterate. Both vectors are left empty if no equation needs
+   * them, and are filled with the neutral values (1 for the stretch, 0 for the
+   * stretch rate) if they are needed but no equation solves for the
+   * displacement.
+   *
+   * @param[out] fiber_stretch Fiber stretch at every node.
+   * @param[out] fiber_stretch_rate Fiber stretch rate at every node.
+   */
+  void compute_fiber_stretch(Vector<double>& fiber_stretch,
+                             Vector<double>& fiber_stretch_rate);
+
+  /**
+   * @brief Whether any domain uses an active stress model with implicit state
+   * coupling, i.e. one whose state is updated within the nonlinear iterations.
+   *
+   * @return True if at least one such domain exists, false otherwise.
+   */
+  bool has_implicit_active_stress_state_coupling() const;
+
+  /**
+   * @brief Advance active stress models of an equation to the next time step.
+   */
+  void time_advance_active_stress(eqType &eq);
+
+  /**
+   * @brief Update the active stress models of an equation.
+   *
+   * @param[in,out] eq Equation whose domains carry the active stress models.
+   * @param[in] fiber_stretch Fiber stretch at every node.
+   * @param[in] fiber_stretch_rate Fiber stretch rate at every node.
+   * @param[in] within_nonlinear_iterations True when called within the
+   *   nonlinear iterations, in which case only the models with implicit
+   *   coupling are advanced again, from the state stored at the beginning of
+   *   the time step. False when called once per time step from the predictor,
+   *   in which case all models are advanced from that state.
+   */
+  void update_active_stress(eqType &eq, const Vector<double> &fiber_stretch,
+                            const Vector<double> &fiber_stretch_rate,
+                            const bool within_nonlinear_iterations);
 
   /**
    * @brief Initiator function for generalized-alpha method (initiator)
