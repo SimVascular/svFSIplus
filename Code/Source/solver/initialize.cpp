@@ -983,16 +983,14 @@ void zero_init(Simulation* simulation, SolutionStates& solutions)
       Yo(nsd,a) = com_mod.Pinit(a);
     }
 
-  } else if (com_mod.have_initial_pressure_scalar) {
+  } else if (com_mod.have_initial_homogeneous_pressure) {
     #ifdef debug_zero_init
-    dmsg << "Initialize Yo to scalar initial pressure from solver.xml";
+    dmsg << "Initialize Yo to homogeneous initial pressure from solver.xml";
     #endif
     for (int a = 0; a < com_mod.tnNo; a++) {
-      Yo(nsd,a) = com_mod.initial_pressure_scalar;
+      Yo(nsd,a) = com_mod.initial_homogeneous_pressure;
     }
 
-    std::cout << "Initialize 3D pressure field to scalar value: "
-              << com_mod.initial_pressure_scalar << std::endl;
   }
 
   if (com_mod.Dinit.size() != 0) {

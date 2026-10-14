@@ -10,6 +10,7 @@
 #include "svZeroD_interface/LPNSolverInterface.h"
 #include "ComMod.h"
 #include "utils.h"
+#include "Core/Exception.h"
 
 #include <map>
 #include <algorithm>
@@ -362,16 +363,12 @@ void init_svZeroD(ComMod& com_mod, const CmMod& cm_mod,
 
   for (int s = 0; s < numCoupledSrfs; ++s) {
     bcType* bc = nullptr;
-    if (!nth_coupled_bc(com_mod, s, &bc)) {
-      throw std::runtime_error(
-          "ERROR: [init_svZeroD] Internal error resolving Coupled BC "
-          "for initialization history.");
-    }
+    svmp::check<svmp::InternalErrorException>(
+        nth_coupled_bc(com_mod, s, &bc),
+        "Could not resolve Coupled BC for initialization history.");
 
-    // For cap coupling in parallel, flow integration requires all ranks.
-    if (cm.seq() || !bc->coupled_bc.has_cap()) {
-      bc->coupled_bc.compute_flowrates(com_mod, cm_mod, solutions);
-    }
+    // Compute initial face flow on all ranks, including collective cap integration.
+    bc->coupled_bc.compute_flowrates(com_mod, cm_mod, solutions);
 
     bc->coupled_bc.compute_pressures(com_mod, cm_mod, solutions);
 

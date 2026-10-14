@@ -1664,8 +1664,8 @@ class ComMod {
     /// @brief Whether to use precomputed state-variable solutions
     bool usePrecomp = false;
 
-    /// @brief Whether a scalar initial pressure is provided in solver.xml
-    bool have_initial_pressure_scalar = false;
+    /// @brief Whether a spatially uniform initial pressure is provided in solver.xml
+    bool have_initial_homogeneous_pressure = false;
 
     //----- int members -----//
 
@@ -1751,8 +1751,8 @@ class ComMod {
     /// @brief Time
     double time = 0.0;
 
-    /// @brief Scalar pressure used to initialize the 3D pressure field
-    double initial_pressure_scalar = 0.0;
+    /// @brief Spatially uniform initial pressure used to initialize the 3D pressure field
+    double initial_homogeneous_pressure = 0.0;
 
     //----- string members -----//
 
