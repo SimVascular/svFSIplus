@@ -174,8 +174,8 @@ endif()
 add_subdirectory(Core)
 add_subdirectory(FE/Common)
 add_subdirectory(FE/Math)
-add_subdirectory(FE/Basis)
 add_subdirectory(FE/Quadrature)
+add_subdirectory(FE/Basis)
 
 set(SVMP_ARCHITECTURE_TARGETS
   svmp_core
