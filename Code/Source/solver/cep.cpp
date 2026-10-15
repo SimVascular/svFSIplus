@@ -86,7 +86,7 @@ void cep_1d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, con
 // 
 void cep_2d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, const double w,
     const Vector<double>& N, const Array<double>& Nx, const Array<double>& al, const Array<double>& yl,
-    const Array<double>& dl, const Array<double>& fN, Array<double>& lR, Array3<double>& lK)
+    const Array<double>& dl, const Array<double>& fibers, Array<double>& lR, Array3<double>& lK)
 {
   #define n_debug_cep_2d 
   #ifdef debug_cep_2d 
@@ -139,7 +139,7 @@ void cep_2d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, con
   D = 0.0;
   D(0, 0) = Diso;
   D(1, 1) = Diso;
-  fl = fN;
+  fl = fibers;
 
   for (int i = 0; i < nFn; i++) {
     D(0, 0) = D(0, 0) + Dani(i) * fl(0, i) * fl(0, i);
@@ -182,7 +182,7 @@ void cep_2d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, con
 // 
 void cep_3d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, const double w,
     const Vector<double>& N, const Array<double>& Nx, const Array<double>& al, const Array<double>& yl,
-    const Array<double>& dl, const Array<double>& fN, Array<double>& lR, Array3<double>& lK)
+    const Array<double>& dl, const Array<double>& fibers, Array<double>& lR, Array3<double>& lK)
 {
   #define n_debug_cep_3d 
   #ifdef debug_cep_3d 
@@ -236,7 +236,7 @@ void cep_3d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, con
   D(0, 0) = Diso;
   D(1, 1) = Diso;
   D(2, 2) = Diso;
-  fl = fN;
+  fl = fibers;
 
   // Compute anisotropic components of diffusion tensor
   //
@@ -324,8 +324,8 @@ void construct_cep(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const So
 
   // CEP: dof = 1
   Vector<int> ptr(eNoN); 
-  Array<double> xl(nsd,eNoN), al(tDof,eNoN), yl(tDof,eNoN), dl(tDof,eNoN), 
-      fN(nsd,nFn), Nx(insd,eNoN), lR(dof,eNoN);
+  Array<double> xl(nsd,eNoN), al(tDof,eNoN), yl(tDof,eNoN), dl(tDof,eNoN),
+      default_fibers(nsd,nFn), Nx(insd,eNoN), lR(dof,eNoN);
   Array3<double> lK(dof*dof,eNoN,eNoN);
   Vector<double>  N(eNoN); 
   
@@ -337,6 +337,7 @@ void construct_cep(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const So
   double z_coords;
 
   pseudo_ECG_proc = 0.0;
+  default_fibers = 0.0;
 
   // Loop over all elements of mesh
   for (int e = 0; e < lM.nEl; e++) {
@@ -350,8 +351,6 @@ void construct_cep(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const So
     //if (lM.eType .EQ. eType_NRB) CALL NRBNNX(lM, e)
 
     // Create local copies
-    fN = 0.0;
-
     for (int a = 0; a < eNoN; a++) {
       int Ac = lM.IEN(a,e);
       ptr(a) = Ac;
@@ -374,13 +373,9 @@ void construct_cep(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const So
     Array<double> ksix(nsd,nsd);
 
     for (int g = 0; g < lM.nG; g++) {
-      if (lM.fibers.has_fibers()) {
-        for (int iFn = 0; iFn < nFn; ++iFn) {
-          for (int i = 0; i < nsd; ++i) {
-            fN(i, iFn) = lM.fibers.data()(i + nsd * iFn, g, e);
-          }
-        }
-      }
+      const auto fibers = lM.fibers.has_fibers()
+        ? lM.fibers.get_quadrature_fibers(nsd, g, e)
+        : Array<double>(nsd, nFn, default_fibers.data());
 
       if (g == 0 || !lM.lShpF) {
         auto Nx_g = lM.Nx.slice(g);
@@ -404,10 +399,10 @@ void construct_cep(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const So
       #endif
 
       if (insd == 3) {
-        cep_3d(com_mod, cep_mod, eNoN, nFn, w, N, Nx, al, yl, dl, fN, lR, lK);
+        cep_3d(com_mod, cep_mod, eNoN, nFn, w, N, Nx, al, yl, dl, fibers, lR, lK);
 
       } else if (insd == 2) {
-        cep_2d(com_mod, cep_mod, eNoN, nFn, w, N, Nx, al, yl, dl, fN, lR, lK);
+        cep_2d(com_mod, cep_mod, eNoN, nFn, w, N, Nx, al, yl, dl, fibers, lR, lK);
 
       } else if (insd == 1) {
         cep_1d(com_mod, cep_mod, eNoN, nFn, w, N, Nx, al, yl, lR, lK);

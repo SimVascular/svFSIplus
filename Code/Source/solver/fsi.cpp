@@ -18,6 +18,7 @@
 #include <array>
 #include <iomanip>
 #include <math.h>
+#include <optional>
 
 namespace fsi {
 
@@ -40,6 +41,7 @@ void construct_fsi(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const So
   int eNoN = lM.eNoN;
   int nFn  = lM.fibers.nfibers;
   if (nFn == 0) nFn = 1;
+  const bool mesh_has_fibers = lM.fibers.has_fibers();
 
   bool  vmsStab = false;
   if (lM.nFs == 1) {
@@ -66,8 +68,8 @@ void construct_fsi(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const So
 
   Vector<int> ptr(eNoN); 
   Array3<double> lK(dof*dof,eNoN,eNoN), lKd(dof*nsd,eNoN,eNoN);
-  Array<double> xl(nsd,eNoN), al(tDof,eNoN), yl(tDof,eNoN), dl(tDof,eNoN), bfl(nsd,eNoN), 
-      fN(nsd,nFn), pS0l(nsymd,eNoN), lR(dof,eNoN);
+  Array<double> xl(nsd,eNoN), al(tDof,eNoN), yl(tDof,eNoN), dl(tDof,eNoN), bfl(nsd,eNoN),
+      pS0l(nsymd,eNoN), lR(dof,eNoN);
   Vector<double> pSl(nsymd);
   ActiveStress::Evaluator active_stress_evaluator;
 
@@ -96,7 +98,6 @@ void construct_fsi(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const So
     //if (lM.eType == eType_NRB) CALL NRBNNX(lM, e)
 
     // Create local copies
-    fN  = 0.0;
     pS0l = 0.0;
 
     for (int a = 0; a < eNoN; a++) {
@@ -168,13 +169,16 @@ void construct_fsi(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const So
     }
 
     for (int g = 0; g < fs_1[0].nG; g++) {
-      if (lM.fibers.has_fibers()) {
-        for (int iFn = 0; iFn < nFn; ++iFn) {
-          for (int i = 0; i < nsd; ++i) {
-            fN(i, iFn) = lM.fibers.data()(i + nsd * iFn, g, e);
-          }
-        }
+      Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> default_fibers;
+      const double* fiber_data = nullptr;
+      if (mesh_has_fibers) {
+        fiber_data = lM.fibers.get_eigen_fibers(nsd, g, e).data();
+      } else {
+        default_fibers.setZero(nsd, nFn);
+        fiber_data = default_fibers.data();
       }
+      const Eigen::Map<const Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>> fibers(
+          fiber_data, nsd, nFn);
 
       if (g == 0 || !fs_1[1].lShpF) {
         auto Nx = fs_1[1].Nx.rslice(g);
@@ -221,7 +225,7 @@ void construct_fsi(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const So
           case Equation_struct: {
             auto N0 = fs_1[0].N.col(g);
             struct_ns::struct_3d(com_mod, cep_mod, fs_1[0].eNoN, nFn, w, N0,
-                                 Nwx, al, yl, dl, bfl, fN, pS0l, pSl,
+                                 Nwx, al, yl, dl, bfl, fibers, pS0l, pSl,
                                  active_stress_evaluator, lR, lK, recompute_visc);
           } break;
           case Equation_lElas:
@@ -229,14 +233,14 @@ void construct_fsi(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const So
             //CALL LELAS3D(fs(1).eNoN, w, fs(1).N(:,g), Nwx, al, dl, bfl, pS0l, pSl, lR, lK)
           break;
 
-          case Equation_ustruct:
+          case Equation_ustruct: {
             auto N0 = fs_1[0].N.col(g);
             auto N1 = fs_1[1].N.col(g);
             ustruct::ustruct_3d_m(com_mod, cep_mod, vmsStab, fs_1[0].eNoN,
                                   fs_1[1].eNoN, nFn, w, Jac, N0, N1, Nwx, al,
-                                  yl, dl, bfl, fN, active_stress_evaluator, lR,
+                                  yl, dl, bfl, fibers, active_stress_evaluator, lR,
                                   lK, lKd, recompute_visc);
-            break;
+          } break;
           }
 
       } else if (nsd == 2) {
@@ -257,13 +261,13 @@ void construct_fsi(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const So
           case Equation_struct: {
             auto N0 = fs_1[0].N.col(g);
             struct_ns::struct_2d(com_mod, cep_mod, fs_1[0].eNoN, nFn, w, N0,
-                                 Nwx, al, yl, dl, bfl, fN, pS0l, pSl,
+                                 Nwx, al, yl, dl, bfl, fibers, pS0l, pSl,
                                  active_stress_evaluator, lR, lK, recompute_visc);
           } break;
 
           case Equation_ustruct:
             throw std::runtime_error("[construct_fsi] USTRUCT2D_M not implemented");
-            //CALL USTRUCT2D_M(vmsStab, fs(1).eNoN, fs(2).eNoN, nFn, w, Jac, fs(1).N(:,g), fs(2).N(:,g), Nwx, al, yl, dl, bfl, fN, ya_l, lR, lK, lKd)
+            //CALL USTRUCT2D_M(vmsStab, fs(1).eNoN, fs(2).eNoN, nFn, w, Jac, fs(1).N(:,g), fs(2).N(:,g), Nwx, al, yl, dl, bfl, fibers, ya_l, lR, lK, lKd)
           break;
         }
       }

@@ -6,7 +6,8 @@
 
 #include "Array.h"
 #include "Array3.h"
-#include "Vector.h"
+
+#include "eigen3/Eigen/Core"
 
 class ComMod;
 class CmMod;
@@ -18,7 +19,7 @@ class mshType;
 class Fibers {
   public:
 
-    // Number of fiber directions.
+    // Number of fiber directions provided as input.
     int nfibers = 0;
 
     // Reads fiber directions from file paths or constant vectors.
@@ -31,31 +32,24 @@ class Fibers {
     // Clears the fiber directions.
     void clear();
 
-    // Returns the fiber directions at the quadrature points. The array layout
-    // is (number_of_fibers * spatial_dimension, number_of_quadrature_points,
-    // number_of_elements).
-    const Array3<double>& data() const { return quadrature_fibers; }
-    Array3<double>& data() { return quadrature_fibers; }
+    /// Returns an Array view of the fiber directions for a quadrature point
+    /// and element. Explicit directions are the single column of the input
+    /// array, cell directions are the requested cell column, and point
+    /// directions are their interpolated quadrature-point value. The view
+    /// shares this object's storage and must not outlive it.
+    Array<double> get_quadrature_fibers(int nsd, int g, int e) const;
 
-    // Returns the normalized fiber directions read from the input.
-    const Array<double>& input_data() const { return input_fibers; }
+    /// Returns a read-only Eigen view of get_quadrature_fibers().
+    Eigen::Map<const Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>>
+    get_eigen_fibers(int nsd, int g, int e) const;
 
     // Returns true if there are fiber directions.
-    bool has_fibers() const { return quadrature_fibers.size() != 0; }
-
-    /// Interpolates one nodal fiber direction to a quadrature point.
-    ///
-    /// The nodal fibers are the columns of `nodal_fibers`, and
-    /// `shape_functions` contains their values at the quadrature point. The
-    /// dyads are interpolated before the principal direction is recovered, so
-    /// opposite representations of the same fiber direction do not cancel.
-    static Vector<double> interpolate_dyadic(
-      const Array<double>& nodal_fibers,
-      const Vector<double>& shape_functions);
-
+    bool has_fibers() const { return nfibers != 0; }
 
   protected:
-    // Input fibers array (either nodal or cell-based).
+    // Fiber directions read from the input. The column count depends on the
+    // data location: one column for explicit directions, one column per cell
+    // for cell data, and one column per point for point data.
     Array<double> input_fibers;
 
     // Fiber directions at the quadrature points.
@@ -81,8 +75,19 @@ class Fibers {
     // Reads constant fiber directions as specified in the input file.
     void read_directions(const MeshParameters& mesh_parameters, int nsd);
 
-    // Populates the quadrature-point fibers from the input fibers.
+    // Interpolates point fibers to quadrature points and orthonormalizes them.
     void populate_quadrature_fibers(const mshType& mesh, int nsd);
+
+    // Orthonormalizes multiple fiber directions at every quadrature point and
+    // completes them to an nsd-dimensional basis. A single direction is left
+    // unchanged.
+    void orthonormalize_quadrature_fibers(int nsd);
+
+    // Orthonormalizes explicit or cell-based fibers in place.
+    void orthonormalize_fibers(Array<double>& fibers, int nsd);
+
+    // Interpolates nodal fiber directions onto the quadrature points.
+    void interpolate_point_fibers(const mshType& mesh, int nsd);
 
 };
 

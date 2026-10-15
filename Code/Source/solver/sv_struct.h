@@ -24,7 +24,8 @@ void struct_2d(ComMod &com_mod, CepMod &cep_mod, const int eNoN, const int nFn,
                const double w, const Vector<double> &N, const Array<double> &Nx,
                const Array<double> &al, const Array<double> &yl,
                const Array<double> &dl, const Array<double> &bfl,
-               const Array<double> &fN, const Array<double> &pS0l,
+               const Eigen::Ref<const Eigen::Matrix<double, 2, Eigen::Dynamic>> &fibers,
+               const Array<double> &pS0l,
                Vector<double> &pSl, const ActiveStress::Evaluator &active_stress_evaluator,
                Array<double> &lR, Array3<double> &lK, const bool recompute_visc);
 
@@ -32,7 +33,8 @@ void struct_3d(ComMod &com_mod, CepMod &cep_mod, const int eNoN, const int nFn,
                const double w, const Vector<double> &N, const Array<double> &Nx,
                const Array<double> &al, const Array<double> &yl,
                const Array<double> &dl, const Array<double> &bfl,
-               const Array<double> &fN, const Array<double> &pS0l,
+               const Eigen::Ref<const Eigen::Matrix<double, 3, Eigen::Dynamic>> &fibers,
+               const Array<double> &pS0l,
                Vector<double> &pSl, const ActiveStress::Evaluator &active_stress_evaluator,
                Array<double> &lR, Array3<double> &lK, const bool recompute_visc);
 };

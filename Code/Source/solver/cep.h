@@ -17,11 +17,11 @@ void cep_1d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, con
 
 void cep_2d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, const double w,
     const Vector<double>& N, const Array<double>& Nx, const Array<double>& al, const Array<double>& yl,
-    const Array<double>& dl, const Array<double>& fN, Array<double>& lR, Array3<double>& lK);
+    const Array<double>& dl, const Array<double>& fibers, Array<double>& lR, Array3<double>& lK);
 
 void cep_3d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const int nFn, const double w,
     const Vector<double>& N, const Array<double>& Nx, const Array<double>& al, const Array<double>& yl,
-    const Array<double>& dl, const Array<double>& fN, Array<double>& lR, Array3<double>& lK);
+    const Array<double>& dl, const Array<double>& fibers, Array<double>& lR, Array3<double>& lK);
 
 void construct_cep(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const SolutionStates& solutions);
 

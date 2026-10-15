@@ -62,8 +62,9 @@ void construct_shell(ComMod& com_mod, const mshType& lM, const SolutionStates& s
   //
   Vector<int> ptr(eNoN);
   Array<double> xl(nsd,eNoN), al(tDof,eNoN), yl(tDof,eNoN), dl(tDof,eNoN),
-                bfl(nsd,eNoN), fN(3,nFn), lR(dof,eNoN);
+                bfl(nsd,eNoN), default_fibers(3,nFn), lR(dof,eNoN);
   Array3<double> lK(dof*dof,eNoN,eNoN); 
+  default_fibers = 0.0;
 
   // Loop over all elements of mesh
   //
@@ -131,15 +132,10 @@ void construct_shell(ComMod& com_mod, const mshType& lM, const SolutionStates& s
     //  Constant strain triangles, no numerical integration
     //
     if (lM.eType == ElementType::TRI3) {
-      fN = 0.0;
-      if (lM.fibers.has_fibers()) {
-        for (int iFn = 0; iFn < nFn; ++iFn) {
-          for (int i = 0; i < 3; ++i) {
-            fN(i, iFn) = lM.fibers.data()(i + nsd * iFn, 0, e);
-          }
-        }
-      }
-      shell_cst(com_mod, lM, e, eNoN, nFn, fN, al, yl, dl, xl, bfl, ptr);
+      const auto fibers = lM.fibers.has_fibers()
+        ? lM.fibers.get_quadrature_fibers(nsd, 0, e)
+        : Array<double>(3, nFn, default_fibers.data());
+      shell_cst(com_mod, lM, e, eNoN, nFn, fibers, al, yl, dl, xl, bfl, ptr);
 
     } else {
       lR = 0.0;
@@ -150,15 +146,10 @@ void construct_shell(ComMod& com_mod, const mshType& lM, const SolutionStates& s
 
       // Gauss integration
       for (int g = 0; g < lM.nG; g++) {
-        fN = 0.0;
-        if (lM.fibers.has_fibers()) {
-          for (int iFn = 0; iFn < nFn; ++iFn) {
-            for (int i = 0; i < 3; ++i) {
-              fN(i, iFn) = lM.fibers.data()(i + nsd * iFn, g, e);
-            }
-          }
-        }
-        shell_3d(com_mod, lM, g, eNoN, nFn, fN, al, yl, dl, xl, bfl, lR, lK);
+        const auto fibers = lM.fibers.has_fibers()
+          ? lM.fibers.get_quadrature_fibers(nsd, g, e)
+          : Array<double>(3, nFn, default_fibers.data());
+        shell_3d(com_mod, lM, g, eNoN, nFn, fibers, al, yl, dl, xl, bfl, lR, lK);
       }
     }
 
@@ -174,7 +165,7 @@ void construct_shell(ComMod& com_mod, const mshType& lM, const SolutionStates& s
 // Construct shell mechanics for higher order elements/NURBS
 //
 void shell_3d(ComMod& com_mod, const mshType& lM, const int g, const int eNoN, 
-    const int nFn, const Array<double>& fN,
+    const int nFn, const Array<double>& fibers,
     const Array<double>& al, const Array<double>& yl, const Array<double>& dl, const Array<double>& xl,
     const Array<double>& bfl, Array<double>& lR, Array3<double>& lK)
 {
@@ -294,8 +285,8 @@ void shell_3d(ComMod& com_mod, const mshType& lM, const int g, const int eNoN,
 
   for (int iFn = 0; iFn < nFn; iFn++) {
     for (int l = 0; l < 3; l++) { 
-      fNa0(0,iFn) = fNa0(0,iFn) + fN(l,iFn)*aCnv0(l,0);
-      fNa0(1,iFn) = fNa0(1,iFn) + fN(l,iFn)*aCnv0(l,1);
+      fNa0(0,iFn) = fNa0(0,iFn) + fibers(l,iFn)*aCnv0(l,0);
+      fNa0(1,iFn) = fNa0(1,iFn) + fibers(l,iFn)*aCnv0(l,1);
     }
   }
 
@@ -1186,7 +1177,7 @@ void shell_bf(ComMod& com_mod, const int eNoN, const double w, const Vector<doub
 //
 // Reproduces Fortran SHELLCST.
 //
-void shell_cst(ComMod& com_mod, const mshType& lM, const int e, const int eNoN, const int nFn, const Array<double>& fN,  
+void shell_cst(ComMod& com_mod, const mshType& lM, const int e, const int eNoN, const int nFn, const Array<double>& fibers,
     const Array<double>& al, const Array<double>& yl, const Array<double>& dl, const Array<double>& xl, 
     const Array<double>& bfl, const Vector<int>& ptr)
 {
@@ -1304,13 +1295,13 @@ void shell_cst(ComMod& com_mod, const mshType& lM, const int e, const int eNoN, 
   //
   Array<double> fNa0(2,nFn);
   //dmsg << "nFn: " << nFn;
-  //dmsg << "fN: " << fN;
+  //dmsg << "fibers: " << fibers;
   //dmsg << "aCnv0: " << aCnv0;
 
   for (int iFn = 0; iFn < nFn; iFn++) {
     for (int l = 0; l < 3; l++) {
-      fNa0(0,iFn) = fNa0(0,iFn) + fN(l,iFn)*aCnv0(l,0);
-      fNa0(1,iFn) = fNa0(1,iFn) + fN(l,iFn)*aCnv0(l,1);
+      fNa0(0,iFn) = fNa0(0,iFn) + fibers(l,iFn)*aCnv0(l,0);
+      fNa0(1,iFn) = fNa0(1,iFn) + fibers(l,iFn)*aCnv0(l,1);
     }
   }
   //dmsg << "fNa0: " << fNa0;

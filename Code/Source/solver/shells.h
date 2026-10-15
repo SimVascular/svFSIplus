@@ -13,7 +13,7 @@ namespace shells {
 void construct_shell(ComMod& com_mod, const mshType& lM, const SolutionStates& solutions);
 
 void shell_3d(ComMod& com_mod, const mshType& lM, const int g, const int eNoN,
-    const int nFn, const Array<double>& fN, const Array<double>& al, const Array<double>& yl, 
+    const int nFn, const Array<double>& fibers, const Array<double>& al, const Array<double>& yl,
     const Array<double>& dl, const Array<double>& xl, const Array<double>& bfl, 
     Array<double>& lR, Array3<double>& lK);
 
@@ -24,7 +24,7 @@ void shell_bend_cst(ComMod& com_mod, const mshType& lM, const int e, const Vecto
 void shell_bf(ComMod& com_mod, const int eNoN, const double w, const Vector<double>& N, const Array<double>& Nx,
     const Array<double>& dl, const Array<double>& xl, const Array<double>& tfl, Array<double>& lR, Array3<double>& lK);
 
-void shell_cst(ComMod& com_mod, const mshType& lM, const int e, const int eNoN, const int nFn, const Array<double>& fN,
+void shell_cst(ComMod& com_mod, const mshType& lM, const int e, const int eNoN, const int nFn, const Array<double>& fibers,
     const Array<double>& al, const Array<double>& yl, const Array<double>& dl, const Array<double>& xl,
     const Array<double>& bfl, const Vector<int>& ptr);
 
