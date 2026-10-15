@@ -117,7 +117,7 @@ Include dependency graph for test_precond_rcs.cpp:</div>
 </div>
 </div><a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Matrix regression test for FSILS row and column scaling (RCS). </p>
-<dl class="test"><dt><b><a class="el" href="test.html#_test000001">Test:</a></b></dt><dd>RcsPreconditioner.PreservesConstrainedSystem verifies that precond::precond_rcs preserves a Dirichlet-constrained system and its solution.</dd></dl>
+<dl class="test"><dt><b><a class="el" href="test.html#_test000009">Test:</a></b></dt><dd>RcsPreconditioner.PreservesConstrainedSystem verifies that precond::precond_rcs preserves a Dirichlet-constrained system and its solution.</dd></dl>
 <dl class="section user"><dt>Setup and coverage</dt><dd>A serial, three-node block tridiagonal matrix is stored in dense and FSILS formats. The exact solution is zero at fixed components and <code>row + 1</code> elsewhere; <code>b = A * exact</code> supplies the reference right-hand side. The 75 cases combine <code>(dof, scale, boundary)</code>:<ul>
 <li>Block sizes 1&ndash;5 exercise specialized and general scaling paths.</li>
 <li>Scales <code>1</code>, <code>1e-11</code>, <code>1e-15</code>, <code>1e-17</code>, and <code>1e-20</code> expose diagonal cancellation in the former update <code>(a - 1) + 1</code>.</li>

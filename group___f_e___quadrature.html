@@ -97,7 +97,8 @@ $(function() {
   <div class="summary">
 <a href="#files">Files</a> &#124;
 <a href="#nested-classes">Classes</a> &#124;
-<a href="#typedef-members">Typedefs</a>  </div>
+<a href="#typedef-members">Typedefs</a> &#124;
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">Quadrature<div class="ingroups"><a class="el" href="group___f_e.html">FE Library</a></div></div></div>
 </div><!--header-->
 <div class="contents">
@@ -112,6 +113,18 @@ Collaboration diagram for Quadrature:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="files" name="files"></a>
 Files</h2></td></tr>
+<tr class="memitem:_gauss_lobatto_quadrature_8cpp" id="r__gauss_lobatto_quadrature_8cpp"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_gauss_lobatto_quadrature_8cpp.html">GaussLobattoQuadrature.cpp</a></td></tr>
+<tr class="memdesc:_gauss_lobatto_quadrature_8cpp"><td class="mdescLeft">&#160;</td><td class="mdescRight">Exactness-requested generation of bounded Gauss-Lobatto-Legendre line rules. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:_gauss_lobatto_quadrature_8h" id="r__gauss_lobatto_quadrature_8h"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_gauss_lobatto_quadrature_8h.html">GaussLobattoQuadrature.h</a></td></tr>
+<tr class="memdesc:_gauss_lobatto_quadrature_8h"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bounded Gauss-Lobatto-Legendre quadrature generation on the reference line. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:_gauss_quadrature_8cpp" id="r__gauss_quadrature_8cpp"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_gauss_quadrature_8cpp.html">GaussQuadrature.cpp</a></td></tr>
+<tr class="memdesc:_gauss_quadrature_8cpp"><td class="mdescLeft">&#160;</td><td class="mdescRight">Exactness-requested generation of bounded Gauss-Legendre line rules. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:_gauss_quadrature_8h" id="r__gauss_quadrature_8h"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_gauss_quadrature_8h.html">GaussQuadrature.h</a></td></tr>
+<tr class="memdesc:_gauss_quadrature_8h"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bounded Gauss-Legendre quadrature generation on the reference line. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:_quadrature_rule_8cpp" id="r__quadrature_rule_8cpp"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_quadrature_rule_8cpp.html">QuadratureRule.cpp</a></td></tr>
 <tr class="memdesc:_quadrature_rule_8cpp"><td class="mdescLeft">&#160;</td><td class="mdescRight">Internal construction and structural validation for quadrature rules. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -130,6 +143,21 @@ Typedefs</h2></td></tr>
 <tr class="memitem:gad9f37743e55e146f438d2ab1f1785303" id="r_gad9f37743e55e146f438d2ab1f1785303"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___f_e___quadrature.html#gad9f37743e55e146f438d2ab1f1785303">svmp::FE::quadrature::QuadPoint</a> = <a class="el" href="group___f_e___vector_math.html#ga8d0a705dd5362f5164e776c7e5f4110a">math::Vector</a>&lt; double, 3 &gt;</td></tr>
 <tr class="memdesc:gad9f37743e55e146f438d2ab1f1785303"><td class="mdescLeft">&#160;</td><td class="mdescRight">Three-component coordinate used for every reference quadrature point.  <br /></td></tr>
 <tr class="separator:gad9f37743e55e146f438d2ab1f1785303"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:ga19cf7a15492e3fddc27a8cf2f2d3e0d6" id="r_ga19cf7a15492e3fddc27a8cf2f2d3e0d6"><td class="memItemLeft" align="right" valign="top">constexpr int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___f_e___quadrature.html#ga19cf7a15492e3fddc27a8cf2f2d3e0d6">svmp::FE::quadrature::max_gauss_lobatto_exactness</a> () noexcept</td></tr>
+<tr class="memdesc:ga19cf7a15492e3fddc27a8cf2f2d3e0d6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the largest supported Gauss-Lobatto-Legendre exactness request.  <br /></td></tr>
+<tr class="separator:ga19cf7a15492e3fddc27a8cf2f2d3e0d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3051e23879fcc21011f1b92c38e9f36e" id="r_ga3051e23879fcc21011f1b92c38e9f36e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classsvmp_1_1_f_e_1_1quadrature_1_1_quadrature_rule.html">QuadratureRule</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___f_e___quadrature.html#ga3051e23879fcc21011f1b92c38e9f36e">svmp::FE::quadrature::make_gauss_lobatto_rule</a> (int requested_exactness)</td></tr>
+<tr class="memdesc:ga3051e23879fcc21011f1b92c38e9f36e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate a Gauss-Lobatto-Legendre rule on \([-1,1]\) with at least the requested exactness.  <br /></td></tr>
+<tr class="separator:ga3051e23879fcc21011f1b92c38e9f36e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga208d5d7639710707f6daecba7e5e5151" id="r_ga208d5d7639710707f6daecba7e5e5151"><td class="memItemLeft" align="right" valign="top">constexpr int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___f_e___quadrature.html#ga208d5d7639710707f6daecba7e5e5151">svmp::FE::quadrature::max_gauss_legendre_exactness</a> () noexcept</td></tr>
+<tr class="memdesc:ga208d5d7639710707f6daecba7e5e5151"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the largest supported Gauss-Legendre exactness request.  <br /></td></tr>
+<tr class="separator:ga208d5d7639710707f6daecba7e5e5151"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga80ed633f39880e6080f67a9b969fee32" id="r_ga80ed633f39880e6080f67a9b969fee32"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classsvmp_1_1_f_e_1_1quadrature_1_1_quadrature_rule.html">QuadratureRule</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___f_e___quadrature.html#ga80ed633f39880e6080f67a9b969fee32">svmp::FE::quadrature::make_gauss_legendre_rule</a> (int requested_exactness)</td></tr>
+<tr class="memdesc:ga80ed633f39880e6080f67a9b969fee32"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate a Gauss-Legendre rule on \([-1,1]\) with at least the requested exactness.  <br /></td></tr>
+<tr class="separator:ga80ed633f39880e6080f67a9b969fee32"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <p>Integration rules on canonical reference cells. </p>
@@ -174,6 +202,135 @@ Typedefs</h2></td></tr>
 
 <p>Three-component coordinate used for every reference quadrature point. </p>
 <p>Only the first <a class="el" href="classsvmp_1_1_f_e_1_1quadrature_1_1_quadrature_rule.html#a21425880825cc7744db6f17c7cedbfeb" title="Return the reference dimension and active QuadPoint component count.">QuadratureRule::dimension()</a> components are active; remaining components must be zero. </p>
+
+</div>
+</div>
+<h2 class="groupheader">Function Documentation</h2>
+<a id="ga80ed633f39880e6080f67a9b969fee32" name="ga80ed633f39880e6080f67a9b969fee32"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga80ed633f39880e6080f67a9b969fee32">&#9670;&#160;</a></span>make_gauss_legendre_rule()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classsvmp_1_1_f_e_1_1quadrature_1_1_quadrature_rule.html">QuadratureRule</a> svmp::FE::quadrature::make_gauss_legendre_rule </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>requested_exactness</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Generate a Gauss-Legendre rule on \([-1,1]\) with at least the requested exactness. </p>
+<p>For \(d\) = <code>requested_exactness</code>, integer division gives the minimum point count \(n=\lfloor d/2\rfloor+1\). The returned metadata reports the actual polynomial exactness \(2n-1\), which exceeds even requests by one. Degree zero produces one point with exactness one. Points are the roots of the Legendre polynomial \(P_n\) of degree \(n\), in strictly increasing order inside \((-1,1)\); neither endpoint is included. Weights are positive and aligned with their points.</p>
+<dl class="section see"><dt>See also</dt><dd><a href="https://dlmf.nist.gov/18.3">NIST DLMF: Legendre polynomials</a></dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">requested_exactness</td><td>Minimum polynomial degree to integrate exactly; must be in [0, 255], inclusive (see <a class="el" href="group___f_e___quadrature.html#ga208d5d7639710707f6daecba7e5e5151" title="Return the largest supported Gauss-Legendre exactness request.">max_gauss_legendre_exactness()</a>). </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>A complete <a class="el" href="classsvmp_1_1_f_e_1_1quadrature_1_1_quadrature_rule.html" title="Owning value type for quadrature rules on canonical reference cells.">QuadratureRule</a> value for CellFamily::Line. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname"><a class="el" href="classsvmp_1_1_f_e_1_1_invalid_argument_exception.html" title="An argument failed validation.">InvalidArgumentException</a></td><td>If <code>requested_exactness</code> is outside the supported range; checked before point-count conversion or allocation. </td></tr>
+    <tr><td class="paramname"><a class="el" href="classsvmp_1_1_f_e_1_1_convergence_exception.html" title="Iterative process failed to converge.">ConvergenceException</a></td><td>If root refinement or final numerical validation fails. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga3051e23879fcc21011f1b92c38e9f36e" name="ga3051e23879fcc21011f1b92c38e9f36e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga3051e23879fcc21011f1b92c38e9f36e">&#9670;&#160;</a></span>make_gauss_lobatto_rule()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classsvmp_1_1_f_e_1_1quadrature_1_1_quadrature_rule.html">QuadratureRule</a> svmp::FE::quadrature::make_gauss_lobatto_rule </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>requested_exactness</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Generate a Gauss-Lobatto-Legendre rule on \([-1,1]\) with at least the requested exactness. </p>
+<p>For \(d\) = <code>requested_exactness</code>, integer division gives the minimum point count \(n=\lfloor d/2\rfloor+2\). The returned metadata reports the actual polynomial exactness \(2n-3\), which exceeds even requests by one. Degree zero produces two points with exactness one. The first and last points are exactly \(-1\) and \(+1\). When present, the \(n-2\) interior points are the roots of \(P&#39;_{n-1}\), the derivative of the Legendre polynomial of degree \(n-1\). Points are strictly increasing, and weights are positive and aligned with their points.</p>
+<dl class="section see"><dt>See also</dt><dd><a href="https://dlmf.nist.gov/18.3">NIST DLMF: Legendre polynomials</a></dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">requested_exactness</td><td>Minimum polynomial degree to integrate exactly; must be in [0, 253], inclusive (see <a class="el" href="group___f_e___quadrature.html#ga19cf7a15492e3fddc27a8cf2f2d3e0d6" title="Return the largest supported Gauss-Lobatto-Legendre exactness request.">max_gauss_lobatto_exactness()</a>). </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>A complete <a class="el" href="classsvmp_1_1_f_e_1_1quadrature_1_1_quadrature_rule.html" title="Owning value type for quadrature rules on canonical reference cells.">QuadratureRule</a> value for CellFamily::Line. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname"><a class="el" href="classsvmp_1_1_f_e_1_1_invalid_argument_exception.html" title="An argument failed validation.">InvalidArgumentException</a></td><td>If <code>requested_exactness</code> is outside the supported range; checked before point-count conversion or allocation. </td></tr>
+    <tr><td class="paramname"><a class="el" href="classsvmp_1_1_f_e_1_1_convergence_exception.html" title="Iterative process failed to converge.">ConvergenceException</a></td><td>If root refinement or final numerical validation fails. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga208d5d7639710707f6daecba7e5e5151" name="ga208d5d7639710707f6daecba7e5e5151"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga208d5d7639710707f6daecba7e5e5151">&#9670;&#160;</a></span>max_gauss_legendre_exactness()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr int svmp::FE::quadrature::max_gauss_legendre_exactness </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Return the largest supported Gauss-Legendre exactness request. </p>
+<p>Degree 255 corresponds to the internal 128-point project support bound, which limits generator work and downstream product-rule growth; it is not a mathematical or convergence limit. </p><dl class="section return"><dt>Returns</dt><dd>The inclusive requested-exactness limit, 255. </dd></dl>
+
+</div>
+</div>
+<a id="ga19cf7a15492e3fddc27a8cf2f2d3e0d6" name="ga19cf7a15492e3fddc27a8cf2f2d3e0d6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga19cf7a15492e3fddc27a8cf2f2d3e0d6">&#9670;&#160;</a></span>max_gauss_lobatto_exactness()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr int svmp::FE::quadrature::max_gauss_lobatto_exactness </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Return the largest supported Gauss-Lobatto-Legendre exactness request. </p>
+<p>Degree 253 corresponds to the internal 128-point project support bound, including both endpoints, which limits generator work and downstream product-rule growth; it is not a mathematical or convergence limit. </p><dl class="section return"><dt>Returns</dt><dd>The inclusive requested-exactness limit, 253. </dd></dl>
 
 </div>
 </div>
