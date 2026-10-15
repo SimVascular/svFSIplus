@@ -28,7 +28,7 @@ var searchData=
   ['sdf_5fdefault_25',['sdf_default',['../classuris_type.html#abcd53a91c2cc166578a3c480f5c7e5fa',1,'urisType']]],
   ['sdf_5fdeps_26',['sdf_deps',['../classuris_type.html#a71af4f9ee699d2cf8f3b5657d1f7653b',1,'urisType']]],
   ['sdf_5fdeps_5fclose_27',['sdf_deps_close',['../classuris_type.html#a53d505f2e7ddec54ecb394c991006367',1,'urisType']]],
-  ['section_20objects_28',['Section objects',['../class_parameter.html#autotoc_md23',1,'']]],
+  ['section_20objects_28',['Section objects',['../class_parameter.html#autotoc_md20',1,'']]],
   ['serendipity_29',['Serendipity',['../group___f_e___common_types.html#gga17f54cf3dfe49c3a6633cfbc84e87665ab67363f8c5a4173d792426b65e31a82b',1,'svmp::FE']]],
   ['serendipity_5fnode_5fcoords_30',['serendipity_node_coords',['../classsvmp_1_1_f_e_1_1basis_1_1_reference_node_layout.html#ab301f889ec17c16fa5cee090f5999e4f',1,'svmp::FE::basis::ReferenceNodeLayout']]],
   ['serendipitybasis_31',['serendipitybasis',['../classsvmp_1_1_f_e_1_1basis_1_1_serendipity_basis.html#ae7fe4dc2b84643303c9ee45be4a0af81',1,'svmp::FE::basis::SerendipityBasis::SerendipityBasis(ElementType type)'],['../classsvmp_1_1_f_e_1_1basis_1_1_serendipity_basis.html#a0573c761ab235f814887d4e089863359',1,'svmp::FE::basis::SerendipityBasis::SerendipityBasis(ElementType type, int order)'],['../classsvmp_1_1_f_e_1_1basis_1_1_serendipity_basis.html#a83197ccd58592d669f629502fa463d19',1,'svmp::FE::basis::SerendipityBasis::SerendipityBasis(BasisTopology topology, int order)'],['../classsvmp_1_1_f_e_1_1basis_1_1_serendipity_basis.html',1,'svmp::FE::basis::SerendipityBasis'],['../group___f_e___serendipity_basis.html',1,'SerendipityBasis']]],
