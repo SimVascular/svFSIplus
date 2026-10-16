@@ -68,6 +68,8 @@ inline Array<double> create_ones_matrix(const int N) {
     return A;
 }
 
+inline std::minstd_rand0 material_random_engine(42);
+
 /**
  * @brief Generates a random double value.
  *
@@ -78,12 +80,8 @@ inline Array<double> create_ones_matrix(const int N) {
  * @return A random double value between min and max.
  */
 inline double getRandomDouble(const double min, const double max) {
-    // Uncomment to use a random seed
-    //unsigned int seed = std::chrono::system_clock::now().time_since_epoch().count();
-    unsigned int seed = 42;
-    static std::default_random_engine engine(seed);
     std::uniform_real_distribution<double> distribution(min, max);
-    return distribution(engine);
+    return distribution(material_random_engine);
 }
 
 /**
@@ -1290,19 +1288,21 @@ public:
             
                 // Compute dS and CC:dE for each delta and store error in list
                 std::vector<double> errors;
-                Array<double> dS(N, N), CCdE(N, N);
+                Array<double> dS(N, N), CCdE(N, N), dS_minus(N, N), CCdE_minus(N, N);
                 for (int i = 0; i < deltas.size(); i++) {
                     calcdSFiniteDifference(F, dF, deltas[i], order, dS);
                     calcCCdEFiniteDifference(F, dF, deltas[i], order, CCdE);
+                    calcdSFiniteDifference(F, dF, -deltas[i], order, dS_minus);
+                    calcCCdEFiniteDifference(F, dF, -deltas[i], order, CCdE_minus);
 
-                    // Compute Frobenius norm of error between dS and CC:dE
+                    // Compute Frobenius norm of error between dS and CC:dE for +delta and -delta, which cancels odd truncation-error terms
                     double error = 0.0;
                     for (int i = 0; i < 3; i++) {
                         for (int j = 0; j < 3; j++) {
-                            error += pow(dS(i,j) - CCdE(i,j), 2);
+                            error += pow(dS(i,j) - CCdE(i,j), 2) + pow(dS_minus(i,j) - CCdE_minus(i,j), 2);
                         }
                     }
-                    error = sqrt(error);
+                    error = sqrt(error / 2.0);
 
                     // Store error in list
                     errors.push_back(error);
@@ -1791,6 +1791,7 @@ protected:
     std::vector<Array<double>> F_large_list;
 
     void SetUp() override {
+        material_random_engine.seed(42); // Keep samples independent of test registration order.
 
         // Create random deformation gradients for small perturbations
         for (int i = 0; i < n_F; i++) {
