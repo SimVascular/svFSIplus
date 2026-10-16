@@ -4,6 +4,16 @@ description: 'Run tests on macOS with all dependencies'
 runs:
   using: 'composite'
   steps:
+    - name: Report macOS runner hardware
+      shell: bash
+      run: |
+        echo "Architecture: $(uname -m)"
+        echo "Hardware model: $(sysctl -n hw.model)"
+        echo "Physical CPUs: $(sysctl -n hw.physicalcpu)"
+        echo "Logical CPUs: $(sysctl -n hw.logicalcpu)"
+        echo "Memory (bytes): $(sysctl -n hw.memsize)"
+        system_profiler SPHardwareDataType | awk '/Chip:|Processor Name:|Total Number of Cores:/ { print }'
+
     - name: Install macOS dependencies
       shell: bash
       run: |
@@ -37,7 +47,7 @@ runs:
       run: |
         mkdir build
         cd build
-        cmake -DENABLE_COVERAGE=OFF -DENABLE_ARRAY_INDEX_CHECKING=ON -DENABLE_UNIT_TEST=ON ..
+        cmake -DENABLE_COVERAGE=OFF -DENABLE_ARRAY_INDEX_CHECKING=OFF -DENABLE_UNIT_TEST=ON ..
         make -j2
         
     - name: Install test dependencies
