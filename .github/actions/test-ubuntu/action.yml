@@ -10,6 +10,14 @@ inputs:
 runs:
   using: 'composite'
   steps:
+    - name: Report Ubuntu runner hardware
+      shell: bash
+      run: |
+        echo "Architecture: $(uname -m)"
+        echo "Available CPUs: $(nproc)"
+        lscpu | grep -E '^(Model name|CPU\(s\)|Thread\(s\) per core|Core\(s\) per socket):'
+        free -h
+
     - name: Build svZeroDSolver
       shell: bash
       run: |

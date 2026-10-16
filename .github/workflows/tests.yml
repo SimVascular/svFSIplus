@@ -3,6 +3,9 @@ name: Tests
 on:
   pull_request:
   push:
+    branches:
+      - main
+      - feature/694-reduce-ci-test-time
 
 jobs:
   # Check if there are any changes to important code files
@@ -38,7 +41,7 @@ jobs:
   # Run Ubuntu tests when relevant changes detected
   test-ubuntu:
     name: Test Ubuntu
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event_name == 'push' && github.ref == 'refs/heads/feature/694-reduce-ci-test-time' && 'svmp-ubuntu-8core' || 'ubuntu-latest' }}
     container: simvascular/libraries:latest
     needs: check-for-changes
     if: ${{ needs.check-for-changes.outputs.run_full_tests == 'true' }}
@@ -53,7 +56,7 @@ jobs:
   # Run macOS tests when relevant changes detected
   test-macos:
     name: Test macOS
-    runs-on: macos-latest
+    runs-on: ${{ github.event_name == 'push' && github.ref == 'refs/heads/feature/694-reduce-ci-test-time' && 'svmp-macos-m2-5core' || 'macos-latest' }}
     needs: check-for-changes
     if: ${{ needs.check-for-changes.outputs.run_full_tests == 'true' }}
     steps:
