@@ -36,7 +36,7 @@ public:
   /// Model label, used for factory registration and XML selection. 
   static inline const std::string label = "LandNiederer";
 
-  /*
+  /**
    * @brief Model parameters class.
    * Declares the parameters required by the model. All parameters are 
    * marked as required, and omitting a parameter will cause a parse error.

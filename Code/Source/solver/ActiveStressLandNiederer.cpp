@@ -60,12 +60,12 @@ void ActiveStressLandNiederer::distribute_model_specific_parameters(const CmMod 
 }
 
 void ActiveStressLandNiederer::init_local(Vector<double> &state) const { 
-    state[0] = 1.0; 
-    state[1] = 0.0; 
-    state[2] = 0.0; 
-    state[3] = 0.0; 
-    state[4] = 0.0; 
-    state[5] = 0.0; 
+  state[0] = 1.0; 
+  state[1] = 0.0; 
+  state[2] = 0.0; 
+  state[3] = 0.0; 
+  state[4] = 0.0; 
+  state[5] = 0.0; 
 }
 
 Vector<double> ActiveStressLandNiederer::getf(const double t, const Vector<double> &state,
@@ -94,7 +94,7 @@ Vector<double> ActiveStressLandNiederer::getf(const double t, const Vector<doubl
   f[1] = k_uw*XU - k_wu*XW - k_ws*XW - gamma_wu*XW;
 
   // Calcium-Troponin Binding Kinetics  
-  const double CaT50 = CaRef + beta1*std::min(0.2, lambda - 1.0); 
+  const double CaT50 = CaRef + beta1 * (lambda - 1.0); 
   f[2] = k_TRPN * (std::pow(((calcium*calcium_scaling_factor)/CaT50), eta_TRPN) * (1.0 - CaTRPN) - CaTRPN); 
 
   // Post-power Stroke Kinetics                                 
@@ -107,13 +107,11 @@ Vector<double> ActiveStressLandNiederer::getf(const double t, const Vector<doubl
   // Distortion-Decay Kinetics
   const double stretch_rate =
       disable_force_strain_rate_feedback_ ? 0.0 : fiber_stretch_rate;
-  const double Aw = Aeff * rs/((1.0 - rs) * rw + rs);
+  const double A = Aeff * rs/((1.0 - rs) * rw + rs);
   const double cw = phi * k_uw * (1.0 - rs)*(1.0 - rw) / ((1.0 - rs)*rw);
-  f[4] = Aw * stretch_rate - cw*ZETAW;
-
-  const double As = Aw;
   const double cs = phi * k_ws * (1.0 - rs)*rw/rs;
-  f[5] =  As * stretch_rate - cs*ZETAS;
+  f[4] =  A * stretch_rate - cw*ZETAW;
+  f[5] =  A * stretch_rate - cs*ZETAS;
 
   return f;
 }
@@ -141,23 +139,18 @@ double ActiveStressLandNiederer::compute_active_tension_derivative_local(
   const double d_LFac = length_dependence_factor_derivative(lambda) * d_lambda;
 
   return d_LFac * (Tref/rs) * ((ZETAS+1.0) * XS + (ZETAW) * XW);
-  }
+}
 
 double ActiveStressLandNiederer::length_dependence_factor(double lambda) const {
   return std::max(0.0, 1.0 + beta0 * (lambda + std::min(0.87, lambda) - 1.87));
-  }
+}
 
 double ActiveStressLandNiederer::length_dependence_factor_derivative(
     double lambda) const {
-  const double min_term = std::min(lambda, 0.87); 
-  const double g = 1.0 + beta0 * (lambda + min_term - 1.87); 
-  
-  if (g <= 0.0) 
-    return 0.0; 
-
-  if (lambda < 0.87)
-    return 2.0 * beta0;
-  return beta0;
+  if (length_dependence_factor(lambda) <= 0.0) {
+    return 0.0;
   }
+  return lambda < 0.87 ? 2.0 * beta0 : beta0;
+}
 
 REGISTER_ACTIVE_STRESS_MODEL("LandNiederer", ActiveStressLandNiederer);

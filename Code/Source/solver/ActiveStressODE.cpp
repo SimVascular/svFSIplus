@@ -9,7 +9,7 @@ void ActiveStressODE::read_model_specific_parameters(
 
   if (solver_str == "FE") {
     ode_solver = ODESolver::ForwardEuler;
-  } else if (solver_str == "RK4" || solver_str == "RK") {
+  } else if (solver_str == "RK4") {
     ode_solver = ODESolver::RungeKutta4;
   } else {
     svmp::raise<svmp::ParseException>("Unknown ODE solver " + solver_str +
