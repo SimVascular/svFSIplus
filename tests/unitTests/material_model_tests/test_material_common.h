@@ -528,18 +528,19 @@ public:
 
         // Compute finite difference S for each delta and store error in list
         std::vector<double> errors;
-        Array<double> S_fd(3,3);
+        Array<double> S_fd(3,3), S_fd_minus(3,3);
         for (int i = 0; i < deltas.size(); i++) {
             calcPK2StressFiniteDifference(F, deltas[i], order, S_fd);
+            calcPK2StressFiniteDifference(F, -deltas[i], order, S_fd_minus);
 
-            // Compute Frobenius norm of error between S and S_fd
+            // Average the squared Frobenius norms of S - S_fd for +delta and -delta, which cancels odd powers of delta but not an error in S
             double error = 0.0;
             for (int I = 0; I < 3; I++) {
                 for (int J = 0; J < 3; J++) {
-                    error += pow(S(I,J) - S_fd(I,J), 2);
+                    error += pow(S(I,J) - S_fd(I,J), 2) + pow(S(I,J) - S_fd_minus(I,J), 2);
                 }
             }
-            error = sqrt(error);
+            error = sqrt(error / 2.0);
 
             // Store error in list
             errors.push_back(error);
@@ -1279,6 +1280,11 @@ public:
             delta /= 2.0;
         }
 
+        // Errors below this floor are dominated by rounding in S rather than truncation
+        Array<double> S(N, N), Dm(2*N, 2*N);
+        compute_pk2cc(F, S, Dm);
+        double rounding_floor = 1e4 * std::numeric_limits<double>::epsilon() * utils::norm(S);
+
         // Loop over perturbations to each component of F, dF
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < N; j++) {
@@ -1295,7 +1301,7 @@ public:
                     calcdSFiniteDifference(F, dF, -deltas[i], order, dS_minus);
                     calcCCdEFiniteDifference(F, dF, -deltas[i], order, CCdE_minus);
 
-                    // Compute Frobenius norm of error between dS and CC:dE for +delta and -delta, which cancels odd truncation-error terms
+                    // Average the squared Frobenius norms of dS - CC:dE for +delta and -delta, which cancels odd powers of delta but not an error in CC
                     double error = 0.0;
                     for (int i = 0; i < 3; i++) {
                         for (int j = 0; j < 3; j++) {
@@ -1303,6 +1309,7 @@ public:
                         }
                     }
                     error = sqrt(error / 2.0);
+                    if (error < rounding_floor) break; // Smaller deltas would also be dominated by rounding
 
                     // Store error in list
                     errors.push_back(error);
@@ -1310,7 +1317,7 @@ public:
 
                 // Compute order of convergence by fitting a line to log(delta) vs log(error)
                 std::vector<double> log_deltas, log_errors;
-                for (int i = 0; i < deltas.size(); i++) {
+                for (int i = 0; i < errors.size(); i++) {
                     log_deltas.push_back(log(deltas[i]));
                     log_errors.push_back(log(errors[i]));
                 }
@@ -1320,7 +1327,7 @@ public:
                 auto [m, b] = computeLinearRegression(log_deltas, log_errors);
 
                 // Check that order of convergence is > (order + 1) - convergence_order_tol
-                EXPECT_GT(m, order + 1 - convergence_order_tol);
+                if (errors.size() >= 2) EXPECT_GT(m, order + 1 - convergence_order_tol);
 
                 // Print results if verbose
                 if (verbose) {
