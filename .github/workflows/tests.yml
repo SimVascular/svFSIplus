@@ -7,6 +7,10 @@ on:
       - main
       - feature/694-reduce-ci-test-time
 
+# Keep standard-runner PR jobs serial; parallelism is part of the paid-runner trial.
+env:
+  SVMP_INTEGRATION_TEST_WORKERS: ${{ github.event_name == 'push' && github.ref == 'refs/heads/feature/694-reduce-ci-test-time' && '2' || '1' }}
+
 jobs:
   # Check if there are any changes to important code files
   check-for-changes:

@@ -61,7 +61,12 @@ runs:
       run: |
         git lfs pull
         cd tests
-        conda run -n svmultiphysics pytest -v -rfEP --durations=0
+        pytest_args=(-v -rfEP --durations=0)
+        if [ "${SVMP_INTEGRATION_TEST_WORKERS:-1}" -gt 1 ]; then
+          conda run -n svmultiphysics pip install pytest-xdist
+          pytest_args+=(-n "$SVMP_INTEGRATION_TEST_WORKERS" --dist=loadfile)
+        fi
+        conda run -n svmultiphysics pytest "${pytest_args[@]}"
         
     - name: Run unit tests
       shell: bash
