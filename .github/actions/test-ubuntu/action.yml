@@ -76,11 +76,16 @@ runs:
         git lfs pull
         cd tests
         pytest_args=(-v -rfEP --durations=0)
-        if [ "${SVMP_INTEGRATION_TEST_WORKERS:-1}" -gt 1 ]; then
+        if [ "${SVMP_RANK_AWARE_PARALLEL:-false}" = true ]; then
           conda run -n svmultiphysics pip install pytest-xdist
-          pytest_args+=(-n "$SVMP_INTEGRATION_TEST_WORKERS" --dist=loadfile)
+          workers=$(nproc)
+          echo "Running rank-1 tests with $workers workers"
+          SVMP_TEST_PROCS=1 conda run -n svmultiphysics pytest "${pytest_args[@]}" -n "$workers" --dist=loadfile
+          echo "Running rank-3 tests with 2 workers"
+          SVMP_TEST_PROCS=3 conda run -n svmultiphysics pytest "${pytest_args[@]}" --ignore=test_shell.py -n 2 --dist=loadfile
+        else
+          conda run -n svmultiphysics pytest "${pytest_args[@]}"
         fi
-        conda run -n svmultiphysics pytest "${pytest_args[@]}"
         
     - name: Run unit tests
       shell: bash
