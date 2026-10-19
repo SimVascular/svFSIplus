@@ -1915,6 +1915,10 @@ ActiveStressParameters::ActiveStressParameters() {
   set_parameter("Model", "", required, model_name);
   set_parameter("Implicit_state_coupling", false, !required,
                 implicit_state_coupling);
+  set_parameter("Calcium_scaling_factor", 1.0, !required,
+                calcium_scaling_factor);
+  set_parameter("Disable_force_strain_rate_feedback", false, !required,
+                disable_force_strain_rate_feedback);
 
   ActiveStressFactory::visit(
       [this](const std::string &name, const ActiveStress &model) {
@@ -1964,6 +1968,16 @@ void ActiveStressParameters::set_values(const tinyxml2::XMLElement *xml_elem) {
 
   check_required();
 
+  // Land-Niederer expects calcium in uM, while EP models usually provide it in
+  // mM, so running with the default factor of 1.0 is most likely a mistake.
+  if (model_name.value() == "LandNiederer" && !calcium_scaling_factor.defined()) {
+    std::cout << "[WARNING] " << xml_element_name
+              << ": 'Calcium_scaling_factor' is not set and defaults to 1.0. "
+                 "The LandNiederer model expects calcium in uM; set "
+                 "'Calcium_scaling_factor' to 1000 if calcium is given in mM."
+              << std::endl;
+  }
+
   value_set = true;
 }
 
@@ -1990,6 +2004,14 @@ double ActiveStressParameters::get_eta_n() const {
 
 bool ActiveStressParameters::get_implicit_state_coupling() const {
   return implicit_state_coupling.value();
+}
+
+double ActiveStressParameters::get_calcium_scaling_factor() const {
+  return calcium_scaling_factor.value();
+}
+
+bool ActiveStressParameters::get_disable_force_strain_rate_feedback() const {
+  return disable_force_strain_rate_feedback.value();
 }
 
 const ActiveStressModelParameters &

@@ -7,7 +7,6 @@ void ActiveStressLandNiederer::read_model_specific_parameters(
     const ActiveStressModelParameters &params) {
   ActiveStressODE::read_model_specific_parameters(params);
 
-  calcium_scaling_factor = params.get_scalar("calcium_scaling_factor");
   constexpr double inf = std::numeric_limits<double>::infinity();
 
   CaRef = params.get_positive_scalar("CaRef");
@@ -28,19 +27,12 @@ void ActiveStressLandNiederer::read_model_specific_parameters(
   Aeff = params.get_scalar("Aeff");
   beta0 = params.get_scalar("beta0", 0.0, inf);
   beta1 = params.get_scalar("beta1", -inf, 0.0);
-
-  disable_force_strain_rate_feedback_ =
-      params.get_bool("Disable_force_strain_rate_feedback");
-
-  // With the feedback disabled the stretch rate computation can be skipped.
-  needs_fiber_stretch_rate_ = !disable_force_strain_rate_feedback_;
 }
 
 void ActiveStressLandNiederer::distribute_model_specific_parameters(const CmMod &cm_mod,
                                                         const cmType &cm) {
   ActiveStressODE::distribute_model_specific_parameters(cm_mod, cm);
 
-  cm.bcast(cm_mod, &calcium_scaling_factor);
   cm.bcast(cm_mod, &CaRef);
   cm.bcast(cm_mod, &eta_Tm);
   cm.bcast(cm_mod, &k_uw);
@@ -58,8 +50,6 @@ void ActiveStressLandNiederer::distribute_model_specific_parameters(const CmMod 
   cm.bcast(cm_mod, &Aeff);
   cm.bcast(cm_mod, &beta0);
   cm.bcast(cm_mod, &beta1);
-  cm.bcast(cm_mod, &disable_force_strain_rate_feedback_);
-  cm.bcast(cm_mod, &needs_fiber_stretch_rate_);
 }
 
 void ActiveStressLandNiederer::init_local(Vector<double> &state) const { 
@@ -98,7 +88,7 @@ Vector<double> ActiveStressLandNiederer::getf(const double t, const Vector<doubl
 
   // Calcium-Troponin Binding Kinetics  
   const double CaT50 = CaRef + beta1 * (lambda - 1.0); 
-  f[2] = k_TRPN * (std::pow(((calcium*calcium_scaling_factor)/CaT50), eta_TRPN) * (1.0 - CaTRPN) - CaTRPN); 
+  f[2] = k_TRPN * (std::pow((calcium/CaT50), eta_TRPN) * (1.0 - CaTRPN) - CaTRPN); 
 
   // Post-power Stroke Kinetics                                 
   const double k_su = k_ws * rw * (1.0/rs - 1.0); 
@@ -108,13 +98,11 @@ Vector<double> ActiveStressLandNiederer::getf(const double t, const Vector<doubl
   f[3] = k_ws*XW - k_su*XS - gamma_su*XS; 
 
   // Distortion-Decay Kinetics
-  const double stretch_rate =
-      disable_force_strain_rate_feedback_ ? 0.0 : fiber_stretch_rate;
   const double A = Aeff * rs/((1.0 - rs) * rw + rs);
   const double cw = phi * k_uw * (1.0 - rs)*(1.0 - rw) / ((1.0 - rs)*rw);
   const double cs = phi * k_ws * (1.0 - rs)*rw/rs;
-  f[4] =  A * stretch_rate - cw*ZETAW;
-  f[5] =  A * stretch_rate - cs*ZETAS;
+  f[4] =  A * fiber_stretch_rate - cw*ZETAW;
+  f[5] =  A * fiber_stretch_rate - cs*ZETAS;
 
   return f;
 }

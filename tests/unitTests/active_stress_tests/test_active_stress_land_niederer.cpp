@@ -30,6 +30,8 @@ TEST(ActiveStressTrajectory, LandNiederer) {
   ActiveStressTrajectoryConfiguration configuration;
   configuration.final_time = 600.0;
   configuration.time_step = 1.0;
+  // The model expects calcium in uM; the prescribed transient is in mM.
+  configuration.calcium_scaling_factor = 1000.0;
   configuration.reference_csv_filename =
       "active_stress_land_niederer_twitch.csv";
 

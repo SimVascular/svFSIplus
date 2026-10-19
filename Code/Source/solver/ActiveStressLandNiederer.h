@@ -29,7 +29,16 @@
  * @f$X_S@f$ and @f$X_W@f$ are the fractions of cross-bridges in the post-power 
  * stroke and pre-power stroke states, respectively. @f$\zeta_S@f$ and @f$\zeta_W@f$ 
  * are the distortions, and @f$r_s@f$ is the steady-state duty ratio of the 
- * cross-bridges. 
+ * cross-bridges.
+ *
+ * Calcium is expected in uM, after the scaling by @c Calcium_scaling_factor
+ * set in the @c <Active_stress> XML element (see @ref activestress-inputs).
+ * Since electrophysiology models usually provide calcium in mM, inputs coupled
+ * to one need @c Calcium_scaling_factor set to 1000; it defaults to 1.0, and a
+ * warning is printed if it is not given. Setting
+ * @c Disable_force_strain_rate_feedback in the same element removes the fiber
+ * stretch rate term from the @f$\zeta_W@f$ and @f$\zeta_S@f$ distortion ODEs.
+ *
  * **References**:
  * 1. [Land, Niederer (2017)](https://doi.org/10.1016/j.yjmcc.2017.03.008)
  */
@@ -49,7 +58,6 @@ public:
       constexpr bool required = true;
 
       // Reference values calibrated in Land 2017 
-      add_parameter("calcium_scaling_factor", 1000.0, required);
       add_parameter("CaRef", 0.805, required);
       add_parameter("eta_Tm", 5.0, required);
       add_parameter("k_uw", 0.182, required);
@@ -67,8 +75,6 @@ public:
       add_parameter("Aeff", 25.0, required);
       add_parameter("beta0", 2.3, required);
       add_parameter("beta1", -2.4, required);
-
-      add_parameter("Disable_force_strain_rate_feedback", false, !required);
     }
   };
 
@@ -143,10 +149,6 @@ protected:
 
   /// @name Model parameters.
   /// @{
-  /// Scaling factor required if converting calcium concentration from 
-  /// ionic model to contraction model 
-  double calcium_scaling_factor; 
-
   /// Reference intracellular calcium concentration giving half-maximal
   /// troponin C saturation, @f$[Ca^{2+}]_{T50,ref}@f$, used in the CaTRPN 
   /// binding ODE [uM]
@@ -220,13 +222,6 @@ protected:
   /// Coefficient @f$\beta_1@f$ controlling the length-dependence of calcium
   /// sensitivity (shifts CaRef/[Ca2+]T50 with sarcomere stretch) [-]
   double beta1;
-
-  /// Controls force-strain-rate feedback in the cross-bridge distortion ODEs.
-  /// - @c false (default): the ZETAW/ZETAS distortion states respond to the
-  ///   fiber stretch rate as in Land, Niederer (2017).
-  /// - @c true: the fiber stretch rate contribution is zeroed out, disabling
-  ///   the feedback.
-  bool disable_force_strain_rate_feedback_ = false;
 
   /// @}
 };

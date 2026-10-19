@@ -135,6 +135,10 @@
     <Active_stress>
       <Model>LandNiederer</Model>
 
+      <!-- 1000 as conversion factor from mM (TTP-EP model) to μM -->
+      <Calcium_scaling_factor> 1000.0 </Calcium_scaling_factor>
+      <Disable_force_strain_rate_feedback> true </Disable_force_strain_rate_feedback>
+
       <Directional_distribution>
         <Fiber_direction> 0.7 </Fiber_direction>
         <Sheet_direction> 0.2 </Sheet_direction>
@@ -144,8 +148,6 @@
       <LandNiederer>
         <ODE_solver> RK4 </ODE_solver>
 
-        <!-- 1000 as conversion factor from mM (TTP-EP model) to μM -->
-        <calcium_scaling_factor> 1000.0 </calcium_scaling_factor>   
         <CaRef> 0.805 </CaRef>    <!-- μM -->
         <eta_Tm> 5.0 </eta_Tm>    <!-- [-] -->
         <k_uw> 0.182 </k_uw>      <!-- 1/ms -->
@@ -163,8 +165,6 @@
         <Aeff> 25.0 </Aeff>        <!-- [-] -->
         <beta0> 2.3 </beta0>       <!-- [-] -->
         <beta1> -2.4 </beta1>      <!-- μM -->
-
-        <Disable_force_strain_rate_feedback> true </Disable_force_strain_rate_feedback>
       </LandNiederer>
     </Active_stress>
 
