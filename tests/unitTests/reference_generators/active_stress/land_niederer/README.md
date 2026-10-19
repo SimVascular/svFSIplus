@@ -12,10 +12,12 @@ the same raised-cosine trajectory, shortening from `2.2 um` at `30 ms` to
 `2.134 um` at `150 ms` and recovering to `2.2 um` at `350 ms`. Its rate is the
 forward difference `[SL(t+dt)-SL(t)]/dt`.
 
-For each update, the authors' `solve_time_step` receives time in seconds,
-calcium in micromolar, sarcomere length in micrometers, and its rate in
-micrometers per second. The authors' code advances the states with Forward-Euler 
-time steps. The Active tension is divided by 1000 to convert kPa to MPa.
+ For each update, `generate_unit_test_solution.py` calls the MATLAB `Land`
+ right-hand side with time in milliseconds, calcium in micromolar, dimensionless
+ fiber stretch `SL/2.2`, and stretch rate `[SL(t+dt)-SL(t)]/(2.2*dt)` in `1/ms`.
+ The Python wrapper advances the six active states with Forward Euler. Active
+ tension is stored in kPa (`Tref=120 kPa`, matching the model defaults), without
+ the conversion to MPa used for slab validation.
 
 The committed CSV stores `step,Ta,s0,...,s5` at update indices 
 `0,10,30,60,99,149,199,299,349,449,599`, where index `N` is the result of the

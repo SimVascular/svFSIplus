@@ -22,9 +22,11 @@
  * cross-bridge states and their distortions, scaled by a reference tension Tref. 
  * This is given as
  * @f[
- *  \Tact = \frac{Tref}{r_s} \left[ (1 + \zeta_S) X_S + \zeta_W X_W \right]\;,
+ *  \Tact = L(\bar\lambda) \frac{Tref}{r_s} \left[ (1 + \zeta_S) X_S + \zeta_W X_W \right]\;, 
  * @f]
- * where @f$X_S@f$ and @f$X_W@f$ are the fractions of cross-bridges in the post-power 
+ * with @f$\bar\lambda=\min(1.2,\fiberstretch)@f$ and
+ * @f$L(x)=\max(0,1+\beta_0(x+\min(0.87,x)-1.87))@f$, implemented by @ref length_dependence_factor.
+ * @f$X_S@f$ and @f$X_W@f$ are the fractions of cross-bridges in the post-power 
  * stroke and pre-power stroke states, respectively. @f$\zeta_S@f$ and @f$\zeta_W@f$ 
  * are the distortions, and @f$r_s@f$ is the steady-state duty ratio of the 
  * cross-bridges. 
