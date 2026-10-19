@@ -7,6 +7,7 @@
 #include <any>
 #include <functional>
 #include <iostream>
+#include <limits>
 #include <map>
 #include <memory>
 #include <regex>
@@ -1461,6 +1462,31 @@ public:
   /// Get the value of a parameter by label.
   double get_scalar(const std::string &label) const {
     return double_parameters.at(label).value();
+  }
+
+  /// Get the value of a parameter by label and check that it lies within
+  /// [lo, hi]. Either bound can be made exclusive, and +/- infinity can be
+  /// passed for a one-sided bound.
+  double get_scalar(const std::string &label, double lo, double hi,
+                    bool lo_inclusive = true, bool hi_inclusive = true) const {
+    const double value = get_scalar(label);
+    const bool above_lo = lo_inclusive ? value >= lo : value > lo;
+    const bool below_hi = hi_inclusive ? value <= hi : value < hi;
+    if (!(above_lo && below_hi)) {
+      std::ostringstream msg;
+      msg << xml_element_name << ": parameter '" << label << "' must be in "
+          << (lo_inclusive ? "[" : "(") << lo << ", " << hi
+          << (hi_inclusive ? "]" : ")") << ", got " << value << ".";
+      svmp::raise<svmp::ParseException>(msg.str());
+    }
+    return value;
+  }
+
+  /// Get the value of a parameter by label and check that it is strictly
+  /// positive.
+  double get_positive_scalar(const std::string &label) const {
+    return get_scalar(label, 0.0, std::numeric_limits<double>::infinity(),
+                      false, false);
   }
 
   /// Set the value of a scalar parameter by label.

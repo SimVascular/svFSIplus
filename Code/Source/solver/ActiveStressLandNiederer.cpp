@@ -8,23 +8,26 @@ void ActiveStressLandNiederer::read_model_specific_parameters(
   ActiveStressODE::read_model_specific_parameters(params);
 
   calcium_scaling_factor = params.get_scalar("calcium_scaling_factor");
-  CaRef = params.get_scalar("CaRef");
+  constexpr double inf = std::numeric_limits<double>::infinity();
+
+  CaRef = params.get_positive_scalar("CaRef");
   eta_Tm = params.get_scalar("eta_Tm");
-  k_uw = params.get_scalar("k_uw");
-  k_ws = params.get_scalar("k_ws");
-  Tref = params.get_scalar("Tref");
-  k_TRPN = params.get_scalar("k_TRPN");
+  k_uw = params.get_positive_scalar("k_uw");
+  k_ws = params.get_positive_scalar("k_ws");
+  Tref = params.get_positive_scalar("Tref");
+  k_TRPN = params.get_positive_scalar("k_TRPN");
   eta_TRPN = params.get_scalar("eta_TRPN");
-  k_u = params.get_scalar("k_u");
-  TRPN50 = params.get_scalar("TRPN50");
-  rw = params.get_scalar("rw");
-  rs = params.get_scalar("rs");
+  k_u = params.get_positive_scalar("k_u");
+  TRPN50 = params.get_positive_scalar("TRPN50");
+  // rw, rs = 1 make the k_b denominator (1 - rs)(1 - rw) vanish.
+  rw = params.get_scalar("rw", 0.0, 1.0, true, false);
+  rs = params.get_scalar("rs", 0.0, 1.0, true, false);
   gamma_s = params.get_scalar("gamma_s");
   gamma_w = params.get_scalar("gamma_w");
   phi = params.get_scalar("phi");
   Aeff = params.get_scalar("Aeff");
-  beta0 = params.get_scalar("beta0");
-  beta1 = params.get_scalar("beta1");
+  beta0 = params.get_scalar("beta0", 0.0, inf);
+  beta1 = params.get_scalar("beta1", -inf, 0.0);
 
   disable_force_strain_rate_feedback_ =
       params.get_bool("Disable_force_strain_rate_feedback");
@@ -60,12 +63,12 @@ void ActiveStressLandNiederer::distribute_model_specific_parameters(const CmMod 
 }
 
 void ActiveStressLandNiederer::init_local(Vector<double> &state) const { 
-  state[0] = 1.0; 
-  state[1] = 0.0; 
-  state[2] = 0.0; 
-  state[3] = 0.0; 
-  state[4] = 0.0; 
-  state[5] = 0.0; 
+  state[0] = 1.0; // XB: Fraction of Blocked Myosin Binding Sites   
+  state[1] = 0.0; // XW: Pre-Power Stroke State 
+  state[2] = 0.0; // CaTRPN: Fraction of Calcium Bounded to Troponin
+  state[3] = 0.0; // XS: Post-Power Stroke State 
+  state[4] = 0.0; // ZETAW: Distortion-Decay of Pre-Power Stroke State W 
+  state[5] = 0.0; // ZETAS: Distortion-Decay of Post-Power Stroke State S 
 }
 
 Vector<double> ActiveStressLandNiederer::getf(const double t, const Vector<double> &state,
