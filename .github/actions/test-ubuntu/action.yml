@@ -35,7 +35,7 @@ runs:
         cmake .. "${cmake_args[@]}" \
           -DCMAKE_PROJECT_svZeroDSolver_INCLUDE="$GITHUB_WORKSPACE/Code/ThirdParty/eigen/share/eigen3/cmake/Eigen3Config.cmake" \
           -DFETCHCONTENT_SOURCE_DIR_EIGEN="$GITHUB_WORKSPACE/Code/ThirdParty/eigen"
-        make -j2
+        make -j"$SVMP_BUILD_JOBS"
         
     - name: Build svMultiPhysics
       shell: bash
@@ -50,7 +50,7 @@ runs:
           cmake_args=(-DCMAKE_BUILD_TYPE=Release -DENABLE_COVERAGE=OFF -DENABLE_ARRAY_INDEX_CHECKING=OFF)
         fi
         cmake "${cmake_args[@]}" -DENABLE_UNIT_TEST=ON -DSV_USE_TRILINOS:BOOL=ON ..
-        make -j2
+        make -j"$SVMP_BUILD_JOBS"
         cd ..
         
     - name: Build svMultiPhysics (PETSc)
@@ -66,7 +66,7 @@ runs:
           cmake_args=(-DCMAKE_BUILD_TYPE=Release -DENABLE_COVERAGE=OFF -DENABLE_ARRAY_INDEX_CHECKING=OFF)
         fi
         cmake "${cmake_args[@]}" -DENABLE_UNIT_TEST=ON -DSV_PETSC_DIR:STRING=/petsc ..
-        make -j2
+        make -j"$SVMP_BUILD_JOBS"
         cd ..
         
     - name: Run integration tests
@@ -78,7 +78,8 @@ runs:
         pytest_args=(-v -rfEP --durations=0)
         if [ "${SVMP_RANK_AWARE_PARALLEL:-false}" = true ]; then
           conda run -n svmultiphysics pip install pytest-xdist
-          workers=$(nproc)
+          # The trial runner has 8 logical CPUs but only 4 physical cores.
+          workers=4
           echo "Running rank-1 tests with $workers workers"
           SVMP_TEST_PROCS=1 conda run -n svmultiphysics pytest "${pytest_args[@]}" -n "$workers" --dist=loadfile
           echo "Running rank-3 tests with 2 workers"
