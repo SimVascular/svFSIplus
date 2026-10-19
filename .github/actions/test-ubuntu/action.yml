@@ -75,16 +75,7 @@ runs:
         git config --global --add safe.directory /__w/svMultiPhysics/svMultiPhysics
         git lfs pull
         cd tests
-        pytest_args=(-v -rfEP --durations=0)
-        if [ "${SVMP_PARALLEL_INTEGRATION_TESTS:-false}" = true ]; then
-          conda run -n svmultiphysics pip install pytest-xdist
-          echo "Running rank-1 tests with 2 workers"
-          SVMP_TEST_PROCS=1 conda run -n svmultiphysics pytest "${pytest_args[@]}" -n 2 --dist=loadfile
-          echo "Running rank-3 tests with 2 workers"
-          SVMP_TEST_PROCS=3 conda run -n svmultiphysics pytest "${pytest_args[@]}" --ignore=test_shell.py -n 2 --dist=loadfile
-        else
-          conda run -n svmultiphysics pytest "${pytest_args[@]}"
-        fi
+        conda run -n svmultiphysics pytest -v -rfEP --durations=0
         
     - name: Run unit tests
       shell: bash
