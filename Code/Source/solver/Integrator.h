@@ -55,9 +55,9 @@
  * stress models as any other assembly does. The convergence test that follows
  * (see finalize_iteration) is the same with or without line search.
  *
- * Line search is not supported in prestress simulations, because the nodal
+ * Line search is not implemented for prestress simulations: the nodal
  * prestress is accumulated over the assemblies of a time step, which would
- * include those of the trial step lengths.
+ * include those of the trial step lengths unless they were excluded.
  *
  */
 class Integrator {

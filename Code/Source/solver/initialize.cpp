@@ -435,12 +435,13 @@ void initialize(Simulation* simulation, Vector<double>& timeP)
 
   // A prestress run accumulates the nodal stress over the assemblies of a time
   // step, so the assemblies a line search performs to measure a trial solution
-  // would contribute to it as well.
+  // would contribute to it as well. Line search for prestress runs would have to
+  // exclude those assemblies from the accumulation, which is not implemented.
   for (const auto &eq : com_mod.eq) {
-    svmp::throw_if<svmp::ParseException>(
+    svmp::throw_if<svmp::NotImplementedException>(
         eq.line_search_enabled && com_mod.pstEq,
-        "The " + LineSearchParameters::xml_element_name_ +
-            " XML element is not supported by a prestress simulation.");
+        "Line search (the " + LineSearchParameters::xml_element_name_ +
+            " XML element) is not implemented for prestress simulations.");
   }
 
 #ifdef debug_initialize
