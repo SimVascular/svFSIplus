@@ -73,25 +73,24 @@ def test_pipe_RCR_weak_dir_3d(n_proc):
     t_max = 2
     run_with_reference(base_folder, test_folder, fields, n_proc, t_max)
 
-def test_pipe_RCR_genBC(n_proc):
-    test_folder = "pipe_RCR_genBC"
-    t_max = 2
+def test_pipe_RCR_genBC(n_proc, tmp_path):
+    case = tmp_path / "genBC with spaces"
+    shutil.copytree(Path(__file__).parent / "cases/fluid/pipe_RCR_genBC", case,
+                    ignore=shutil.ignore_patterns("*-procs", "obj", "genBC.exe", "AllData", "InitialData", "GenBC.int"))
+    subprocess.run(["make"], cwd=case / "genBC", check=True)
+    executable = case / "genBC/coupled solver.exe"
+    (case / "genBC/genBC.exe").rename(executable)
+    tree = ET.parse(case / "solver.xml")
+    tree.find(".//ZeroD_code_file_path").text = str(executable)
+    tree.write(case / "solver.xml")
+    run_with_reference("", str(case), fields, n_proc, 2)
 
-    # Remove old genBC output
-    os.chdir(os.path.join("cases", base_folder, test_folder))
-    for name in ["AllData", "InitialData", "GenBC.int"]:
-        if os.path.isfile(name):
-            os.remove(name)
-
-    # Compile genBC
-    os.chdir("genBC")
-    subprocess.run(["make", "clean"], check=True)
-    subprocess.run(["make"], check=True)
-
-    # Change back to original directory
-    os.chdir("../../../..")
-
-    run_with_reference(base_folder, test_folder, fields, n_proc, t_max)
+def test_pipe_RCR_genBC_missing_executable(n_proc, tmp_path):
+    case = tmp_path / "missing genBC"
+    shutil.copytree(Path(__file__).parent / "cases/fluid/pipe_RCR_genBC", case,
+                    ignore=shutil.ignore_patterns("*-procs", "genBC"))
+    with pytest.raises(RuntimeError, match="Could not start genBC"):
+        run_by_name(str(case), "solver.xml", 2, n_proc)
 
 def test_pipe_RCR_sv0D(n_proc):
     test_folder = "pipe_RCR_sv0D"
