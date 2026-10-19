@@ -19,5 +19,5 @@ target_include_directories(svmp_fe_math PUBLIC
 )
 
 target_link_libraries(svmp_fe_math PUBLIC
-  svmp_fe_common
+  svmp_core
 )

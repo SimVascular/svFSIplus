@@ -4,8 +4,6 @@
 #ifndef SVMP_FE_MATH_DENSELINEARALGEBRA_H
 #define SVMP_FE_MATH_DENSELINEARALGEBRA_H
 
-#include "Types.h"
-
 #include <cstddef>
 #include <limits>
 #include <memory>
@@ -165,7 +163,7 @@ struct DenseLUSolver {
  * @param cols Column count.
  * @param error_message_label Prefix for the message of any exception thrown.
  * @return Rank, tolerance, singular-value, and condition diagnostics.
- * @throws FEException If the matrix size is inconsistent or the matrix is empty.
+ * @throws CoreException If the matrix size is inconsistent or the matrix is empty.
  */
 [[nodiscard]] DenseMatrixDiagnostics dense_matrix_diagnostics(
     std::span<const double> matrix,
@@ -180,7 +178,7 @@ struct DenseLUSolver {
  * @param n Matrix dimension.
  * @param error_message_label Prefix for the message of any exception thrown.
  * @return The factorization.
- * @throws FEException If the size is inconsistent or the matrix is rank-deficient.
+ * @throws CoreException If the size is inconsistent or the matrix is rank-deficient.
  */
 [[nodiscard]] DenseLUSolver factor_dense_matrix(std::vector<double> matrix,
                                                 std::size_t n,
@@ -193,7 +191,7 @@ struct DenseLUSolver {
  * @param n Matrix dimension.
  * @param error_message_label Prefix for the message of any exception thrown.
  * @return Row-major inverse of size n * n.
- * @throws FEException If the size is inconsistent or the matrix is singular.
+ * @throws CoreException If the size is inconsistent or the matrix is singular.
  */
 [[nodiscard]] std::vector<double> invert_dense_matrix(std::vector<double> matrix,
                                                     std::size_t n,
@@ -207,7 +205,7 @@ struct DenseLUSolver {
  * @param n Matrix dimension.
  * @param error_message_label Prefix for the message of any exception thrown.
  * @return Inverse plus diagnostics and whether the SVD fallback was used.
- * @throws FEException If the size is inconsistent or the matrix is rank-deficient.
+ * @throws CoreException If the size is inconsistent or the matrix is rank-deficient.
  */
 [[nodiscard]] DenseInverseResult invert_dense_matrix_with_diagnostics(
     std::vector<double> matrix,
@@ -221,7 +219,7 @@ struct DenseLUSolver {
  * @param expected_rank Required (full) rank.
  * @param error_message_label Prefix for the message of any exception thrown.
  * @param max_condition Largest acceptable condition estimate.
- * @throws FEException If the rank is below expected_rank or the condition exceeds max_condition.
+ * @throws CoreException If the rank is below expected_rank or the condition exceeds max_condition.
  */
 void validate_dense_inverse_diagnostics(
     const DenseInverseResult& result,
@@ -236,7 +234,7 @@ void validate_dense_inverse_diagnostics(
  * @param rows Row count.
  * @param cols Column count.
  * @return Number of singular values above the scale-aware tolerance.
- * @throws FEException If the matrix size is inconsistent.
+ * @throws CoreException If the matrix size is inconsistent.
  */
 [[nodiscard]] std::size_t dense_matrix_rank(std::vector<double> matrix,
                                             std::size_t rows,
@@ -250,7 +248,7 @@ void validate_dense_inverse_diagnostics(
  * @param cols Column count.
  * @param error_message_label Prefix for the message of any exception thrown.
  * @return Row-major pseudo-inverse (cols * rows) plus rank/tolerance diagnostics.
- * @throws FEException If the matrix size is inconsistent or the matrix is empty.
+ * @throws CoreException If the matrix size is inconsistent or the matrix is empty.
  */
 [[nodiscard]] DensePseudoInverseResult rank_revealing_pseudo_inverse(
     std::span<const double> matrix,
