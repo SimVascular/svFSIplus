@@ -9,7 +9,7 @@ on:
 
 # Keep standard-runner PR jobs serial; parallelism is part of the paid-runner trial.
 env:
-  SVMP_RANK_AWARE_PARALLEL: ${{ github.event_name == 'push' && github.ref == 'refs/heads/feature/694-reduce-ci-test-time' && 'true' || 'false' }}
+  SVMP_PARALLEL_INTEGRATION_TESTS: ${{ github.event_name == 'push' && github.ref == 'refs/heads/feature/694-reduce-ci-test-time' && 'true' || 'false' }}
   SVMP_TEST_PROCS: ${{ github.event_name == 'push' && github.ref == 'refs/heads/feature/694-reduce-ci-test-time' && '1,3' || '1,3,4' }}
   SVMP_OPTIMIZED_CI: ${{ github.event_name == 'push' && github.ref == 'refs/heads/feature/694-reduce-ci-test-time' && 'true' || 'false' }}
 
