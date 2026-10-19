@@ -46,7 +46,7 @@ runs:
         cmake .. "${cmake_args[@]}" \
           -DCMAKE_PROJECT_svZeroDSolver_INCLUDE="$GITHUB_WORKSPACE/Code/ThirdParty/eigen/share/eigen3/cmake/Eigen3Config.cmake" \
           -DFETCHCONTENT_SOURCE_DIR_EIGEN="$GITHUB_WORKSPACE/Code/ThirdParty/eigen"
-        make -j2
+        make -j"$(sysctl -n hw.physicalcpu)"
         
     - name: Build svMultiPhysics
       shell: bash
@@ -58,7 +58,7 @@ runs:
           cmake_args=(-DCMAKE_BUILD_TYPE=Release -DENABLE_COVERAGE=OFF -DENABLE_ARRAY_INDEX_CHECKING=OFF)
         fi
         cmake "${cmake_args[@]}" -DENABLE_UNIT_TEST=ON ..
-        make -j2
+        make -j"$(sysctl -n hw.physicalcpu)"
         
     - name: Install test dependencies
       shell: bash
@@ -74,11 +74,16 @@ runs:
         pytest_args=(-v -rfEP --durations=0)
         if [ "${SVMP_RANK_AWARE_PARALLEL:-false}" = true ]; then
           conda run -n svmultiphysics pip install pytest-xdist
-          workers=$(sysctl -n hw.logicalcpu)
+          workers=$(sysctl -n hw.physicalcpu)
+          if [ "$workers" -lt 3 ]; then
+            echo "At least 3 physical cores are required for rank-3 test workers" >&2
+            exit 1
+          fi
+          rank3_workers=$((workers / 3))
           echo "Running rank-1 tests with $workers workers"
           SVMP_TEST_PROCS=1 conda run -n svmultiphysics pytest "${pytest_args[@]}" -n "$workers" --dist=loadfile
-          echo "Running rank-3 tests with 2 workers"
-          SVMP_TEST_PROCS=3 conda run -n svmultiphysics pytest "${pytest_args[@]}" --ignore=test_shell.py -n 2 --dist=loadfile
+          echo "Running rank-3 tests with $rank3_workers workers"
+          SVMP_TEST_PROCS=3 conda run -n svmultiphysics pytest "${pytest_args[@]}" --ignore=test_shell.py -n "$rank3_workers" --dist=loadfile
         else
           conda run -n svmultiphysics pytest "${pytest_args[@]}"
         fi
