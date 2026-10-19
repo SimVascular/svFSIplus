@@ -28,7 +28,11 @@ runs:
         cd svZeroDSolver
         mkdir build
         cd build
-        cmake .. \
+        cmake_args=()
+        if [ "$SVMP_OPTIMIZED_CI" = true ]; then
+          cmake_args+=(-DCMAKE_BUILD_TYPE=Release)
+        fi
+        cmake .. "${cmake_args[@]}" \
           -DCMAKE_PROJECT_svZeroDSolver_INCLUDE="$GITHUB_WORKSPACE/Code/ThirdParty/eigen/share/eigen3/cmake/Eigen3Config.cmake" \
           -DFETCHCONTENT_SOURCE_DIR_EIGEN="$GITHUB_WORKSPACE/Code/ThirdParty/eigen"
         make -j2
@@ -41,7 +45,11 @@ runs:
         fi
         mkdir build
         cd build
-        cmake -DENABLE_COVERAGE=ON -DENABLE_ARRAY_INDEX_CHECKING=ON -DENABLE_UNIT_TEST=ON -DSV_USE_TRILINOS:BOOL=ON ..
+        cmake_args=(-DENABLE_COVERAGE=ON -DENABLE_ARRAY_INDEX_CHECKING=ON)
+        if [ "$SVMP_OPTIMIZED_CI" = true ]; then
+          cmake_args=(-DCMAKE_BUILD_TYPE=Release -DENABLE_COVERAGE=OFF -DENABLE_ARRAY_INDEX_CHECKING=OFF)
+        fi
+        cmake "${cmake_args[@]}" -DENABLE_UNIT_TEST=ON -DSV_USE_TRILINOS:BOOL=ON ..
         make -j2
         cd ..
         
@@ -53,7 +61,11 @@ runs:
         fi
         mkdir build-petsc
         cd build-petsc
-        cmake -DENABLE_COVERAGE=ON -DENABLE_ARRAY_INDEX_CHECKING=ON -DENABLE_UNIT_TEST=ON -DSV_PETSC_DIR:STRING=/petsc ..
+        cmake_args=(-DENABLE_COVERAGE=ON -DENABLE_ARRAY_INDEX_CHECKING=ON)
+        if [ "$SVMP_OPTIMIZED_CI" = true ]; then
+          cmake_args=(-DCMAKE_BUILD_TYPE=Release -DENABLE_COVERAGE=OFF -DENABLE_ARRAY_INDEX_CHECKING=OFF)
+        fi
+        cmake "${cmake_args[@]}" -DENABLE_UNIT_TEST=ON -DSV_PETSC_DIR:STRING=/petsc ..
         make -j2
         cd ..
         
@@ -77,18 +89,21 @@ runs:
         ctest --verbose
         
     - name: Generate code coverage
+      if: ${{ env.SVMP_OPTIMIZED_CI != 'true' }}
       shell: bash
       run: |
         cd build/svMultiPhysics-build
         make coverage
         
     - name: Save coverage report
+      if: ${{ env.SVMP_OPTIMIZED_CI != 'true' }}
       uses: actions/upload-artifact@v4
       with:
         name: coverage_report
         path: build/svMultiPhysics-build/coverage
         
     - name: Upload coverage reports to Codecov
+      if: ${{ env.SVMP_OPTIMIZED_CI != 'true' }}
       uses: codecov/codecov-action@v5
       env:
         CODECOV_TOKEN: ${{ inputs.codecov-token }}

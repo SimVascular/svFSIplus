@@ -19,7 +19,9 @@ runs:
       run: |
         brew reinstall -v gcc
         brew install -v vtk openblas lapack mesa open-mpi qt
-        brew install lcov
+        if [ "$SVMP_OPTIMIZED_CI" != true ]; then
+          brew install lcov
+        fi
         sudo ln -s /usr/local/opt/qt5/mkspecs /usr/local/mkspecs
         sudo ln -s /usr/local/opt/qt5/plugins /usr/local/plugins
         
@@ -37,7 +39,11 @@ runs:
         cd svZeroDSolver
         mkdir build
         cd build
-        cmake .. \
+        cmake_args=()
+        if [ "$SVMP_OPTIMIZED_CI" = true ]; then
+          cmake_args+=(-DCMAKE_BUILD_TYPE=Release)
+        fi
+        cmake .. "${cmake_args[@]}" \
           -DCMAKE_PROJECT_svZeroDSolver_INCLUDE="$GITHUB_WORKSPACE/Code/ThirdParty/eigen/share/eigen3/cmake/Eigen3Config.cmake" \
           -DFETCHCONTENT_SOURCE_DIR_EIGEN="$GITHUB_WORKSPACE/Code/ThirdParty/eigen"
         make -j2
@@ -47,7 +53,11 @@ runs:
       run: |
         mkdir build
         cd build
-        cmake -DENABLE_COVERAGE=ON -DENABLE_ARRAY_INDEX_CHECKING=ON -DENABLE_UNIT_TEST=ON ..
+        cmake_args=(-DENABLE_COVERAGE=ON -DENABLE_ARRAY_INDEX_CHECKING=ON)
+        if [ "$SVMP_OPTIMIZED_CI" = true ]; then
+          cmake_args=(-DCMAKE_BUILD_TYPE=Release -DENABLE_COVERAGE=OFF -DENABLE_ARRAY_INDEX_CHECKING=OFF)
+        fi
+        cmake "${cmake_args[@]}" -DENABLE_UNIT_TEST=ON ..
         make -j2
         
     - name: Install test dependencies
