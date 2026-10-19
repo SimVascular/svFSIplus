@@ -10,7 +10,8 @@
 #include "Simulation.h"
 
 /**
- * @brief Integrator class encapsulates the Newton iteration loop for time integration
+ * @brief Integrator class that encapsulates the Newton iteration loop for time
+ * integration.
  *
  * This class handles the nonlinear Newton iteration scheme for solving coupled
  * multi-physics equations in svMultiPhysics. It manages:
@@ -19,7 +20,45 @@
  * - Linear system assembly and solve
  * - Boundary condition application
  *
- * Related to GitHub issue #442: Encapsulate the Newton iteration in main.cpp
+ * ## Line search
+ *
+ * The nonlinear iterations of an equation can be globalized by a backtracking
+ * line search, enabled by the `Line_search` XML element of the equation (see
+ * @ref LineSearchParameters). Without it, every iteration applies the full
+ * increment of the linear solve.
+ *
+ * At every nonlinear iteration of an equation with line search enabled, the
+ * increment @f$\delta u@f$ of the linear solve is scaled by a step length
+ * @f$\alpha@f$ before being applied, so that the solution is updated to
+ * @f$u + \alpha\,\delta u@f$. The step lengths @f$\alpha = 1, \rho, \rho^2,
+ * \dots@f$ are tried in turn, with @f$\rho@f$ the step reduction factor, and
+ * the first one satisfying
+ * @f[
+ *   \| R(u + \alpha\,\delta u) \|_W \leq (1 - c\,\alpha)\,\| R(u) \|_W
+ * @f]
+ * is applied, with @f$c@f$ the minimum decrease. Once the step length reaches
+ * the minimum step length, it is applied regardless of the residual decrease.
+ *
+ * The norm @f$\|\cdot\|_W@f$ weights every residual entry by the inverse
+ * square root of the magnitude of the corresponding diagonal entry of the
+ * tangent at @f$u@f$, as the Jacobi preconditioner of the linear solver does,
+ * so that it is dimensionally homogeneous across the degrees of freedom of the
+ * equation. Degrees of freedom constrained by a Dirichlet condition have zero
+ * weight, since their residual is the reaction of the constraint. The weights
+ * are computed once per iteration and kept fixed while step lengths are tried,
+ * so that the norms of different step lengths are comparable (see
+ * compute_residual_weights).
+ *
+ * The linear system is solved once per iteration, whatever the number of step
+ * lengths tried. Measuring a step length costs one assembly of the linear
+ * system at the trial solution, which re-advances implicitly coupled active
+ * stress models as any other assembly does. The convergence test that follows
+ * (see finalize_iteration) is the same with or without line search.
+ *
+ * Line search is not supported in prestress simulations, because the nodal
+ * prestress is accumulated over the assemblies of a time step, which would
+ * include those of the trial step lengths.
+ *
  */
 class Integrator {
 
