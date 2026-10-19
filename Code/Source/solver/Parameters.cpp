@@ -3112,9 +3112,10 @@ MeshParameters::MeshParameters() {
   set_parameter("Domain", 0, !required, domain_id);
   set_parameter("Domain_file_path", "", !required, domain_file_path);
 
-  // set_parameter("Fiber_direction", {}, !required, fiber_direction);
-  set_parameter("Fiber_direction_file_path", {}, !required,
-                fiber_direction_file_paths);
+  set_parameter("Fiber_direction_from_file_points", {}, !required,
+                fiber_direction_file_paths_points);
+  set_parameter("Fiber_direction_from_file_cells", {}, !required,
+                fiber_direction_file_paths_cells);
 
   set_parameter("Mesh_file_path", "", !required, mesh_file_path);
   set_parameter("Mesh_scale_factor", 1.0, !required, mesh_scale_factor);
@@ -3171,15 +3172,23 @@ void MeshParameters::set_values(tinyxml2::XMLElement *mesh_elem,
       face_params->set_values(item);
       face_parameters.push_back(face_params);
 
-      // There may be multiple 'Fiber_direction' elements so store
+      // There may be multiple 'Fiber_direction_constant' elements so store
       // them as a list of VectorParameter<double>.
       //
-    } else if (name == "Fiber_direction") {
+    } else if (name == "Fiber_direction_constant") {
       auto value = require_xml_text(
-          item, "Mesh Fiber_direction XML element requires a value.");
-      VectorParameter<double> dir("Fiber_direction", {}, false, {});
+          item, "Mesh Fiber_direction_constant XML element requires a value.");
+      VectorParameter<double> dir("Fiber_direction_constant", {}, false, {});
       dir.set(value);
       fiber_directions.push_back(dir);
+
+    } else if (name == "Fiber_direction" ||
+               name == "Fiber_direction_file_path") {
+      svmp::raise<svmp::ParseException>(
+          "The mesh XML element '" + name +
+          "' is no longer supported. Use Fiber_direction_constant, "
+          "Fiber_direction_from_file_points, or "
+          "Fiber_direction_from_file_cells.");
 
     } else if (name == include_xml.name()) {
       auto value =

@@ -20,25 +20,8 @@
 #include <cmath>
 #include <stdexcept>
 #include <string>
-#include <vector>
 
 namespace {
-
-void normalize_vector(std::vector<double>& vector)
-{
-  double length = 0.0;
-  for (const double value : vector) {
-    length += value * value;
-  }
-  length = std::sqrt(length);
-
-  if (utils::is_zero(length)) {
-    throw std::runtime_error("A zero-length fiber direction was found.");
-  }
-  for (double& value : vector) {
-    value /= length;
-  }
-}
 
 Eigen::MatrixXd orthonormalize_fiber_matrix(
     const Eigen::Ref<const Eigen::MatrixXd>& input,
@@ -260,15 +243,30 @@ void Fibers::clear()
 
 void Fibers::read(const MeshParameters& mesh_parameters, mshType& mesh, const int nsd)
 {
-  const int num_paths = mesh_parameters.fiber_direction_file_paths.size();
-  clear();
-
+  // Count the number of input modes.
+  const int num_point_paths =
+      mesh_parameters.fiber_direction_file_paths_points.size();
+  const int num_cell_paths =
+      mesh_parameters.fiber_direction_file_paths_cells.size();
   const int num_dirs = mesh_parameters.fiber_directions.size();
-  if (num_paths == 0 && num_dirs == 0) {
+
+  // If no input modes are specified it means no fibers are needed, return early.
+  const int num_input_modes =
+      (num_point_paths != 0) + (num_cell_paths != 0) + (num_dirs != 0);
+  if (num_input_modes == 0) {
     return;
   }
 
-  const int num_input_fibers = num_paths != 0 ? num_paths : num_dirs;
+  // If multiple input modes are specified, throw an error.
+  if (num_input_modes > 1) {
+    throw std::runtime_error(
+      "Specify fiber directions with only one of Fiber_direction_constant, "
+      "Fiber_direction_from_file_points, or Fiber_direction_from_file_cells.");
+  }
+
+  // Determine the number of input fiber directions.
+  // @todo[javijv4]: I should check based on the physics if the number of input fiber directions is correct.
+  const int num_input_fibers = num_dirs + num_point_paths + num_cell_paths;
   if (num_input_fibers > nsd) {
     throw std::runtime_error(
       "The number of input fiber directions (" +
@@ -276,11 +274,15 @@ void Fibers::read(const MeshParameters& mesh_parameters, mshType& mesh, const in
       ") exceeds the spatial dimension (" + std::to_string(nsd) + ").");
   }
 
-  if (num_paths != 0) {
-    read_from_file(mesh_parameters, mesh, nsd);
-  } else {
+  if (num_dirs != 0) {
     read_directions(mesh_parameters, nsd);
+  } else if (num_point_paths != 0) {
+    read_from_file(mesh_parameters, mesh, nsd, DataLocation::point);
+  } else {
+    read_from_file(mesh_parameters, mesh, nsd, DataLocation::cell);
   }
+
+  check_input_fibers_orthonormal(nsd);
 
   if (data_location == DataLocation::point) {
     populate_quadrature_fibers(mesh, nsd);
@@ -290,6 +292,165 @@ void Fibers::read(const MeshParameters& mesh_parameters, mshType& mesh, const in
   } else {
     throw std::runtime_error(
       "Fiber input data has no cell, point, or explicit direction association.");
+  }
+}
+
+
+void Fibers::read_from_file(const MeshParameters& mesh_parameters, mshType& mesh,
+  const int nsd, const DataLocation expected_location)
+{
+if (expected_location != DataLocation::point &&
+    expected_location != DataLocation::cell) {
+  throw std::runtime_error(
+    "Fiber direction files must be associated with cells or points.");
+}
+
+const auto& path_parameter = expected_location == DataLocation::point
+    ? mesh_parameters.fiber_direction_file_paths_points
+    : mesh_parameters.fiber_direction_file_paths_cells;
+const int num_paths = path_parameter.size();
+nfibers = num_paths;
+data_location = expected_location;
+
+const auto paths = path_parameter();
+const bool expect_cells = expected_location == DataLocation::cell;
+const std::string association = expect_cells ? "cells" : "points";
+const std::string xml_tag = expect_cells
+    ? "Fiber_direction_from_file_cells"
+    : "Fiber_direction_from_file_points";
+
+for (int idx = 0; idx < nfibers; ++idx) {
+  const auto& file_name = paths[idx];
+
+  if (FILE* file = fopen(file_name.c_str(), "r")) {
+    fclose(file);
+  } else {
+    throw std::runtime_error("The fiber direction VTK file '" + file_name + "' can't be read.");
+  }
+
+  auto reader = vtkSmartPointer<vtkXMLUnstructuredGridReader>::New();
+  reader->SetFileName(file_name.c_str());
+  reader->Update();
+  auto grid = reader->GetOutput();
+
+  if (mesh.gnEl != grid->GetNumberOfCells()) {
+    throw std::runtime_error("The number of elements (" + std::to_string(grid->GetNumberOfCells()) +
+        ") in the fiber direction VTK file '" + file_name + "' is not equal to the number of elements (" +
+        std::to_string(mesh.gnEl) + ") for the mesh named '" + mesh.name + "'.");
+  }
+
+  vtkDataArray* array = nullptr;
+  vtkIdType num_locations = 0;
+  if (expect_cells) {
+    array = grid->GetCellData()->GetArray("FIB_DIR");
+    num_locations = grid->GetNumberOfCells();
+  } else {
+    array = grid->GetPointData()->GetArray("FIB_DIR");
+    num_locations = grid->GetNumberOfPoints();
+  }
+  if (array == nullptr) {
+    throw std::runtime_error(
+        "No 'FIB_DIR' " + association + " data found in the fiber direction VTK file '" +
+        file_name + "' as required by " + xml_tag + ".");
+  }
+  if (array->GetNumberOfTuples() != num_locations) {
+    throw std::runtime_error("The number of 'FIB_DIR' tuples (" + std::to_string(array->GetNumberOfTuples()) +
+        ") in the fiber direction VTK file '" + file_name + "' does not match the number of associated " +
+        association + " (" + std::to_string(num_locations) + ").");
+  }
+  if (array->GetNumberOfComponents() < nsd) {
+    throw std::runtime_error("The 'FIB_DIR' data in the fiber direction VTK file '" + file_name + "' has fewer than " +
+        std::to_string(nsd) + " components.");
+  }
+
+  const vtkIdType expected_num_locations = expect_cells ? mesh.gnEl : mesh.gnNo;
+  if (num_locations != expected_num_locations) {
+    throw std::runtime_error("The number of " + association + " (" + std::to_string(num_locations) +
+        ") in the fiber direction VTK file '" + file_name + "' does not match the mesh (" +
+        std::to_string(expected_num_locations) + ").");
+  }
+
+  if (idx == 0) {
+    if (expect_cells) {
+      const int num_directions = nfibers == 1 ? 1 : nsd;
+      input_fibers.resize(num_directions * nsd, num_locations);
+    } else {
+      input_fibers.resize(num_paths * nsd, num_locations);
+    }
+    input_fibers = 0.0;
+  }
+
+  const int offset = idx * nsd;
+  for (vtkIdType location = 0; location < num_locations; ++location) {
+    const auto tuple = array->GetTuple(location);
+    for (int component = 0; component < nsd; ++component) {
+      input_fibers(offset + component, location) = tuple[component];
+    }
+  }
+}
+}
+
+
+void Fibers::read_directions(const MeshParameters& mesh_parameters, const int nsd)
+{
+const int num_dirs = mesh_parameters.fiber_directions.size();
+nfibers = num_dirs;
+data_location = DataLocation::explicit_direction;
+
+const int num_directions = nfibers == 1 ? 1 : nsd;
+input_fibers.resize(num_directions * nsd, 1);
+input_fibers = 0.0;
+const auto directions = mesh_parameters.fiber_directions;
+for (int i = 0; i < nfibers; ++i) {
+  const auto direction = directions[i]();
+  for (int j = 0; j < nsd; ++j) {
+    input_fibers(i * nsd + j, 0) = direction[j];
+  }
+}
+}
+
+
+void Fibers::check_input_fibers_orthonormal(const int nsd) const
+{
+  constexpr double tolerance = 1.0e-6;
+
+  // Check that the fiber directions are unit vectors.
+  for (int location = 0; location < input_fibers.ncols(); ++location) {
+    for (int i = 0; i < nfibers; ++i) {
+      double norm_sq = 0.0;
+      for (int component = 0; component < nsd; ++component) {
+        const double value = input_fibers(i * nsd + component, location);
+        norm_sq += value * value;
+      }
+      const double norm = std::sqrt(norm_sq);
+      if (std::abs(norm - 1.0) > tolerance) {
+        throw std::runtime_error(
+          "Fiber direction " + std::to_string(i + 1) + " at location " +
+          std::to_string(location) + " is not a unit vector (norm = " +
+          std::to_string(norm) + ").");
+      }
+    }
+  }
+
+  // Check that the fiber directions are orthogonal.
+  const int nlocations = input_fibers.ncols();
+  for (int location = 0; location < nlocations; ++location) {
+    for (int i = 0; i < nfibers; ++i) {
+      for (int j = 0; j < i; ++j) {
+        double dot = 0.0;
+        for (int component = 0; component < nsd; ++component) {
+          dot += input_fibers(i * nsd + component, location) *
+                 input_fibers(j * nsd + component, location);
+        }
+        if (std::abs(dot) > tolerance) {
+          throw std::runtime_error(
+            "Fiber directions " + std::to_string(j + 1) + " and " +
+            std::to_string(i + 1) + " at location " +
+            std::to_string(location) + " are not orthogonal (dot product = " +
+            std::to_string(dot) + ").");
+        }
+      }
+    }
   }
 }
 
@@ -348,117 +509,6 @@ Fibers::get_eigen_fibers(const int nsd, const int g, const int e) const
 }
 
 
-void Fibers::read_from_file(const MeshParameters& mesh_parameters, mshType& mesh, const int nsd)
-{
-  const int num_paths = mesh_parameters.fiber_direction_file_paths.size();
-  nfibers = num_paths;
-
-  const auto paths = mesh_parameters.fiber_direction_file_paths();
-  for (int idx = 0; idx < nfibers; ++idx) {
-    const auto& file_name = paths[idx];
-
-    if (FILE* file = fopen(file_name.c_str(), "r")) {
-      fclose(file);
-    } else {
-      throw std::runtime_error("The fiber direction VTK file '" + file_name + "' can't be read.");
-    }
-
-    auto reader = vtkSmartPointer<vtkXMLUnstructuredGridReader>::New();
-    reader->SetFileName(file_name.c_str());
-    reader->Update();
-    auto grid = reader->GetOutput();
-
-    // Check that the number of elements in the fiber direction VTK file is equal to the number of elements in the mesh.
-    if (mesh.gnEl != grid->GetNumberOfCells()) {
-      throw std::runtime_error("The number of elements (" + std::to_string(grid->GetNumberOfCells()) +
-          ") in the fiber direction VTK file '" + file_name + "' is not equal to the number of elements (" +
-          std::to_string(mesh.gnEl) + ") for the mesh named '" + mesh.name + "'.");
-    }
-
-    // Get the fiber orientation data and determine whether it is associated
-    // with cells or points.
-    auto array = grid->GetCellData()->GetArray("FIB_DIR");
-    DataLocation current_location = DataLocation::cell;
-    vtkIdType num_fibers = grid->GetNumberOfCells();
-    if (array == nullptr) {
-      array = grid->GetPointData()->GetArray("FIB_DIR");
-      current_location = DataLocation::point;
-      num_fibers = grid->GetNumberOfPoints();
-    }
-    if (array == nullptr) {
-      throw std::runtime_error("No 'FIB_DIR' data found in the cell data or point data of the fiber direction VTK file '" +
-          file_name + "'");
-    }
-
-    // Check that the number of tuples and components in the fiber orientation data is consistent with the mesh.
-    if (array->GetNumberOfTuples() != num_fibers) {
-      throw std::runtime_error("The number of 'FIB_DIR' tuples (" + std::to_string(array->GetNumberOfTuples()) +
-          ") in the fiber direction VTK file '" + file_name + "' does not match the number of associated cells or points (" +
-          std::to_string(num_fibers) + ").");
-    }
-    if (array->GetNumberOfComponents() < nsd) {
-      throw std::runtime_error("The 'FIB_DIR' data in the fiber direction VTK file '" + file_name + "' has fewer than " +
-          std::to_string(nsd) + " components.");
-    }
-
-    const vtkIdType expected_num_fibers = current_location == DataLocation::cell ? mesh.gnEl : mesh.gnNo;
-    if (num_fibers != expected_num_fibers) {
-      const std::string association = current_location == DataLocation::cell ? "cells" : "points";
-      throw std::runtime_error("The number of " + association + " (" + std::to_string(num_fibers) +
-          ") in the fiber direction VTK file '" + file_name + "' does not match the mesh (" +
-          std::to_string(expected_num_fibers) + ").");
-    }
-
-    if (idx == 0) {
-      data_location = current_location;
-      if (data_location == DataLocation::cell) {
-        const int num_directions = nfibers == 1 ? 1 : nsd;
-        input_fibers.resize(num_directions * nsd, num_fibers);
-      } else {
-        input_fibers.resize(num_paths * nsd, num_fibers);
-      }
-      input_fibers = 0.0;
-    } else if (data_location != current_location) {
-      throw std::runtime_error("The 'FIB_DIR' arrays in the fiber direction VTK files must all be associated with "
-          "either cells or points.");
-    }
-
-    // Set the fiber orientations data.
-    const int offset = idx * nsd;
-    std::vector<double> direction(nsd);
-    for (vtkIdType fiber_index = 0; fiber_index < num_fibers; ++fiber_index) {
-      const auto tuple = array->GetTuple(fiber_index);
-      for (int component = 0; component < nsd; ++component) {
-        direction[component] = tuple[component];
-      }
-      normalize_vector(direction);
-      for (int component = 0; component < nsd; ++component) {
-        input_fibers(offset + component, fiber_index) = direction[component];
-      }
-    }
-  }
-}
-
-
-void Fibers::read_directions(const MeshParameters& mesh_parameters, const int nsd)
-{
-  const int num_dirs = mesh_parameters.fiber_directions.size();
-  nfibers = num_dirs;
-  data_location = DataLocation::explicit_direction;
-
-  const int num_directions = nfibers == 1 ? 1 : nsd;
-  input_fibers.resize(num_directions * nsd, 1);
-  input_fibers = 0.0;
-  const auto directions = mesh_parameters.fiber_directions;
-  for (int i = 0; i < nfibers; ++i) {
-    auto direction = directions[i]();
-    normalize_vector(direction);
-    for (int j = 0; j < nsd; ++j) {
-      input_fibers(i * nsd + j, 0) = direction[j];
-    }
-  }
-}
-
 void Fibers::populate_quadrature_fibers(const mshType& mesh, const int nsd)
 {
   if (mesh.nG <= 0) {
@@ -501,7 +551,7 @@ void Fibers::orthonormalize_quadrature_fibers(const int nsd)
 
 void Fibers::orthonormalize_fibers(Array<double>& fibers, const int nsd)
 {
-  // One direction does not define a full basis and is already normalized.
+  // One direction does not define a full basis and is left unchanged.
   if (nfibers == 1) {
     return;
   }

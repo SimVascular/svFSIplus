@@ -68,12 +68,18 @@ class Fibers {
     };
     DataLocation data_location = DataLocation::none;
 
-    // Reads fiber directions from a file. The fiber directions can be associated with
-    // cells or points.
-    void read_from_file(const MeshParameters& mesh_parameters, mshType& mesh, int nsd);
+    // Reads fiber directions from VTK files. expected_location must be point
+    // or cell and selects which FIB_DIR association is required.
+    void read_from_file(const MeshParameters& mesh_parameters, mshType& mesh,
+        int nsd, DataLocation expected_location);
 
     // Reads constant fiber directions as specified in the input file.
     void read_directions(const MeshParameters& mesh_parameters, int nsd);
+
+    // Checks that the input fiber directions form an orthonormal set at every
+    // stored location. Raises if any direction is not unit length or if any
+    // pair is not orthogonal.
+    void check_input_fibers_orthonormal(int nsd) const;
 
     // Interpolates point fibers to quadrature points and orthonormalizes them.
     void populate_quadrature_fibers(const mshType& mesh, int nsd);

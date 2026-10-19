@@ -34,9 +34,9 @@
 
     <Domain_file_path> ./mesh/volume.vtu </Domain_file_path>
 
-    <Fiber_direction> (1, 0, 0)  </Fiber_direction>
-    <Fiber_direction> (0, 1, 0)  </Fiber_direction>
-    <Fiber_direction> (0, 1, 0)  </Fiber_direction>
+    <Fiber_direction_constant> (1, 0, 0)  </Fiber_direction_constant>
+    <Fiber_direction_constant> (0, 1, 0)  </Fiber_direction_constant>
+    <Fiber_direction_constant> (0, 1, 0)  </Fiber_direction_constant>
   </Add_mesh>
 
   <Add_equation type="CEP">

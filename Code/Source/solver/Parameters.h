@@ -1957,10 +1957,12 @@ class MeshParameters : public ParameterLists
     Parameter<int> domain_id;
     Parameter<std::string> domain_file_path;
 
-    VectorParameter<std::string> fiber_direction_file_paths;
-    //Parameter<std::string> fiber_direction_file_path;
+    // Constant fiber directions from <Fiber_direction_constant>.
     std::vector<VectorParameter<double>> fiber_directions;
-    //VectorParameter<double> fiber_direction;
+    // Fiber VTU paths from <Fiber_direction_from_file_points>.
+    VectorParameter<std::string> fiber_direction_file_paths_points;
+    // Fiber VTU paths from <Fiber_direction_from_file_cells>.
+    VectorParameter<std::string> fiber_direction_file_paths_cells;
 
     Parameter<std::string> include_xml;
     Parameter<std::string> initial_displacements_file_path;
