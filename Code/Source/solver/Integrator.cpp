@@ -418,6 +418,17 @@ double Integrator::line_search_step_length(eqType &eq,
     //   after the refactoring of the assembly.
     assemble_linear_system(eq);
 
+    // The shortest step length is kept without being measured, since there is
+    // nothing left to compare it against. It is still assembled, so that the
+    // states that the assembly updates match the solution the caller applies.
+    if (step_length <= eq.line_search_minimum_step_length) {
+      if (report) {
+        std::cout << "    Line search: keeping the shortest step length "
+                  << step_length << std::endl;
+      }
+      break;
+    }
+
     const double norm = residual_norm(weights);
     const double limit =
         (1.0 - eq.line_search_minimum_decrease * step_length) * reference_norm;
@@ -438,14 +449,6 @@ double Integrator::line_search_step_length(eqType &eq,
     }
 
     step_length *= eq.line_search_step_reduction_factor;
-  }
-
-  // Leaving the loop without accepting a step length means every step length
-  // longer than the shortest one was rejected. The shortest one is kept
-  // without being measured, since there is nothing left to compare it against.
-  if (report && step_length <= eq.line_search_minimum_step_length) {
-    std::cout << "    Line search: keeping the shortest step length "
-              << step_length << std::endl;
   }
 
   restore_starting_point();
