@@ -44,15 +44,23 @@ ci_run_rank_tests() {
 }
 
 ci_run_integration_tests() {
-  local rank1_workers="$1"
-  local rank3_workers="$2"
+  local single_rank_workers="$1"
+  local multi_rank_workers="$2"
+  local rank
+  local ranks=()
 
   git lfs pull
   cd tests
   if [ "${SVMP_PARALLEL_INTEGRATION_TESTS:-false}" = true ]; then
     conda run -n svmultiphysics pip install pytest-xdist
-    ci_run_rank_tests 1 "$rank1_workers"
-    ci_run_rank_tests 3 "$rank3_workers" --ignore=test_shell.py
+    IFS=, read -r -a ranks <<< "${SVMP_TEST_PROCS-1,3,4}"
+    for rank in "${ranks[@]}"; do
+      if [ "$rank" = 1 ]; then
+        ci_run_rank_tests "$rank" "$single_rank_workers"
+      else
+        ci_run_rank_tests "$rank" "$multi_rank_workers" --ignore=test_shell.py
+      fi
+    done
   else
     conda run -n svmultiphysics pytest -v -rfEP --durations=0
   fi

@@ -31,6 +31,30 @@ runs:
         curl -O https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh
         bash Miniconda3-latest-MacOSX-x86_64.sh -b -p $HOME/miniconda
         echo "$HOME/miniconda/bin" >> $GITHUB_PATH
+
+    - name: Install compiler cache
+      if: ${{ env.SVMP_OPTIMIZED_CI == 'true' }}
+      shell: bash
+      run: |
+        brew install ccache
+        echo "CCACHE_DIR=$GITHUB_WORKSPACE/.ccache" >> "$GITHUB_ENV"
+        echo "CMAKE_C_COMPILER_LAUNCHER=ccache" >> "$GITHUB_ENV"
+        echo "CMAKE_CXX_COMPILER_LAUNCHER=ccache" >> "$GITHUB_ENV"
+
+    - name: Restore compiler cache
+      if: ${{ env.SVMP_OPTIMIZED_CI == 'true' }}
+      uses: actions/cache/restore@v4
+      with:
+        path: .ccache
+        key: macos-${{ runner.arch }}-ccache-v1-${{ github.run_id }}-${{ github.run_attempt }}
+        restore-keys: macos-${{ runner.arch }}-ccache-v1-
+
+    - name: Initialize compiler cache
+      if: ${{ env.SVMP_OPTIMIZED_CI == 'true' }}
+      shell: bash
+      run: |
+        ccache -M 1G
+        ccache -z
         
     - name: Build svZeroDSolver
       shell: bash
@@ -43,6 +67,18 @@ runs:
       run: |
         source "$GITHUB_WORKSPACE/.github/actions/ci-helpers.sh"
         ci_build_solver build "$(sysctl -n hw.physicalcpu)"
+
+    - name: Report compiler cache statistics
+      if: ${{ env.SVMP_OPTIMIZED_CI == 'true' }}
+      shell: bash
+      run: ccache -s
+
+    - name: Save compiler cache
+      if: ${{ env.SVMP_OPTIMIZED_CI == 'true' }}
+      uses: actions/cache/save@v4
+      with:
+        path: .ccache
+        key: macos-${{ runner.arch }}-ccache-v1-${{ github.run_id }}-${{ github.run_attempt }}
         
     - name: Install test dependencies
       shell: bash
