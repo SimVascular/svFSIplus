@@ -35,30 +35,14 @@ runs:
     - name: Build svZeroDSolver
       shell: bash
       run: |
-        git clone https://github.com/SimVascular/svZeroDSolver.git
-        cd svZeroDSolver
-        mkdir build
-        cd build
-        cmake_args=()
-        if [ "$SVMP_OPTIMIZED_CI" = true ]; then
-          cmake_args+=(-DCMAKE_BUILD_TYPE=Release)
-        fi
-        cmake .. "${cmake_args[@]}" \
-          -DCMAKE_PROJECT_svZeroDSolver_INCLUDE="$GITHUB_WORKSPACE/Code/ThirdParty/eigen/share/eigen3/cmake/Eigen3Config.cmake" \
-          -DFETCHCONTENT_SOURCE_DIR_EIGEN="$GITHUB_WORKSPACE/Code/ThirdParty/eigen"
-        make -j"$(sysctl -n hw.physicalcpu)"
+        source "$GITHUB_WORKSPACE/.github/actions/ci-helpers.sh"
+        ci_build_svzerodsolver "$(sysctl -n hw.physicalcpu)"
         
     - name: Build svMultiPhysics
       shell: bash
       run: |
-        mkdir build
-        cd build
-        cmake_args=(-DENABLE_COVERAGE=ON -DENABLE_ARRAY_INDEX_CHECKING=ON)
-        if [ "$SVMP_OPTIMIZED_CI" = true ]; then
-          cmake_args=(-DCMAKE_BUILD_TYPE=Release -DENABLE_COVERAGE=OFF -DENABLE_ARRAY_INDEX_CHECKING=OFF)
-        fi
-        cmake "${cmake_args[@]}" -DENABLE_UNIT_TEST=ON ..
-        make -j"$(sysctl -n hw.physicalcpu)"
+        source "$GITHUB_WORKSPACE/.github/actions/ci-helpers.sh"
+        ci_build_solver build "$(sysctl -n hw.physicalcpu)"
         
     - name: Install test dependencies
       shell: bash
@@ -69,18 +53,8 @@ runs:
     - name: Run integration tests
       shell: bash
       run: |
-        git lfs pull
-        cd tests
-        pytest_args=(-v -rfEP --durations=0)
-        if [ "${SVMP_PARALLEL_INTEGRATION_TESTS:-false}" = true ]; then
-          conda run -n svmultiphysics pip install pytest-xdist
-          echo "Running rank-1 tests with 1 worker"
-          SVMP_TEST_PROCS=1 conda run -n svmultiphysics pytest "${pytest_args[@]}" -n 1 --dist=loadfile
-          echo "Running rank-3 tests with 1 worker"
-          SVMP_TEST_PROCS=3 conda run -n svmultiphysics pytest "${pytest_args[@]}" --ignore=test_shell.py -n 1 --dist=loadfile
-        else
-          conda run -n svmultiphysics pytest "${pytest_args[@]}"
-        fi
+        source "$GITHUB_WORKSPACE/.github/actions/ci-helpers.sh"
+        ci_run_integration_tests 1 1
         
     - name: Run unit tests
       shell: bash
