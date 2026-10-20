@@ -74,8 +74,7 @@ void ActiveStress::read_parameters(const ActiveStressParameters &params) {
 
   // With the feedback disabled the stretch rate computation can be skipped.
   // Models that never use the stretch rate must not be switched on.
-  needs_fiber_stretch_rate_ =
-      needs_fiber_stretch_rate_ && !disable_force_strain_rate_feedback_;
+  needs_fiber_stretch_rate_ &= !disable_force_strain_rate_feedback_;
 
   read_model_specific_parameters(
       params.get_parameters(params.get_model_name()));
@@ -120,8 +119,7 @@ void ActiveStress::update(const double t, const double dt,
                           const Vector<double> &fiber_stretch_rate) {
   time = t;
 
-  // Advance the state from the beginning of the time step. Calcium is scaled
-  // and the stretch rate zeroed here, so that models need not handle either.
+  // Advance the state from the beginning of the time step.
   for (int i = 0; i < states.ncols(); ++i) {
     Vector<double> state_loc = states_at_time_step_start.col(i);
     advance_time_step_local(

@@ -7,26 +7,50 @@ void ActiveStressLandNiederer::read_model_specific_parameters(
     const ActiveStressModelParameters &params) {
   ActiveStressODE::read_model_specific_parameters(params);
 
-  constexpr double inf = std::numeric_limits<double>::infinity();
+  // Read a scalar parameter and raise a ParseException if it violates the
+  // given condition.
+  auto get_checked = [&params](const std::string &label, auto is_valid,
+                               const std::string &requirement) {
+    const double value = params.get_scalar(label);
+    if (!is_valid(value)) {
+      std::ostringstream msg;
+      msg << params.xml_element_name << ": parameter '" << label
+          << "' must be " << requirement << ", got " << value << ".";
+      svmp::raise<svmp::ParseException>(msg.str());
+    }
+    return value;
+  };
+  auto get_positive = [&](const std::string &label) {
+    return get_checked(label, [](double v) { return v > 0.0; }, "> 0");
+  };
+  auto get_nonnegative = [&](const std::string &label) {
+    return get_checked(label, [](double v) { return v >= 0.0; }, ">= 0");
+  };
+  auto get_nonpositive = [&](const std::string &label) {
+    return get_checked(label, [](double v) { return v <= 0.0; }, "<= 0");
+  };
+  auto get_in_open_unit_interval = [&](const std::string &label) {
+    return get_checked(label, [](double v) { return v > 0.0 && v < 1.0; },
+                       "in (0, 1)");
+  };
 
-  CaRef = params.get_positive_scalar("CaRef");
+  CaRef = get_positive("CaRef");
   eta_Tm = params.get_scalar("eta_Tm");
-  k_uw = params.get_positive_scalar("k_uw");
-  k_ws = params.get_positive_scalar("k_ws");
-  Tref = params.get_positive_scalar("Tref");
-  k_TRPN = params.get_positive_scalar("k_TRPN");
+  k_uw = get_positive("k_uw");
+  k_ws = get_positive("k_ws");
+  Tref = get_positive("Tref");
+  k_TRPN = get_positive("k_TRPN");
   eta_TRPN = params.get_scalar("eta_TRPN");
-  k_u = params.get_positive_scalar("k_u");
-  TRPN50 = params.get_positive_scalar("TRPN50");
-  // rw, rs = 0 or 1 makes denominator vanish 
-  rw = params.get_scalar("rw", 0.0, 1.0, false, false);
-  rs = params.get_scalar("rs", 0.0, 1.0, false, false);
+  k_u = get_positive("k_u");
+  TRPN50 = get_positive("TRPN50");
+  rw = get_in_open_unit_interval("rw");
+  rs = get_in_open_unit_interval("rs");
   gamma_s = params.get_scalar("gamma_s");
   gamma_w = params.get_scalar("gamma_w");
   phi = params.get_scalar("phi");
   Aeff = params.get_scalar("Aeff");
-  beta0 = params.get_scalar("beta0", 0.0, inf);
-  beta1 = params.get_scalar("beta1", -inf, 0.0);
+  beta0 = get_nonnegative("beta0");
+  beta1 = get_nonpositive("beta1");
 }
 
 void ActiveStressLandNiederer::distribute_model_specific_parameters(const CmMod &cm_mod,
