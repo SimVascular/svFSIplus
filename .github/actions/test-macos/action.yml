@@ -90,7 +90,7 @@ runs:
       shell: bash
       run: |
         source "$GITHUB_WORKSPACE/.github/actions/ci-helpers.sh"
-        ci_run_integration_tests 1 1
+        ci_run_integration_tests 2 1
         
     - name: Run unit tests
       shell: bash

@@ -158,9 +158,6 @@ set(lib ${SV_LIB_SVFSI_NAME})
 
 # coverage
 if(ENABLE_COVERAGE)
-  # set compiler flags
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -coverage")
-
   # find required tools
   find_program(LCOV lcov REQUIRED)
   find_program(GENHTML genhtml REQUIRED)

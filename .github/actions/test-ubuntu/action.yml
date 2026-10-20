@@ -106,7 +106,7 @@ runs:
         path: build/svMultiPhysics-build/coverage
         
     - name: Upload coverage reports to Codecov
-      if: ${{ env.SVMP_OPTIMIZED_CI != 'true' }}
+      if: ${{ env.SVMP_OPTIMIZED_CI != 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
       uses: codecov/codecov-action@v5
       env:
         CODECOV_TOKEN: ${{ inputs.codecov-token }}

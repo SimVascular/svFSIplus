@@ -1,0 +1,46 @@
+name: Full Tests
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'Optional PR number to test its merge result'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  SVMP_OPTIMIZED_CI: 'false'
+  SVMP_PARALLEL_INTEGRATION_TESTS: 'false'
+  SVMP_TEST_PROCS: '1,3,4'
+
+jobs:
+  test-ubuntu:
+    name: Full Test Ubuntu
+    runs-on: ubuntu-latest
+    container: simvascular/libraries:latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.pr_number && format('refs/pull/{0}/merge', inputs.pr_number) || github.ref }}
+      - name: Run Ubuntu tests
+        uses: ./.github/actions/test-ubuntu
+        with:
+          codecov-token: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && secrets.CODECOV_TOKEN || '' }}
+
+  test-macos:
+    name: Full Test macOS
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.pr_number && format('refs/pull/{0}/merge', inputs.pr_number) || github.ref }}
+      - name: Run macOS tests
+        uses: ./.github/actions/test-macos
