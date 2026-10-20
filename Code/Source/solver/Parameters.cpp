@@ -2020,8 +2020,6 @@ DomainParameters::DomainParameters() {
   id = Parameter<std::string>("id", "", required);
 
   set_parameter("Absolute_tolerance", 1e-6, !required, absolute_tolerance);
-  set_parameter("Anisotropic_conductivity", {}, !required,
-                anisotropic_conductivity);
   set_parameter("Backflow_stabilization_coefficient", 0.2, !required,
                 backflow_stabilization_coefficient);
 
@@ -2047,8 +2045,10 @@ DomainParameters::DomainParameters() {
   set_parameter("Force_z", 0.0, !required, force_z);
 
   set_parameter("Include_xml", "", !required, include_xml);
-  set_parameter("Isotropic_conductivity", 0.0, !required,
-                isotropic_conductivity);
+
+  set_parameter("Fiber_conductivity", 0.0, !required, fiber_conductivity);
+  set_parameter("Sheet_conductivity", 0.0, !required, sheet_conductivity);
+  set_parameter("Normal_conductivity", 0.0, !required, normal_conductivity);
 
   set_parameter("Mass_damping", 0.0, !required, mass_damping);
   set_parameter("Maximum_iterations", 5, !required, maximum_iterations);
@@ -2192,6 +2192,15 @@ void DomainParameters::set_values(tinyxml2::XMLElement *domain_elem,
       set_values(include_parameters.root_element, true);
 
       item_found = true;
+    }
+
+    if (name == "Isotropic_conductivity" ||
+        name == "Anisotropic_conductivity") {
+      svmp::raise<svmp::ParseException>(
+          "The domain XML element '" + name +
+          "' is no longer supported. Use Fiber_conductivity, "
+          "Sheet_conductivity, and Normal_conductivity "
+          "(D = D_f f⊗f + D_s s⊗s + D_n n⊗n).");
     }
 
     if (item->GetText() != nullptr) {

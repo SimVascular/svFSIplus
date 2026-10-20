@@ -1269,20 +1269,31 @@ void read_cep_domain(Simulation* simulation, EquationParameters* eq_params, Doma
     cep_mod.nXion = lDmn.cep.nX + lDmn.cep.nG;
   } 
 
-  // Set conductivity.
-  lDmn.cep.Diso = domain_params->isotropic_conductivity();
-
-  // Set the number of fiber directions (nFn) determined by the
-  // given number of anisotropic conductivity values.
-  lDmn.cep.nFn = domain_params->anisotropic_conductivity.size(); 
-  if (lDmn.cep.nFn == 0) { 
-    lDmn.cep.nFn = 1;
+  // Conductivities along the completed fiber basis:
+  // D = D_f f⊗f + D_s s⊗s + D_n n⊗n (in 3D; fewer terms in 2D/1D).
+  const int nsd = simulation->com_mod.nsd;
+  if (!domain_params->fiber_conductivity.defined()) {
+    throw std::runtime_error(
+        "[read_cep_domain] Fiber_conductivity is required for CEP domains.");
+  }
+  if (nsd >= 2 && !domain_params->sheet_conductivity.defined()) {
+    throw std::runtime_error(
+        "[read_cep_domain] Sheet_conductivity is required for CEP domains "
+        "when the spatial dimension is >= 2.");
+  }
+  if (nsd >= 3 && !domain_params->normal_conductivity.defined()) {
+    throw std::runtime_error(
+        "[read_cep_domain] Normal_conductivity is required for CEP domains "
+        "when the spatial dimension is >= 3.");
   }
 
-  // Set the anisotropic conductivity values. 
-  lDmn.cep.Dani.resize(lDmn.cep.nFn);
-  for (int i = 0; i < domain_params->anisotropic_conductivity.size(); i++) {
-    lDmn.cep.Dani[i] = domain_params->anisotropic_conductivity[i];
+  lDmn.cep.D.resize(nsd);
+  lDmn.cep.D[0] = domain_params->fiber_conductivity();
+  if (nsd >= 2) {
+    lDmn.cep.D[1] = domain_params->sheet_conductivity();
+  }
+  if (nsd >= 3) {
+    lDmn.cep.D[2] = domain_params->normal_conductivity();
   }
 
   // Set myocardium zone id.

@@ -1631,7 +1631,6 @@ class DomainParameters : public ParameterLists
     Parameter<std::string> id;
 
     Parameter<double> absolute_tolerance;
-    VectorParameter<double> anisotropic_conductivity;
     Parameter<double> backflow_stabilization_coefficient;
 
     Parameter<double> conductivity;
@@ -1652,7 +1651,11 @@ class DomainParameters : public ParameterLists
     Parameter<double> force_z;
 
     Parameter<std::string> include_xml;
-    Parameter<double> isotropic_conductivity;
+
+    /// Conductivities for CEP diffusion: D = D_f f⊗f + D_s s⊗s + D_n n⊗n.
+    Parameter<double> fiber_conductivity;
+    Parameter<double> sheet_conductivity;
+    Parameter<double> normal_conductivity;
 
     Parameter<double> mass_damping;
     Parameter<int> maximum_iterations;

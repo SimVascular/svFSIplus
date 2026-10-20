@@ -29,9 +29,6 @@ Eigen::MatrixXd orthonormalize_fiber_matrix(
 {
   const int nsd = input.rows();
   const int num_input_fibers = input.cols();
-  if (num_input_fibers == 1) {
-    return input;
-  }
 
   Eigen::MatrixXd basis = Eigen::MatrixXd::Zero(nsd, nsd);
   constexpr double linear_dependence_tolerance = 1.0e-12;
@@ -264,14 +261,15 @@ void Fibers::read(const MeshParameters& mesh_parameters, mshType& mesh, const in
       "Fiber_direction_from_file_points, or Fiber_direction_from_file_cells.");
   }
 
-  // Determine the number of input fiber directions.
-  // @todo[javijv4]: I should check based on the physics if the number of input fiber directions is correct.
+  // Require exactly nsd - 1 input directions; the last basis vector is completed
+  // during orthonormalization.
   const int num_input_fibers = num_dirs + num_point_paths + num_cell_paths;
-  if (num_input_fibers > nsd) {
+  const int expected_fibers = nsd - 1;
+  if (num_input_fibers != expected_fibers) {
     throw std::runtime_error(
       "The number of input fiber directions (" +
       std::to_string(num_input_fibers) +
-      ") exceeds the spatial dimension (" + std::to_string(nsd) + ").");
+      ") must be exactly nsd - 1 (" + std::to_string(expected_fibers) + ").");
   }
 
   if (num_dirs != 0) {
@@ -288,7 +286,7 @@ void Fibers::read(const MeshParameters& mesh_parameters, mshType& mesh, const in
     populate_quadrature_fibers(mesh, nsd);
   } else if (data_location == DataLocation::cell ||
              data_location == DataLocation::explicit_direction) {
-    orthonormalize_fibers(input_fibers, nsd);
+    complete_fiber_basis(input_fibers, nsd);
   } else {
     throw std::runtime_error(
       "Fiber input data has no cell, point, or explicit direction association.");
@@ -371,12 +369,9 @@ for (int idx = 0; idx < nfibers; ++idx) {
   }
 
   if (idx == 0) {
-    if (expect_cells) {
-      const int num_directions = nfibers == 1 ? 1 : nsd;
-      input_fibers.resize(num_directions * nsd, num_locations);
-    } else {
-      input_fibers.resize(num_paths * nsd, num_locations);
-    }
+    // Allocate space for the completed nsd-dimensional basis. Input directions
+    // fill the first nfibers columns; orthonormalization completes the rest.
+    input_fibers.resize(nsd * nsd, num_locations);
     input_fibers = 0.0;
   }
 
@@ -393,20 +388,20 @@ for (int idx = 0; idx < nfibers; ++idx) {
 
 void Fibers::read_directions(const MeshParameters& mesh_parameters, const int nsd)
 {
-const int num_dirs = mesh_parameters.fiber_directions.size();
-nfibers = num_dirs;
-data_location = DataLocation::explicit_direction;
+  const int num_dirs = mesh_parameters.fiber_directions.size();
+  nfibers = num_dirs;
+  data_location = DataLocation::explicit_direction;
 
-const int num_directions = nfibers == 1 ? 1 : nsd;
-input_fibers.resize(num_directions * nsd, 1);
-input_fibers = 0.0;
-const auto directions = mesh_parameters.fiber_directions;
-for (int i = 0; i < nfibers; ++i) {
-  const auto direction = directions[i]();
-  for (int j = 0; j < nsd; ++j) {
-    input_fibers(i * nsd + j, 0) = direction[j];
+  // Allocate space for the completed nsd-dimensional basis.
+  input_fibers.resize(nsd * nsd, 1);
+  input_fibers = 0.0;
+  const auto directions = mesh_parameters.fiber_directions;
+  for (int i = 0; i < nfibers; ++i) {
+    const auto direction = directions[i]();
+    for (int j = 0; j < nsd; ++j) {
+      input_fibers(i * nsd + j, 0) = direction[j];
+    }
   }
-}
 }
 
 
@@ -515,8 +510,7 @@ void Fibers::populate_quadrature_fibers(const mshType& mesh, const int nsd)
     throw std::runtime_error(
       "Point fiber directions cannot be populated before mesh quadrature points are initialized.");
   }
-  const int num_directions = nfibers == 1 ? 1 : nsd;
-  quadrature_fibers.resize(num_directions * nsd, mesh.nG, mesh.gnEl);
+  quadrature_fibers.resize(nsd * nsd, mesh.nG, mesh.gnEl);
   quadrature_fibers = 0.0;
   interpolate_point_fibers(mesh, nsd);
   orthonormalize_quadrature_fibers(nsd);
@@ -525,11 +519,6 @@ void Fibers::populate_quadrature_fibers(const mshType& mesh, const int nsd)
 
 void Fibers::orthonormalize_quadrature_fibers(const int nsd)
 {
-  // One direction does not define a full basis and must remain unchanged.
-  if (nfibers == 1) {
-    return;
-  }
-
   const int nG = quadrature_fibers.ncols();
   const int nEl = quadrature_fibers.nslices();
 
@@ -549,24 +538,25 @@ void Fibers::orthonormalize_quadrature_fibers(const int nsd)
 }
 
 
-void Fibers::orthonormalize_fibers(Array<double>& fibers, const int nsd)
+void Fibers::complete_fiber_basis(Array<double>& fibers, const int nsd)
 {
-  // One direction does not define a full basis and is left unchanged.
-  if (nfibers == 1) {
-    return;
-  }
-
+  // Cell and explicit inputs are already checked to be orthonormal, so the
+  // remaining basis vector is just the cross product (3D) or a 90-degree
+  // rotation (2D). Point data still uses Gram-Schmidt after interpolation.
   const int num_locations = fibers.ncols();
   for (int location = 0; location < num_locations; ++location) {
-    const Eigen::Map<const Eigen::MatrixXd> input(
-      fibers.data() + location * fibers.nrows(), nsd, nfibers);
-    const std::string description = data_location == DataLocation::cell
-      ? "in element " + std::to_string(location)
-      : "in the explicit directions";
-    const auto basis = orthonormalize_fiber_matrix(input, description);
-    Eigen::Map<Eigen::MatrixXd> output(
+    Eigen::Map<Eigen::MatrixXd> basis(
       fibers.data() + location * fibers.nrows(), nsd, nsd);
-    output = basis;
+
+    if (nsd == 3) {
+      basis.col(2) = basis.col(0).cross(basis.col(1));
+    } else if (nsd == 2) {
+      basis(0, 1) = -basis(1, 0);
+      basis(1, 1) = basis(0, 0);
+    } else if (nsd != 1) {
+      throw std::runtime_error(
+        "Fiber basis completion is only supported for spatial dimensions 1, 2, or 3.");
+    }
   }
 }
 

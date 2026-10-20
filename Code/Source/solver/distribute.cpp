@@ -1528,17 +1528,16 @@ void dist_eq(ComMod& com_mod, const CmMod& cm_mod, const cmType& cm, const std::
 
       cm.bcast(cm_mod, &cep.nX);
       cm.bcast(cm_mod, &cep.nG);
-      cm.bcast(cm_mod, &cep.nFn);
       cm.bcast(cm_mod, &cep.imyo);
       cm.bcast(cm_mod, &cep.dt);
       cm.bcast(cm_mod, &cep.Ksac);
-      cm.bcast(cm_mod, &cep.Diso);
 
+      int n_cond = cep.D.size();
+      cm.bcast(cm_mod, &n_cond);
       if (cm.slv(cm_mod)) {
-        cep.Dani.resize(cep.nFn);
-      } 
-
-      cm.bcast(cm_mod, cep.Dani);
+        cep.D.resize(n_cond);
+      }
+      cm.bcast(cm_mod, cep.D);
 
       int n_stim = cep.Istim.size();
       cm.bcast(cm_mod, &n_stim);

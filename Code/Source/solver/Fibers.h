@@ -47,9 +47,10 @@ class Fibers {
     bool has_fibers() const { return nfibers != 0; }
 
   protected:
-    // Fiber directions read from the input. The column count depends on the
-    // data location: one column for explicit directions, one column per cell
-    // for cell data, and one column per point for point data.
+    // Fiber directions read from the input. Each column stores an nsd x nsd
+    // basis (nsd*nsd components). Column count depends on the data location:
+    // one for explicit directions, one per cell for cell data, and one per
+    // point for point data.
     Array<double> input_fibers;
 
     // Fiber directions at the quadrature points.
@@ -84,13 +85,13 @@ class Fibers {
     // Interpolates point fibers to quadrature points and orthonormalizes them.
     void populate_quadrature_fibers(const mshType& mesh, int nsd);
 
-    // Orthonormalizes multiple fiber directions at every quadrature point and
-    // completes them to an nsd-dimensional basis. A single direction is left
-    // unchanged.
+    // Orthonormalizes input fiber directions at every quadrature point and
+    // completes them to an nsd-dimensional basis.
     void orthonormalize_quadrature_fibers(int nsd);
 
-    // Orthonormalizes explicit or cell-based fibers in place.
-    void orthonormalize_fibers(Array<double>& fibers, int nsd);
+    // Completes already-orthonormal explicit or cell-based fibers to an
+    // nsd-dimensional basis via cross product (3D) or 90-degree rotation (2D).
+    void complete_fiber_basis(Array<double>& fibers, int nsd);
 
     // Interpolates nodal fiber directions onto the quadrature points.
     void interpolate_point_fibers(const mshType& mesh, int nsd);
