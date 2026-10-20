@@ -2619,6 +2619,20 @@ void LineSearchParameters::set_values(tinyxml2::XMLElement *xml_elem) {
 
   check_required();
 
+  auto is_in_range = [](double value, double lower, double upper) {
+    return lower < value && value < upper;
+  };
+
+  svmp::check<svmp::ParseException>(
+      is_in_range(minimum_decrease.value(), 0.0, 1.0),
+      "Line_search Minimum_decrease must be in (0, 1).");
+  svmp::check<svmp::ParseException>(
+      is_in_range(step_reduction_factor.value(), 0.0, 1.0),
+      "Line_search Step_reduction_factor must be in (0, 1).");
+  svmp::check<svmp::ParseException>(
+      is_in_range(minimum_step_length.value(), 0.0, 1.0),
+      "Line_search Minimum_step_length must be in [0, 1].");
+
   value_set = true;
 }
 
