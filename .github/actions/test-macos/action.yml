@@ -28,9 +28,10 @@ runs:
     - name: Install Miniconda
       shell: bash
       run: |
-        curl -O https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh
-        bash Miniconda3-latest-MacOSX-x86_64.sh -b -p $HOME/miniconda
-        echo "$HOME/miniconda/bin" >> $GITHUB_PATH
+        installer="Miniconda3-latest-MacOSX-$(uname -m).sh"
+        curl -fsSLO "https://repo.anaconda.com/miniconda/$installer"
+        bash "$installer" -b -p "$HOME/miniconda"
+        echo "$HOME/miniconda/bin" >> "$GITHUB_PATH"
 
     - name: Install compiler cache
       if: ${{ env.SVMP_OPTIMIZED_CI == 'true' }}
