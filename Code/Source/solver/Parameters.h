@@ -1652,7 +1652,9 @@ class DomainParameters : public ParameterLists
 
     Parameter<std::string> include_xml;
 
-    /// Conductivities for CEP diffusion: D = D_f f⊗f + D_s s⊗s + D_n n⊗n.
+    /// Conductivities for CEP diffusion:
+    /// D = D_iso I + D_f f⊗f + D_s s⊗s + D_n n⊗n.
+    Parameter<double> isotropic_conductivity;
     Parameter<double> fiber_conductivity;
     Parameter<double> sheet_conductivity;
     Parameter<double> normal_conductivity;

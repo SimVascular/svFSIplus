@@ -36,22 +36,6 @@ void cep_init(Simulation *simulation, SolutionStates &solutions) {
       continue;
     }
 
-    // Volumetric CEP meshes require a completed fiber/sheet(/normal) basis for
-    // the anisotropic diffusion tensor. 1D Purkinje (lFib) meshes use a scalar
-    // fiber conductivity and do not need oriented fibers.
-    // @todo[javijv4]: should we just consider lFib a regular CEP case?
-    for (int iM = 0; iM < com_mod.nMsh; ++iM) {
-      const auto &msh = com_mod.msh[iM];
-      if (msh.lFib) {
-        continue;
-      }
-      if (!msh.fibers.has_fibers()) {
-        throw std::runtime_error(
-            "[cep_init] Fiber directions are required for CEP on mesh '" +
-            msh.name + "'.");
-      }
-    }
-
     if (com_mod.dmnId.size() != 0) {
       Vector<double> sA(tnNo);
       Array<double> sF(nXion, tnNo);

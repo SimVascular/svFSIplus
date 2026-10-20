@@ -2046,6 +2046,8 @@ DomainParameters::DomainParameters() {
 
   set_parameter("Include_xml", "", !required, include_xml);
 
+  set_parameter("Isotropic_conductivity", 0.0, !required,
+                isotropic_conductivity);
   set_parameter("Fiber_conductivity", 0.0, !required, fiber_conductivity);
   set_parameter("Sheet_conductivity", 0.0, !required, sheet_conductivity);
   set_parameter("Normal_conductivity", 0.0, !required, normal_conductivity);
@@ -2194,13 +2196,12 @@ void DomainParameters::set_values(tinyxml2::XMLElement *domain_elem,
       item_found = true;
     }
 
-    if (name == "Isotropic_conductivity" ||
-        name == "Anisotropic_conductivity") {
+    if (name == "Anisotropic_conductivity") {
       svmp::raise<svmp::ParseException>(
           "The domain XML element '" + name +
-          "' is no longer supported. Use Fiber_conductivity, "
-          "Sheet_conductivity, and Normal_conductivity "
-          "(D = D_f f⊗f + D_s s⊗s + D_n n⊗n).");
+          "' is no longer supported. Use Fiber_conductivity for the "
+          "fiber-direction contribution "
+          "(D = D_iso I + D_f f⊗f + D_s s⊗s + D_n n⊗n).");
     }
 
     if (item->GetText() != nullptr) {

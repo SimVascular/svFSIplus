@@ -164,9 +164,13 @@ class cepModelType
     /// @brief  Constant for stretch-activated-currents
     double Ksac = 0.0;
 
-    /// @brief Conductivities along the fiber, sheet, and sheet-normal directions.
-    /// Size is the spatial dimension: D[0]=D_f, D[1]=D_s, and D[2]=D_n (3D).
-    /// The diffusion tensor is D = Σ_i D[i] f_i ⊗ f_i.
+    /// @brief Isotropic conductivity contribution.
+    double Diso = 0.0;
+
+    /// @brief Additive conductivities along the fiber, sheet, and sheet-normal directions.
+    /// D[0]=D_f, optional D[1]=D_s, and optional D[2]=D_n. The number of stored
+    /// terms may not exceed the intrinsic mesh dimension.
+    /// The diffusion tensor is D = Diso I + Σ_i D[i] f_i ⊗ f_i.
     Vector<double> D;
 
     /// @brief  External stimuli applied within this domain.

@@ -15,15 +15,18 @@ namespace cep {
 
 namespace {
 
-/// Build the diffusion tensor D = Σ_i D[i] f_i ⊗ f_i from the completed
-/// orthonormal fiber basis and the domain conductivities.
-Array<double> diffusion_tensor(const Vector<double>& conductivities,
+/// Build the diffusion tensor D = D_iso I + Σ_i D[i] f_i ⊗ f_i from the
+/// isotropic conductivity and the available directions in the completed basis.
+Array<double> diffusion_tensor(const int nsd, const double isotropic_conductivity,
+                               const Vector<double>& conductivities,
                                const Array<double>& fibers)
 {
-  const int nsd = fibers.nrows();
   Array<double> D(nsd, nsd);
   D = 0.0;
   for (int i = 0; i < nsd; ++i) {
+    D(i, i) = isotropic_conductivity;
+  }
+  for (int i = 0; i < conductivities.size(); ++i) {
     const double Di = conductivities[i];
     for (int row = 0; row < nsd; ++row) {
       for (int col = 0; col < nsd; ++col) {
@@ -73,7 +76,10 @@ void cep_1d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const double w,
 
   double T1 = eq.af * eq.gam * dt;
   double amd = eq.am / T1;
-  double Df = dmn.cep.D[0];
+  double Df = dmn.cep.Diso;
+  if (dmn.cep.D.size() != 0) {
+    Df += dmn.cep.D[0];
+  }
   int i = eq.s;
   double wl = w*T1;
   #ifdef debug_cep_1d 
@@ -133,7 +139,7 @@ void cep_2d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const double w,
   double amd = eq.am / T1;
   double wl = w * T1;
 
-  const auto D = diffusion_tensor(dmn.cep.D, fibers);
+  const auto D = diffusion_tensor(2, dmn.cep.Diso, dmn.cep.D, fibers);
 
   int i = eq.s;
   double Vd = 0.0;
@@ -198,7 +204,7 @@ void cep_3d(ComMod& com_mod, CepMod& cep_mod, const int eNoN, const double w,
   dmsg << "wl: " << wl;
   #endif
 
-  const auto D = diffusion_tensor(dmn.cep.D, fibers);
+  const auto D = diffusion_tensor(3, dmn.cep.Diso, dmn.cep.D, fibers);
 
   int i = eq.s;
   double Vd = 0.0;
@@ -258,10 +264,6 @@ void construct_cep(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const So
 
   if (lM.lFib) {
     insd = 1;
-  } else if (!lM.fibers.has_fibers()) {
-    throw std::runtime_error(
-        "[construct_cep] Fiber directions are required for CEP on mesh '" +
-        lM.name + "'.");
   }
   #ifdef debug_construct_cep 
   dmsg << "lM.nEl: " << lM.nEl;
@@ -294,6 +296,24 @@ void construct_cep(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const So
     auto cPhys = eq.dmn[cDmn].phys;
     if (cPhys != EquationType::phys_CEP) {
       continue;
+    }
+
+    // Directional conductivity contributions must fit the intrinsic mesh
+    // dimension. Purely isotropic domains do not require fiber directions.
+    const auto& fiber_conductivities = eq.dmn[cDmn].cep.D;
+    if (fiber_conductivities.size() > insd) {
+      throw std::runtime_error(
+          "[construct_cep] CEP domain " +
+          std::to_string(eq.dmn[cDmn].Id) + " defines " +
+          std::to_string(fiber_conductivities.size()) + " directional conductivity "
+          "value(s), but mesh '" + lM.name + "' supports at most " +
+          std::to_string(insd) + ".");
+    }
+    if (fiber_conductivities.size() != 0 && !lM.lFib &&
+        !lM.fibers.has_fibers()) {
+      throw std::runtime_error(
+          "[construct_cep] Directional conductivity requires fiber "
+          "directions on mesh '" + lM.name + "'.");
     }
 
     // Update shape functions for NURBS
@@ -344,11 +364,17 @@ void construct_cep(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const So
       #endif
 
       if (insd == 3) {
-        const auto fibers = lM.fibers.get_quadrature_fibers(nsd, g, e);
+        Array<double> fibers;
+        if (fiber_conductivities.size() != 0) {
+          fibers = lM.fibers.get_quadrature_fibers(nsd, g, e);
+        }
         cep_3d(com_mod, cep_mod, eNoN, w, N, Nx, al, yl, dl, fibers, lR, lK);
 
       } else if (insd == 2) {
-        const auto fibers = lM.fibers.get_quadrature_fibers(nsd, g, e);
+        Array<double> fibers;
+        if (fiber_conductivities.size() != 0) {
+          fibers = lM.fibers.get_quadrature_fibers(nsd, g, e);
+        }
         cep_2d(com_mod, cep_mod, eNoN, w, N, Nx, al, yl, dl, fibers, lR, lK);
 
       } else if (insd == 1) {

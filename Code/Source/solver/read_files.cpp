@@ -1269,30 +1269,49 @@ void read_cep_domain(Simulation* simulation, EquationParameters* eq_params, Doma
     cep_mod.nXion = lDmn.cep.nX + lDmn.cep.nG;
   } 
 
-  // Conductivities along the completed fiber basis:
-  // D = D_f f⊗f + D_s s⊗s + D_n n⊗n (in 3D; fewer terms in 2D/1D).
-  const int nsd = simulation->com_mod.nsd;
-  if (!domain_params->fiber_conductivity.defined()) {
+  // Isotropic and directional conductivity contributions:
+  // D = D_iso I + D_f f⊗f + D_s s⊗s + D_n n⊗n
+  // (in 3D; fewer directional terms in 2D/1D).
+  //
+  // The number of allowed directional terms depends on the intrinsic mesh
+  // dimension, not the spatial dimension. In particular, an lFib mesh
+  // is one dimensional even when embedded in 3D. Store the terms supplied here
+  // and validate their count once the active mesh and domain are known.
+  const bool isotropic_defined =
+      domain_params->isotropic_conductivity.defined();
+  const bool fiber_defined = domain_params->fiber_conductivity.defined();
+  const bool sheet_defined = domain_params->sheet_conductivity.defined();
+  const bool normal_defined = domain_params->normal_conductivity.defined();
+
+  if (!isotropic_defined && !fiber_defined) {
     throw std::runtime_error(
-        "[read_cep_domain] Fiber_conductivity is required for CEP domains.");
+        "[read_cep_domain] CEP domains require Isotropic_conductivity, "
+        "Fiber_conductivity, or both.");
   }
-  if (nsd >= 2 && !domain_params->sheet_conductivity.defined()) {
+  if (sheet_defined && !fiber_defined) {
     throw std::runtime_error(
-        "[read_cep_domain] Sheet_conductivity is required for CEP domains "
-        "when the spatial dimension is >= 2.");
+        "[read_cep_domain] Sheet_conductivity cannot be specified without "
+        "Fiber_conductivity.");
   }
-  if (nsd >= 3 && !domain_params->normal_conductivity.defined()) {
+  if (normal_defined && !sheet_defined) {
     throw std::runtime_error(
-        "[read_cep_domain] Normal_conductivity is required for CEP domains "
-        "when the spatial dimension is >= 3.");
+        "[read_cep_domain] Normal_conductivity cannot be specified without "
+        "Sheet_conductivity.");
   }
 
-  lDmn.cep.D.resize(nsd);
-  lDmn.cep.D[0] = domain_params->fiber_conductivity();
-  if (nsd >= 2) {
+  lDmn.cep.Diso = domain_params->isotropic_conductivity();
+
+  const int num_conductivities = static_cast<int>(fiber_defined) +
+      static_cast<int>(sheet_defined) +
+      static_cast<int>(normal_defined);
+  lDmn.cep.D.resize(num_conductivities);
+  if (fiber_defined) {
+    lDmn.cep.D[0] = domain_params->fiber_conductivity();
+  }
+  if (sheet_defined) {
     lDmn.cep.D[1] = domain_params->sheet_conductivity();
   }
-  if (nsd >= 3) {
+  if (normal_defined) {
     lDmn.cep.D[2] = domain_params->normal_conductivity();
   }
 

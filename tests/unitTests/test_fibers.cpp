@@ -33,7 +33,9 @@ TEST(Fibers, ReadsOrthonormalConstantDirections)
 {
   MeshParameters parameters;
   parameters.fiber_directions.emplace_back("Fiber_direction_constant",
-      std::vector<double>{0.6, 0.8, 0.0}, false);
+      std::vector<double>{1.0, 0.0, 0.0}, false);
+  parameters.fiber_directions.emplace_back("Fiber_direction_constant",
+      std::vector<double>{0.0, 1.0, 0.0}, false);
 
   auto mesh = make_single_element_mesh();
   Fibers fibers;
@@ -42,32 +44,8 @@ TEST(Fibers, ReadsOrthonormalConstantDirections)
   fibers.read(parameters, mesh, 3);
 
   ASSERT_TRUE(fibers.has_fibers());
-  ASSERT_EQ(fibers.nfibers, 1);
-
-  const auto quadrature_fibers = fibers.get_quadrature_fibers(3, 0, 0);
-  ASSERT_EQ(quadrature_fibers.nrows(), 3);
-  ASSERT_EQ(quadrature_fibers.ncols(), 1);
-  EXPECT_DOUBLE_EQ(quadrature_fibers(0, 0), 0.6);
-  EXPECT_DOUBLE_EQ(quadrature_fibers(1, 0), 0.8);
-  EXPECT_DOUBLE_EQ(quadrature_fibers(2, 0), 0.0);
-
-  fibers.clear();
-  EXPECT_FALSE(fibers.has_fibers());
-}
-
-TEST(Fibers, ReadsMultipleOrthonormalConstantDirections)
-{
-  MeshParameters parameters;
-  parameters.fiber_directions.emplace_back("Fiber_direction_constant",
-      std::vector<double>{1.0, 0.0, 0.0}, false);
-  parameters.fiber_directions.emplace_back("Fiber_direction_constant",
-      std::vector<double>{0.0, 1.0, 0.0}, false);
-
-  auto mesh = make_single_element_mesh();
-  Fibers fibers;
-  fibers.read(parameters, mesh, 3);
-
   ASSERT_EQ(fibers.nfibers, 2);
+
   const auto quadrature_fibers = fibers.get_quadrature_fibers(3, 0, 0);
   ASSERT_EQ(quadrature_fibers.nrows(), 3);
   ASSERT_EQ(quadrature_fibers.ncols(), 3);
@@ -77,6 +55,20 @@ TEST(Fibers, ReadsMultipleOrthonormalConstantDirections)
   EXPECT_DOUBLE_EQ(quadrature_fibers(0, 1), 0.0);
   EXPECT_DOUBLE_EQ(quadrature_fibers(1, 1), 1.0);
   EXPECT_DOUBLE_EQ(quadrature_fibers(2, 1), 0.0);
+
+  fibers.clear();
+  EXPECT_FALSE(fibers.has_fibers());
+}
+
+TEST(Fibers, RejectsWrongNumberOfConstantDirections)
+{
+  MeshParameters parameters;
+  parameters.fiber_directions.emplace_back("Fiber_direction_constant",
+      std::vector<double>{1.0, 0.0, 0.0}, false);
+
+  auto mesh = make_single_element_mesh();
+  Fibers fibers;
+  EXPECT_THROW(fibers.read(parameters, mesh, 3), std::runtime_error);
 }
 
 TEST(Fibers, RejectsNonUnitConstantDirection)
@@ -84,6 +76,8 @@ TEST(Fibers, RejectsNonUnitConstantDirection)
   MeshParameters parameters;
   parameters.fiber_directions.emplace_back("Fiber_direction_constant",
       std::vector<double>{3.0, 4.0, 0.0}, false);
+  parameters.fiber_directions.emplace_back("Fiber_direction_constant",
+      std::vector<double>{0.0, 1.0, 0.0}, false);
 
   auto mesh = make_single_element_mesh();
   Fibers fibers;
@@ -108,21 +102,25 @@ TEST(Fibers, LoadsCellDirectionsFromVtu)
   MeshParameters parameters;
   parameters.fiber_direction_file_paths_cells.set(
       "Fiber_direction_from_file_cells", false,
-      {std::string(UNIT_TEST_DATA_DIR) + "/fibers_cell_data.vtu"});
+      {std::string(UNIT_TEST_DATA_DIR) + "/fibers_cell_data.vtu",
+       std::string(UNIT_TEST_DATA_DIR) + "/fibers_cell_data_sheet.vtu"});
 
   auto mesh = make_single_element_mesh();
   Fibers fibers;
   fibers.read(parameters, mesh, 3);
 
   ASSERT_TRUE(fibers.has_fibers());
-  ASSERT_EQ(fibers.nfibers, 1);
+  ASSERT_EQ(fibers.nfibers, 2);
 
   const auto quadrature_fibers = fibers.get_quadrature_fibers(3, 0, 0);
   ASSERT_EQ(quadrature_fibers.nrows(), 3);
-  ASSERT_EQ(quadrature_fibers.ncols(), 1);
+  ASSERT_EQ(quadrature_fibers.ncols(), 3);
   EXPECT_DOUBLE_EQ(quadrature_fibers(0, 0), 1.0);
   EXPECT_DOUBLE_EQ(quadrature_fibers(1, 0), 0.0);
   EXPECT_DOUBLE_EQ(quadrature_fibers(2, 0), 0.0);
+  EXPECT_DOUBLE_EQ(quadrature_fibers(0, 1), 0.0);
+  EXPECT_DOUBLE_EQ(quadrature_fibers(1, 1), 1.0);
+  EXPECT_DOUBLE_EQ(quadrature_fibers(2, 1), 0.0);
 }
 
 TEST(Fibers, LoadsPointDirectionsFromVtu)
@@ -130,21 +128,25 @@ TEST(Fibers, LoadsPointDirectionsFromVtu)
   MeshParameters parameters;
   parameters.fiber_direction_file_paths_points.set(
       "Fiber_direction_from_file_points", false,
-      {std::string(UNIT_TEST_DATA_DIR) + "/fibers_point_data.vtu"});
+      {std::string(UNIT_TEST_DATA_DIR) + "/fibers_point_data.vtu",
+       std::string(UNIT_TEST_DATA_DIR) + "/fibers_point_data_sheet.vtu"});
 
   auto mesh = make_single_element_mesh();
   Fibers fibers;
   fibers.read(parameters, mesh, 3);
 
   ASSERT_TRUE(fibers.has_fibers());
-  ASSERT_EQ(fibers.nfibers, 1);
+  ASSERT_EQ(fibers.nfibers, 2);
 
   const auto quadrature_fibers = fibers.get_quadrature_fibers(3, 0, 0);
   ASSERT_EQ(quadrature_fibers.nrows(), 3);
-  ASSERT_EQ(quadrature_fibers.ncols(), 1);
+  ASSERT_EQ(quadrature_fibers.ncols(), 3);
   EXPECT_DOUBLE_EQ(quadrature_fibers(0, 0), 0.0);
   EXPECT_DOUBLE_EQ(quadrature_fibers(1, 0), 1.0);
   EXPECT_DOUBLE_EQ(quadrature_fibers(2, 0), 0.0);
+  EXPECT_DOUBLE_EQ(quadrature_fibers(0, 1), 1.0);
+  EXPECT_DOUBLE_EQ(quadrature_fibers(1, 1), 0.0);
+  EXPECT_DOUBLE_EQ(quadrature_fibers(2, 1), 0.0);
 }
 
 TEST(Fibers, RejectsCellTagWithPointData)
@@ -152,7 +154,8 @@ TEST(Fibers, RejectsCellTagWithPointData)
   MeshParameters parameters;
   parameters.fiber_direction_file_paths_cells.set(
       "Fiber_direction_from_file_cells", false,
-      {std::string(UNIT_TEST_DATA_DIR) + "/fibers_point_data.vtu"});
+      {std::string(UNIT_TEST_DATA_DIR) + "/fibers_point_data.vtu",
+       std::string(UNIT_TEST_DATA_DIR) + "/fibers_point_data_sheet.vtu"});
 
   auto mesh = make_single_element_mesh();
   Fibers fibers;
@@ -164,7 +167,8 @@ TEST(Fibers, RejectsPointTagWithCellData)
   MeshParameters parameters;
   parameters.fiber_direction_file_paths_points.set(
       "Fiber_direction_from_file_points", false,
-      {std::string(UNIT_TEST_DATA_DIR) + "/fibers_cell_data.vtu"});
+      {std::string(UNIT_TEST_DATA_DIR) + "/fibers_cell_data.vtu",
+       std::string(UNIT_TEST_DATA_DIR) + "/fibers_cell_data_sheet.vtu"});
 
   auto mesh = make_single_element_mesh();
   Fibers fibers;

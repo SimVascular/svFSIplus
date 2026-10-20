@@ -549,7 +549,9 @@ void Fibers::complete_fiber_basis(Array<double>& fibers, const int nsd)
       fibers.data() + location * fibers.nrows(), nsd, nsd);
 
     if (nsd == 3) {
-      basis.col(2) = basis.col(0).cross(basis.col(1));
+      const Eigen::Vector3d fiber = basis.col(0);
+      const Eigen::Vector3d sheet = basis.col(1);
+      basis.col(2) = fiber.cross(sheet);
     } else if (nsd == 2) {
       basis(0, 1) = -basis(1, 0);
       basis(1, 1) = basis(0, 0);
