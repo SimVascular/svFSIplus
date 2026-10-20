@@ -18,9 +18,9 @@ void ActiveStressLandNiederer::read_model_specific_parameters(
   eta_TRPN = params.get_scalar("eta_TRPN");
   k_u = params.get_positive_scalar("k_u");
   TRPN50 = params.get_positive_scalar("TRPN50");
-  // rw, rs = 1 make the k_b denominator (1 - rs)(1 - rw) vanish.
-  rw = params.get_scalar("rw", 0.0, 1.0, true, false);
-  rs = params.get_scalar("rs", 0.0, 1.0, true, false);
+  // rw, rs = 0 or 1 makes denominator vanish 
+  rw = params.get_scalar("rw", 0.0, 1.0, false, false);
+  rs = params.get_scalar("rs", 0.0, 1.0, false, false);
   gamma_s = params.get_scalar("gamma_s");
   gamma_w = params.get_scalar("gamma_w");
   phi = params.get_scalar("phi");

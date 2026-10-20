@@ -198,12 +198,12 @@ protected:
 
   /// Strain-dependent detachment-rate coefficient @f$\gamma_s@f$ for the
   /// strongly-bound (post-powerstroke) S state; scales how fast cross-bridges
-  /// are pulled off by distortion in that state [-]
+  /// are pulled off by distortion in that state [1/ms]
   double gamma_s;
 
   /// Strain-dependent detachment-rate coefficient @f$\gamma_w@f$ for the
   /// weakly-bound (pre-powerstroke) W state; scales how fast cross-bridges
-  /// are pulled off by distortion in that state [-]
+  /// are pulled off by distortion in that state [1/ms]
   double gamma_w;
 
   /// Proportionality factor @f$\phi@f$ relating the cross-bridge distortion
@@ -220,7 +220,7 @@ protected:
   double beta0;
 
   /// Coefficient @f$\beta_1@f$ controlling the length-dependence of calcium
-  /// sensitivity (shifts CaRef/[Ca2+]T50 with sarcomere stretch) [-]
+  /// sensitivity (shifts CaRef/[Ca2+]T50 with sarcomere stretch) [μM]
   double beta1;
 
   /// @}
