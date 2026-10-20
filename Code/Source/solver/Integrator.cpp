@@ -1026,7 +1026,7 @@ void Integrator::apply_increment(const eqType &eq, const double step_length) {
         }
 
         for (int i = 0; i < e-s; i++) {
-          dUl(i) = step_length * (Rd(i, a) * coef[2] + R(i, a) * coef[3]);
+          dUl(i) = Rd(i, a) * coef[2] + step_length * R(i, a) * coef[3];
           Ad(i,a) = Ad(i,a) - dUl(i);
           Dn(i+s,a) = Dn(i+s,a) - dUl(i)*coef[0];
         }
