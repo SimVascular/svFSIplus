@@ -32,14 +32,16 @@ class Fibers {
     // Clears the fiber directions.
     void clear();
 
-    /// Returns an Array view of the fiber directions for a quadrature point
-    /// and element. Explicit directions are the single column of the input
-    /// array, cell directions are the requested cell column, and point
-    /// directions are their interpolated quadrature-point value. The view
-    /// shares this object's storage and must not outlive it.
+    /// Returns an Array view of the complete nsd x nsd orthonormal fiber basis
+    /// for a quadrature point and element. Columns are fiber,
+    /// sheet/transverse, and (in 3D) sheet normal. Explicit directions use the
+    /// single stored basis, cell directions use the requested cell basis, and
+    /// point directions use their interpolated quadrature-point basis. The
+    /// view shares this object's storage and must not outlive it.
     Array<double> get_quadrature_fibers(int nsd, int g, int e) const;
 
-    /// Returns a read-only Eigen view of get_quadrature_fibers().
+    /// Returns a read-only Eigen view of the complete basis returned by
+    /// get_quadrature_fibers().
     Eigen::Map<const Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>>
     get_eigen_fibers(int nsd, int g, int e) const;
 

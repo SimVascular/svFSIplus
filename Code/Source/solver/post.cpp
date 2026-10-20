@@ -1851,7 +1851,7 @@ void tensor_post_impl(Simulation* simulation, const mshType& lM, const int m, Ar
   Array<double> xl(nsd,fs.eNoN); 
   Array<double> dl(tDof,fs.eNoN); 
   Array<double> yl(tDof,fs.eNoN); 
-  Array<double> fibers(nsd,nFn);
+  Array<double> fibers(nsd,nsd);
   Vector<double> resl(m); 
   Array<double> Nx(nsd,fs.eNoN); 
   Vector<double> N(fs.eNoN);
@@ -1919,7 +1919,7 @@ void tensor_post_impl(Simulation* simulation, const mshType& lM, const int m, Ar
       fibers = 0.0;
       if (lM.fibers.has_fibers()) {
         const auto quadrature_fibers = lM.fibers.get_quadrature_fibers(nsd, g, e);
-        for (int l = 0; l < nFn; ++l) {
+        for (int l = 0; l < nsd; ++l) {
           for (int i = 0; i < nsd; ++i) {
             fibers(i, l) = quadrature_fibers(i, l);
           }

@@ -174,11 +174,11 @@ void construct_fsi(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const So
       if (mesh_has_fibers) {
         fiber_data = lM.fibers.get_eigen_fibers(nsd, g, e).data();
       } else {
-        default_fibers.setZero(nsd, nFn);
+        default_fibers.setZero(nsd, nsd);
         fiber_data = default_fibers.data();
       }
       const Eigen::Map<const Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>> fibers(
-          fiber_data, nsd, nFn);
+          fiber_data, nsd, nsd);
 
       if (g == 0 || !fs_1[1].lShpF) {
         auto Nx = fs_1[1].Nx.rslice(g);

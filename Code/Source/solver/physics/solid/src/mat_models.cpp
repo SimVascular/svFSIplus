@@ -23,14 +23,15 @@ namespace mat_models {
 /// Reproduces Fortran 'ACTVSTRAIN'.
 //
 void actv_strain(const ComMod& com_mod, const CepMod& cep_mod, const double gf, 
-    const int nfd, const Array<double>& fl, Array<double>& Fa) 
+    const int nfd, const Array<double>& fiber_basis, Array<double>& Fa)
 {
   using namespace mat_fun;
 
   int nsd = com_mod.nsd;
-  auto af = fl.col(0);
-  auto as = fl.col(1);
-  auto an = utils::cross(fl);
+
+  auto af = fiber_basis.col(0);
+  auto as = fiber_basis.col(1);
+  auto an = fiber_basis.col(2);
 
   double gn = 4.0 * gf;
   double gs = 1.0 / ((1.0+gf) * (1.0+gn)) - 1.0;
@@ -235,42 +236,10 @@ std::pair<Matrix<nsd>, Tensor<nsd>> bar_to_iso(
 }
 
 
-/**
- * @brief Compute normalized sheet-normal direction from fiber and sheet directions.
- *
- * Computes the cross product of fiber and sheet directions and normalizes it.
- * Validates that the directions are not parallel and that the operation is valid in 3D.
- *
- * @tparam nsd Number of spatial dimensions.
- * @param[in] fl Fiber directions matrix (nsd x nfd), where col(0) is fiber, col(1) is sheet.
- * @return Normalized sheet-normal direction vector.
- * @throws std::runtime_error if directions are parallel or if called in 2D.
- */
-template <int nsd>
-Eigen::Matrix<double, nsd, 1> compute_sheet_normal(const FiberRef<nsd>& fl)
-{
-  using namespace mat_fun;
-  
-  if constexpr (nsd == 2) {
-    throw std::runtime_error("Sheet-normal active stress (eta_n > 0) is not defined in 2D.");
-    
-  } else {  // nsd == 3
-    auto n_normal = cross_product<nsd>(fl.col(0), fl.col(1));
-    double norm_n = sqrt(n_normal.dot(n_normal));
-    
-    static constexpr double sheet_normal_tol = 1.0e-10; 
-    if (norm_n < sheet_normal_tol) {
-      throw std::runtime_error("Fiber and sheet directions are parallel; sheet-normal direction is undefined.");
-    }
-
-    return n_normal / norm_n;
-  }
-}
-
 template <int nsd>
 void compute_pk2cc(const ComMod &com_mod, const CepMod &cep_mod,
                    const dmnType &lDmn, const Matrix<nsd> &F, const int nfd,
-                   const FiberRef<nsd> &fl,
+                   const FiberRef<nsd> &fiber_basis,
                    const ActiveStress::ActiveTension &active_tension,
                    Matrix<nsd> &S, Matrix<3 * (nsd - 1)> &Dm, double &Ja) {
   using namespace consts;
@@ -287,6 +256,12 @@ void compute_pk2cc(const ComMod &com_mod, const CepMod &cep_mod,
   if (lDmn.phys != EquationType::phys_struct && lDmn.phys != EquationType::phys_ustruct && lDmn.phys != EquationType::phys_FSI) {
     throw std::runtime_error("[compute_pk2cc] This function is only valid for struct, ustruct, or fsi physics.");
   }
+
+  svmp::check<svmp::InternalErrorException>(
+      fiber_basis.cols() == nsd,
+      "The material-model fiber basis must contain exactly " +
+          std::to_string(nsd) + " directions, but contains " +
+          std::to_string(fiber_basis.cols()) + ".");
 
   // ustruct flag
   bool ustruct = (lDmn.phys == EquationType::phys_ustruct);
@@ -306,12 +281,12 @@ void compute_pk2cc(const ComMod &com_mod, const CepMod &cep_mod,
   double Tna = active_tension.sheet_normals;  // Sheet-normal direction
 
   // Aliases for fiber directions
-  const auto& fib_dir1 = fl.col(0);
+  const auto& fib_dir1 = fiber_basis.col(0);
 
   // fib_dir2 only exists when nfd >= 2
   Eigen::Matrix<double, nsd, 1> fib_dir2;
   if (nfd >= 2) {
-    fib_dir2 = fl.col(1);
+    fib_dir2 = fiber_basis.col(1);
   } else {
     fib_dir2 = Eigen::Matrix<double, nsd, 1>::Zero();
   }
@@ -462,8 +437,13 @@ void compute_pk2cc(const ComMod &com_mod, const CepMod &cep_mod,
         throw std::runtime_error("[compute_pk2cc] Min fiber directions not defined for Guccione material model.");
       }
 
-      // Compute sheet-normal direction
-      auto fib_dir3 = compute_sheet_normal<nsd>(fl);
+      Eigen::Matrix<double, nsd, 1> fib_dir3;
+      if constexpr (nsd == 2) {
+        throw std::runtime_error(
+            "The Guccione material model requires a 3D fiber basis.");
+      } else {
+        fib_dir3 = fiber_basis.col(2);
+      }
 
       // Compute isochoric component of E
       Matrix<nsd> E = 0.50 * (J2d*C - Idm);
@@ -702,7 +682,7 @@ void compute_pk2cc(const ComMod &com_mod, const CepMod &cep_mod,
       // Compute and store invariants and derivatives wrt C in array of
       // matrices/tensors
       CANNModel.computeInvariantsAndDerivatives<nsd>(
-          C, fl, nfd, J2d, J4d, Ci, Idm, N1, psi, Inv, dInv, ddInv);
+          C, fiber_basis, nfd, J2d, J4d, Ci, Idm, N1, psi, Inv, dInv, ddInv);
 
       // Strain energy function and derivatives
       CANNModel.evaluate(Inv, psi, dpsi, ddpsi);
@@ -727,8 +707,7 @@ void compute_pk2cc(const ComMod &com_mod, const CepMod &cep_mod,
   // Active stress.
   //
   // The sheet and sheet-normal components need a sheet direction to be defined,
-  // and the sheet-normal one is only defined in 3D (compute_sheet_normal raises
-  // in 2D).
+  // and the sheet-normal one is only defined in a 3D basis.
   svmp::check<svmp::InternalErrorException>(
       nfd >= 1,
       "At least one fiber direction must be defined for active stress.");
@@ -761,7 +740,7 @@ void compute_pk2cc(const ComMod &com_mod, const CepMod &cep_mod,
         "fiber and a sheet direction, but only " +
             std::to_string(nfd) + " fiber directions are defined.");
 
-    auto fib_dir3 = compute_sheet_normal<nsd>(fl);
+    auto fib_dir3 = fiber_basis.col(2);
     const Matrix<nsd> Hnn = fib_dir3 * fib_dir3.transpose();
     S += Tna * Hnn;
 

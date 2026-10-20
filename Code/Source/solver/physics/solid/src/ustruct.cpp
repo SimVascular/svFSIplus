@@ -320,11 +320,11 @@ void construct_usolid(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const
       if (mesh_has_fibers) {
         fiber_data = lM.fibers.get_eigen_fibers(nsd, g, e).data();
       } else {
-        default_fibers.setZero(nsd, nFn);
+        default_fibers.setZero(nsd, nsd);
         fiber_data = default_fibers.data();
       }
       const Eigen::Map<const Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>> fibers(
-          fiber_data, nsd, nFn);
+          fiber_data, nsd, nsd);
 
       // Shape function gradients and the viscous response are constant
       // within linear triangles and tetrahedra. triangles).
