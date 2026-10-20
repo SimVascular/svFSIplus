@@ -18,6 +18,33 @@ runs:
         lscpu | grep -E '^(Model name|CPU\(s\)|Thread\(s\) per core|Core\(s\) per socket):'
         free -h
 
+    - name: Install compiler cache
+      if: ${{ env.SVMP_OPTIMIZED_CI == 'true' }}
+      shell: bash
+      run: |
+        if ! command -v ccache >/dev/null 2>&1; then
+          apt-get update -qq
+          apt-get install -y --no-install-recommends ccache
+        fi
+        echo "CCACHE_DIR=$GITHUB_WORKSPACE/.ccache" >> "$GITHUB_ENV"
+        echo "CMAKE_C_COMPILER_LAUNCHER=ccache" >> "$GITHUB_ENV"
+        echo "CMAKE_CXX_COMPILER_LAUNCHER=ccache" >> "$GITHUB_ENV"
+
+    - name: Restore compiler cache
+      if: ${{ env.SVMP_OPTIMIZED_CI == 'true' }}
+      uses: actions/cache/restore@v4
+      with:
+        path: .ccache
+        key: ubuntu-ccache-v1-${{ github.run_id }}-${{ github.run_attempt }}
+        restore-keys: ubuntu-ccache-v1-
+
+    - name: Initialize compiler cache
+      if: ${{ env.SVMP_OPTIMIZED_CI == 'true' }}
+      shell: bash
+      run: |
+        ccache -M 1G
+        ccache -z
+
     - name: Build svZeroDSolver
       shell: bash
       run: |
@@ -38,6 +65,18 @@ runs:
       run: |
         source "$GITHUB_WORKSPACE/.github/actions/ci-helpers.sh"
         ci_build_solver build-petsc "$(nproc)" -DSV_PETSC_DIR:STRING=/petsc
+
+    - name: Report compiler cache statistics
+      if: ${{ env.SVMP_OPTIMIZED_CI == 'true' }}
+      shell: bash
+      run: ccache -s
+
+    - name: Save compiler cache
+      if: ${{ env.SVMP_OPTIMIZED_CI == 'true' }}
+      uses: actions/cache/save@v4
+      with:
+        path: .ccache
+        key: ubuntu-ccache-v1-${{ github.run_id }}-${{ github.run_attempt }}
         
     - name: Run integration tests
       shell: bash
