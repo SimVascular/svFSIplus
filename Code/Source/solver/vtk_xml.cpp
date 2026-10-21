@@ -7,6 +7,7 @@
 #include "vtk_xml_parser.h"
 #include "VtkData.h"
 
+#include "Core/Exception.h"
 #include "all_fun.h"
 #include "consts.h"
 #include "post.h"
@@ -906,6 +907,7 @@ void write_vtu_debug(ComMod& com_mod, mshType& lM, const std::string& fName)
   delete vtk_writer;
 }
 
+
 //------------
 // write_vtus
 //------------
@@ -953,6 +955,33 @@ void write_vtus(Simulation* simulation, const SolutionStates& solutions, const b
 
   const int nMsh = com_mod.nMsh;
   const auto& meshes = com_mod.msh;
+  const bool write_initial_fiber_basis = !lAve && com_mod.cTS == 0;
+  std::vector<Array<double>> initial_fiber_bases(nMsh);
+  bool has_point_fiber_basis = false;
+  bool has_cell_fiber_basis = false;
+  if (write_initial_fiber_basis) {
+    for (int iM = 0; iM < nMsh; ++iM) {
+      const auto& mesh = meshes[iM];
+      if (!mesh.fibers.has_fibers()) {
+        continue;
+      }
+
+      initial_fiber_bases[iM] =
+        mesh.fibers.gather_fibers(com_mod, cm_mod, mesh, nsd);
+      switch (mesh.fibers.get_data_location()) {
+        case Fibers::DataLocation::point:
+          has_point_fiber_basis = true;
+          break;
+        case Fibers::DataLocation::cell:
+        case Fibers::DataLocation::constant:
+          has_cell_fiber_basis = true;
+          break;
+        default:
+          svmp::raise<svmp::InternalErrorException>(
+            "Fiber input data has no cell, point, or constant direction association.");
+      }
+    }
+  }
 
   int nOut = 1;
   int nOute  = 0;
@@ -1511,6 +1540,31 @@ void write_vtus(Simulation* simulation, const SolutionStates& solutions, const b
 
   vtk_writer->set_points(tmpV);
 
+  if (has_point_fiber_basis) {
+    for (int direction = 0; direction < nsd; ++direction) {
+      Array<double> fiber_direction(nsd, nNo);
+      fiber_direction = 0.0;
+      int node_offset = 0;
+
+      for (int iM = 0; iM < nMsh; ++iM) {
+        const auto& fiber_basis = initial_fiber_bases[iM];
+        if (meshes[iM].fibers.get_data_location() ==
+            Fibers::DataLocation::point) {
+          for (int a = 0; a < d[iM].nNo; ++a) {
+            for (int component = 0; component < nsd; ++component) {
+              fiber_direction(component, node_offset + a) =
+                fiber_basis(component + direction * nsd, a);
+            }
+          }
+        }
+        node_offset += d[iM].nNo;
+      }
+
+      vtk_writer->set_point_data(
+        "Fiber_basis" + std::to_string(direction + 1), fiber_direction);
+    }
+  }
+
   // Writing the connectivity data
   //
   nSh = 0;     // For 0-based IDs.
@@ -1529,6 +1583,32 @@ void write_vtus(Simulation* simulation, const SolutionStates& solutions, const b
 
     vtk_writer->set_connectivity(nsd, tmpI);
     nSh = nSh + d[iM].nNo;
+  }
+
+  if (has_cell_fiber_basis) {
+    for (int direction = 0; direction < nsd; ++direction) {
+      Array<double> fiber_direction(nsd, nEl);
+      fiber_direction = 0.0;
+      int element_offset = 0;
+
+      for (int iM = 0; iM < nMsh; ++iM) {
+        const auto& fiber_basis = initial_fiber_bases[iM];
+        const auto data_location = meshes[iM].fibers.get_data_location();
+        if (data_location == Fibers::DataLocation::cell ||
+            data_location == Fibers::DataLocation::constant) {
+          for (int e = 0; e < d[iM].nEl; ++e) {
+            for (int component = 0; component < nsd; ++component) {
+              fiber_direction(component, element_offset + e) =
+                fiber_basis(component + direction * nsd, e);
+            }
+          }
+        }
+        element_offset += d[iM].nEl;
+      }
+
+      vtk_writer->set_element_data(
+        "Fiber_basis" + std::to_string(direction + 1), fiber_direction);
+    }
   }
 
   // Writing all solutions

@@ -4,6 +4,8 @@
 #include "Fibers.h"
 
 #include "ComMod.h"
+#include "Core/Exception.h"
+#include "FE/Common/FEException.h"
 #include "Parameters.h"
 #include "utils.h"
 
@@ -18,7 +20,6 @@
 #include <vtkXMLUnstructuredGridReader.h>
 
 #include <cmath>
-#include <stdexcept>
 #include <string>
 
 namespace {
@@ -47,38 +48,25 @@ Eigen::MatrixXd orthonormalize_fiber_matrix(
 
     const double norm = candidate.norm();
     if (norm <= linear_dependence_tolerance) {
-      throw std::runtime_error(
+      svmp::raise<svmp::ParseException>(
         "Fiber direction " + std::to_string(direction + 1) +
         " is linearly dependent " + location + ".");
     }
     basis.col(direction) = candidate / norm;
   }
 
-  // Complete an incomplete basis by applying Gram-Schmidt to the Cartesian
-  // direction with the largest remaining orthogonal component.
-  for (int direction = num_input_fibers; direction < nsd; ++direction) {
-    Eigen::VectorXd best_candidate(nsd);
-    double best_norm = 0.0;
-
-    for (int axis = 0; axis < nsd; ++axis) {
-      Eigen::VectorXd candidate = Eigen::VectorXd::Unit(nsd, axis);
-      for (int pass = 0; pass < 2; ++pass) {
-        for (int previous = 0; previous < direction; ++previous) {
-          candidate -= candidate.dot(basis.col(previous)) * basis.col(previous);
-        }
-      }
-
-      const double norm = candidate.norm();
-      if (norm > best_norm) {
-        best_candidate = candidate;
-        best_norm = norm;
-      }
-    }
-
-    if (best_norm <= linear_dependence_tolerance) {
-      throw std::runtime_error("Failed to complete the fiber basis " + location + ".");
-    }
-    basis.col(direction) = best_candidate / best_norm;
+  // In 3D, the normal must be the cross product of the orthonormalized fiber
+  // and sheet directions so that the completed frame is right-handed.
+  if (nsd == 3) {
+    const Eigen::Vector3d fiber = basis.col(0);
+    const Eigen::Vector3d sheet = basis.col(1);
+    basis.col(2) = fiber.cross(sheet);
+  } else if (nsd == 2) {
+    basis(0, 1) = -basis(1, 0);
+    basis(1, 1) = basis(0, 0);
+  } else {
+    svmp::raise<svmp::FE::InvalidArgumentException>(
+      "Fiber basis completion is only supported for spatial dimensions 2 and 3.");
   }
 
   return basis;
@@ -94,10 +82,12 @@ Vector<double> interpolate_dyadic(
   const int nsd = nodal_fibers.nrows();
   const int num_nodes = nodal_fibers.ncols();
   if (nsd == 0 || num_nodes == 0) {
-    throw std::runtime_error("Nodal fibers must be a non-empty array.");
+    svmp::raise<svmp::FE::InvalidArgumentException>(
+      "Nodal fibers must be a non-empty array.");
   }
   if (shape_functions.size() != num_nodes) {
-    throw std::runtime_error("The number of shape functions must match the number of nodal fibers.");
+    svmp::raise<svmp::FE::InvalidArgumentException>(
+      "The number of shape functions must match the number of nodal fibers.");
   }
 
   Eigen::MatrixXd interpolated_dyad = Eigen::MatrixXd::Zero(nsd, nsd);
@@ -124,12 +114,14 @@ Vector<double> interpolate_dyadic(
   }
 
   if (reference_weight < 0.0) {
-    throw std::runtime_error("At least one shape function must be nonzero.");
+    svmp::raise<svmp::FE::InvalidArgumentException>(
+      "At least one shape function must be nonzero.");
   }
 
   Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigen_solver(interpolated_dyad);
   if (eigen_solver.info() != Eigen::Success) {
-    throw std::runtime_error("Failed to compute the principal direction of the interpolated fiber dyad.");
+    svmp::raise<svmp::InternalErrorException>(
+      "Failed to compute the principal direction of the interpolated fiber dyad.");
   }
 
   Eigen::VectorXd interpolated_fiber = eigen_solver.eigenvectors().col(nsd - 1);
@@ -173,7 +165,7 @@ void Fibers::distribute(ComMod& com_mod, const CmMod& cm_mod, const cmType& cm,
   }
   cm.bcast(cm_mod, &num_components);
 
-  if (data_location == DataLocation::explicit_direction) {
+  if (data_location == DataLocation::constant) {
     if (cm.slv(cm_mod)) {
       input_fibers.resize(num_components, 1);
     }
@@ -206,16 +198,22 @@ void Fibers::distribute(ComMod& com_mod, const CmMod& cm_mod, const cmType& cm,
   }
 
   if (data_location != DataLocation::point) {
-    throw std::runtime_error("Fiber input data has no cell, point, or explicit direction association.");
+    svmp::raise<svmp::InternalErrorException>(
+      "Fiber input data has no cell, point, or constant direction association.");
   }
 
   Array3<double> reordered;
+  Array3<double> reordered_nodal;
   if (cm.mas(cm_mod)) {
     reordered.resize(num_components, nG, mesh.gnEl);
+    reordered_nodal.resize(num_components, mesh.eNoN, mesh.gnEl);
     for (int e = 0; e < mesh.gnEl; ++e) {
       reordered.set_slice(mesh.otnIEN[e], quadrature_fibers.slice(e));
+      reordered_nodal.set_slice(
+        mesh.otnIEN[e], element_nodal_fibers.slice(e));
     }
     quadrature_fibers.clear();
+    element_nodal_fibers.clear();
   }
 
   quadrature_fibers.resize(num_components, nG, nEl);
@@ -226,6 +224,87 @@ void Fibers::distribute(ComMod& com_mod, const CmMod& cm_mod, const cmType& cm,
   MPI_Scatterv(reordered.data(), scount.data(), disp.data(), cm_mod::mpreal,
       quadrature_fibers.data(), nEl * nG * num_components,
       cm_mod::mpreal, cm_mod.master, cm.com());
+
+  element_nodal_fibers.resize(num_components, mesh.eNoN, nEl);
+  for (int i = 0; i < num_proc; ++i) {
+    disp[i] = mesh.eDist[i] * mesh.eNoN * num_components;
+    scount[i] = (mesh.eDist[i + 1] - mesh.eDist[i]) *
+      mesh.eNoN * num_components;
+  }
+  MPI_Scatterv(reordered_nodal.data(), scount.data(), disp.data(),
+      cm_mod::mpreal, element_nodal_fibers.data(),
+      nEl * mesh.eNoN * num_components, cm_mod::mpreal,
+      cm_mod.master, cm.com());
+}
+
+
+Array<double> Fibers::gather_fibers(
+  const ComMod& com_mod, const CmMod& cm_mod, const mshType& mesh,
+  const int nsd) const
+{
+  Array<double> gathered;
+
+  if (data_location == DataLocation::none) {
+    return gathered;
+  }
+
+  const int num_components = nsd * nsd;
+  auto& cm = com_mod.cm;
+
+  if (data_location == DataLocation::point) {
+    if (cm.mas(cm_mod)) {
+      if (input_fibers.nrows() != num_components ||
+          input_fibers.ncols() != mesh.gnNo) {
+        svmp::raise<svmp::InternalErrorException>(
+          "Point fiber basis dimensions are inconsistent with the mesh.");
+      }
+      gathered = input_fibers;
+    }
+    return gathered;
+  }
+
+  if (data_location != DataLocation::cell &&
+      data_location != DataLocation::constant) {
+    return gathered;
+  }
+
+  if (mesh.nEl != 0 &&
+      (input_fibers.nrows() != num_components ||
+       (input_fibers.ncols() != 1 &&
+        input_fibers.ncols() != mesh.nEl))) {
+    svmp::raise<svmp::InternalErrorException>(
+      "Cell fiber basis dimensions are inconsistent with the mesh.");
+  }
+
+  Array<double> local_basis(num_components, mesh.nEl);
+  for (int e = 0; e < mesh.nEl; ++e) {
+    const int input_location = input_fibers.ncols() == 1 ? 0 : e;
+    local_basis.set_col(e, input_fibers.col(input_location));
+  }
+
+  Vector<int> counts(cm.np());
+  Vector<int> displacements(cm.np());
+  for (int rank = 0; rank < cm.np(); ++rank) {
+    displacements[rank] = mesh.eDist[rank] * num_components;
+    counts[rank] =
+      (mesh.eDist[rank + 1] - mesh.eDist[rank]) * num_components;
+  }
+
+  Array<double> partitioned_basis;
+  if (cm.mas(cm_mod)) {
+    partitioned_basis.resize(num_components, mesh.gnEl);
+  }
+  MPI_Gatherv(local_basis.data(), mesh.nEl * num_components,
+    cm_mod::mpreal, partitioned_basis.data(), counts.data(),
+    displacements.data(), cm_mod::mpreal, cm_mod.master, cm.com());
+
+  if (cm.mas(cm_mod)) {
+    gathered.resize(num_components, mesh.gnEl);
+    for (int e = 0; e < mesh.gnEl; ++e) {
+      gathered.set_col(e, partitioned_basis.col(mesh.otnIEN[e]));
+    }
+  }
+  return gathered;
 }
 
 
@@ -233,6 +312,7 @@ void Fibers::clear()
 {
   input_fibers.clear();
   quadrature_fibers.clear();
+  element_nodal_fibers.clear();
   nfibers = 0;
   data_location = DataLocation::none;
 }
@@ -256,7 +336,7 @@ void Fibers::read(const MeshParameters& mesh_parameters, mshType& mesh, const in
 
   // If multiple input modes are specified, throw an error.
   if (num_input_modes > 1) {
-    throw std::runtime_error(
+    svmp::raise<svmp::ParseException>(
       "Specify fiber directions with only one of Fiber_direction_constant, "
       "Fiber_direction_from_file_points, or Fiber_direction_from_file_cells.");
   }
@@ -266,7 +346,7 @@ void Fibers::read(const MeshParameters& mesh_parameters, mshType& mesh, const in
   const int num_input_fibers = num_dirs + num_point_paths + num_cell_paths;
   const int expected_fibers = nsd - 1;
   if (num_input_fibers != expected_fibers) {
-    throw std::runtime_error(
+    svmp::raise<svmp::ParseException>(
       "The number of input fiber directions (" +
       std::to_string(num_input_fibers) +
       ") must be exactly nsd - 1 (" + std::to_string(expected_fibers) + ").");
@@ -281,15 +361,14 @@ void Fibers::read(const MeshParameters& mesh_parameters, mshType& mesh, const in
   }
 
   check_input_fibers_orthonormal(nsd);
+  complete_fiber_basis(input_fibers, nsd);
 
   if (data_location == DataLocation::point) {
     populate_quadrature_fibers(mesh, nsd);
-  } else if (data_location == DataLocation::cell ||
-             data_location == DataLocation::explicit_direction) {
-    complete_fiber_basis(input_fibers, nsd);
-  } else {
-    throw std::runtime_error(
-      "Fiber input data has no cell, point, or explicit direction association.");
+  } else if (data_location != DataLocation::cell &&
+             data_location != DataLocation::constant) {
+    svmp::raise<svmp::InternalErrorException>(
+      "Fiber input data has no cell, point, or constant direction association.");
   }
 }
 
@@ -299,7 +378,7 @@ void Fibers::read_from_file(const MeshParameters& mesh_parameters, mshType& mesh
 {
 if (expected_location != DataLocation::point &&
     expected_location != DataLocation::cell) {
-  throw std::runtime_error(
+  svmp::raise<svmp::InternalErrorException>(
     "Fiber direction files must be associated with cells or points.");
 }
 
@@ -323,7 +402,7 @@ for (int idx = 0; idx < nfibers; ++idx) {
   if (FILE* file = fopen(file_name.c_str(), "r")) {
     fclose(file);
   } else {
-    throw std::runtime_error("The fiber direction VTK file '" + file_name + "' can't be read.");
+    svmp::raise<svmp::FileNotFoundException>(file_name);
   }
 
   auto reader = vtkSmartPointer<vtkXMLUnstructuredGridReader>::New();
@@ -332,9 +411,11 @@ for (int idx = 0; idx < nfibers; ++idx) {
   auto grid = reader->GetOutput();
 
   if (mesh.gnEl != grid->GetNumberOfCells()) {
-    throw std::runtime_error("The number of elements (" + std::to_string(grid->GetNumberOfCells()) +
-        ") in the fiber direction VTK file '" + file_name + "' is not equal to the number of elements (" +
-        std::to_string(mesh.gnEl) + ") for the mesh named '" + mesh.name + "'.");
+    svmp::raise<svmp::FileFormatException>(file_name,
+      "The number of elements (" +
+      std::to_string(grid->GetNumberOfCells()) +
+      ") is not equal to the number of elements (" +
+      std::to_string(mesh.gnEl) + ") for the mesh named '" + mesh.name + "'.");
   }
 
   vtkDataArray* array = nullptr;
@@ -347,25 +428,29 @@ for (int idx = 0; idx < nfibers; ++idx) {
     num_locations = grid->GetNumberOfPoints();
   }
   if (array == nullptr) {
-    throw std::runtime_error(
-        "No 'FIB_DIR' " + association + " data found in the fiber direction VTK file '" +
-        file_name + "' as required by " + xml_tag + ".");
+    svmp::raise<svmp::FileFormatException>(file_name,
+      "No 'FIB_DIR' " + association + " data found as required by " +
+      xml_tag + ".");
   }
   if (array->GetNumberOfTuples() != num_locations) {
-    throw std::runtime_error("The number of 'FIB_DIR' tuples (" + std::to_string(array->GetNumberOfTuples()) +
-        ") in the fiber direction VTK file '" + file_name + "' does not match the number of associated " +
-        association + " (" + std::to_string(num_locations) + ").");
+    svmp::raise<svmp::FileFormatException>(file_name,
+      "The number of 'FIB_DIR' tuples (" +
+      std::to_string(array->GetNumberOfTuples()) +
+      ") does not match the number of associated " + association + " (" +
+      std::to_string(num_locations) + ").");
   }
   if (array->GetNumberOfComponents() < nsd) {
-    throw std::runtime_error("The 'FIB_DIR' data in the fiber direction VTK file '" + file_name + "' has fewer than " +
-        std::to_string(nsd) + " components.");
+    svmp::raise<svmp::FileFormatException>(file_name,
+      "The 'FIB_DIR' data has fewer than " + std::to_string(nsd) +
+      " components.");
   }
 
   const vtkIdType expected_num_locations = expect_cells ? mesh.gnEl : mesh.gnNo;
   if (num_locations != expected_num_locations) {
-    throw std::runtime_error("The number of " + association + " (" + std::to_string(num_locations) +
-        ") in the fiber direction VTK file '" + file_name + "' does not match the mesh (" +
-        std::to_string(expected_num_locations) + ").");
+    svmp::raise<svmp::FileFormatException>(file_name,
+      "The number of " + association + " (" +
+      std::to_string(num_locations) + ") does not match the mesh (" +
+      std::to_string(expected_num_locations) + ").");
   }
 
   if (idx == 0) {
@@ -388,18 +473,29 @@ for (int idx = 0; idx < nfibers; ++idx) {
 
 void Fibers::read_directions(const MeshParameters& mesh_parameters, const int nsd)
 {
-  const int num_dirs = mesh_parameters.fiber_directions.size();
+  const auto& directions = mesh_parameters.fiber_directions;
+  const int num_dirs = directions.size();
+
+  for (int i = 0; i < num_dirs; ++i) {
+    const int num_components = directions[i].size();
+    if (num_components != nsd) {
+      svmp::raise<svmp::ParseException>(
+        "Fiber_direction_constant " + std::to_string(i + 1) + " has " +
+        std::to_string(num_components) + " components, but exactly " +
+        std::to_string(nsd) + " are required for a " +
+        std::to_string(nsd) + "D mesh.");
+    }
+  }
+
   nfibers = num_dirs;
-  data_location = DataLocation::explicit_direction;
+  data_location = DataLocation::constant;
 
   // Allocate space for the completed nsd-dimensional basis.
   input_fibers.resize(nsd * nsd, 1);
   input_fibers = 0.0;
-  const auto directions = mesh_parameters.fiber_directions;
   for (int i = 0; i < nfibers; ++i) {
-    const auto direction = directions[i]();
     for (int j = 0; j < nsd; ++j) {
-      input_fibers(i * nsd + j, 0) = direction[j];
+      input_fibers(i * nsd + j, 0) = directions[i][j];
     }
   }
 }
@@ -419,7 +515,7 @@ void Fibers::check_input_fibers_orthonormal(const int nsd) const
       }
       const double norm = std::sqrt(norm_sq);
       if (std::abs(norm - 1.0) > tolerance) {
-        throw std::runtime_error(
+        svmp::raise<svmp::ParseException>(
           "Fiber direction " + std::to_string(i + 1) + " at location " +
           std::to_string(location) + " is not a unit vector (norm = " +
           std::to_string(norm) + ").");
@@ -438,7 +534,7 @@ void Fibers::check_input_fibers_orthonormal(const int nsd) const
                  input_fibers(j * nsd + component, location);
         }
         if (std::abs(dot) > tolerance) {
-          throw std::runtime_error(
+          svmp::raise<svmp::ParseException>(
             "Fiber directions " + std::to_string(j + 1) + " and " +
             std::to_string(i + 1) + " at location " +
             std::to_string(location) + " are not orthogonal (dot product = " +
@@ -454,18 +550,19 @@ Array<double> Fibers::get_quadrature_fibers(
   const int nsd, const int g, const int e) const
 {
   if (nsd <= 0) {
-    throw std::runtime_error("The spatial dimension must be positive when accessing fiber directions.");
+    svmp::raise<svmp::FE::InvalidArgumentException>(
+      "The spatial dimension must be positive when accessing fiber directions.");
   }
 
   double* data = nullptr;
   int num_components = 0;
 
-  if (data_location == DataLocation::explicit_direction) {
+  if (data_location == DataLocation::constant) {
     num_components = input_fibers.nrows();
     data = input_fibers.data();
   } else if (data_location == DataLocation::cell) {
     if (e < 0 || e >= input_fibers.ncols()) {
-      throw std::runtime_error(
+      svmp::raise<svmp::IndexOutOfRangeException>(
         "The requested fiber element index " + std::to_string(e) +
         " is out of bounds.");
     }
@@ -474,7 +571,7 @@ Array<double> Fibers::get_quadrature_fibers(
   } else if (data_location == DataLocation::point) {
     if (g < 0 || g >= quadrature_fibers.ncols() ||
         e < 0 || e >= quadrature_fibers.nslices()) {
-      throw std::runtime_error(
+      svmp::raise<svmp::IndexOutOfRangeException>(
         "The requested quadrature fiber indices (" + std::to_string(g) +
         ", " + std::to_string(e) + ") are out of bounds.");
     }
@@ -483,16 +580,69 @@ Array<double> Fibers::get_quadrature_fibers(
       (e * quadrature_fibers.ncols() + g) * num_components;
     data = quadrature_fibers.data() + offset;
   } else {
-    throw std::runtime_error("Fiber input data has not been initialized.");
+    svmp::raise<svmp::InternalErrorException>(
+      "Fiber input data has not been initialized.");
   }
 
   if (num_components == 0 || num_components % nsd != 0) {
-    throw std::runtime_error(
+    svmp::raise<svmp::InternalErrorException>(
       "The fiber data have " + std::to_string(num_components) +
       " components, which is incompatible with spatial dimension " +
       std::to_string(nsd) + ".");
   }
   return {nsd, num_components / nsd, data};
+}
+
+
+Array<double> Fibers::get_quadrature_fibers(
+  const int nsd, const Vector<double>& basis_functions, const int e) const
+{
+  if (data_location != DataLocation::point) {
+    return get_quadrature_fibers(nsd, 0, e);
+  }
+  if (nsd <= 0) {
+    svmp::raise<svmp::FE::InvalidArgumentException>(
+      "The spatial dimension must be positive when accessing fiber directions.");
+  }
+  if (e < 0 || e >= element_nodal_fibers.nslices()) {
+    svmp::raise<svmp::IndexOutOfRangeException>(
+      "The requested fiber element index " + std::to_string(e) +
+      " is out of bounds.");
+  }
+  const int num_basis_functions = basis_functions.size();
+  if (num_basis_functions <= 0 ||
+      num_basis_functions > element_nodal_fibers.ncols()) {
+    svmp::raise<svmp::FE::InvalidArgumentException>(
+      "The number of basis-function values must be positive and cannot exceed "
+      "the number of element nodes.");
+  }
+
+  Array<double> interpolated_fibers(nsd, nfibers);
+  Array<double> nodal_fibers(nsd, num_basis_functions);
+
+  for (int iFn = 0; iFn < nfibers; ++iFn) {
+    for (int a = 0; a < num_basis_functions; ++a) {
+      for (int component = 0; component < nsd; ++component) {
+        nodal_fibers(component, a) =
+          element_nodal_fibers(component + iFn * nsd, a, e);
+      }
+    }
+
+    const auto interpolated =
+      interpolate_dyadic(nodal_fibers, basis_functions);
+    for (int component = 0; component < nsd; ++component) {
+      interpolated_fibers(component, iFn) = interpolated[component];
+    }
+  }
+
+  const Eigen::Map<const Eigen::MatrixXd> input(
+    interpolated_fibers.data(), nsd, nfibers);
+  const auto basis = orthonormalize_fiber_matrix(
+    input, "in element " + std::to_string(e));
+
+  Array<double> result(nsd, nsd);
+  Eigen::Map<Eigen::MatrixXd>(result.data(), nsd, nsd) = basis;
+  return result;
 }
 
 
@@ -507,32 +657,48 @@ Fibers::get_eigen_fibers(const int nsd, const int g, const int e) const
 void Fibers::populate_quadrature_fibers(const mshType& mesh, const int nsd)
 {
   if (mesh.nG <= 0) {
-    throw std::runtime_error(
+    svmp::raise<svmp::InternalErrorException>(
       "Point fiber directions cannot be populated before mesh quadrature points are initialized.");
   }
   quadrature_fibers.resize(nsd * nsd, mesh.nG, mesh.gnEl);
   quadrature_fibers = 0.0;
-  interpolate_point_fibers(mesh, nsd);
-  orthonormalize_quadrature_fibers(nsd);
+  interpolate_point_fibers_mesh(mesh, nsd);
 }
 
 
-void Fibers::orthonormalize_quadrature_fibers(const int nsd)
+void Fibers::interpolate_point_fibers_mesh(
+  const mshType& mesh, const int nsd)
 {
-  const int nG = quadrature_fibers.ncols();
-  const int nEl = quadrature_fibers.nslices();
+  if (mesh.N.nrows() != mesh.eNoN || mesh.N.ncols() != mesh.nG) {
+    svmp::raise<svmp::InternalErrorException>(
+      "Mesh shape functions are inconsistent with its nodes and quadrature points.");
+  }
 
-  for (int e = 0; e < nEl; ++e) {
-    for (int g = 0; g < nG; ++g) {
-      const int offset = (e * nG + g) * nsd * nsd;
-      const Eigen::Map<const Eigen::MatrixXd> input(
-        quadrature_fibers.data() + offset, nsd, nfibers);
-      const auto basis = orthonormalize_fiber_matrix(
-        input, "at quadrature point " + std::to_string(g) +
-        " of element " + std::to_string(e));
-      Eigen::Map<Eigen::MatrixXd> output(
-        quadrature_fibers.data() + offset, nsd, nsd);
-      output = basis;
+  element_nodal_fibers.resize(nsd * nsd, mesh.eNoN, mesh.gnEl);
+  element_nodal_fibers = 0.0;
+  for (int e = 0; e < mesh.gnEl; ++e) {
+    for (int a = 0; a < mesh.eNoN; ++a) {
+      const int node = mesh.gIEN(a, e);
+      for (int direction = 0; direction < nfibers; ++direction) {
+        for (int component = 0; component < nsd; ++component) {
+          element_nodal_fibers(component + direction * nsd, a, e) =
+            input_fibers(component + direction * nsd, node);
+        }
+      }
+    }
+  }
+
+  for (int g = 0; g < mesh.nG; ++g) {
+    const auto basis_functions = mesh.N.col(g);
+    for (int e = 0; e < mesh.gnEl; ++e) {
+      const auto fibers =
+        get_quadrature_fibers(nsd, basis_functions, e);
+      for (int direction = 0; direction < nsd; ++direction) {
+        for (int component = 0; component < nsd; ++component) {
+          quadrature_fibers(component + direction * nsd, g, e) =
+            fibers(component, direction);
+        }
+      }
     }
   }
 }
@@ -540,7 +706,7 @@ void Fibers::orthonormalize_quadrature_fibers(const int nsd)
 
 void Fibers::complete_fiber_basis(Array<double>& fibers, const int nsd)
 {
-  // Cell and explicit inputs are already checked to be orthonormal, so the
+  // The input directions are already checked to be orthonormal, so the
   // remaining basis vector is just the cross product (3D) or a 90-degree
   // rotation (2D). Point data still uses Gram-Schmidt after interpolation.
   const int num_locations = fibers.ncols();
@@ -556,46 +722,8 @@ void Fibers::complete_fiber_basis(Array<double>& fibers, const int nsd)
       basis(0, 1) = -basis(1, 0);
       basis(1, 1) = basis(0, 0);
     } else if (nsd != 1) {
-      throw std::runtime_error(
+      svmp::raise<svmp::FE::InvalidArgumentException>(
         "Fiber basis completion is only supported for spatial dimensions 1, 2, or 3.");
-    }
-  }
-}
-
-
-void Fibers::interpolate_point_fibers(const mshType& mesh, const int nsd)
-{
-  if (mesh.N.nrows() != mesh.eNoN || mesh.N.ncols() != mesh.nG) {
-    throw std::runtime_error("Mesh shape functions are inconsistent with its nodes and quadrature points.");
-  }
-
-  Array<double> element_nodal_fibers(nsd, mesh.eNoN);
-  Vector<double> shape_functions(mesh.eNoN);
-
-  // Loop over the quadrature points.
-  for (int g = 0; g < mesh.nG; ++g) {
-    shape_functions = mesh.N.col(g);
-
-    // Loop over the elements.
-    for (int e = 0; e < mesh.gnEl; ++e) {
-
-      // Loop over the fiber directions.
-      for (int iFn = 0; iFn < nfibers; ++iFn) {
-
-        // Build the element nodal fibers.
-        for (int a = 0; a < mesh.eNoN; ++a) {
-          const int node = mesh.gIEN(a, e);
-          for (int i = 0; i < nsd; ++i) {
-            element_nodal_fibers(i, a) = input_fibers(i + iFn * nsd, node);
-          }
-        }
-
-        // Interpolate the fiber directions to the quadrature point.
-        const auto interpolated = interpolate_dyadic(element_nodal_fibers, shape_functions);
-        for (int i = 0; i < nsd; ++i) {
-          quadrature_fibers(i + iFn * nsd, g, e) = interpolated[i];
-        }
-      }
     }
   }
 }

@@ -34,7 +34,7 @@ void voigt_to_cc(const int nsd, const Array<double>& Dm, Tensor4<double>& CC);
 /// per column, with row count fixed at compile time to the number of spatial
 /// dimensions. Columns are fiber, sheet/transverse, and (in 3D) sheet normal.
 template <int nsd>
-using FiberBasisRef =
+using FiberRef =
     Eigen::Ref<const Eigen::Matrix<double, nsd, Eigen::Dynamic>>;
 
 /**
@@ -66,7 +66,7 @@ using FiberBasisRef =
 template <int nsd>
 void compute_pk2cc(const ComMod &com_mod, const CepMod &cep_mod,
                    const dmnType &lDmn, const Matrix<nsd> &F, const int nfd,
-                   const FiberBasisRef<nsd> &fiber_basis,
+                   const FiberRef<nsd> &fiber_basis,
                    const ActiveStress::ActiveTension &active_tension,
                    Matrix<nsd> &S, Matrix<3 * (nsd - 1)> &Dm, double &Ja);
 

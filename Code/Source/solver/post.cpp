@@ -1918,7 +1918,8 @@ void tensor_post_impl(Simulation* simulation, const mshType& lM, const int m, Ar
     for (int g = 0; g < fs.nG; g++) {
       fibers = 0.0;
       if (lM.fibers.has_fibers()) {
-        const auto quadrature_fibers = lM.fibers.get_quadrature_fibers(nsd, g, e);
+        const auto quadrature_fibers =
+          lM.fibers.get_quadrature_fibers(nsd, fs.N.col(g), e);
         for (int l = 0; l < nsd; ++l) {
           for (int i = 0; i < nsd; ++i) {
             fibers(i, l) = quadrature_fibers(i, l);
