@@ -199,8 +199,7 @@
         "Rmin": 1.0e3,
         "Steepness": 1.0e4,
         "upstream_block": "ATRIUM",
-        "downstream_block": "J_LV",
-        "freeze_state": false
+        "downstream_block": "J_LV"
       }
     },
     {
@@ -212,8 +211,7 @@
         "Rmin": 1.0e3,
         "Steepness": 1.0e4,
         "upstream_block": "J_LV",
-        "downstream_block": "aorta_prox",
-        "freeze_state": false
+        "downstream_block": "aorta_prox"
       }
     }
   ]
