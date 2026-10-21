@@ -176,23 +176,13 @@
         <Model>Regazzoni</Model>
 
         <Implicit_state_coupling> false </Implicit_state_coupling>
+        <Disable_force_strain_rate_feedback> true </Disable_force_strain_rate_feedback>
 
         <Directional_distribution>
           <Fiber_direction> 1.0 </Fiber_direction>
           <Sheet_direction> 0.0 </Sheet_direction>
           <Sheet_normal_direction> 0.0 </Sheet_normal_direction>
         </Directional_distribution>
-
-        <NashPanfilov>
-          <ODE_solver> FE </ODE_solver>
-
-          <epsilon_0> 0.001 </epsilon_0> <!-- 1/ms -->
-          <epsilon_i> 0.001 </epsilon_i> <!-- 1/ms -->
-          <xi_T> 4.0e3 </xi_T> <!-- 1/mM -->
-          <eta_T> 1.0e4 </eta_T> <!-- MPa/mM -->
-          <calcium_rest> 1.25e-4 </calcium_rest>
-          <calcium_crit> 8e-4 </calcium_crit>
-        </NashPanfilov>
         
         <Regazzoni>
           <!-- Sarcomere lengths are in um; they only ever combine with each
@@ -223,8 +213,6 @@
           <LA> 1.25 </LA> <!-- um -->
           <LM> 1.65 </LM> <!-- um -->
           <LB> 0.18 </LB> <!-- um -->
-
-          <Disable_force_strain_rate_feedback> true </Disable_force_strain_rate_feedback>
         </Regazzoni>
       </Active_stress>
 
