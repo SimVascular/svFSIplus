@@ -140,6 +140,12 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:aaf4d85cf63c4aec33d42598748a493eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1eebd7ae4fba88b89ebb04ac17db5aea" id="r_a1eebd7ae4fba88b89ebb04ac17db5aea"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacemat__fun.html#a08c6284789e31d0f22dd0e0f23cc51cf">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_active_stress_parameters.html#a1eebd7ae4fba88b89ebb04ac17db5aea">get_implicit_state_coupling</a> () <a class="el" href="namespacemat__fun.html#a08c6284789e31d0f22dd0e0f23cc51cf">const</a></td></tr>
 <tr class="separator:a1eebd7ae4fba88b89ebb04ac17db5aea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a05ea4e50db6261606b67fad0d4e15df5" id="r_a05ea4e50db6261606b67fad0d4e15df5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacemat__fun.html#a08c6284789e31d0f22dd0e0f23cc51cf">double</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_active_stress_parameters.html#a05ea4e50db6261606b67fad0d4e15df5">get_calcium_scaling_factor</a> () <a class="el" href="namespacemat__fun.html#a08c6284789e31d0f22dd0e0f23cc51cf">const</a></td></tr>
+<tr class="memdesc:a05ea4e50db6261606b67fad0d4e15df5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the factor applied to calcium before it is passed to the model.  <br /></td></tr>
+<tr class="separator:a05ea4e50db6261606b67fad0d4e15df5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab8daa054749cca21cb26f11b52d858bf" id="r_ab8daa054749cca21cb26f11b52d858bf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacemat__fun.html#a08c6284789e31d0f22dd0e0f23cc51cf">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_active_stress_parameters.html#ab8daa054749cca21cb26f11b52d858bf">get_disable_force_strain_rate_feedback</a> () <a class="el" href="namespacemat__fun.html#a08c6284789e31d0f22dd0e0f23cc51cf">const</a></td></tr>
+<tr class="memdesc:ab8daa054749cca21cb26f11b52d858bf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get whether the fiber stretch rate passed to the model is set to zero.  <br /></td></tr>
+<tr class="separator:ab8daa054749cca21cb26f11b52d858bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a894dfb0c153cd77c45c603c22a11df9a" id="r_a894dfb0c153cd77c45c603c22a11df9a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacemat__fun.html#a08c6284789e31d0f22dd0e0f23cc51cf">const</a> <a class="el" href="class_active_stress_model_parameters.html">ActiveStressModelParameters</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_active_stress_parameters.html#a894dfb0c153cd77c45c603c22a11df9a">get_parameters</a> (<a class="el" href="namespacemat__fun.html#a08c6284789e31d0f22dd0e0f23cc51cf">const</a> std::string &amp;<a class="el" href="class_active_stress_parameters.html#a78d34e172421d35e90d170bf9b372721">model_name</a>) <a class="el" href="namespacemat__fun.html#a08c6284789e31d0f22dd0e0f23cc51cf">const</a></td></tr>
 <tr class="memdesc:a894dfb0c153cd77c45c603c22a11df9a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the parameters for a given active stress model.  <br /></td></tr>
 <tr class="separator:a894dfb0c153cd77c45c603c22a11df9a"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -197,6 +203,10 @@ Protected Attributes</h2></td></tr>
 <tr class="separator:a78d34e172421d35e90d170bf9b372721"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7123f8f2dea03a7ab627e7d0b04ea743" id="r_a7123f8f2dea03a7ab627e7d0b04ea743"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_parameter.html">Parameter</a>&lt; bool &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_active_stress_parameters.html#a7123f8f2dea03a7ab627e7d0b04ea743">implicit_state_coupling</a></td></tr>
 <tr class="separator:a7123f8f2dea03a7ab627e7d0b04ea743"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a290a7e9aca661e5ce34190cef40b4abf" id="r_a290a7e9aca661e5ce34190cef40b4abf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_parameter.html">Parameter</a>&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_active_stress_parameters.html#a290a7e9aca661e5ce34190cef40b4abf">calcium_scaling_factor</a></td></tr>
+<tr class="separator:a290a7e9aca661e5ce34190cef40b4abf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a04b8fce246207898e3140110d1e549d0" id="r_a04b8fce246207898e3140110d1e549d0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_parameter.html">Parameter</a>&lt; bool &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_active_stress_parameters.html#a04b8fce246207898e3140110d1e549d0">disable_force_strain_rate_feedback</a></td></tr>
+<tr class="separator:a04b8fce246207898e3140110d1e549d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acbe6db8116c89cfef89a8f8c7e9bcc35" id="r_acbe6db8116c89cfef89a8f8c7e9bcc35"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_directional_distribution_parameters.html">DirectionalDistributionParameters</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_active_stress_parameters.html#acbe6db8116c89cfef89a8f8c7e9bcc35">directional_distribution</a></td></tr>
 <tr class="memdesc:acbe6db8116c89cfef89a8f8c7e9bcc35"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="class_parameters.html" title="The Parameters class stores parameter values read in from a solver input file.">Parameters</a> for the directional distribution of active tension.  <br /></td></tr>
 <tr class="separator:acbe6db8116c89cfef89a8f8c7e9bcc35"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -264,6 +274,44 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><b>xml_element_na
 </div><div class="memdoc">
 
 <p>Return whether the parameters represented by this object were defined. </p>
+
+</div>
+</div>
+<a id="a05ea4e50db6261606b67fad0d4e15df5" name="a05ea4e50db6261606b67fad0d4e15df5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a05ea4e50db6261606b67fad0d4e15df5">&#9670;&#160;</a></span>get_calcium_scaling_factor()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacemat__fun.html#a08c6284789e31d0f22dd0e0f23cc51cf">double</a> ActiveStressParameters::get_calcium_scaling_factor </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get the factor applied to calcium before it is passed to the model. </p>
+
+</div>
+</div>
+<a id="ab8daa054749cca21cb26f11b52d858bf" name="ab8daa054749cca21cb26f11b52d858bf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab8daa054749cca21cb26f11b52d858bf">&#9670;&#160;</a></span>get_disable_force_strain_rate_feedback()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacemat__fun.html#a08c6284789e31d0f22dd0e0f23cc51cf">bool</a> ActiveStressParameters::get_disable_force_strain_rate_feedback </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get whether the fiber stretch rate passed to the model is set to zero. </p>
 
 </div>
 </div>
@@ -443,6 +491,29 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><b>xml_element_na
 
 </div>
 </div>
+<a id="a290a7e9aca661e5ce34190cef40b4abf" name="a290a7e9aca661e5ce34190cef40b4abf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a290a7e9aca661e5ce34190cef40b4abf">&#9670;&#160;</a></span>calcium_scaling_factor</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="class_parameter.html">Parameter</a>&lt;double&gt; ActiveStressParameters::calcium_scaling_factor</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p><a class="el" href="class_parameter.html" title="The Parameter class template is used to store a named paramater and its scalar value as a basic type:...">Parameter</a> for the factor applied to calcium before it is passed to the model. </p>
+
+</div>
+</div>
 <a id="acbe6db8116c89cfef89a8f8c7e9bcc35" name="acbe6db8116c89cfef89a8f8c7e9bcc35"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#acbe6db8116c89cfef89a8f8c7e9bcc35">&#9670;&#160;</a></span>directional_distribution</h2>
 
@@ -464,6 +535,29 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><b>xml_element_na
 </div><div class="memdoc">
 
 <p><a class="el" href="class_parameters.html" title="The Parameters class stores parameter values read in from a solver input file.">Parameters</a> for the directional distribution of active tension. </p>
+
+</div>
+</div>
+<a id="a04b8fce246207898e3140110d1e549d0" name="a04b8fce246207898e3140110d1e549d0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a04b8fce246207898e3140110d1e549d0">&#9670;&#160;</a></span>disable_force_strain_rate_feedback</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="class_parameter.html">Parameter</a>&lt;bool&gt; ActiveStressParameters::disable_force_strain_rate_feedback</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p><a class="el" href="class_parameter.html" title="The Parameter class template is used to store a named paramater and its scalar value as a basic type:...">Parameter</a> selecting whether the fiber stretch rate passed to the model is set to zero, disabling the force-strain-rate feedback. </p>
 
 </div>
 </div>

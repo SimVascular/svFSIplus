@@ -1,7 +1,9 @@
 <map id="ActiveStressODE" name="ActiveStressODE">
-<area shape="rect" id="Node000001" title="Abstract ODE&#45;based active stress model." alt="" coords="33,79,164,104"/>
-<area shape="rect" id="Node000003" href="$class_active_stress_nash_panfilov.html" title="Nash&#45;Panfilov active stress model." alt="" coords="5,152,192,177"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="101,118,101,152,96,152,96,118"/>
-<area shape="rect" id="Node000002" href="$class_active_stress.html" title="Abstract active stress class." alt="" coords="47,5,150,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="101,44,101,79,96,79,96,44"/>
+<area shape="rect" id="Node000001" title="Abstract ODE&#45;based active stress model." alt="" coords="142,79,273,104"/>
+<area shape="rect" id="Node000003" href="$class_active_stress_land_niederer.html" title="Land&#45;Niederer active stress model." alt="" coords="5,152,196,177"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="180,114,120,154,117,150,178,109"/>
+<area shape="rect" id="Node000004" href="$class_active_stress_nash_panfilov.html" title="Nash&#45;Panfilov active stress model." alt="" coords="221,152,407,177"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="237,109,298,150,295,154,234,114"/>
+<area shape="rect" id="Node000002" href="$class_active_stress.html" title="Abstract active stress class." alt="" coords="156,5,259,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="210,44,210,79,205,79,205,44"/>
 </map>

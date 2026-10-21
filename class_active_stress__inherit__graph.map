@@ -1,13 +1,15 @@
 <map id="ActiveStress" name="ActiveStress">
-<area shape="rect" id="Node000001" title="Abstract active stress class." alt="" coords="5,80,108,105"/>
-<area shape="rect" id="Node000002" href="$class_active_stress_o_d_e.html" title="Abstract ODE&#45;based active stress model." alt="" coords="200,5,331,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="89,71,155,40,199,27,201,32,157,44,92,75"/>
-<area shape="rect" id="Node000004" href="$class_active_stress_regazzoni.html" title="Mean&#45;field active stress model (implements the RDQ20&#45;MF formulation)." alt="" coords="180,55,351,80"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="122,82,179,75,180,80,122,87"/>
-<area shape="rect" id="Node000005" href="$class_active_stress_uniform_steady.html" title="Uniform and steady active stress model." alt="" coords="165,104,366,129"/>
-<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="122,97,165,102,164,108,122,103"/>
-<area shape="rect" id="Node000006" href="$class_active_stress_uniform_unsteady.html" title="Uniform and time dependent active stress model." alt="" coords="156,153,375,179"/>
-<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="93,109,157,138,200,151,198,156,155,143,91,114"/>
-<area shape="rect" id="Node000003" href="$class_active_stress_nash_panfilov.html" title="Nash&#45;Panfilov active stress model." alt="" coords="423,5,609,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="345,15,422,15,422,21,345,21"/>
+<area shape="rect" id="Node000001" title="Abstract active stress class." alt="" coords="5,104,108,129"/>
+<area shape="rect" id="Node000002" href="$class_active_stress_o_d_e.html" title="Abstract ODE&#45;based active stress model." alt="" coords="200,29,331,55"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="89,95,155,64,199,51,201,56,157,68,92,99"/>
+<area shape="rect" id="Node000005" href="$class_active_stress_regazzoni.html" title="Mean&#45;field active stress model (implements the RDQ20&#45;MF formulation)." alt="" coords="180,79,351,104"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="122,106,179,99,180,104,122,111"/>
+<area shape="rect" id="Node000006" href="$class_active_stress_uniform_steady.html" title="Uniform and steady active stress model." alt="" coords="165,128,366,153"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="122,121,165,126,164,132,122,127"/>
+<area shape="rect" id="Node000007" href="$class_active_stress_uniform_unsteady.html" title="Uniform and time dependent active stress model." alt="" coords="156,177,375,203"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="93,133,157,162,200,175,198,180,155,167,91,138"/>
+<area shape="rect" id="Node000003" href="$class_active_stress_land_niederer.html" title="Land&#45;Niederer active stress model." alt="" coords="423,5,613,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="344,32,422,24,423,30,345,37"/>
+<area shape="rect" id="Node000004" href="$class_active_stress_nash_panfilov.html" title="Nash&#45;Panfilov active stress model." alt="" coords="425,55,611,80"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="345,47,424,55,424,61,344,53"/>
 </map>

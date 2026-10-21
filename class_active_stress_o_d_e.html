@@ -112,7 +112,7 @@ $(function() {
 <div class="dynheader">
 Inheritance diagram for ActiveStressODE:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="class_active_stress_o_d_e__inherit__graph.svg" width="198" height="183"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="class_active_stress_o_d_e__inherit__graph.svg" width="414" height="183"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
@@ -123,7 +123,11 @@ Classes</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-types" name="pub-types"></a>
 Public Types</h2></td></tr>
-<tr class="memitem:a50c04932ee4e1f5f255faf106de1740d" id="r_a50c04932ee4e1f5f255faf106de1740d"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_active_stress_o_d_e.html#a50c04932ee4e1f5f255faf106de1740d">ODESolver</a> { <a class="el" href="class_active_stress_o_d_e.html#a50c04932ee4e1f5f255faf106de1740da779b3131986acb907c287cdaf371d578">ForwardEuler</a>
+<tr class="memitem:a50c04932ee4e1f5f255faf106de1740d" id="r_a50c04932ee4e1f5f255faf106de1740d"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_active_stress_o_d_e.html#a50c04932ee4e1f5f255faf106de1740d">ODESolver</a> { <br />
+&#160;&#160;<a class="el" href="class_active_stress_o_d_e.html#a50c04932ee4e1f5f255faf106de1740da779b3131986acb907c287cdaf371d578">ForwardEuler</a>
+, <br />
+&#160;&#160;<a class="el" href="class_active_stress_o_d_e.html#a50c04932ee4e1f5f255faf106de1740da2ad1d4b322353ee07200045be21ffb58">RungeKutta4</a>
+<br />
  }</td></tr>
 <tr class="memdesc:a50c04932ee4e1f5f255faf106de1740d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration of supported ODE solvers.  <a href="class_active_stress_o_d_e.html#a50c04932ee4e1f5f255faf106de1740d">More...</a><br /></td></tr>
 <tr class="separator:a50c04932ee4e1f5f255faf106de1740d"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -223,6 +227,10 @@ Protected Attributes</h2></td></tr>
 <tr class="memitem:a7b67e9734f33ca8771833a9b6e3e01ab inherit pro_attribs_class_active_stress" id="r_a7b67e9734f33ca8771833a9b6e3e01ab"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_active_stress.html#a7b67e9734f33ca8771833a9b6e3e01ab">implicit_state_coupling_</a></td></tr>
 <tr class="memdesc:a7b67e9734f33ca8771833a9b6e3e01ab inherit pro_attribs_class_active_stress"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether the state of this model is updated within the nonlinear iterations of the mechanics problem.  <br /></td></tr>
 <tr class="separator:a7b67e9734f33ca8771833a9b6e3e01ab inherit pro_attribs_class_active_stress"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1788addb52aeb5e9377d98117769b9d5 inherit pro_attribs_class_active_stress" id="r_a1788addb52aeb5e9377d98117769b9d5"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_active_stress.html#a1788addb52aeb5e9377d98117769b9d5">calcium_scaling_factor_</a> = 1.0</td></tr>
+<tr class="separator:a1788addb52aeb5e9377d98117769b9d5 inherit pro_attribs_class_active_stress"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4cf6434aa1ac3b5649c23c8fff112ebc inherit pro_attribs_class_active_stress" id="r_a4cf6434aa1ac3b5649c23c8fff112ebc"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_active_stress.html#a4cf6434aa1ac3b5649c23c8fff112ebc">disable_force_strain_rate_feedback_</a> = false</td></tr>
+<tr class="separator:a4cf6434aa1ac3b5649c23c8fff112ebc inherit pro_attribs_class_active_stress"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a635b666d9262845b21d0172925f18174 inherit pro_attribs_class_active_stress" id="r_a635b666d9262845b21d0172925f18174"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_active_stress.html#a635b666d9262845b21d0172925f18174">eta_f</a></td></tr>
 <tr class="memdesc:a635b666d9262845b21d0172925f18174 inherit pro_attribs_class_active_stress"><td class="mdescLeft">&#160;</td><td class="mdescRight">Active tension coefficient along the fiber direction.  <br /></td></tr>
 <tr class="separator:a635b666d9262845b21d0172925f18174 inherit pro_attribs_class_active_stress"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -302,6 +310,27 @@ Implementing derived models</h3>
 \]
 </p>
  </td></tr>
+<tr><td class="fieldname"><a id="a50c04932ee4e1f5f255faf106de1740da2ad1d4b322353ee07200045be21ffb58" name="a50c04932ee4e1f5f255faf106de1740da2ad1d4b322353ee07200045be21ffb58"></a>RungeKutta4&#160;</td><td class="fielddoc"><p>4th order explicit Runge-Kutta. </p>
+<p>The state vector is updated as follows:  </p><p class="formulaDsp">
+\[ \begin{aligned}
+ \mathbf{k}_1 &amp;= \mathbf{F}_\text{AS}(t^n, \astressstate_i^n,
+   \calcium_i^n, \fiberstretch_i^n, \fiberstretchrate_i^n)\;, \\
+ \mathbf{k}_2 &amp;= \mathbf{F}_\text{AS}(t^n + \Delta t / 2,
+   \astressstate_i^n + \Delta t \mathbf{k}_1 / 2, \calcium_i^n,
+   \fiberstretch_i^n, \fiberstretchrate_i^n)\;, \\
+ \mathbf{k}_3 &amp;= \mathbf{F}_\text{AS}(t^n + \Delta t / 2,
+   \astressstate_i^n + \Delta t \mathbf{k}_2 / 2, \calcium_i^n,
+   \fiberstretch_i^n, \fiberstretchrate_i^n)\;, \\
+ \mathbf{k}_4 &amp;= \mathbf{F}_\text{AS}(t^{n+1},
+   \astressstate_i^n + \Delta t \mathbf{k}_3, \calcium_i^n,
+   \fiberstretch_i^n, \fiberstretchrate_i^n)\;, \\
+ \astressstate_i^{n+1} &amp;= \astressstate_i^n + \frac{\Delta t}{6}
+   \left( \mathbf{k}_1 + 2 \mathbf{k}_2 + 2 \mathbf{k}_3
+          + \mathbf{k}_4 \right)\;.
+\end{aligned} \]
+</p>
+<p>Note that the driving quantities \(\calcium\), \(\fiberstretch\) and \(\fiberstretchrate\) are held fixed at their values at \(t^{n+1}\) across all four stages. </p>
+</td></tr>
 </table>
 
 </div>
@@ -431,7 +460,7 @@ Implementing derived models</h3>
   </table>
   </dd>
 </dl>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000002">Todo:</a></b></dt><dd>[michelebucelli] It might be necessary or useful to implement other timestepping schemes, e.g. Runge-Kutta. In that case, we might want to expand the interface to support implicit time stepping too, e.g. by adding a method to evaluate the Jacobian matrix of the system, as in <a class="el" href="class_ionic_model.html">IonicModel</a>. </dd></dl>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000002">Todo:</a></b></dt><dd>[michelebucelli] It might be necessary or useful to implement implicit time stepping too, e.g. by adding a method to evaluate the Jacobian matrix of the system, as in <a class="el" href="class_ionic_model.html">IonicModel</a>. </dd></dl>
 
 <p>Implements <a class="el" href="class_active_stress.html#a3c49fed002e0d4e765b5dc26c7c22400">ActiveStress</a>.</p>
 
@@ -475,7 +504,7 @@ Implementing derived models</h3>
 
 <p>Implements <a class="el" href="class_active_stress.html#ad8b0f3d24386b63d3b9d9e5d0071cd84">ActiveStress</a>.</p>
 
-<p>Reimplemented in <a class="el" href="class_active_stress_nash_panfilov.html#aa1ed1d483738489075cdce25a9cc27ef">ActiveStressNashPanfilov</a>.</p>
+<p>Reimplemented in <a class="el" href="class_active_stress_land_niederer.html#abf23c4391e587597d3d523b12d4c9a5e">ActiveStressLandNiederer</a>, and <a class="el" href="class_active_stress_nash_panfilov.html#aa1ed1d483738489075cdce25a9cc27ef">ActiveStressNashPanfilov</a>.</p>
 
 </div>
 </div>
@@ -544,7 +573,7 @@ Implementing derived models</h3>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A vector containing the rate of change for each state variable. </dd></dl>
 
-<p>Implemented in <a class="el" href="class_active_stress_nash_panfilov.html#ad436a171425c61ad47e98f926b33a0a4">ActiveStressNashPanfilov</a>.</p>
+<p>Implemented in <a class="el" href="class_active_stress_land_niederer.html#a3f6f2cf060bd5795b1802dd023548792">ActiveStressLandNiederer</a>, and <a class="el" href="class_active_stress_nash_panfilov.html#ad436a171425c61ad47e98f926b33a0a4">ActiveStressNashPanfilov</a>.</p>
 
 </div>
 </div>
@@ -576,7 +605,7 @@ Implementing derived models</h3>
 
 <p>Implements <a class="el" href="class_active_stress.html#a5469da20042abdf004156e9cfcb39dce">ActiveStress</a>.</p>
 
-<p>Reimplemented in <a class="el" href="class_active_stress_nash_panfilov.html#ab1cc350d0a2c78f9caa133f8fc6b06c7">ActiveStressNashPanfilov</a>.</p>
+<p>Reimplemented in <a class="el" href="class_active_stress_land_niederer.html#af65254e2f7f6c1a53d41a8e96831944a">ActiveStressLandNiederer</a>, and <a class="el" href="class_active_stress_nash_panfilov.html#ab1cc350d0a2c78f9caa133f8fc6b06c7">ActiveStressNashPanfilov</a>.</p>
 
 </div>
 </div>

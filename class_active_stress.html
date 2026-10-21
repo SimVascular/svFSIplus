@@ -112,7 +112,7 @@ $(function() {
 <div class="dynheader">
 Inheritance diagram for ActiveStress:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="class_active_stress__inherit__graph.svg" width="615" height="184"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="class_active_stress__inherit__graph.svg" width="619" height="208"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
@@ -213,6 +213,10 @@ Protected Attributes</h2></td></tr>
 <tr class="memitem:a7b67e9734f33ca8771833a9b6e3e01ab" id="r_a7b67e9734f33ca8771833a9b6e3e01ab"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_active_stress.html#a7b67e9734f33ca8771833a9b6e3e01ab">implicit_state_coupling_</a></td></tr>
 <tr class="memdesc:a7b67e9734f33ca8771833a9b6e3e01ab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether the state of this model is updated within the nonlinear iterations of the mechanics problem.  <br /></td></tr>
 <tr class="separator:a7b67e9734f33ca8771833a9b6e3e01ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1788addb52aeb5e9377d98117769b9d5" id="r_a1788addb52aeb5e9377d98117769b9d5"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_active_stress.html#a1788addb52aeb5e9377d98117769b9d5">calcium_scaling_factor_</a> = 1.0</td></tr>
+<tr class="separator:a1788addb52aeb5e9377d98117769b9d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4cf6434aa1ac3b5649c23c8fff112ebc" id="r_a4cf6434aa1ac3b5649c23c8fff112ebc"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_active_stress.html#a4cf6434aa1ac3b5649c23c8fff112ebc">disable_force_strain_rate_feedback_</a> = false</td></tr>
+<tr class="separator:a4cf6434aa1ac3b5649c23c8fff112ebc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a635b666d9262845b21d0172925f18174" id="r_a635b666d9262845b21d0172925f18174"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_active_stress.html#a635b666d9262845b21d0172925f18174">eta_f</a></td></tr>
 <tr class="memdesc:a635b666d9262845b21d0172925f18174"><td class="mdescLeft">&#160;</td><td class="mdescRight">Active tension coefficient along the fiber direction.  <br /></td></tr>
 <tr class="separator:a635b666d9262845b21d0172925f18174"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -229,6 +233,7 @@ Protected Attributes</h2></td></tr>
 Table of contents</h2>
 <ul>
 <li><a class="el" href="class_active_stress.html#activestress-overview">Overview</a></li>
+<li><a class="el" href="class_active_stress.html#activestress-inputs">Preprocessing of model inputs</a></li>
 <li><a class="el" href="class_active_stress.html#activestress-directions">Directional distribution of active stress</a></li>
 <li><a class="el" href="class_active_stress.html#activestress-implementing">Implementing concrete active stress models</a></li>
 <li><a class="el" href="class_active_stress.html#activestress-coupling">Coupling with the structural mechanics problem</a></li>
@@ -244,6 +249,14 @@ Overview</h2>
 </p>
 <p> where \(\calcium\) is the intracellular calcium concentration, \(\fiberstretch\) is the fiber stretch, \(\fiberstretchrate\) is the fiber stretch rate, and \(\astressstate\) is a vector of internal state variables, representing the state of contraction.</p>
 <p>The expression assumed above implies that the active tension is a local function of the variables it depends on, that is the active tension at a given point only depends on the value of other variables at that same point. Accordingly, this class works nodally, storing the state of contraction at every mesh node and evaluating the active tension from it, on demand, through <a class="el" href="class_active_stress.html#aa3170e9976df52587ec41970b8c24e83">ActiveStress::compute_tension</a>.</p>
+<h2><a class="anchor" id="activestress-inputs"></a>
+Preprocessing of model inputs</h2>
+<p>Two parameters, set at the top level of the <code></code> &lt;Active_stress&gt; XML element and shared by all models, modify the inputs before they reach the model:</p>
+<ul>
+<li><code>Calcium_scaling_factor</code> (default <code>1.0</code>): calcium is multiplied by this factor, e.g. to convert between the units of the electrophysiology model and those expected by the active stress model.</li>
+<li><code>Disable_force_strain_rate_feedback</code> (default <code>false</code>): if <code>true</code>, the fiber stretch rate is set to zero, and its computation is skipped.</li>
+</ul>
+<p>Both are applied once, in <a class="el" href="class_active_stress.html#ae6e17158a15d24e3907ac555139b6a9e">update</a>, so that <a class="el" href="class_active_stress.html#a3c49fed002e0d4e765b5dc26c7c22400">advance_time_step_local</a> receives already scaled calcium and an already zeroed stretch rate. Models that do not use calcium or the stretch rate ignore them.</p>
 <h2><a class="anchor" id="activestress-directions"></a>
 Directional distribution of active stress</h2>
 <p>In muscular mechanics models, active stress normally acts only along the direction of fibers \(\fiberdirection\), reflecting the fact that contractile units are aligned with fibers. However, one might want to account for fiber dispersion, i.e. the fact that fibers are not perfectly and regularly aligned, but rather have a certain distribution of orientations centered around the principal direction \(\fiberdirection\).</p>
@@ -269,6 +282,7 @@ Implementing concrete active stress models</h2>
 <li>Register the new class into the active stress model factory by using the macro REGISTER_ACTIVE_STRESS_MODEL. The macro should be called in a <code>.cpp</code> file, not in a header file.</li>
 </ol>
 <p>Notice that if the model is expressed in terms of a system of ODEs, it can be implemented by deriving from <a class="el" href="class_active_stress_o_d_e.html">ActiveStressODE</a>, which already addresses some of the points above.</p>
+<p>Models need no code of their own for calcium scaling or for disabling the force-strain-rate feedback, as these are applied by this class (see <a class="el" href="class_active_stress.html#activestress-inputs">Preprocessing of model inputs</a>).</p>
 <h2><a class="anchor" id="activestress-coupling"></a>
 Coupling with the structural mechanics problem</h2>
 <p>The active tension depends on the fiber stretch \(\fiberstretch\) both directly, through the expression of \(\Tact\), and indirectly, through the state \(\astressstate\), which is itself driven by the fiber stretch. The mechanics problem, in turn, depends on \(\Tact\).</p>
@@ -418,9 +432,9 @@ Coupling with the structural mechanics problem</h2>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">t</td><td>Current time (i.e. the time instant being advanced to). </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">dt</td><td>Time step size. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">calcium</td><td>Calcium concentration at the current node. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">calcium</td><td>Calcium concentration at the current node, already multiplied by <a class="el" href="class_active_stress.html#a1788addb52aeb5e9377d98117769b9d5">calcium_scaling_factor_</a>. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">fiber_stretch</td><td>Fiber stretch at the current node. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">fiber_stretch_rate</td><td>Fiber stretch rate at the current node. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">fiber_stretch_rate</td><td>Fiber stretch rate at the current node, or zero if <a class="el" href="class_active_stress.html#a4cf6434aa1ac3b5649c23c8fff112ebc">disable_force_strain_rate_feedback_</a> is set. </td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">state</td><td>State vector for a single node, to be updated by this function. </td></tr>
   </table>
   </dd>
@@ -473,7 +487,7 @@ Coupling with the structural mechanics problem</h2>
   </dd>
 </dl>
 
-<p>Implemented in <a class="el" href="class_active_stress_nash_panfilov.html#a58c3483f4c57da30aa62e7fb2a8b51a2">ActiveStressNashPanfilov</a>, <a class="el" href="class_active_stress_regazzoni.html#a409e9b5f7e8b1fdf003998f2ea0d10b9">ActiveStressRegazzoni</a>, <a class="el" href="class_active_stress_uniform_steady.html#a73559d2a413b31472a9a76f5e90c3305">ActiveStressUniformSteady</a>, and <a class="el" href="class_active_stress_uniform_unsteady.html#a3dfb7592ddff4248d3322f89e7b530e3">ActiveStressUniformUnsteady</a>.</p>
+<p>Implemented in <a class="el" href="class_active_stress_land_niederer.html#aac7cb3eee8801af9e8e339f533a4cb95">ActiveStressLandNiederer</a>, <a class="el" href="class_active_stress_nash_panfilov.html#a58c3483f4c57da30aa62e7fb2a8b51a2">ActiveStressNashPanfilov</a>, <a class="el" href="class_active_stress_regazzoni.html#a409e9b5f7e8b1fdf003998f2ea0d10b9">ActiveStressRegazzoni</a>, <a class="el" href="class_active_stress_uniform_steady.html#a73559d2a413b31472a9a76f5e90c3305">ActiveStressUniformSteady</a>, and <a class="el" href="class_active_stress_uniform_unsteady.html#a3dfb7592ddff4248d3322f89e7b530e3">ActiveStressUniformUnsteady</a>.</p>
 
 </div>
 </div>
@@ -520,7 +534,7 @@ Coupling with the structural mechanics problem</h2>
   </dd>
 </dl>
 
-<p>Implemented in <a class="el" href="class_active_stress_nash_panfilov.html#a8178e0d1733325637d67d758242e751b">ActiveStressNashPanfilov</a>, <a class="el" href="class_active_stress_regazzoni.html#a729a4ce8f63ac2c8fad72916fa840abb">ActiveStressRegazzoni</a>, <a class="el" href="class_active_stress_uniform_steady.html#a518b40a039a30a23fa0a698076cced99">ActiveStressUniformSteady</a>, and <a class="el" href="class_active_stress_uniform_unsteady.html#a3104cbf0cd38a96fc7183f8bba0930c6">ActiveStressUniformUnsteady</a>.</p>
+<p>Implemented in <a class="el" href="class_active_stress_land_niederer.html#ab6f4aa5b6b36d50358e31f9d6bf2294e">ActiveStressLandNiederer</a>, <a class="el" href="class_active_stress_nash_panfilov.html#a8178e0d1733325637d67d758242e751b">ActiveStressNashPanfilov</a>, <a class="el" href="class_active_stress_regazzoni.html#a729a4ce8f63ac2c8fad72916fa840abb">ActiveStressRegazzoni</a>, <a class="el" href="class_active_stress_uniform_steady.html#a518b40a039a30a23fa0a698076cced99">ActiveStressUniformSteady</a>, and <a class="el" href="class_active_stress_uniform_unsteady.html#a3104cbf0cd38a96fc7183f8bba0930c6">ActiveStressUniformUnsteady</a>.</p>
 
 </div>
 </div>
@@ -607,7 +621,7 @@ Coupling with the structural mechanics problem</h2>
 <p>Distribute model parameters to all parallel processes. </p>
 <p>This method needs to be overridden by derived classes to distribute the parameters specific to the concrete model they implement to all parallel processes. </p>
 
-<p>Implemented in <a class="el" href="class_active_stress_nash_panfilov.html#aa1ed1d483738489075cdce25a9cc27ef">ActiveStressNashPanfilov</a>, <a class="el" href="class_active_stress_o_d_e.html#a99474d5d894ebe0dee10040612d47c9c">ActiveStressODE</a>, <a class="el" href="class_active_stress_regazzoni.html#ad295e88efed7c10390b4071e7b378865">ActiveStressRegazzoni</a>, <a class="el" href="class_active_stress_uniform_steady.html#a89a51635be9e7b7f3bc5894ca442c2e6">ActiveStressUniformSteady</a>, and <a class="el" href="class_active_stress_uniform_unsteady.html#abc952a6af5d99bf5866bc0d6e6c81207">ActiveStressUniformUnsteady</a>.</p>
+<p>Implemented in <a class="el" href="class_active_stress_land_niederer.html#abf23c4391e587597d3d523b12d4c9a5e">ActiveStressLandNiederer</a>, <a class="el" href="class_active_stress_nash_panfilov.html#aa1ed1d483738489075cdce25a9cc27ef">ActiveStressNashPanfilov</a>, <a class="el" href="class_active_stress_o_d_e.html#a99474d5d894ebe0dee10040612d47c9c">ActiveStressODE</a>, <a class="el" href="class_active_stress_regazzoni.html#ad295e88efed7c10390b4071e7b378865">ActiveStressRegazzoni</a>, <a class="el" href="class_active_stress_uniform_steady.html#a89a51635be9e7b7f3bc5894ca442c2e6">ActiveStressUniformSteady</a>, and <a class="el" href="class_active_stress_uniform_unsteady.html#abc952a6af5d99bf5866bc0d6e6c81207">ActiveStressUniformUnsteady</a>.</p>
 
 </div>
 </div>
@@ -666,7 +680,7 @@ Coupling with the structural mechanics problem</h2>
 
 <p>Construct an instance of model parameters for this model. </p>
 
-<p>Implemented in <a class="el" href="class_active_stress_nash_panfilov.html#ae2ff2ff10ec6cfa6d194c8ec5891c3a3">ActiveStressNashPanfilov</a>, <a class="el" href="class_active_stress_regazzoni.html#a74ead30213d3fc1cf4d87b4f6a6f0649">ActiveStressRegazzoni</a>, <a class="el" href="class_active_stress_uniform_steady.html#a9eb94aa6edcbe05937d0c2377af4e4e8">ActiveStressUniformSteady</a>, and <a class="el" href="class_active_stress_uniform_unsteady.html#a8f61ebbc0d5682ecbb079f3517f63b31">ActiveStressUniformUnsteady</a>.</p>
+<p>Implemented in <a class="el" href="class_active_stress_land_niederer.html#a7341854997720ce2a11339ea3a3bc353">ActiveStressLandNiederer</a>, <a class="el" href="class_active_stress_nash_panfilov.html#ae2ff2ff10ec6cfa6d194c8ec5891c3a3">ActiveStressNashPanfilov</a>, <a class="el" href="class_active_stress_regazzoni.html#a74ead30213d3fc1cf4d87b4f6a6f0649">ActiveStressRegazzoni</a>, <a class="el" href="class_active_stress_uniform_steady.html#a9eb94aa6edcbe05937d0c2377af4e4e8">ActiveStressUniformSteady</a>, and <a class="el" href="class_active_stress_uniform_unsteady.html#a8f61ebbc0d5682ecbb079f3517f63b31">ActiveStressUniformUnsteady</a>.</p>
 
 </div>
 </div>
@@ -800,7 +814,7 @@ Coupling with the structural mechanics problem</h2>
   </dd>
 </dl>
 
-<p>Implemented in <a class="el" href="class_active_stress_nash_panfilov.html#ac736958a43034a93440990a840f8fb32">ActiveStressNashPanfilov</a>, <a class="el" href="class_active_stress_regazzoni.html#aceffd5ff1a53fd350c67265429fd3b79">ActiveStressRegazzoni</a>, <a class="el" href="class_active_stress_uniform_steady.html#a67da35ea87cefec267300a37d939df66">ActiveStressUniformSteady</a>, and <a class="el" href="class_active_stress_uniform_unsteady.html#a2f8d182b9c7ffecbea07926aaa225904">ActiveStressUniformUnsteady</a>.</p>
+<p>Implemented in <a class="el" href="class_active_stress_land_niederer.html#a5696fb4a9ebd32b17492c0edd5a0ea68">ActiveStressLandNiederer</a>, <a class="el" href="class_active_stress_nash_panfilov.html#ac736958a43034a93440990a840f8fb32">ActiveStressNashPanfilov</a>, <a class="el" href="class_active_stress_regazzoni.html#aceffd5ff1a53fd350c67265429fd3b79">ActiveStressRegazzoni</a>, <a class="el" href="class_active_stress_uniform_steady.html#a67da35ea87cefec267300a37d939df66">ActiveStressUniformSteady</a>, and <a class="el" href="class_active_stress_uniform_unsteady.html#a2f8d182b9c7ffecbea07926aaa225904">ActiveStressUniformUnsteady</a>.</p>
 
 </div>
 </div>
@@ -885,7 +899,7 @@ Coupling with the structural mechanics problem</h2>
 <p>Read model parameters from a parameter object. </p>
 <p>This method needs to be overridden by derived classes to read the parameters specific to the concrete model they implement. </p>
 
-<p>Implemented in <a class="el" href="class_active_stress_nash_panfilov.html#ab1cc350d0a2c78f9caa133f8fc6b06c7">ActiveStressNashPanfilov</a>, <a class="el" href="class_active_stress_o_d_e.html#ad01855d5d3b0f40dbfb72b3ab6c45614">ActiveStressODE</a>, <a class="el" href="class_active_stress_regazzoni.html#a3718bd158aec4ce98a9c8efab8697410">ActiveStressRegazzoni</a>, <a class="el" href="class_active_stress_uniform_steady.html#a7d71c9909c93384452a9654424e49aaf">ActiveStressUniformSteady</a>, and <a class="el" href="class_active_stress_uniform_unsteady.html#aa6a179f1d46edd92456dc4faa86d308a">ActiveStressUniformUnsteady</a>.</p>
+<p>Implemented in <a class="el" href="class_active_stress_land_niederer.html#af65254e2f7f6c1a53d41a8e96831944a">ActiveStressLandNiederer</a>, <a class="el" href="class_active_stress_nash_panfilov.html#ab1cc350d0a2c78f9caa133f8fc6b06c7">ActiveStressNashPanfilov</a>, <a class="el" href="class_active_stress_o_d_e.html#ad01855d5d3b0f40dbfb72b3ab6c45614">ActiveStressODE</a>, <a class="el" href="class_active_stress_regazzoni.html#a3718bd158aec4ce98a9c8efab8697410">ActiveStressRegazzoni</a>, <a class="el" href="class_active_stress_uniform_steady.html#a7d71c9909c93384452a9654424e49aaf">ActiveStressUniformSteady</a>, and <a class="el" href="class_active_stress_uniform_unsteady.html#aa6a179f1d46edd92456dc4faa86d308a">ActiveStressUniformUnsteady</a>.</p>
 
 </div>
 </div>
@@ -1006,6 +1020,52 @@ Coupling with the structural mechanics problem</h2>
 </div>
 </div>
 <h2 class="groupheader">Member Data Documentation</h2>
+<a id="a1788addb52aeb5e9377d98117769b9d5" name="a1788addb52aeb5e9377d98117769b9d5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1788addb52aeb5e9377d98117769b9d5">&#9670;&#160;</a></span>calcium_scaling_factor_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">double ActiveStress::calcium_scaling_factor_ = 1.0</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Factor applied to calcium in <a class="el" href="class_active_stress.html#ae6e17158a15d24e3907ac555139b6a9e">update</a> before it is passed to <a class="el" href="class_active_stress.html#a3c49fed002e0d4e765b5dc26c7c22400">advance_time_step_local</a>. </p>
+
+</div>
+</div>
+<a id="a4cf6434aa1ac3b5649c23c8fff112ebc" name="a4cf6434aa1ac3b5649c23c8fff112ebc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4cf6434aa1ac3b5649c23c8fff112ebc">&#9670;&#160;</a></span>disable_force_strain_rate_feedback_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool ActiveStress::disable_force_strain_rate_feedback_ = false</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>If true, the fiber stretch rate passed to <a class="el" href="class_active_stress.html#a3c49fed002e0d4e765b5dc26c7c22400">advance_time_step_local</a> is set to zero, disabling the force-strain-rate feedback. </p>
+
+</div>
+</div>
 <a id="a635b666d9262845b21d0172925f18174" name="a635b666d9262845b21d0172925f18174"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a635b666d9262845b21d0172925f18174">&#9670;&#160;</a></span>eta_f</h2>
 

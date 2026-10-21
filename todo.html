@@ -99,7 +99,7 @@ $(function() {
 <div class="contents">
 <div class="textblock"><dl class="reflist">
 <dt>Member <a class="el" href="class_active_stress_o_d_e.html#aa5283ccc4061ae705aa1049ce5f60be2">ActiveStressODE::advance_time_step_local</a>  (const double t, const double dt, const double calcium, const double fiber_stretch, const double fiber_stretch_rate, <a class="el" href="class_vector.html">Vector&lt; double &gt;</a> &amp;state) const override</dt>
-<dd><a class="anchor" id="_todo000002"></a>[michelebucelli] It might be necessary or useful to implement other timestepping schemes, e.g. Runge-Kutta. In that case, we might want to expand the interface to support implicit time stepping too, e.g. by adding a method to evaluate the Jacobian matrix of the system, as in <a class="el" href="class_ionic_model.html">IonicModel</a>.  </dd>
+<dd><a class="anchor" id="_todo000002"></a>[michelebucelli] It might be necessary or useful to implement implicit time stepping too, e.g. by adding a method to evaluate the Jacobian matrix of the system, as in <a class="el" href="class_ionic_model.html">IonicModel</a>.  </dd>
 <dt>Class <a class="el" href="class_active_stress_regazzoni.html">ActiveStressRegazzoni</a>  </dt>
 <dd><a class="anchor" id="_todo000003"></a>[michelebucelli] Force-strain-rate feedback requires a stabilization strategy for robust use in coupled electromechanics. This will be addressed in a follow-up PR.  </dd>
 <dt>Member <a class="el" href="class_bueno_orovio.html#a4e0fe5c4269cac9450c3023c42df8263">BuenoOrovio::ModelParam</a>  </dt>

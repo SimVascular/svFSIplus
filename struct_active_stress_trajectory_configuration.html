@@ -120,6 +120,8 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:a270953a7d223103cae433001b45fcf6b" id="r_a270953a7d223103cae433001b45fcf6b"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_active_stress_trajectory_configuration.html#a270953a7d223103cae433001b45fcf6b">state_reference_columns</a></td></tr>
 <tr class="memdesc:a270953a7d223103cae433001b45fcf6b"><td class="mdescLeft">&#160;</td><td class="mdescRight">CSV column name for each model state, in model-state order.  <br /></td></tr>
 <tr class="separator:a270953a7d223103cae433001b45fcf6b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4d8fd8cd8c5bbfb41c952b18c0560025" id="r_a4d8fd8cd8c5bbfb41c952b18c0560025"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_active_stress_trajectory_configuration.html#a4d8fd8cd8c5bbfb41c952b18c0560025">calcium_scaling_factor</a> = 1.0</td></tr>
+<tr class="separator:a4d8fd8cd8c5bbfb41c952b18c0560025"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab18b196dd00d83fa4682ea0d9f2d229c" id="r_ab18b196dd00d83fa4682ea0d9f2d229c"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_active_stress_trajectory_configuration.html#ab18b196dd00d83fa4682ea0d9f2d229c">tolerance</a> = 1.0e-10</td></tr>
 <tr class="memdesc:ab18b196dd00d83fa4682ea0d9f2d229c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base tolerance in the pointwise comparison formula.  <br /></td></tr>
 <tr class="separator:ab18b196dd00d83fa4682ea0d9f2d229c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -132,6 +134,21 @@ Public Attributes</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Configure one standalone trusted-reference <a class="el" href="class_active_stress.html" title="Abstract active stress class.">ActiveStress</a> trajectory. </p>
 </div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="a4d8fd8cd8c5bbfb41c952b18c0560025" name="a4d8fd8cd8c5bbfb41c952b18c0560025"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4d8fd8cd8c5bbfb41c952b18c0560025">&#9670;&#160;</a></span>calcium_scaling_factor</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">double ActiveStressTrajectoryConfiguration::calcium_scaling_factor = 1.0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Factor applied to the prescribed calcium (given in mM) before it is passed to the model, mirroring <code>Calcium_scaling_factor</code> in <a class="el" href="class_active_stress.html#ae6e17158a15d24e3907ac555139b6a9e" title="Update the state over the current time step.">ActiveStress::update</a>. </p>
+
+</div>
+</div>
 <a id="a5eeffa03d7331d0cd0eeca810f910ebc" name="a5eeffa03d7331d0cd0eeca810f910ebc"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a5eeffa03d7331d0cd0eeca810f910ebc">&#9670;&#160;</a></span>derivative_step</h2>
 

@@ -7,11 +7,11 @@ var searchData=
   ['rc_4',['Rc',['../class_t_t_p.html#a3c7df257aa25861d48a63a2772d2c0f5',1,'TTP']]],
   ['rd_5',['Rd',['../class_com_mod.html#a8137e426297b6b90ce11e09055828377',1,'ComMod']]],
   ['recln_6',['recLn',['../class_com_mod.html#ad5148740d8c669d0a55ec6044febf389',1,'ComMod']]],
-  ['reference_5fcsv_5ffilename_7',['reference_csv_filename',['../struct_ionic_model_trajectory_configuration.html#a9b0acfb74075f829db2a8d93c257b08d',1,'IonicModelTrajectoryConfiguration::reference_csv_filename'],['../struct_active_stress_trajectory_configuration.html#a115e545d53f7834a8c72b5b82b38ab30',1,'ActiveStressTrajectoryConfiguration::reference_csv_filename']]],
+  ['reference_5fcsv_5ffilename_7',['reference_csv_filename',['../struct_active_stress_trajectory_configuration.html#a115e545d53f7834a8c72b5b82b38ab30',1,'ActiveStressTrajectoryConfiguration::reference_csv_filename'],['../struct_ionic_model_trajectory_configuration.html#a9b0acfb74075f829db2a8d93c257b08d',1,'IonicModelTrajectoryConfiguration::reference_csv_filename']]],
   ['relax_5ffactor_8',['relax_factor',['../classuris_type.html#ad145a14cc19e72b4e45df49482d0d3e8',1,'urisType']]],
   ['reltol_9',['reltol',['../classls_type.html#acb851846402df623d3480030b5831932',1,'lsType::relTol'],['../classode_type.html#a09c0984b088e1276c1421aeb932067aa',1,'odeType::relTol']]],
   ['required_10',['required',['../class_ionic_initial_state_parameters.html#a3c9947e781967690c7040c4bf4784461',1,'IonicInitialStateParameters']]],
-  ['res_11',['res',['../classris_face_type.html#a544b7898420665b210b52d79c595b3ff',1,'risFaceType::Res'],['../classmsh_type.html#a819347035a740b8c77a70ff96e818d47',1,'mshType::res']]],
+  ['res_11',['res',['../classmsh_type.html#a819347035a740b8c77a70ff96e818d47',1,'mshType::res'],['../classris_face_type.html#a544b7898420665b210b52d79c595b3ff',1,'risFaceType::Res']]],
   ['reserve_12',['reserve',['../classls_type.html#a3fc715baede9e9d7b40de26169ead4a0',1,'lsType']]],
   ['resetsim_13',['resetSim',['../class_com_mod.html#a884b8c0797550cf10a71eee30be8bf05',1,'ComMod']]],
   ['resistance_14',['resistance',['../classuris_type.html#af6aef2917cd8c726e9c23cd3ca1f458b',1,'urisType']]],
@@ -24,8 +24,10 @@ var searchData=
   ['rmsh_21',['rmsh',['../class_com_mod.html#a903eb560a9d06e7c6560b3f1f6c06c78',1,'ComMod']]],
   ['roinf_22',['roInf',['../classeq_type.html#a0b8e111bef52996593a8550bfe202506',1,'eqType']]],
   ['rowptr_23',['rowptr',['../classib_type.html#a821ec8a43a61a57afe1c8b0f02f3f80c',1,'ibType::rowPtr'],['../class_com_mod.html#a56641003622de9f6ef96ef72af834eaa',1,'ComMod::rowPtr']]],
-  ['rsts_24',['rsTS',['../class_com_mod.html#ad84e7bad391ad123bb66f78001100636',1,'ComMod']]],
-  ['rts_25',['rTS',['../classrmsh_type.html#a65ce23495ee818b526301eaab320514f',1,'rmshType']]],
-  ['ru_26',['Ru',['../classib_type.html#af8be6c215991200c6d2008f3447331cf',1,'ibType']]],
-  ['rub_27',['Rub',['../classib_type.html#a972bd5ae1f2b9862f6425610e1837d32',1,'ibType']]]
+  ['rs_24',['rs',['../class_active_stress_land_niederer.html#a26f51b8a259ad2cfb9514842e7c5ed8e',1,'ActiveStressLandNiederer']]],
+  ['rsts_25',['rsTS',['../class_com_mod.html#ad84e7bad391ad123bb66f78001100636',1,'ComMod']]],
+  ['rts_26',['rTS',['../classrmsh_type.html#a65ce23495ee818b526301eaab320514f',1,'rmshType']]],
+  ['ru_27',['Ru',['../classib_type.html#af8be6c215991200c6d2008f3447331cf',1,'ibType']]],
+  ['rub_28',['Rub',['../classib_type.html#a972bd5ae1f2b9862f6425610e1837d32',1,'ibType']]],
+  ['rw_29',['rw',['../class_active_stress_land_niederer.html#ab1a651113081655accb85c6f9cbb841c',1,'ActiveStressLandNiederer']]]
 ];
