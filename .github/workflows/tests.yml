@@ -5,9 +5,10 @@ on:
   push:
     branches:
       - main
-  concurrency:
-    group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
-    cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 env:
   SVMP_PARALLEL_INTEGRATION_TESTS: 'true'
   SVMP_TEST_PROCS: '1,3'
