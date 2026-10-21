@@ -34,7 +34,6 @@ runs:
         echo "$HOME/miniconda/bin" >> "$GITHUB_PATH"
 
     - name: Install compiler cache
-      if: ${{ env.SVMP_OPTIMIZED_CI == 'true' }}
       shell: bash
       run: |
         brew install ccache
@@ -43,15 +42,13 @@ runs:
         echo "CMAKE_CXX_COMPILER_LAUNCHER=ccache" >> "$GITHUB_ENV"
 
     - name: Restore compiler cache
-      if: ${{ env.SVMP_OPTIMIZED_CI == 'true' }}
       uses: actions/cache/restore@v4
       with:
         path: .ccache
-        key: macos-${{ runner.arch }}-ccache-v1-${{ github.run_id }}-${{ github.run_attempt }}
-        restore-keys: macos-${{ runner.arch }}-ccache-v1-
+        key: macos-${{ runner.arch }}-${{ env.SVMP_OPTIMIZED_CI == 'true' && 'ccache-v1' || 'ccache-full-v1' }}-${{ github.run_id }}-${{ github.run_attempt }}
+        restore-keys: macos-${{ runner.arch }}-${{ env.SVMP_OPTIMIZED_CI == 'true' && 'ccache-v1' || 'ccache-full-v1' }}-
 
     - name: Initialize compiler cache
-      if: ${{ env.SVMP_OPTIMIZED_CI == 'true' }}
       shell: bash
       run: |
         ccache -M 1G
@@ -70,16 +67,14 @@ runs:
         ci_build_solver build "$(sysctl -n hw.physicalcpu)"
 
     - name: Report compiler cache statistics
-      if: ${{ env.SVMP_OPTIMIZED_CI == 'true' }}
       shell: bash
       run: ccache -s
 
     - name: Save compiler cache
-      if: ${{ env.SVMP_OPTIMIZED_CI == 'true' }}
       uses: actions/cache/save@v4
       with:
         path: .ccache
-        key: macos-${{ runner.arch }}-ccache-v1-${{ github.run_id }}-${{ github.run_attempt }}
+        key: macos-${{ runner.arch }}-${{ env.SVMP_OPTIMIZED_CI == 'true' && 'ccache-v1' || 'ccache-full-v1' }}-${{ github.run_id }}-${{ github.run_attempt }}
         
     - name: Install test dependencies
       shell: bash
