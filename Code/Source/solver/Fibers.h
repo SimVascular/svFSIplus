@@ -97,6 +97,9 @@ class Fibers {
     /**
      * @brief Returns a read-only Eigen view of the complete basis returned by
      * get_quadrature_fibers().
+     *
+     * The Map aliases this object's storage (the same underlying data as the
+     * Array view from get_quadrature_fibers) and must not outlive it.
      */
     Eigen::Map<const Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>>
     get_eigen_fibers(int nsd, int g, int e) const;

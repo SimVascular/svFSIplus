@@ -376,98 +376,98 @@ void Fibers::read(const MeshParameters& mesh_parameters, mshType& mesh, const in
 void Fibers::read_from_file(const MeshParameters& mesh_parameters, mshType& mesh,
   const int nsd, const DataLocation expected_location)
 {
-if (expected_location != DataLocation::point &&
-    expected_location != DataLocation::cell) {
-  svmp::raise<svmp::InternalErrorException>(
-    "Fiber direction files must be associated with cells or points.");
-}
-
-const auto& path_parameter = expected_location == DataLocation::point
-    ? mesh_parameters.fiber_direction_file_paths_points
-    : mesh_parameters.fiber_direction_file_paths_cells;
-const int num_paths = path_parameter.size();
-nfibers = num_paths;
-data_location = expected_location;
-
-const auto paths = path_parameter();
-const bool expect_cells = expected_location == DataLocation::cell;
-const std::string association = expect_cells ? "cells" : "points";
-const std::string xml_tag = expect_cells
-    ? "Fiber_direction_from_file_cells"
-    : "Fiber_direction_from_file_points";
-
-for (int idx = 0; idx < nfibers; ++idx) {
-  const auto& file_name = paths[idx];
-
-  if (FILE* file = fopen(file_name.c_str(), "r")) {
-    fclose(file);
-  } else {
-    svmp::raise<svmp::FileNotFoundException>(file_name);
+  if (expected_location != DataLocation::point &&
+      expected_location != DataLocation::cell) {
+    svmp::raise<svmp::InternalErrorException>(
+      "Fiber direction files must be associated with cells or points.");
   }
 
-  auto reader = vtkSmartPointer<vtkXMLUnstructuredGridReader>::New();
-  reader->SetFileName(file_name.c_str());
-  reader->Update();
-  auto grid = reader->GetOutput();
+  const auto& path_parameter = expected_location == DataLocation::point
+      ? mesh_parameters.fiber_direction_file_paths_points
+      : mesh_parameters.fiber_direction_file_paths_cells;
+  const int num_paths = path_parameter.size();
+  nfibers = num_paths;
+  data_location = expected_location;
 
-  if (mesh.gnEl != grid->GetNumberOfCells()) {
-    svmp::raise<svmp::FileFormatException>(file_name,
-      "The number of elements (" +
-      std::to_string(grid->GetNumberOfCells()) +
-      ") is not equal to the number of elements (" +
-      std::to_string(mesh.gnEl) + ") for the mesh named '" + mesh.name + "'.");
-  }
+  const auto paths = path_parameter();
+  const bool expect_cells = expected_location == DataLocation::cell;
+  const std::string association = expect_cells ? "cells" : "points";
+  const std::string xml_tag = expect_cells
+      ? "Fiber_direction_from_file_cells"
+      : "Fiber_direction_from_file_points";
 
-  vtkDataArray* array = nullptr;
-  vtkIdType num_locations = 0;
-  if (expect_cells) {
-    array = grid->GetCellData()->GetArray("FIB_DIR");
-    num_locations = grid->GetNumberOfCells();
-  } else {
-    array = grid->GetPointData()->GetArray("FIB_DIR");
-    num_locations = grid->GetNumberOfPoints();
-  }
-  if (array == nullptr) {
-    svmp::raise<svmp::FileFormatException>(file_name,
-      "No 'FIB_DIR' " + association + " data found as required by " +
-      xml_tag + ".");
-  }
-  if (array->GetNumberOfTuples() != num_locations) {
-    svmp::raise<svmp::FileFormatException>(file_name,
-      "The number of 'FIB_DIR' tuples (" +
-      std::to_string(array->GetNumberOfTuples()) +
-      ") does not match the number of associated " + association + " (" +
-      std::to_string(num_locations) + ").");
-  }
-  if (array->GetNumberOfComponents() < nsd) {
-    svmp::raise<svmp::FileFormatException>(file_name,
-      "The 'FIB_DIR' data has fewer than " + std::to_string(nsd) +
-      " components.");
-  }
+  for (int idx = 0; idx < nfibers; ++idx) {
+    const auto& file_name = paths[idx];
 
-  const vtkIdType expected_num_locations = expect_cells ? mesh.gnEl : mesh.gnNo;
-  if (num_locations != expected_num_locations) {
-    svmp::raise<svmp::FileFormatException>(file_name,
-      "The number of " + association + " (" +
-      std::to_string(num_locations) + ") does not match the mesh (" +
-      std::to_string(expected_num_locations) + ").");
-  }
+    if (FILE* file = fopen(file_name.c_str(), "r")) {
+      fclose(file);
+    } else {
+      svmp::raise<svmp::FileNotFoundException>(file_name);
+    }
 
-  if (idx == 0) {
-    // Allocate space for the completed nsd-dimensional basis. Input directions
-    // fill the first nfibers columns; orthonormalization completes the rest.
-    input_fibers.resize(nsd * nsd, num_locations);
-    input_fibers = 0.0;
-  }
+    auto reader = vtkSmartPointer<vtkXMLUnstructuredGridReader>::New();
+    reader->SetFileName(file_name.c_str());
+    reader->Update();
+    auto grid = reader->GetOutput();
 
-  const int offset = idx * nsd;
-  for (vtkIdType location = 0; location < num_locations; ++location) {
-    const auto tuple = array->GetTuple(location);
-    for (int component = 0; component < nsd; ++component) {
-      input_fibers(offset + component, location) = tuple[component];
+    if (mesh.gnEl != grid->GetNumberOfCells()) {
+      svmp::raise<svmp::FileFormatException>(file_name,
+        "The number of elements (" +
+        std::to_string(grid->GetNumberOfCells()) +
+        ") is not equal to the number of elements (" +
+        std::to_string(mesh.gnEl) + ") for the mesh named '" + mesh.name + "'.");
+    }
+
+    vtkDataArray* array = nullptr;
+    vtkIdType num_locations = 0;
+    if (expect_cells) {
+      array = grid->GetCellData()->GetArray("FIB_DIR");
+      num_locations = grid->GetNumberOfCells();
+    } else {
+      array = grid->GetPointData()->GetArray("FIB_DIR");
+      num_locations = grid->GetNumberOfPoints();
+    }
+    if (array == nullptr) {
+      svmp::raise<svmp::FileFormatException>(file_name,
+        "No 'FIB_DIR' " + association + " data found as required by " +
+        xml_tag + ".");
+    }
+    if (array->GetNumberOfTuples() != num_locations) {
+      svmp::raise<svmp::FileFormatException>(file_name,
+        "The number of 'FIB_DIR' tuples (" +
+        std::to_string(array->GetNumberOfTuples()) +
+        ") does not match the number of associated " + association + " (" +
+        std::to_string(num_locations) + ").");
+    }
+    if (array->GetNumberOfComponents() < nsd) {
+      svmp::raise<svmp::FileFormatException>(file_name,
+        "The 'FIB_DIR' data has fewer than " + std::to_string(nsd) +
+        " components.");
+    }
+
+    const vtkIdType expected_num_locations = expect_cells ? mesh.gnEl : mesh.gnNo;
+    if (num_locations != expected_num_locations) {
+      svmp::raise<svmp::FileFormatException>(file_name,
+        "The number of " + association + " (" +
+        std::to_string(num_locations) + ") does not match the mesh (" +
+        std::to_string(expected_num_locations) + ").");
+    }
+
+    if (idx == 0) {
+      // Allocate space for the completed nsd-dimensional basis. Input directions
+      // fill the first nfibers columns; orthonormalization completes the rest.
+      input_fibers.resize(nsd * nsd, num_locations);
+      input_fibers = 0.0;
+    }
+
+    const int offset = idx * nsd;
+    for (vtkIdType location = 0; location < num_locations; ++location) {
+      const auto tuple = array->GetTuple(location);
+      for (int component = 0; component < nsd; ++component) {
+        input_fibers(offset + component, location) = tuple[component];
+      }
     }
   }
-}
 }
 
 
