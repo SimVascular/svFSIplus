@@ -41,12 +41,6 @@ endif()
 set(FLOWSOLVER_SUBDIRS ${FLOWSOLVER_SUBDIRS} linear_solver)
 set(FLOWSOLVER_SUBDIRS ${FLOWSOLVER_SUBDIRS} solver)
 
-if(ENABLE_COVERAGE)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -coverage")
-  # Compile options follow the build-type flags, so -O0 overrides RelWithDebInfo's -O2.
-  add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:-O0>")
-endif()
-
 #-----------------------------------------------------------------------------
 # Optional header path
 #-----------------------------------------------------------------------------

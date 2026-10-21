@@ -40,7 +40,7 @@ ci_run_rank_tests() {
   shift 2
 
   echo "Running rank-$rank tests with $workers worker(s)"
-  SVMP_TEST_PROCS="$rank" conda run -n svmultiphysics pytest -v -rfEP --durations=0 "$@" -n "$workers" --dist=loadfile
+  SVMP_TEST_PROCS="$rank" conda run --no-capture-output -n svmultiphysics pytest -v -rfEP --durations=0 "$@" -n "$workers" --dist=loadfile
 }
 
 ci_run_integration_tests() {
@@ -62,6 +62,6 @@ ci_run_integration_tests() {
       fi
     done
   else
-    conda run -n svmultiphysics pytest -v -rfEP --durations=0
+    conda run --no-capture-output -n svmultiphysics pytest -v -rfEP --durations=0
   fi
 }
