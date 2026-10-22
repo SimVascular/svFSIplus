@@ -1281,7 +1281,8 @@ void read_cep_domain(Simulation* simulation, EquationParameters* eq_params, Doma
       domain_params->isotropic_conductivity.defined();
   const bool fiber_defined = domain_params->fiber_conductivity.defined();
   const bool sheet_defined = domain_params->sheet_conductivity.defined();
-  const bool normal_defined = domain_params->normal_conductivity.defined();
+  const bool sheet_normal_defined =
+      domain_params->sheet_normal_conductivity.defined();
 
   if (!isotropic_defined && !fiber_defined) {
     throw std::runtime_error(
@@ -1293,17 +1294,17 @@ void read_cep_domain(Simulation* simulation, EquationParameters* eq_params, Doma
         "[read_cep_domain] Sheet_conductivity cannot be specified without "
         "Fiber_conductivity.");
   }
-  if (normal_defined && !sheet_defined) {
+  if (sheet_normal_defined && !sheet_defined) {
     throw std::runtime_error(
-        "[read_cep_domain] Normal_conductivity cannot be specified without "
-        "Sheet_conductivity.");
+        "[read_cep_domain] Sheet_normal_conductivity cannot be specified "
+        "without Sheet_conductivity.");
   }
 
   lDmn.cep.Diso = domain_params->isotropic_conductivity();
 
   const int num_conductivities = static_cast<int>(fiber_defined) +
       static_cast<int>(sheet_defined) +
-      static_cast<int>(normal_defined);
+      static_cast<int>(sheet_normal_defined);
   lDmn.cep.D.resize(num_conductivities);
   if (fiber_defined) {
     lDmn.cep.D[0] = domain_params->fiber_conductivity();
@@ -1311,8 +1312,8 @@ void read_cep_domain(Simulation* simulation, EquationParameters* eq_params, Doma
   if (sheet_defined) {
     lDmn.cep.D[1] = domain_params->sheet_conductivity();
   }
-  if (normal_defined) {
-    lDmn.cep.D[2] = domain_params->normal_conductivity();
+  if (sheet_normal_defined) {
+    lDmn.cep.D[2] = domain_params->sheet_normal_conductivity();
   }
 
   // Set myocardium zone id.

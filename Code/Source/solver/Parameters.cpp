@@ -2062,7 +2062,8 @@ DomainParameters::DomainParameters() {
                 isotropic_conductivity);
   set_parameter("Fiber_conductivity", 0.0, !required, fiber_conductivity);
   set_parameter("Sheet_conductivity", 0.0, !required, sheet_conductivity);
-  set_parameter("Normal_conductivity", 0.0, !required, normal_conductivity);
+  set_parameter("Sheet_normal_conductivity", 0.0, !required,
+                sheet_normal_conductivity);
 
   set_parameter("Mass_damping", 0.0, !required, mass_damping);
   set_parameter("Maximum_iterations", 5, !required, maximum_iterations);

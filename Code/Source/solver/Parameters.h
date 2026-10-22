@@ -1671,7 +1671,7 @@ class DomainParameters : public ParameterLists
     Parameter<double> isotropic_conductivity;
     Parameter<double> fiber_conductivity;
     Parameter<double> sheet_conductivity;
-    Parameter<double> normal_conductivity;
+    Parameter<double> sheet_normal_conductivity;
 
     Parameter<double> mass_damping;
     Parameter<int> maximum_iterations;
