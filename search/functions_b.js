@@ -8,12 +8,11 @@ var searchData=
   ['mat_5finv_5fge_5',['mat_inv_ge',['../namespacemat__fun.html#ab7cf0a25ec503065254317903b7f0fcf',1,'mat_fun']]],
   ['mat_5finv_5fge_5forig_6',['mat_inv_ge_orig',['../namespacemat__fun.html#ab3811947b4d5d230a30e666e3a8107ca',1,'mat_fun']]],
   ['mat_5finv_5flp_7',['mat_inv_lp',['../namespacemat__fun.html#aa0e1aca3444929b9530b92d2e46eb92b',1,'mat_fun']]],
-  ['mat_5finv_5flp_5feigen_8',['mat_inv_lp_eigen',['../namespacemat__fun.html#a40f2162082df80a215e654bcdc4c0fb1',1,'mat_fun']]],
-  ['mat_5fmul_9',['mat_mul',['../namespacemat__fun.html#a7f258f8d7f62a92cd85f0b12dd354203',1,'mat_fun::mat_mul(const Array&lt; double &gt; &amp;A, const Vector&lt; double &gt; &amp;v)'],['../namespacemat__fun.html#a36bcb6d3b2f5be4ff4ad6c1e7ed61a38',1,'mat_fun::mat_mul(const Array&lt; double &gt; &amp;A, const Array&lt; double &gt; &amp;B, Array&lt; double &gt; &amp;C)'],['../namespacemat__fun.html#aef16dabb2561c60d32d5f0562bb02c41',1,'mat_fun::mat_mul(const Array&lt; double &gt; &amp;A, const Array&lt; double &gt; &amp;B, Array&lt; double &gt; &amp;C)'],['../namespacemat__fun.html#a676f2d97dad7d3c511d3847b65573c37',1,'mat_fun::mat_mul(const Array&lt; double &gt; &amp;A, const Array&lt; double &gt; &amp;B, Array&lt; double &gt; &amp;result)'],['../namespacemat__fun.html#aa546e3d16c049da7c1a3d42b2c782866',1,'mat_fun::mat_mul(const Array&lt; double &gt; &amp;A, const Array&lt; double &gt; &amp;B)']]],
-  ['mat_5fsymm_10',['mat_symm',['../namespacemat__fun.html#a6ecffe7c0c2beba571579b3071f6da91',1,'mat_fun']]],
-  ['mat_5fsymm_5fprod_11',['mat_symm_prod',['../namespacemat__fun.html#ac74e37f69fc09901dd23652f89a4f7e1',1,'mat_fun']]],
-  ['mat_5ftrace_12',['mat_trace',['../namespacemat__fun.html#a80fd0b01661fb60e285f4d1a94ad3eeb',1,'mat_fun']]],
-  ['max_5fgauss_5flegendre_5fexactness_13',['max_gauss_legendre_exactness',['../group___f_e___quadrature.html#ga208d5d7639710707f6daecba7e5e5151',1,'svmp::FE::quadrature']]],
-  ['max_5fgauss_5flobatto_5fexactness_14',['max_gauss_lobatto_exactness',['../group___f_e___quadrature.html#ga19cf7a15492e3fddc27a8cf2f2d3e0d6',1,'svmp::FE::quadrature']]],
-  ['message_15',['message',['../classsvmp_1_1_diagnostic.html#a7e06004baa12b47421f6147c20c16d76',1,'svmp::Diagnostic']]]
+  ['mat_5fmul_8',['mat_mul',['../namespacemat__fun.html#a7f258f8d7f62a92cd85f0b12dd354203',1,'mat_fun::mat_mul(const Array&lt; double &gt; &amp;A, const Vector&lt; double &gt; &amp;v)'],['../namespacemat__fun.html#a36bcb6d3b2f5be4ff4ad6c1e7ed61a38',1,'mat_fun::mat_mul(const Array&lt; double &gt; &amp;A, const Array&lt; double &gt; &amp;B, Array&lt; double &gt; &amp;C)'],['../namespacemat__fun.html#aef16dabb2561c60d32d5f0562bb02c41',1,'mat_fun::mat_mul(const Array&lt; double &gt; &amp;A, const Array&lt; double &gt; &amp;B, Array&lt; double &gt; &amp;C)'],['../namespacemat__fun.html#a676f2d97dad7d3c511d3847b65573c37',1,'mat_fun::mat_mul(const Array&lt; double &gt; &amp;A, const Array&lt; double &gt; &amp;B, Array&lt; double &gt; &amp;result)'],['../namespacemat__fun.html#aa546e3d16c049da7c1a3d42b2c782866',1,'mat_fun::mat_mul(const Array&lt; double &gt; &amp;A, const Array&lt; double &gt; &amp;B)']]],
+  ['mat_5fsymm_9',['mat_symm',['../namespacemat__fun.html#a6ecffe7c0c2beba571579b3071f6da91',1,'mat_fun']]],
+  ['mat_5fsymm_5fprod_10',['mat_symm_prod',['../namespacemat__fun.html#ac74e37f69fc09901dd23652f89a4f7e1',1,'mat_fun']]],
+  ['mat_5ftrace_11',['mat_trace',['../namespacemat__fun.html#a80fd0b01661fb60e285f4d1a94ad3eeb',1,'mat_fun']]],
+  ['max_5fgauss_5flegendre_5fexactness_12',['max_gauss_legendre_exactness',['../group___f_e___quadrature.html#ga208d5d7639710707f6daecba7e5e5151',1,'svmp::FE::quadrature']]],
+  ['max_5fgauss_5flobatto_5fexactness_13',['max_gauss_lobatto_exactness',['../group___f_e___quadrature.html#ga19cf7a15492e3fddc27a8cf2f2d3e0d6',1,'svmp::FE::quadrature']]],
+  ['message_14',['message',['../classsvmp_1_1_diagnostic.html#a7e06004baa12b47421f6147c20c16d76',1,'svmp::Diagnostic']]]
 ];
