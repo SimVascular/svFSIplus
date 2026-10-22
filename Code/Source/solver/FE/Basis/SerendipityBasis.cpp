@@ -210,7 +210,7 @@ std::vector<double> build_inverse_vandermonde(
         inverse = math::invert_dense_matrix(
             std::move(vandermonde), n,
             "SerendipityBasis interpolation matrix for " + label);
-    } catch (const ::svmp::CoreException&) {
+    } catch (const CoreException&) {
         svmp::raise<BasisConstructionException>("SerendipityBasis: " + label +
                 " interpolation matrix is singular; the serendipity node set is not "
                 "unisolvent at the requested order");

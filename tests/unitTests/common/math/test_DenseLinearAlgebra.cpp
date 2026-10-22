@@ -13,6 +13,7 @@
 #include <vector>
 
 using namespace svmp::math;
+using svmp::CoreException;
 
 namespace {
 
@@ -194,19 +195,19 @@ TEST(DenseLinearAlgebra, SolveInPlaceValidatesInputs) {
 
     std::vector<double> rhs{double(1), double(2)};
     EXPECT_THROW(solver.solve_in_place(std::span<double>(rhs.data(), rhs.size()), 0u),
-                 svmp::CoreException);
+                 CoreException);
 
     std::vector<double> wrong_size{double(1), double(2), double(3)};
     EXPECT_THROW(
         solver.solve_in_place(std::span<double>(wrong_size.data(), wrong_size.size()), 1u),
-        svmp::CoreException);
+        CoreException);
 
     DenseLUSolver unfactored;
     unfactored.n = 2u;
     unfactored.error_message_label = "unfactored";
     EXPECT_FALSE(unfactored.empty());
     EXPECT_THROW(unfactored.solve_in_place(std::span<double>(rhs.data(), rhs.size()), 1u),
-                 svmp::CoreException);
+                 CoreException);
 }
 
 TEST(DenseLinearAlgebra, DiagnosticValidationRejectsRankMismatch) {
@@ -214,7 +215,7 @@ TEST(DenseLinearAlgebra, DiagnosticValidationRejectsRankMismatch) {
     result.diagnostics.rank = 1u;
 
     EXPECT_THROW(validate_dense_inverse_diagnostics(result, 2u, "rank mismatch"),
-                 svmp::CoreException);
+                 CoreException);
 }
 
 TEST(DenseLinearAlgebra, RankHandlesNonSquareMatrices) {
@@ -265,7 +266,7 @@ TEST(DenseLinearAlgebra, DiagnosticValidationRejectsUnsupportedCondition) {
               dense_matrix_condition_error_threshold());
     EXPECT_THROW(validate_dense_inverse_diagnostics(
                      result, 2u, "excessive-condition diagonal"),
-                 svmp::CoreException);
+                 CoreException);
 }
 
 TEST(DenseLinearAlgebra, ThrowsForScaleAwareSingularPivot) {
@@ -275,7 +276,7 @@ TEST(DenseLinearAlgebra, ThrowsForScaleAwareSingularPivot) {
     };
 
     EXPECT_THROW((void)invert_dense_matrix(singular, 2u, "singular 2x2"),
-                 svmp::CoreException);
+                 CoreException);
 }
 
 TEST(DenseLinearAlgebra, FactorizationThrowsForRankDeficientMatrix) {
@@ -285,7 +286,7 @@ TEST(DenseLinearAlgebra, FactorizationThrowsForRankDeficientMatrix) {
     };
 
     EXPECT_THROW((void)factor_dense_matrix(singular, 2u, "rank-one 2x2"),
-                 svmp::CoreException);
+                 CoreException);
 }
 
 TEST(DenseLinearAlgebra, RankUsesScaleAwareTolerance) {
