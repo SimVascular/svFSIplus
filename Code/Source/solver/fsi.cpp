@@ -49,7 +49,7 @@ void construct_fsi(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const So
   // l = 3, if nsd==2 ; else 6;
   const int l = com_mod.nsymd;
   const int nsd  = com_mod.nsd;
-  int nFn  = lM.fibers.get_num_directions(nsd);
+  int nFn  = lM.fibers.get_num_directions();
   if (nFn == 0) nFn = 1;
   const int tDof = com_mod.tDof;
   const int dof = com_mod.dof;

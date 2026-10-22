@@ -1004,7 +1004,7 @@ void write_vtus(Simulation* simulation, const SolutionStates& solutions, const b
       if (oGrp == OutputNameType::outGrp_fN) {
         nFn = 1;
         for (int iM = 0; iM < nMsh; iM++) {
-          nFn = std::max(nFn, meshes[iM].fibers.get_num_directions(nsd));
+          nFn = std::max(nFn, meshes[iM].fibers.get_num_directions());
         }
         nOut = nOut + nFn;
         outDof = outDof + eq.output[iOut].l * nFn;
@@ -1255,7 +1255,7 @@ void write_vtus(Simulation* simulation, const SolutionStates& solutions, const b
 
           case OutputNameType::outGrp_fA:
             tmpV.resize(1,msh.nNo);
-            if (msh.fibers.get_num_directions(nsd) >= 2) {
+            if (msh.fibers.get_num_directions() >= 2) {
               post::fib_algn_post(simulation, msh, tmpV, solutions, iEq);
             }
             for (int a = 0; a < msh.nNo; a++) {

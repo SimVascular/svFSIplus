@@ -37,18 +37,17 @@ class Fibers {
      */
     DataLocation get_data_location() const { return data_location; }
 
-    /// Number of fiber directions provided as input (always nsd - 1 when
-    /// fibers are present; the remaining direction is completed automatically).
+    /// Number of completed fiber directions (nsd when fibers are present).
+    /// Set only after the orthonormal basis has been completed; use
+    /// @ref get_num_directions from physics.
     int nfibers = 0;
 
     /**
      * @brief Returns the number of completed fiber directions.
      *
-     * Derived from the stored basis array size: when fibers are present this is
-     * @p nsd (full orthonormal basis); otherwise 0. Prefer this over
-     * @ref nfibers when physics needs the number of usable directions.
+     * Same as @ref nfibers: nsd when fibers are present, otherwise 0.
      */
-    int get_num_directions(int nsd) const;
+    int get_num_directions() const { return nfibers; }
 
     /**
      * @brief Reads fiber directions from file paths or constant vectors.
@@ -136,6 +135,11 @@ class Fibers {
 
   private:
     DataLocation data_location = DataLocation::none;
+
+    /// Number of fiber directions supplied as input (nsd - 1 when fibers are
+    /// present). Used only while reading, validating, and interpolating the
+    /// incomplete basis; prefer @ref nfibers after completion.
+    int num_input_fibers = 0;
 
     /**
      * @brief Reads fiber directions from VTK files. expected_location must be

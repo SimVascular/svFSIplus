@@ -152,6 +152,7 @@ void Fibers::distribute(ComMod& com_mod, const CmMod& cm_mod, const cmType& cm,
   int location = static_cast<int>(data_location);
   cm.bcast(cm_mod, &location);
   data_location = static_cast<DataLocation>(location);
+  cm.bcast(cm_mod, &num_input_fibers);
 
   if (!has_fibers()) {
     return;
@@ -314,27 +315,8 @@ void Fibers::clear()
   quadrature_fibers.clear();
   element_nodal_fibers.clear();
   nfibers = 0;
+  num_input_fibers = 0;
   data_location = DataLocation::none;
-}
-
-
-int Fibers::get_num_directions(const int nsd) const
-{
-  if (!has_fibers()) {
-    return 0;
-  }
-  if (nsd <= 0) {
-    svmp::raise<svmp::FE::InvalidArgumentException>(
-      "The spatial dimension must be positive when querying fiber directions.");
-  }
-  const int num_components = input_fibers.nrows();
-  if (num_components == 0 || num_components % nsd != 0) {
-    svmp::raise<svmp::InternalErrorException>(
-      "The fiber data have " + std::to_string(num_components) +
-      " components, which is incompatible with spatial dimension " +
-      std::to_string(nsd) + ".");
-  }
-  return num_components / nsd;
 }
 
 
@@ -363,12 +345,12 @@ void Fibers::read(const MeshParameters& mesh_parameters, mshType& mesh, const in
 
   // Require exactly nsd - 1 input directions; the last basis vector is completed
   // during orthonormalization.
-  const int num_input_fibers = num_dirs + num_point_paths + num_cell_paths;
+  const int num_provided = num_dirs + num_point_paths + num_cell_paths;
   const int expected_fibers = nsd - 1;
-  if (num_input_fibers != expected_fibers) {
+  if (num_provided != expected_fibers) {
     svmp::raise<svmp::ParseException>(
       "The number of input fiber directions (" +
-      std::to_string(num_input_fibers) +
+      std::to_string(num_provided) +
       ") must be exactly nsd - 1 (" + std::to_string(expected_fibers) + ").");
   }
 
@@ -390,6 +372,10 @@ void Fibers::read(const MeshParameters& mesh_parameters, mshType& mesh, const in
     svmp::raise<svmp::InternalErrorException>(
       "Fiber input data has no cell, point, or constant direction association.");
   }
+
+  // nfibers is the completed basis size; set only after completion (and, for
+  // point data, after quadrature interpolation of the input directions).
+  nfibers = nsd;
 }
 
 
@@ -406,7 +392,7 @@ void Fibers::read_from_file(const MeshParameters& mesh_parameters, mshType& mesh
       ? mesh_parameters.fiber_direction_file_paths_points
       : mesh_parameters.fiber_direction_file_paths_cells;
   const int num_paths = path_parameter.size();
-  nfibers = num_paths;
+  num_input_fibers = num_paths;
   data_location = expected_location;
 
   const auto paths = path_parameter();
@@ -416,7 +402,7 @@ void Fibers::read_from_file(const MeshParameters& mesh_parameters, mshType& mesh
       ? "Fiber_direction_from_file_cells"
       : "Fiber_direction_from_file_points";
 
-  for (int idx = 0; idx < nfibers; ++idx) {
+  for (int idx = 0; idx < num_input_fibers; ++idx) {
     const auto& file_name = paths[idx];
 
     if (FILE* file = fopen(file_name.c_str(), "r")) {
@@ -475,7 +461,7 @@ void Fibers::read_from_file(const MeshParameters& mesh_parameters, mshType& mesh
 
     if (idx == 0) {
       // Allocate space for the completed nsd-dimensional basis. Input directions
-      // fill the first nfibers columns; orthonormalization completes the rest.
+      // fill the first num_input_fibers columns; completion fills the rest.
       input_fibers.resize(nsd * nsd, num_locations);
       input_fibers = 0.0;
     }
@@ -507,13 +493,13 @@ void Fibers::read_directions(const MeshParameters& mesh_parameters, const int ns
     }
   }
 
-  nfibers = num_dirs;
+  num_input_fibers = num_dirs;
   data_location = DataLocation::constant;
 
   // Allocate space for the completed nsd-dimensional basis.
   input_fibers.resize(nsd * nsd, 1);
   input_fibers = 0.0;
-  for (int i = 0; i < nfibers; ++i) {
+  for (int i = 0; i < num_input_fibers; ++i) {
     for (int j = 0; j < nsd; ++j) {
       input_fibers(i * nsd + j, 0) = directions[i][j];
     }
@@ -527,7 +513,7 @@ void Fibers::check_input_fibers_orthonormal(const int nsd) const
 
   // Check that the fiber directions are unit vectors.
   for (int location = 0; location < input_fibers.ncols(); ++location) {
-    for (int i = 0; i < nfibers; ++i) {
+    for (int i = 0; i < num_input_fibers; ++i) {
       double norm_sq = 0.0;
       for (int component = 0; component < nsd; ++component) {
         const double value = input_fibers(i * nsd + component, location);
@@ -546,7 +532,7 @@ void Fibers::check_input_fibers_orthonormal(const int nsd) const
   // Check that the fiber directions are orthogonal.
   const int nlocations = input_fibers.ncols();
   for (int location = 0; location < nlocations; ++location) {
-    for (int i = 0; i < nfibers; ++i) {
+    for (int i = 0; i < num_input_fibers; ++i) {
       for (int j = 0; j < i; ++j) {
         double dot = 0.0;
         for (int component = 0; component < nsd; ++component) {
@@ -637,10 +623,10 @@ Array<double> Fibers::get_quadrature_fibers(
       "the number of element nodes.");
   }
 
-  Array<double> interpolated_fibers(nsd, nfibers);
+  Array<double> interpolated_fibers(nsd, num_input_fibers);
   Array<double> nodal_fibers(nsd, num_basis_functions);
 
-  for (int iFn = 0; iFn < nfibers; ++iFn) {
+  for (int iFn = 0; iFn < num_input_fibers; ++iFn) {
     for (int a = 0; a < num_basis_functions; ++a) {
       for (int component = 0; component < nsd; ++component) {
         nodal_fibers(component, a) =
@@ -656,7 +642,7 @@ Array<double> Fibers::get_quadrature_fibers(
   }
 
   const Eigen::Map<const Eigen::MatrixXd> input(
-    interpolated_fibers.data(), nsd, nfibers);
+    interpolated_fibers.data(), nsd, num_input_fibers);
   const auto basis = orthonormalize_fiber_matrix(
     input, "in element " + std::to_string(e));
 
@@ -699,7 +685,7 @@ void Fibers::interpolate_point_fibers_mesh(
   for (int e = 0; e < mesh.gnEl; ++e) {
     for (int a = 0; a < mesh.eNoN; ++a) {
       const int node = mesh.gIEN(a, e);
-      for (int direction = 0; direction < nfibers; ++direction) {
+      for (int direction = 0; direction < num_input_fibers; ++direction) {
         for (int component = 0; component < nsd; ++component) {
           element_nodal_fibers(component + direction * nsd, a, e) =
             input_fibers(component + direction * nsd, node);

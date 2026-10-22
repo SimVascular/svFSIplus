@@ -645,7 +645,7 @@ void fib_dir_post(Simulation* simulation, const mshType& lM, const int nFn, Arra
   Array<double> sF(nFn*nsd,tnNo); 
   Array<double> xl(nsd,eNoN); 
   Array<double> dl(tDof,eNoN); 
-  const int num_fiber_dirs = lM.fibers.get_num_directions(nsd);
+  const int num_fiber_dirs = lM.fibers.get_num_directions();
   Array<double> fibers(nsd, num_fiber_dirs);
   Array<double> fl(nsd, num_fiber_dirs);
   Array<double> Nx(nsd,eNoN); 
@@ -1359,7 +1359,7 @@ void shl_post(Simulation* simulation, const mshType& lM, const int m, Array<doub
   int j = i + 1;
   int k = j + 1;
 
-  int nFn = lM.fibers.get_num_directions(nsd);
+  int nFn = lM.fibers.get_num_directions();
   if (nFn == 0) {
     nFn = 1;
   }
@@ -1795,7 +1795,7 @@ void tensor_post_impl(Simulation* simulation, const mshType& lM, const int m, Ar
   int j = i + 1;
   int k = j + 1;
 
-  int nFn = lM.fibers.get_num_directions(nsd);
+  int nFn = lM.fibers.get_num_directions();
   if (nFn == 0) {
     nFn = 1;
   }
