@@ -46,10 +46,10 @@ using FiberRef =
  *   variables.
  * @param[in] lDmn Domain object.
  * @param[in] F Deformation gradient tensor.
- * @param[in] nfd Number of fiber directions.
- * @param[in] fiber_basis Complete orthonormal fiber basis. The matrix must
- *   contain @p nsd columns even though @p nfd counts only directions supplied
- *   by the user.
+ * @param[in] nfd Number of completed fiber directions (equal to @p nsd when
+ *   fibers are present).
+ * @param[in] fiber_basis Complete orthonormal fiber basis with @p nsd columns
+ *   (fiber, sheet/transverse, and in 3D sheet normal).
  * @param[in] active_tension Active tension along the fiber, sheet and
  *   sheet-normal directions, and its derivatives with respect to the fiber
  *   stretch. The derivatives contribute the tangent of the active stress to

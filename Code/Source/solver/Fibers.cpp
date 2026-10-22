@@ -318,6 +318,26 @@ void Fibers::clear()
 }
 
 
+int Fibers::get_num_directions(const int nsd) const
+{
+  if (!has_fibers()) {
+    return 0;
+  }
+  if (nsd <= 0) {
+    svmp::raise<svmp::FE::InvalidArgumentException>(
+      "The spatial dimension must be positive when querying fiber directions.");
+  }
+  const int num_components = input_fibers.nrows();
+  if (num_components == 0 || num_components % nsd != 0) {
+    svmp::raise<svmp::InternalErrorException>(
+      "The fiber data have " + std::to_string(num_components) +
+      " components, which is incompatible with spatial dimension " +
+      std::to_string(nsd) + ".");
+  }
+  return num_components / nsd;
+}
+
+
 void Fibers::read(const MeshParameters& mesh_parameters, mshType& mesh, const int nsd)
 {
   // Count the number of input modes.

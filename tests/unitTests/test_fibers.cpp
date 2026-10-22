@@ -102,10 +102,12 @@ TEST(Fibers, ReadsOrthonormalConstantDirections)
   Fibers fibers;
 
   EXPECT_FALSE(fibers.has_fibers());
+  EXPECT_EQ(fibers.get_num_directions(3), 0);
   fibers.read(parameters, mesh, 3);
 
   ASSERT_TRUE(fibers.has_fibers());
   ASSERT_EQ(fibers.nfibers, 2);
+  ASSERT_EQ(fibers.get_num_directions(3), 3);
 
   const auto quadrature_fibers = fibers.get_quadrature_fibers(3, 0, 0);
   ASSERT_EQ(quadrature_fibers.nrows(), 3);
@@ -126,6 +128,7 @@ TEST(Fibers, ReadsOrthonormalConstantDirections)
 
   fibers.clear();
   EXPECT_FALSE(fibers.has_fibers());
+  EXPECT_EQ(fibers.get_num_directions(3), 0);
 }
 
 TEST(Fibers, ConstantDirectionsShareStorageAcrossQueries)
@@ -250,6 +253,7 @@ TEST(Fibers, LoadsCellDirectionsFromVtu)
 
   ASSERT_TRUE(fibers.has_fibers());
   ASSERT_EQ(fibers.nfibers, 2);
+  ASSERT_EQ(fibers.get_num_directions(3), 3);
 
   const auto quadrature_fibers = fibers.get_quadrature_fibers(3, 0, 0);
   ASSERT_EQ(quadrature_fibers.nrows(), 3);
@@ -293,6 +297,7 @@ TEST(Fibers, LoadsPointDirectionsFromVtu)
 
   ASSERT_TRUE(fibers.has_fibers());
   ASSERT_EQ(fibers.nfibers, 2);
+  ASSERT_EQ(fibers.get_num_directions(3), 3);
 
   const auto quadrature_fibers = fibers.get_quadrature_fibers(3, 0, 0);
   ASSERT_EQ(quadrature_fibers.nrows(), 3);
@@ -355,6 +360,7 @@ TEST(Fibers, InterpolatesNodalFibersAtWeightedQuadraturePoints)
   fibers.read(parameters, mesh, 2);
 
   ASSERT_EQ(fibers.nfibers, 1);
+  ASSERT_EQ(fibers.get_num_directions(2), 2);
   EXPECT_NEAR(fibers.get_quadrature_fibers(2, 0, 0)(0, 0), 1.0, 1.0e-12);
   EXPECT_NEAR(fibers.get_quadrature_fibers(2, 0, 0)(1, 0), 0.0, 1.0e-12);
   EXPECT_NEAR(fibers.get_quadrature_fibers(2, 1, 0)(0, 0), 0.0, 1.0e-12);

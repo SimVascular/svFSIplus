@@ -32,7 +32,7 @@ void construct_shell(ComMod& com_mod, const mshType& lM, const SolutionStates& s
   #ifdef debug_construct_shell
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
-  dmsg << "lM.fibers.nfibers: " << lM.fibers.nfibers;
+  dmsg << "lM.fibers.get_num_directions: " << lM.fibers.get_num_directions(com_mod.nsd);
   dmsg << "lM.nFs: " << lM.nFs;
   dmsg << "lM.eNoN: " << lM.eNoN;
   #endif
@@ -50,7 +50,7 @@ void construct_shell(ComMod& com_mod, const mshType& lM, const SolutionStates& s
     eNoN = 2 * eNoN;
   }
 
-  int nFn = lM.fibers.nfibers;
+  int nFn = lM.fibers.get_num_directions(nsd);
   if (nFn == 0) {
     nFn = 1;
   }
@@ -1195,7 +1195,7 @@ void shell_cst(ComMod& com_mod, const mshType& lM, const int e, const int eNoN, 
   #ifdef debug_shell_cst 
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
-  dmsg << "lM.fibers.nfibers: " << lM.fibers.nfibers;
+  dmsg << "lM.fibers.get_num_directions: " << lM.fibers.get_num_directions(com_mod.nsd);
   dmsg << "lM.nFs: " << lM.nFs;
   dmsg << "dof: " << dof;
   dmsg << "eNoN: " << eNoN;

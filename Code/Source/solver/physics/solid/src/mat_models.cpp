@@ -395,7 +395,7 @@ void compute_pk2cc(const ComMod &com_mod, const CepMod &cep_mod,
     // HGO (Holzapfel-Gasser-Ogden) model with additive splitting of
     // the anisotropic fiber-based strain-energy terms
     case ConstitutiveModelType::stIso_HGO: {
-      if (nfd != 2) {
+      if (nfd != nsd) {
         throw std::runtime_error("[compute_pk2cc] Min fiber directions not defined for HGO material model.");
       }
 
@@ -433,7 +433,7 @@ void compute_pk2cc(const ComMod &com_mod, const CepMod &cep_mod,
 
     // Guccione (1995) transversely isotropic model
     case ConstitutiveModelType::stIso_Gucci: {
-      if (nfd != 2) {
+      if (nfd != nsd) {
         throw std::runtime_error("[compute_pk2cc] Min fiber directions not defined for Guccione material model.");
       }
 
@@ -501,7 +501,7 @@ void compute_pk2cc(const ComMod &com_mod, const CepMod &cep_mod,
 
     //  HO (Holzapfel-Ogden) model for myocardium (2009)
     case ConstitutiveModelType::stIso_HO: {
-      if (nfd != 2) {
+      if (nfd != nsd) {
         throw std::runtime_error("[compute_pk2cc] Min fiber directions not defined for Holzapfel material model.");
       }
 
@@ -581,8 +581,8 @@ void compute_pk2cc(const ComMod &com_mod, const CepMod &cep_mod,
 
     //  HO (Holzapfel-Ogden)-MA model for myocardium with full invariants for the anisotropy terms (modified-anisotropy)
     case ConstitutiveModelType::stIso_HO_ma: {
-      if (nfd != 2) {
-        //err = "Min fiber directions not defined for Holzapfel material model (2)"
+      if (nfd != nsd) {
+        throw std::runtime_error("[compute_pk2cc] Min fiber directions not defined for Holzapfel material model.");
       }
 
       // Compute cross fiber-sheet structure tensor
@@ -735,9 +735,9 @@ void compute_pk2cc(const ComMod &com_mod, const CepMod &cep_mod,
 
   if (!utils::is_zero(Tna) || !utils::is_zero(active_tension.d_sheet_normals)) {
     svmp::check<svmp::InternalErrorException>(
-        nfd >= 2,
-        "Applying active stress along normals (eta_n > 0) requires both a "
-        "fiber and a sheet direction, but only " +
+        nfd >= 3,
+        "Applying active stress along normals (eta_n > 0) requires a 3D "
+        "fiber basis, but only " +
             std::to_string(nfd) + " fiber directions are defined.");
 
     auto fib_dir3 = fiber_basis.col(2);
@@ -928,7 +928,9 @@ void compute_pk2cc_shlc(const ComMod& com_mod, const dmnType& lDmn, const int nf
 
       case ConstitutiveModelType::stIso_HO_ma: {
 
-         if (nfd !=  2) {
+         // Shells receive the completed ambient basis (nsd directions); at least
+         // fiber and sheet are required for this model.
+         if (nfd < 2) {
            throw std::runtime_error("Min fiber directions not defined for Holzapfel material model (1)");
          }
      
@@ -1212,7 +1214,9 @@ void compute_pk2cc_shli(const ComMod& com_mod, const dmnType& lDmn, const int nf
     //
     case ConstitutiveModelType::stIso_HO_ma: {
 
-      if (nfd != 2) {
+      // Shells receive the completed ambient basis (nsd directions); at least
+      // fiber and sheet are required for this model.
+      if (nfd < 2) {
         throw std::runtime_error("Min fiber directions not defined for Holzapfel material model (1)");
       }
 

@@ -37,8 +37,18 @@ class Fibers {
      */
     DataLocation get_data_location() const { return data_location; }
 
-    /// Number of fiber directions provided as input.
+    /// Number of fiber directions provided as input (always nsd - 1 when
+    /// fibers are present; the remaining direction is completed automatically).
     int nfibers = 0;
+
+    /**
+     * @brief Returns the number of completed fiber directions.
+     *
+     * Derived from the stored basis array size: when fibers are present this is
+     * @p nsd (full orthonormal basis); otherwise 0. Prefer this over
+     * @ref nfibers when physics needs the number of usable directions.
+     */
+    int get_num_directions(int nsd) const;
 
     /**
      * @brief Reads fiber directions from file paths or constant vectors.

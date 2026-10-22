@@ -645,8 +645,9 @@ void fib_dir_post(Simulation* simulation, const mshType& lM, const int nFn, Arra
   Array<double> sF(nFn*nsd,tnNo); 
   Array<double> xl(nsd,eNoN); 
   Array<double> dl(tDof,eNoN); 
-  Array<double> fibers(nsd,lM.fibers.nfibers);
-  Array<double> fl(nsd,lM.fibers.nfibers);
+  const int num_fiber_dirs = lM.fibers.get_num_directions(nsd);
+  Array<double> fibers(nsd, num_fiber_dirs);
+  Array<double> fl(nsd, num_fiber_dirs);
   Array<double> Nx(nsd,eNoN); 
   Vector<double> N(eNoN);
 
@@ -673,7 +674,7 @@ void fib_dir_post(Simulation* simulation, const mshType& lM, const int nFn, Arra
 
     for (int g = 0; g < lM.nG; g++) {
       const auto quadrature_fibers = lM.fibers.get_quadrature_fibers(nsd, g, e);
-      for (int iFn = 0; iFn < lM.fibers.nfibers; ++iFn) {
+      for (int iFn = 0; iFn < num_fiber_dirs; ++iFn) {
         for (int i = 0; i < nsd; ++i) {
           fibers(i, iFn) = quadrature_fibers(i, iFn);
         }
@@ -688,7 +689,7 @@ void fib_dir_post(Simulation* simulation, const mshType& lM, const int nFn, Arra
       N = lM.N.col(g);
       F = deformation_gradient(Nx, dl, nsd, eNoN, i);
 
-      for (int iFn = 0; iFn < lM.fibers.nfibers; iFn++) {
+      for (int iFn = 0; iFn < num_fiber_dirs; iFn++) {
         for (int i = 0; i < nsd; i++) {
           auto fiber = fibers.col(iFn);
           auto F_fN = mat_fun::mat_mul(F, fiber);
@@ -699,7 +700,7 @@ void fib_dir_post(Simulation* simulation, const mshType& lM, const int nFn, Arra
       for (int a = 0; a < eNoN; a++) {
         int Ac = lM.IEN(a,e);
         sA(Ac) = sA(Ac) + w*N(a);
-        for (int iFn = 0; iFn < lM.fibers.nfibers; iFn++) {
+        for (int iFn = 0; iFn < num_fiber_dirs; iFn++) {
           int b = iFn*nsd;
           for (int l = 0; l < nsd; l++) {
             sF(b+l,Ac) = sF(b+l,Ac) + w*N(a)*fl(l,iFn);
@@ -815,7 +816,7 @@ void active_tension(const ComMod& com_mod, const int iEq, const mshType& lM,
   auto& eq = com_mod.eq[iEq];
 
   Vector<double> fiber_stretch(lM.nNo);
-  if (lM.fibers.nfibers != 0) {
+  if (lM.fibers.has_fibers()) {
     fib_stretch(com_mod, iEq, lM, lD, fiber_stretch);
   }
 
@@ -1358,7 +1359,7 @@ void shl_post(Simulation* simulation, const mshType& lM, const int m, Array<doub
   int j = i + 1;
   int k = j + 1;
 
-  int nFn = lM.fibers.nfibers;
+  int nFn = lM.fibers.get_num_directions(nsd);
   if (nFn == 0) {
     nFn = 1;
   }
@@ -1794,7 +1795,7 @@ void tensor_post_impl(Simulation* simulation, const mshType& lM, const int m, Ar
   int j = i + 1;
   int k = j + 1;
 
-  int nFn = lM.fibers.nfibers;
+  int nFn = lM.fibers.get_num_directions(nsd);
   if (nFn == 0) {
     nFn = 1;
   }

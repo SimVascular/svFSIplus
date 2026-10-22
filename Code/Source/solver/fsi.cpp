@@ -39,8 +39,6 @@ void construct_fsi(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const So
   using namespace consts;
 
   int eNoN = lM.eNoN;
-  int nFn  = lM.fibers.nfibers;
-  if (nFn == 0) nFn = 1;
   const bool mesh_has_fibers = lM.fibers.has_fibers();
 
   bool  vmsStab = false;
@@ -51,6 +49,8 @@ void construct_fsi(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const So
   // l = 3, if nsd==2 ; else 6;
   const int l = com_mod.nsymd;
   const int nsd  = com_mod.nsd;
+  int nFn  = lM.fibers.get_num_directions(nsd);
+  if (nFn == 0) nFn = 1;
   const int tDof = com_mod.tDof;
   const int dof = com_mod.dof;
   const int cEq = com_mod.cEq;

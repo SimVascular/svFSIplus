@@ -212,7 +212,7 @@ void construct_dsolid(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const
   bool pstEq = com_mod.pstEq;
 
   int eNoN = lM.eNoN;
-  int nFn = lM.fibers.nfibers;
+  int nFn = lM.fibers.get_num_directions(nsd);
   if (nFn == 0) {
     nFn = 1;
   }

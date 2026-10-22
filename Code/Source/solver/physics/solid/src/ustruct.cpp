@@ -211,7 +211,7 @@ void construct_usolid(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const
   #ifdef debug_construct_usolid
   DebugMsg dmsg(__func__, com_mod.cm.idcm());
   dmsg.banner();
-  dmsg << "lM.fibers.nfibers: " << lM.fibers.nfibers;
+  dmsg << "lM.fibers.get_num_directions: " << lM.fibers.get_num_directions(com_mod.nsd);
   dmsg << "lM.nFs: " << lM.nFs;
   #endif
 
@@ -228,7 +228,7 @@ void construct_usolid(ComMod& com_mod, CepMod& cep_mod, const mshType& lM, const
   bool pstEq = com_mod.pstEq;
 
   int eNoN = lM.eNoN;
-  int nFn = lM.fibers.nfibers;
+  int nFn = lM.fibers.get_num_directions(nsd);
   if (nFn == 0) {
     nFn = 1;
   }
