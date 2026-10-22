@@ -1209,7 +1209,7 @@ void post(Simulation* simulation, const mshType& lM, Array<double>& res, const S
       for (double& value : mass) {
         value /= element_volume;
       }
-      svmp::common::math::factor_dense_matrix(mass, eNoN, "Darcy flux mass matrix").solve_in_place(flux_rhs, nsd);
+      svmp::math::factor_dense_matrix(mass, eNoN, "Darcy flux mass matrix").solve_in_place(flux_rhs, nsd);
 
       for (int a = 0; a < eNoN; ++a) {
         const int Ac = lM.IEN(a,e);

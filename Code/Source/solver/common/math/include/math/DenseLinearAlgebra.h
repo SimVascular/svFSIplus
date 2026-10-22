@@ -12,7 +12,7 @@
 #include <string_view>
 #include <vector>
 
-namespace svmp::common::math {
+namespace svmp::math {
 
 // Dense solve, inverse, rank, and pseudo-inverse support for FE construction
 // utilities. Matrices are row-major: matrix[row * cols + col]. The
@@ -21,7 +21,7 @@ namespace svmp::common::math {
 
 /**
  * @brief Largest absolute entry of a dense matrix.
- * @ingroup Common_Math
+ * @ingroup SVMP_Math
  * @param matrix Row-major matrix entries.
  * @return Maximum of |entry| over all entries, or 0 for an empty matrix.
  */
@@ -29,7 +29,7 @@ namespace svmp::common::math {
 
 /**
  * @brief Scale-aware pivot tolerance for dense factorization.
- * @ingroup Common_Math
+ * @ingroup SVMP_Math
  *
  * @details Proportional to machine epsilon scaled by the matrix size and
  * magnitude; pivots below it are treated as rank-deficient.
@@ -47,7 +47,7 @@ namespace svmp::common::math {
 
 /**
  * @brief Scale-aware singular-value tolerance for rank decisions.
- * @ingroup Common_Math
+ * @ingroup SVMP_Math
  *
  * @details Singular values at or below the returned tolerance are treated as
  * zero when computing rank or a pseudo-inverse.
@@ -63,7 +63,7 @@ namespace svmp::common::math {
                                                          double largest_singular_value,
                                                          double multiplier = double(64)) noexcept;
 
-/** @brief Result of a rank-revealing pseudo-inverse. @ingroup Common_Math */
+/** @brief Result of a rank-revealing pseudo-inverse. @ingroup SVMP_Math */
 struct DensePseudoInverseResult {
     std::vector<double> inverse;                 ///< Row-major pseudo-inverse.
     std::size_t rank{0};                         ///< Numerical rank at the chosen tolerance.
@@ -72,7 +72,7 @@ struct DensePseudoInverseResult {
     double smallest_retained_singular_value{0};  ///< Smallest singular value kept.
 };
 
-/** @brief SVD-based conditioning and rank diagnostics for a dense matrix. @ingroup Common_Math */
+/** @brief SVD-based conditioning and rank diagnostics for a dense matrix. @ingroup SVMP_Math */
 struct DenseMatrixDiagnostics {
     std::size_t rank{0};                         ///< Numerical rank at @ref tolerance.
     double tolerance{0};                         ///< Singular-value tolerance used.
@@ -81,7 +81,7 @@ struct DenseMatrixDiagnostics {
     double condition_estimate{std::numeric_limits<double>::infinity()};  ///< Condition estimate; infinite when rank-deficient.
 };
 
-/** @brief A dense inverse together with its diagnostics. @ingroup Common_Math */
+/** @brief A dense inverse together with its diagnostics. @ingroup SVMP_Math */
 struct DenseInverseResult {
     std::vector<double> inverse;        ///< Row-major inverse.
     DenseMatrixDiagnostics diagnostics; ///< Conditioning/rank diagnostics of the input.
@@ -90,20 +90,20 @@ struct DenseInverseResult {
 
 /**
  * @brief Condition estimate above which the inverse switches to an SVD fallback.
- * @ingroup Common_Math
+ * @ingroup SVMP_Math
  * @return The fallback condition-number threshold.
  */
 [[nodiscard]] double dense_matrix_condition_fallback_threshold() noexcept;
 /**
  * @brief Condition estimate above which validation rejects a dense inverse.
- * @ingroup Common_Math
+ * @ingroup SVMP_Math
  * @return The error condition-number threshold.
  */
 [[nodiscard]] double dense_matrix_condition_error_threshold() noexcept;
 
 /**
  * @brief LU factorization of a dense square matrix with a cached pivot summary.
- * @ingroup Common_Math
+ * @ingroup SVMP_Math
  *
  * @details Produced by factor_dense_matrix(); move-only because it owns the Eigen
  * factorization. @ref error_message_label prefixes the messages of exceptions
@@ -157,7 +157,7 @@ struct DenseLUSolver {
 
 /**
  * @brief SVD-based rank and conditioning diagnostics for a dense matrix.
- * @ingroup Common_Math
+ * @ingroup SVMP_Math
  * @param matrix Row-major matrix of size rows * cols.
  * @param rows Row count.
  * @param cols Column count.
@@ -173,7 +173,7 @@ struct DenseLUSolver {
 
 /**
  * @brief LU-factor a dense square matrix.
- * @ingroup Common_Math
+ * @ingroup SVMP_Math
  * @param matrix Row-major n * n matrix (consumed).
  * @param n Matrix dimension.
  * @param error_message_label Prefix for the message of any exception thrown.
@@ -186,7 +186,7 @@ struct DenseLUSolver {
 
 /**
  * @brief Invert a dense square matrix.
- * @ingroup Common_Math
+ * @ingroup SVMP_Math
  * @param matrix Row-major n * n matrix (consumed).
  * @param n Matrix dimension.
  * @param error_message_label Prefix for the message of any exception thrown.
@@ -200,7 +200,7 @@ struct DenseLUSolver {
 /**
  * @brief Invert a dense square matrix with diagnostics, using an SVD fallback for
  * high-condition matrices.
- * @ingroup Common_Math
+ * @ingroup SVMP_Math
  * @param matrix Row-major n * n matrix (consumed).
  * @param n Matrix dimension.
  * @param error_message_label Prefix for the message of any exception thrown.
@@ -214,7 +214,7 @@ struct DenseLUSolver {
 
 /**
  * @brief Validate that a dense inverse has full rank and acceptable conditioning.
- * @ingroup Common_Math
+ * @ingroup SVMP_Math
  * @param result Result from invert_dense_matrix_with_diagnostics().
  * @param expected_rank Required (full) rank.
  * @param error_message_label Prefix for the message of any exception thrown.
@@ -229,7 +229,7 @@ void validate_dense_inverse_diagnostics(
 
 /**
  * @brief Numerical rank of a dense matrix from its singular values.
- * @ingroup Common_Math
+ * @ingroup SVMP_Math
  * @param matrix Row-major matrix of size rows * cols (consumed).
  * @param rows Row count.
  * @param cols Column count.
@@ -242,7 +242,7 @@ void validate_dense_inverse_diagnostics(
 
 /**
  * @brief Moore-Penrose pseudo-inverse via a rank-revealing SVD.
- * @ingroup Common_Math
+ * @ingroup SVMP_Math
  * @param matrix Row-major matrix of size rows * cols.
  * @param rows Row count.
  * @param cols Column count.
@@ -256,6 +256,6 @@ void validate_dense_inverse_diagnostics(
     std::size_t cols,
     std::string_view error_message_label = "dense matrix");
 
-} // namespace svmp::common::math
+} // namespace svmp::math
 
 #endif // SVMP_COMMON_MATH_DENSELINEARALGEBRA_H

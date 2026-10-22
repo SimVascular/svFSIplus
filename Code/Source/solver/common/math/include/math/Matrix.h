@@ -24,11 +24,11 @@
 
 /**
  * @defgroup FE_MatrixMath Matrix
- * @ingroup Common_Math
+ * @ingroup SVMP_Math
  * @brief Fixed-size matrix type aliases.
  */
 
-namespace svmp::common::math {
+namespace svmp::math {
 
 /**
  * @brief Fixed-size matrix for element-level computations
@@ -40,6 +40,6 @@ namespace svmp::common::math {
 template<typename T, std::size_t M, std::size_t N>
 using Matrix = Eigen::Matrix<T, static_cast<int>(M), static_cast<int>(N)>;
 
-} // namespace svmp::common::math
+} // namespace svmp::math
 
 #endif // SVMP_COMMON_MATH_MATRIX_H

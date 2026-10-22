@@ -12,7 +12,7 @@
 #include <span>
 #include <vector>
 
-using namespace svmp::common::math;
+using namespace svmp::math;
 
 namespace {
 

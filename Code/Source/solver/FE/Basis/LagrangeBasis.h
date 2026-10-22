@@ -193,7 +193,7 @@ public:
      *
      * @return Reference node coordinates, one per basis function.
      */
-    const std::vector<svmp::common::math::Vector<double, 3>>& nodes() const noexcept final { return nodes_; }
+    const std::vector<math::Vector<double, 3>>& nodes() const noexcept final { return nodes_; }
 
     /**
      * @brief Evaluate Lagrange basis values into caller-provided storage.
@@ -205,7 +205,7 @@ public:
      * @param xi Reference coordinate. Lower-dimensional elements use the active prefix components.
      * @param values_out Output span with at least size() entries.
      */
-    void evaluate_values_to(const svmp::common::math::Vector<double, 3>& xi,
+    void evaluate_values_to(const math::Vector<double, 3>& xi,
                             std::span<double> values_out) const final;
 
     /**
@@ -217,7 +217,7 @@ public:
      * @param xi Reference coordinate. Lower-dimensional elements use the active prefix components.
      * @param gradients_out Output span with at least size() entries.
      */
-    void evaluate_gradients_to(const svmp::common::math::Vector<double, 3>& xi,
+    void evaluate_gradients_to(const math::Vector<double, 3>& xi,
                                std::span<Gradient> gradients_out) const final;
 
     /**
@@ -229,7 +229,7 @@ public:
      * @param xi Reference coordinate. Lower-dimensional elements use the active prefix components.
      * @param hessians_out Output span with at least size() entries.
      */
-    void evaluate_hessians_to(const svmp::common::math::Vector<double, 3>& xi,
+    void evaluate_hessians_to(const math::Vector<double, 3>& xi,
                               std::span<Hessian> hessians_out) const final;
 
 private:
@@ -248,7 +248,7 @@ private:
     //   point         : nodes_ only
     std::vector<double> nodes_1d_;
     std::vector<double> nodes_1d_weights_;
-    std::vector<svmp::common::math::Vector<double, 3>> nodes_;
+    std::vector<math::Vector<double, 3>> nodes_;
     std::vector<TensorNodeIndex> tensor_indices_;
     std::vector<SimplexExponent> simplex_exponents_;
     std::vector<WedgeNodeIndex> wedge_indices_;
@@ -260,22 +260,22 @@ private:
     void build_wedge_nodes();
     void init_tensor_axis_nodes();
 
-    void evaluate_all_to(const svmp::common::math::Vector<double, 3>& xi,
+    void evaluate_all_to(const math::Vector<double, 3>& xi,
                          std::span<double> values_out,
                          std::span<Gradient> gradients_out,
                          std::span<Hessian> hessians_out) const override;
     void evaluate_point_to(std::span<double> values_out,
                            std::span<Gradient> gradients_out,
                            std::span<Hessian> hessians_out) const;
-    void evaluate_tensor_product_to(const svmp::common::math::Vector<double, 3>& xi,
+    void evaluate_tensor_product_to(const math::Vector<double, 3>& xi,
                                     std::span<double> values_out,
                                     std::span<Gradient> gradients_out,
                                     std::span<Hessian> hessians_out) const;
-    void evaluate_simplex_to(const svmp::common::math::Vector<double, 3>& xi,
+    void evaluate_simplex_to(const math::Vector<double, 3>& xi,
                              std::span<double> values_out,
                              std::span<Gradient> gradients_out,
                              std::span<Hessian> hessians_out) const;
-    void evaluate_wedge_to(const svmp::common::math::Vector<double, 3>& xi,
+    void evaluate_wedge_to(const math::Vector<double, 3>& xi,
                            std::span<double> values_out,
                            std::span<Gradient> gradients_out,
                            std::span<Hessian> hessians_out) const;

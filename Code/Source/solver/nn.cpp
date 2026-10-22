@@ -213,7 +213,7 @@ std::size_t basis_index_for_solver_node(consts::ElementType eType, const int sol
 /// xi array, zero-filling the trailing components that are inactive for
 /// lower-dimensional elements. Throws BasisConfigurationException when xi has
 /// fewer rows than the basis reference dimension.
-svmp::common::math::Vector<double, 3> make_basis_point(const febasis::BasisFunction& basis,
+svmp::math::Vector<double, 3> make_basis_point(const febasis::BasisFunction& basis,
                                                const int g,
                                                const Array<double>& xi)
 {
@@ -225,7 +225,7 @@ svmp::common::math::Vector<double, 3> make_basis_point(const febasis::BasisFunct
 
   // Inactive trailing components must be zero for lower-dimensional elements;
   // Eigen-backed vectors are not zero-initialized by default construction.
-  svmp::common::math::Vector<double, 3> point = svmp::common::math::Vector<double, 3>::Zero();
+  svmp::math::Vector<double, 3> point = svmp::math::Vector<double, 3>::Zero();
   for (int d = 0; d < basis.dimension(); ++d) {
     point[static_cast<std::size_t>(d)] = xi(d, g);
   }

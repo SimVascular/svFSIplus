@@ -152,7 +152,7 @@ TEST_P(RcsPreconditioner, PreservesConstrainedSystem) {
     }
   }
 
-  svmp::common::math::factor_dense_matrix(matrix, n, "RCS regression").solve_in_place(solution);
+  svmp::math::factor_dense_matrix(matrix, n, "RCS regression").solve_in_place(solution);
   for (int row = 0; row < n; ++row) {
     solution[row] *= right(row % dof, row / dof);
     EXPECT_NEAR(solution[row], exact[row], 1e-11);

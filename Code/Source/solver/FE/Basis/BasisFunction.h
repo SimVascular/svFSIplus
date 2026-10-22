@@ -138,10 +138,10 @@
 namespace svmp::FE::basis {
 
 /** @brief Gradient vector type used by basis evaluators. */
-using Gradient = svmp::common::math::Vector<double, 3>;
+using Gradient = math::Vector<double, 3>;
 
 /** @brief Hessian matrix type used by basis evaluators. */
-using Hessian  = svmp::common::math::Matrix<double, 3, 3>;
+using Hessian  = math::Matrix<double, 3, 3>;
 
 /**
  * @brief Throw BasisEvaluationException when an output span is smaller than the
@@ -223,7 +223,7 @@ public:
      * @return Reference node coordinates: size() entries for nodal families,
      *         empty otherwise.
      */
-    virtual const std::vector<svmp::common::math::Vector<double, 3>>& nodes() const noexcept;
+    virtual const std::vector<math::Vector<double, 3>>& nodes() const noexcept;
 
     /**
      * @brief Evaluate basis function values at a reference coordinate.
@@ -238,7 +238,7 @@ public:
      * @param xi Reference coordinate. Lower-dimensional elements use the active prefix components.
      * @param values Receives one value per basis function.
      */
-    void evaluate_values(const svmp::common::math::Vector<double, 3>& xi,
+    void evaluate_values(const math::Vector<double, 3>& xi,
                          std::vector<double>& values) const;
 
     /**
@@ -251,7 +251,7 @@ public:
      * @param gradients Receives one three-component gradient per basis function.
      * @throws BasisEvaluationException If gradients are not available for the basis.
      */
-    void evaluate_gradients(const svmp::common::math::Vector<double, 3>& xi,
+    void evaluate_gradients(const math::Vector<double, 3>& xi,
                             std::vector<Gradient>& gradients) const;
 
     /**
@@ -264,7 +264,7 @@ public:
      * @param hessians Receives one 3-by-3 Hessian per basis function.
      * @throws BasisEvaluationException If Hessians are not available for the basis.
      */
-    void evaluate_hessians(const svmp::common::math::Vector<double, 3>& xi,
+    void evaluate_hessians(const math::Vector<double, 3>& xi,
                            std::vector<Hessian>& hessians) const;
 
     /**
@@ -278,7 +278,7 @@ public:
      * @param gradients Receives one three-component gradient per basis function.
      * @param hessians Receives one 3-by-3 Hessian per basis function.
      */
-    void evaluate_all(const svmp::common::math::Vector<double, 3>& xi,
+    void evaluate_all(const math::Vector<double, 3>& xi,
                       std::vector<double>& values,
                       std::vector<Gradient>& gradients,
                       std::vector<Hessian>& hessians) const;
@@ -293,7 +293,7 @@ public:
      * @param xi Reference coordinate. Lower-dimensional elements use the active prefix components.
      * @param values_out Output span with at least size() entries.
      */
-    virtual void evaluate_values_to(const svmp::common::math::Vector<double, 3>& xi,
+    virtual void evaluate_values_to(const math::Vector<double, 3>& xi,
                                     std::span<double> values_out) const = 0;
 
     /**
@@ -307,7 +307,7 @@ public:
      * @param gradients_out Output span with at least size() entries.
      * @throws BasisEvaluationException If gradients are not available for the basis.
      */
-    virtual void evaluate_gradients_to(const svmp::common::math::Vector<double, 3>& xi,
+    virtual void evaluate_gradients_to(const math::Vector<double, 3>& xi,
                                        std::span<Gradient> gradients_out) const;
 
     /**
@@ -321,7 +321,7 @@ public:
      * @param hessians_out Output span with at least size() entries.
      * @throws BasisEvaluationException If Hessians are not available for the basis.
      */
-    virtual void evaluate_hessians_to(const svmp::common::math::Vector<double, 3>& xi,
+    virtual void evaluate_hessians_to(const math::Vector<double, 3>& xi,
                                       std::span<Hessian> hessians_out) const;
 
 protected:
@@ -340,7 +340,7 @@ protected:
      * @param gradients_out Gradients output span, or empty to skip.
      * @param hessians_out Hessians output span, or empty to skip.
      */
-    virtual void evaluate_all_to(const svmp::common::math::Vector<double, 3>& xi,
+    virtual void evaluate_all_to(const math::Vector<double, 3>& xi,
                                  std::span<double> values_out,
                                  std::span<Gradient> gradients_out,
                                  std::span<Hessian> hessians_out) const;
@@ -358,7 +358,7 @@ protected:
      * per reference coordinate, so analytical gradients are always preferred
      * outside this testing context.
      */
-    void numerical_gradient(const svmp::common::math::Vector<double, 3>& xi,
+    void numerical_gradient(const math::Vector<double, 3>& xi,
                             std::vector<Gradient>& gradients,
                             double eps = double(1e-6)) const;
 
@@ -374,7 +374,7 @@ protected:
      * gradient evaluations, so analytical Hessians are used everywhere outside
      * tests.
      */
-    void numerical_hessian(const svmp::common::math::Vector<double, 3>& xi,
+    void numerical_hessian(const math::Vector<double, 3>& xi,
                            std::vector<Hessian>& hessians,
                            double eps = double(1e-5)) const;
 };
