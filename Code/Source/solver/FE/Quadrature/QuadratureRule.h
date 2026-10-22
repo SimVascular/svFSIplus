@@ -40,7 +40,7 @@
  */
 
 #include "FE/Common/Types.h"
-#include "FE/Math/Vector.h"
+#include "math/Vector.h"
 
 #include <cstddef>
 #include <span>
@@ -58,7 +58,7 @@ namespace svmp::FE::quadrature {
  * Only the first QuadratureRule::dimension() components are active; remaining
  * components must be zero.
  */
-using QuadPoint = math::Vector<double, 3>;
+using QuadPoint = svmp::common::math::Vector<double, 3>;
 
 /**
  * @brief Owning value type for quadrature rules on canonical reference cells.

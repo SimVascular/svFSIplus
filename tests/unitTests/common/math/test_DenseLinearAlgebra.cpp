@@ -6,14 +6,13 @@
 #include <gtest/gtest.h>
 
 #include "Core/Exception.h"
-#include "FE/Math/DenseLinearAlgebra.h"
+#include "math/DenseLinearAlgebra.h"
 
 #include <cmath>
 #include <span>
 #include <vector>
 
-using namespace svmp::FE;
-using namespace svmp::FE::math;
+using namespace svmp::common::math;
 
 namespace {
 

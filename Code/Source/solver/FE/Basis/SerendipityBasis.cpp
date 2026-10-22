@@ -4,7 +4,7 @@
 #include "SerendipityBasis.h"
 #include "NodeOrderingConventions.h"
 #include "Core/Exception.h"
-#include "Math/DenseLinearAlgebra.h"
+#include "math/DenseLinearAlgebra.h"
 
 #include <algorithm>
 #include <array>
@@ -15,7 +15,7 @@
 namespace svmp::FE::basis {
 
 namespace {
-using Vec3 = math::Vector<double, 3>;
+using Vec3 = svmp::common::math::Vector<double, 3>;
 
 // Superlinear contribution of one axis exponent: degrees 0 and 1 are free (they
 // do not raise the superlinear degree), every higher degree contributes its full
@@ -207,7 +207,7 @@ std::vector<double> build_inverse_vandermonde(
     // provably unisolvent, so this branch is not reachable for the shipped orders.)
     std::vector<double> inverse;
     try {
-        inverse = math::invert_dense_matrix(
+        inverse = svmp::common::math::invert_dense_matrix(
             std::move(vandermonde), n,
             "SerendipityBasis interpolation matrix for " + label);
     } catch (const ::svmp::CoreException&) {
@@ -410,7 +410,7 @@ void SerendipityBasis::init_fixed_named(ElementType type) {
         nodes_, mode_exponents_, "Wedge15", ModalAxisKind::Monomial, order_);
 }
 
-void SerendipityBasis::evaluate_all_to(const math::Vector<double, 3>& xi,
+void SerendipityBasis::evaluate_all_to(const svmp::common::math::Vector<double, 3>& xi,
                                        std::span<double> values_out,
                                        std::span<Gradient> gradients_out,
                                        std::span<Hessian> hessians_out) const {
@@ -519,19 +519,19 @@ void SerendipityBasis::evaluate_all_to(const math::Vector<double, 3>& xi,
     }
 }
 
-void SerendipityBasis::evaluate_values_to(const math::Vector<double, 3>& xi,
+void SerendipityBasis::evaluate_values_to(const svmp::common::math::Vector<double, 3>& xi,
                                           std::span<double> values_out) const {
     require_span_size(values_out.size(), size_, "SerendipityBasis::evaluate_values_to");
     evaluate_all_to(xi, values_out, std::span<Gradient>{}, std::span<Hessian>{});
 }
 
-void SerendipityBasis::evaluate_gradients_to(const math::Vector<double, 3>& xi,
+void SerendipityBasis::evaluate_gradients_to(const svmp::common::math::Vector<double, 3>& xi,
                                              std::span<Gradient> gradients_out) const {
     require_span_size(gradients_out.size(), size_, "SerendipityBasis::evaluate_gradients_to");
     evaluate_all_to(xi, std::span<double>{}, gradients_out, std::span<Hessian>{});
 }
 
-void SerendipityBasis::evaluate_hessians_to(const math::Vector<double, 3>& xi,
+void SerendipityBasis::evaluate_hessians_to(const svmp::common::math::Vector<double, 3>& xi,
                                             std::span<Hessian> hessians_out) const {
     require_span_size(hessians_out.size(), size_, "SerendipityBasis::evaluate_hessians_to");
     evaluate_all_to(xi, std::span<double>{}, std::span<Gradient>{}, hessians_out);

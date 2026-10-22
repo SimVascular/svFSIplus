@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: Copyright (c) Stanford University, The Regents of the University of California, and others.
 // SPDX-License-Identifier: BSD-3-Clause
 
-#ifndef SVMP_FE_MATH_VECTOR_H
-#define SVMP_FE_MATH_VECTOR_H
+#ifndef SVMP_COMMON_MATH_VECTOR_H
+#define SVMP_COMMON_MATH_VECTOR_H
 
 /**
  * @file Vector.h
@@ -15,7 +15,7 @@
  * zeroed value is required.
  *
  * This is a small, fixed-size (compile-time length) vector for element-level FE
- * kernels in namespace svmp::FE::math. It is distinct from, and not a replacement
+ * kernels in namespace svmp::common::math. It is distinct from, and not a replacement
  * for, the legacy dynamically sized container in solver/Vector.h: the two differ
  * in namespace, size model (compile-time vs runtime), and memory management, and
  * coexist deliberately.
@@ -26,7 +26,7 @@
 #include <cstddef>
 
 /**
- * @defgroup FE_Math Math
+ * @defgroup Common_Math Math
  * @ingroup FE
  * @brief Linear algebra vocabulary types and dense utilities for finite-element computations.
  *
@@ -35,11 +35,11 @@
  * algebra utilities used by basis construction and local transforms.
  *
  * @defgroup FE_VectorMath Vector
- * @ingroup FE_Math
+ * @ingroup Common_Math
  * @brief Fixed-size vector type aliases.
  */
 
-namespace svmp::FE::math {
+namespace svmp::common::math {
 
 /**
  * @brief Fixed-size column vector for element-level computations
@@ -50,6 +50,6 @@ namespace svmp::FE::math {
 template<typename T, std::size_t N>
 using Vector = Eigen::Matrix<T, static_cast<int>(N), 1>;
 
-} // namespace svmp::FE::math
+} // namespace svmp::common::math
 
-#endif // SVMP_FE_MATH_VECTOR_H
+#endif // SVMP_COMMON_MATH_VECTOR_H

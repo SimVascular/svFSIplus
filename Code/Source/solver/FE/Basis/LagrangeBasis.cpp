@@ -13,7 +13,7 @@ namespace svmp::FE::basis {
 
 namespace {
 
-using Vec3 = math::Vector<double, 3>;
+using Vec3 = svmp::common::math::Vector<double, 3>;
 
 struct AxisEval {
     std::vector<double> value;

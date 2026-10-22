@@ -20,7 +20,7 @@ namespace svmp::FE::basis {
 
 namespace {
 
-using Point = math::Vector<double, 3>;
+using Point = svmp::common::math::Vector<double, 3>;
 using Lattice = std::array<int, 3>;
 
 // Cache GLL tensor-axis nodes by interpolation order; Quadrature owns the
@@ -791,7 +791,7 @@ double line_coord_pm_one(int i, int order) {
     return gll_points(order)[static_cast<std::size_t>(i)];
 }
 
-math::Vector<double, 3> ReferenceNodeLayout::node_coord_at(ElementType elem_type,
+svmp::common::math::Vector<double, 3> ReferenceNodeLayout::node_coord_at(ElementType elem_type,
                                                            std::size_t local_node) {
     const auto nodes = element_nodes(elem_type);
     svmp::throw_if<BasisNodeOrderingException>(local_node >= nodes.size(), "ReferenceNodeLayout::node_coord_at: node index out of range");
@@ -802,12 +802,12 @@ std::size_t ReferenceNodeLayout::num_nodes(ElementType elem_type) {
     return element_nodes(elem_type).size();
 }
 
-std::vector<math::Vector<double, 3>>
+std::vector<svmp::common::math::Vector<double, 3>>
 ReferenceNodeLayout::node_coords(ElementType elem_type) {
     return element_nodes(elem_type);
 }
 
-std::vector<math::Vector<double, 3>>
+std::vector<svmp::common::math::Vector<double, 3>>
 ReferenceNodeLayout::get_lagrange_node_coords(ElementType canonical_type, int order) {
     return complete_lagrange_nodes(canonical_type, order).coords;
 }
@@ -819,7 +819,7 @@ ReferenceNodeLayout::get_lagrange_lattice(ElementType canonical_type, int order)
     return layout;
 }
 
-std::vector<math::Vector<double, 3>>
+std::vector<svmp::common::math::Vector<double, 3>>
 ReferenceNodeLayout::serendipity_node_coords(BasisTopology topology, int order) {
     svmp::throw_if<BasisConstructionException>(
         order < 1, "ReferenceNodeLayout::serendipity_node_coords requires a polynomial order >= 1");

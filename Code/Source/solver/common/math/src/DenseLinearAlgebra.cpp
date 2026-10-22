@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: Copyright (c) Stanford University, The Regents of the University of California, and others.
 // SPDX-License-Identifier: BSD-3-Clause
 
-#include "DenseLinearAlgebra.h"
+#include "math/DenseLinearAlgebra.h"
 
 #include "Core/Exception.h"
 
@@ -13,7 +13,7 @@
 #include <string>
 #include <utility>
 
-namespace svmp::FE::math {
+namespace svmp::common::math {
 
 namespace {
 
@@ -334,4 +334,4 @@ DensePseudoInverseResult rank_revealing_pseudo_inverse(
     return result;
 }
 
-} // namespace svmp::FE::math
+} // namespace svmp::common::math

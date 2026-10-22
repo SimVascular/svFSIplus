@@ -226,14 +226,14 @@ public:
      *
      * @return Reference node coordinates, one per basis function.
      */
-    const std::vector<math::Vector<double, 3>>& nodes() const noexcept final { return nodes_; }
+    const std::vector<svmp::common::math::Vector<double, 3>>& nodes() const noexcept final { return nodes_; }
 
     /**
      * @brief Evaluate serendipity basis values into caller-provided storage.
      * @param xi Reference coordinate. Lower-dimensional elements use the active prefix components.
      * @param values_out Output span with at least size() entries.
      */
-    void evaluate_values_to(const math::Vector<double, 3>& xi,
+    void evaluate_values_to(const svmp::common::math::Vector<double, 3>& xi,
                             std::span<double> values_out) const final;
 
     /**
@@ -241,7 +241,7 @@ public:
      * @param xi Reference coordinate. Lower-dimensional elements use the active prefix components.
      * @param gradients_out Output span with at least size() entries.
      */
-    void evaluate_gradients_to(const math::Vector<double, 3>& xi,
+    void evaluate_gradients_to(const svmp::common::math::Vector<double, 3>& xi,
                                std::span<Gradient> gradients_out) const final;
 
     /**
@@ -249,7 +249,7 @@ public:
      * @param xi Reference coordinate. Lower-dimensional elements use the active prefix components.
      * @param hessians_out Output span with at least size() entries.
      */
-    void evaluate_hessians_to(const math::Vector<double, 3>& xi,
+    void evaluate_hessians_to(const svmp::common::math::Vector<double, 3>& xi,
                               std::span<Hessian> hessians_out) const final;
 
 private:
@@ -257,7 +257,7 @@ private:
     int dimension_{0};
     int order_{0};
     std::size_t size_{0};
-    std::vector<math::Vector<double, 3>> nodes_;
+    std::vector<svmp::common::math::Vector<double, 3>> nodes_;
     // Per-axis degrees (a, b, c) of the tensor modes spanning the family's
     // polynomial space. Interpreted as monomial powers r^a s^b t^c or, when
     // uses_legendre_modes_ is set, as tensor Legendre degrees P_a(r) P_b(s) P_c(t)
@@ -279,7 +279,7 @@ private:
     // Build the fixed Wedge15 layout from its tabulated monomial mode space.
     void init_fixed_named(ElementType type);
 
-    void evaluate_all_to(const math::Vector<double, 3>& xi,
+    void evaluate_all_to(const svmp::common::math::Vector<double, 3>& xi,
                          std::span<double> values_out,
                          std::span<Gradient> gradients_out,
                          std::span<Hessian> hessians_out) const override;

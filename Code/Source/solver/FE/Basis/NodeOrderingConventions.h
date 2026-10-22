@@ -5,7 +5,7 @@
 #define SVMP_FE_BASIS_NODEORDERINGCONVENTIONS_H
 
 #include "BasisTraits.h"
-#include "Math/Vector.h"
+#include "math/Vector.h"
 #include "Types.h"
 
 #include <array>
@@ -72,7 +72,7 @@ namespace svmp::FE::basis {
  * index directly instead of reconstructing it from the floating-point coordinate.
  */
 struct LagrangeNodeLayout {
-    std::vector<math::Vector<double, 3>> coords;   ///< Reference node coordinates, one per node.
+    std::vector<svmp::common::math::Vector<double, 3>> coords;   ///< Reference node coordinates, one per node.
     std::vector<std::array<int, 3>>      lattice;  ///< Integer lattice index of each node (see details above).
 };
 
@@ -89,7 +89,7 @@ public:
      * @param local_node Local node index in [0, num_nodes(elem_type)).
      * @return Reference coordinate of the requested node.
      */
-    static math::Vector<double, 3> node_coord_at(ElementType elem_type,
+    static svmp::common::math::Vector<double, 3> node_coord_at(ElementType elem_type,
                                                  std::size_t local_node);
 
     /**
@@ -110,7 +110,7 @@ public:
      * @param elem_type Element type to look up.
      * @return Reference node coordinates, one per node.
      */
-    static std::vector<math::Vector<double, 3>> node_coords(ElementType elem_type);
+    static std::vector<svmp::common::math::Vector<double, 3>> node_coords(ElementType elem_type);
 
     /**
      * @brief Reference Lagrange node coordinates for a canonical type and order.
@@ -118,7 +118,7 @@ public:
      * @param order Polynomial order.
      * @return Reference node coordinates, one per node, in basis order.
      */
-    static std::vector<math::Vector<double, 3>>
+    static std::vector<svmp::common::math::Vector<double, 3>>
     get_lagrange_node_coords(ElementType canonical_type, int order);
 
     /**
@@ -156,7 +156,7 @@ public:
      * @throws BasisConstructionException If @p order is below 1.
      * @throws BasisElementCompatibilityException If @p topology is not Quadrilateral or Hexahedron.
      */
-    static std::vector<math::Vector<double, 3>>
+    static std::vector<svmp::common::math::Vector<double, 3>>
     serendipity_node_coords(BasisTopology topology, int order);
 };
 

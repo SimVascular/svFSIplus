@@ -14,35 +14,35 @@ void require_span_size(std::size_t actual,
     svmp::throw_if<BasisEvaluationException>(actual < expected, std::string(label) + ": output span is smaller than basis size");
 }
 
-const std::vector<math::Vector<double, 3>>& BasisFunction::nodes() const noexcept {
+const std::vector<svmp::common::math::Vector<double, 3>>& BasisFunction::nodes() const noexcept {
     // Default for bases that do not expose interpolation nodes; nodal families
     // (LagrangeBasis, SerendipityBasis) override this to return their layout.
-    static const std::vector<math::Vector<double, 3>> kNoNodes;
+    static const std::vector<svmp::common::math::Vector<double, 3>> kNoNodes;
     return kNoNodes;
 }
 
 // Vector-output overloads: size the container and forward to the matching span
 // primitive. Defined once here so concrete families implement only the span
 // primitives below.
-void BasisFunction::evaluate_values(const math::Vector<double, 3>& xi,
+void BasisFunction::evaluate_values(const svmp::common::math::Vector<double, 3>& xi,
                                     std::vector<double>& values) const {
     values.resize(size());
     evaluate_values_to(xi, std::span<double>(values.data(), values.size()));
 }
 
-void BasisFunction::evaluate_gradients(const math::Vector<double, 3>& xi,
+void BasisFunction::evaluate_gradients(const svmp::common::math::Vector<double, 3>& xi,
                                        std::vector<Gradient>& gradients) const {
     gradients.resize(size());
     evaluate_gradients_to(xi, std::span<Gradient>(gradients.data(), gradients.size()));
 }
 
-void BasisFunction::evaluate_hessians(const math::Vector<double, 3>& xi,
+void BasisFunction::evaluate_hessians(const svmp::common::math::Vector<double, 3>& xi,
                                       std::vector<Hessian>& hessians) const {
     hessians.resize(size());
     evaluate_hessians_to(xi, std::span<Hessian>(hessians.data(), hessians.size()));
 }
 
-void BasisFunction::evaluate_all(const math::Vector<double, 3>& xi,
+void BasisFunction::evaluate_all(const svmp::common::math::Vector<double, 3>& xi,
                                  std::vector<double>& values,
                                  std::vector<Gradient>& gradients,
                                  std::vector<Hessian>& hessians) const {
@@ -58,14 +58,14 @@ void BasisFunction::evaluate_all(const math::Vector<double, 3>& xi,
 // The gradient/Hessian span primitives default to reporting "not implemented"; a
 // family supplies analytical derivatives by overriding them. evaluate_values_to
 // has no base definition: every basis must provide values.
-void BasisFunction::evaluate_gradients_to(const math::Vector<double, 3>& xi,
+void BasisFunction::evaluate_gradients_to(const svmp::common::math::Vector<double, 3>& xi,
                                           std::span<Gradient> gradients_out) const {
     (void)xi;
     (void)gradients_out;
     svmp::raise<BasisEvaluationException>("Analytic gradient evaluation is not implemented for this basis");
 }
 
-void BasisFunction::evaluate_hessians_to(const math::Vector<double, 3>& xi,
+void BasisFunction::evaluate_hessians_to(const svmp::common::math::Vector<double, 3>& xi,
                                          std::span<Hessian> hessians_out) const {
     (void)xi;
     (void)hessians_out;
@@ -75,7 +75,7 @@ void BasisFunction::evaluate_hessians_to(const math::Vector<double, 3>& xi,
 // Combined evaluator default: forward each requested (non-empty) quantity to its
 // single-quantity span primitive. Families override this to share per-point setup
 // across the requested quantities.
-void BasisFunction::evaluate_all_to(const math::Vector<double, 3>& xi,
+void BasisFunction::evaluate_all_to(const svmp::common::math::Vector<double, 3>& xi,
                                     std::span<double> values_out,
                                     std::span<Gradient> gradients_out,
                                     std::span<Hessian> hessians_out) const {
@@ -90,7 +90,7 @@ void BasisFunction::evaluate_all_to(const math::Vector<double, 3>& xi,
     }
 }
 
-void BasisFunction::numerical_gradient(const math::Vector<double, 3>& xi,
+void BasisFunction::numerical_gradient(const svmp::common::math::Vector<double, 3>& xi,
                                        std::vector<Gradient>& gradients,
                                        double eps) const {
     std::vector<double> base;
@@ -98,8 +98,8 @@ void BasisFunction::numerical_gradient(const math::Vector<double, 3>& xi,
     gradients.assign(base.size(), Gradient::Zero());
 
     for (int d = 0; d < dimension(); ++d) {
-        math::Vector<double, 3> forward = xi;
-        math::Vector<double, 3> backward = xi;
+        svmp::common::math::Vector<double, 3> forward = xi;
+        svmp::common::math::Vector<double, 3> backward = xi;
         const auto idx = static_cast<std::size_t>(d);
         forward[idx] += eps;
         backward[idx] -= eps;
@@ -115,7 +115,7 @@ void BasisFunction::numerical_gradient(const math::Vector<double, 3>& xi,
     }
 }
 
-void BasisFunction::numerical_hessian(const math::Vector<double, 3>& xi,
+void BasisFunction::numerical_hessian(const svmp::common::math::Vector<double, 3>& xi,
                                       std::vector<Hessian>& hessians,
                                       double eps) const {
     std::vector<Gradient> base_grad;
@@ -123,8 +123,8 @@ void BasisFunction::numerical_hessian(const math::Vector<double, 3>& xi,
     hessians.assign(base_grad.size(), Hessian::Zero());
 
     for (int d = 0; d < dimension(); ++d) {
-        math::Vector<double, 3> forward = xi;
-        math::Vector<double, 3> backward = xi;
+        svmp::common::math::Vector<double, 3> forward = xi;
+        svmp::common::math::Vector<double, 3> backward = xi;
         const auto col = static_cast<std::size_t>(d);
         forward[col] += eps;
         backward[col] -= eps;
