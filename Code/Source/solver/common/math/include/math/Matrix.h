@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: Copyright (c) Stanford University, The Regents of the University of California, and others.
 // SPDX-License-Identifier: BSD-3-Clause
 
-#ifndef SVMP_FE_MATH_MATRIX_H
-#define SVMP_FE_MATH_MATRIX_H
+#ifndef SVMP_COMMON_MATH_MATRIX_H
+#define SVMP_COMMON_MATH_MATRIX_H
 
 /**
  * @file Matrix.h
@@ -24,11 +24,11 @@
 
 /**
  * @defgroup FE_MatrixMath Matrix
- * @ingroup FE_Math
+ * @ingroup SVMP_Math
  * @brief Fixed-size matrix type aliases.
  */
 
-namespace svmp::FE::math {
+namespace svmp::math {
 
 /**
  * @brief Fixed-size matrix for element-level computations
@@ -40,6 +40,6 @@ namespace svmp::FE::math {
 template<typename T, std::size_t M, std::size_t N>
 using Matrix = Eigen::Matrix<T, static_cast<int>(M), static_cast<int>(N)>;
 
-} // namespace svmp::FE::math
+} // namespace svmp::math
 
-#endif // SVMP_FE_MATH_MATRIX_H
+#endif // SVMP_COMMON_MATH_MATRIX_H
